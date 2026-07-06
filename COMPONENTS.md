@@ -47,8 +47,8 @@ radii, type. See the package README.
 | `Sidebar` | todo | `SectionSwitcher`, `NavGroup`, `NavItem` (active, external, comingSoon), progress | left nav |
 | `TableOfContents` | todo | `items`, active-on-scroll; mono variant for API methods | right rail "On this page" |
 | `AiActions` | todo | Copy as Markdown · View as text · Open in ChatGPT/Claude | right rail panel |
-| `Breadcrumbs` | todo | `segments` | above page title |
-| `PageFooterNav` | todo | `prev?`, `next?` (right-grouped cards) | bottom prev/next |
+| `Breadcrumbs` | **done** | `segments` | above page title |
+| `PageFooterNav` | **done** | `prev?`, `next?` (right-grouped cards) | bottom prev/next |
 | `CardGrid` + `FeatureCard` | todo | cols; card: icon·title·description·badge·href | "Start here", category grid |
 | `StatStrip` | todo | `stats: {value,label}[]` | API landing metrics |
 | `StatusBadge` | todo | thin wrapper over `Badge` status tones | reference status |
@@ -56,7 +56,7 @@ radii, type. See the package README.
 | `SupportMatrix` / `DataTable` | todo | columns, status cells (✓/✗) | method support table |
 | `CommandPalette` | registry+ | built on `Command`; groups: pages·actions; recent | ⌘K overlay |
 | `MobileNav` | todo | top bar + `Sheet` drawer + bottom "Search or ask AI" bar | mobile screens |
-| `ThemeProvider` / `useTheme` | todo | class/`data-theme` on `<html>`, persisted | dark/light toggle |
+| `ThemeProvider` / `useTheme` | **done** | class/`data-theme` on `<html>`, persisted | dark/light toggle |
 
 ## Tier 3 — Marketing widgets (from elide.dev)
 

@@ -12,6 +12,7 @@
     "build": "turbo run build",
     "dev": "turbo run dev",
     "lint": "turbo run lint",
+    "test": "turbo run test",
     "storybook": "bun run --filter @elide/storybook dev",
     "build-storybook": "turbo run build --filter=@elide/tokens --filter=@elide/ui && bun run --filter=@elide/storybook build-storybook",
     "chromatic": "bun run --filter @elide/storybook chromatic",

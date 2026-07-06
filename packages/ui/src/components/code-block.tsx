@@ -19,7 +19,7 @@ export function CopyButton({
   return (
     <button
       type="button"
-      aria-label={label}
+      aria-label={label || "Copy"}
       onClick={() => {
         void navigator.clipboard?.writeText(value);
         setCopied(true);

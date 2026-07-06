@@ -3,6 +3,9 @@ export { Badge, badgeVariants, type BadgeProps } from "./components/badge";
 export { Callout, type CalloutProps } from "./components/callout";
 export { CodeBlock, CopyButton, type CodeBlockProps } from "./components/code-block";
 export { cn } from "./lib/utils";
+export { ThemeProvider, useTheme, type Theme, type ThemeProviderProps } from "./components/theme-provider";
+export { Breadcrumbs, type BreadcrumbSegment, type BreadcrumbsProps } from "./components/breadcrumbs";
+export { PageFooterNav, type PageFooterNavLink, type PageFooterNavProps } from "./components/page-footer-nav";
 
 // --- Base UI primitives (shadcn `base-nova` registry, re-themed from tokens) ---
 export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "./components/tooltip";

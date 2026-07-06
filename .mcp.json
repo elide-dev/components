@@ -3,6 +3,10 @@
     "chrome-devtools": {
       "command": "bunx",
       "args": ["chrome-devtools-mcp@latest"]
+    },
+    "storybook": {
+      "type": "http",
+      "url": "http://localhost:6006/mcp"
     }
   }
 }
