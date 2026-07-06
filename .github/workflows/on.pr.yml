@@ -25,6 +25,13 @@ jobs:
       contents: read
     secrets: inherit
 
+  test:
+    name: "Test"
+    uses: ./.github/workflows/check.test.yml
+    permissions:
+      contents: read
+    secrets: inherit
+
   storybook:
     name: "Storybook"
     uses: ./.github/workflows/job.storybook.yml
