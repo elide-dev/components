@@ -21,6 +21,16 @@ const config: StorybookConfig = {
     const { default: tailwindcss } = await import("@tailwindcss/vite");
     cfg.plugins = cfg.plugins ?? [];
     cfg.plugins.push(tailwindcss());
+    // Codecov bundle analysis — uploads bundle stats when CODECOV_TOKEN is set
+    // (CI build). No-op locally without a token.
+    const { codecovVitePlugin } = await import("@codecov/vite-plugin");
+    cfg.plugins.push(
+      codecovVitePlugin({
+        enableBundleAnalysis: process.env.CODECOV_TOKEN !== undefined,
+        bundleName: "elide-storybook",
+        uploadToken: process.env.CODECOV_TOKEN,
+      }),
+    );
     return cfg;
   },
 };

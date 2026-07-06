@@ -13,6 +13,9 @@ export default defineConfig({
     globals: true,
     setupFiles: ["./src/test-setup.ts"],
     include: ["src/**/*.test.{ts,tsx}"],
+    // JUnit output feeds Codecov Test Analytics (uploaded in CI); the default
+    // reporter stays on for readable local runs.
+    reporters: ["default", ["junit", { outputFile: "./test-report.junit.xml" }]],
     coverage: {
       provider: "v8",
       reporter: ["text", "json", "lcov"],

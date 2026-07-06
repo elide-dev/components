@@ -18,6 +18,8 @@ export default defineConfig({
   plugins: [storybookTest({ configDir: ".storybook" })],
   test: {
     name: "storybook",
+    // JUnit output feeds Codecov Test Analytics (uploaded in CI).
+    reporters: ["default", ["junit", { outputFile: "./test-report.junit.xml" }]],
     browser: {
       enabled: true,
       provider: playwright(),
