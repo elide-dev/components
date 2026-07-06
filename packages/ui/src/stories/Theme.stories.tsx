@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect, userEvent, within } from "storybook/test";
+import { expect, userEvent, waitFor, within } from "storybook/test";
 import { ThemeProvider, useTheme } from "../components/theme-provider";
 import { Button } from "../components/button";
 
@@ -27,8 +27,16 @@ export const Toggle: StoryObj = {
   ),
   play: async ({ canvasElement }) => {
     const button = within(canvasElement).getByRole("button");
-    const before = document.documentElement.classList.contains("dark");
+    // The button text reflects the ThemeProvider's own theme (independent of the
+    // Storybook theme decorator, which also touches <html>). Toggle, then assert
+    // the reported theme changed and that <html> reflects *that* theme — reading
+    // intent from the provider avoids coupling to the decorator's initial value.
+    const initial = button.textContent;
     await userEvent.click(button);
-    await expect(document.documentElement.classList.contains("dark")).toBe(!before);
+    await waitFor(() => expect(button.textContent).not.toBe(initial));
+    const nowDark = button.textContent?.includes("dark") ?? false;
+    await waitFor(() =>
+      expect(document.documentElement.classList.contains("dark")).toBe(nowDark),
+    );
   },
 };

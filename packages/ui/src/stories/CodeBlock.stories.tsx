@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { expect, within } from "storybook/test";
 import { CodeBlock } from "../components/code-block";
 
 const S = ({ c, children }: { c: string; children: React.ReactNode }) => (
@@ -48,6 +49,12 @@ export const Editor: Story = {
       </CodeBlock>
     </div>
   ),
+  // The icon-only copy button must have an accessible name (regression guard for
+  // the empty aria-label a11y violation).
+  play: async ({ canvasElement }) => {
+    const copy = within(canvasElement).getByRole("button", { name: "Copy" });
+    await expect(copy.getAttribute("aria-label")).toBe("Copy");
+  },
 };
 
 export const Terminal: Story = {
