@@ -3,11 +3,12 @@ import { History, Menu, Search, Sparkle } from "lucide-react";
 import { cn } from "../lib/utils";
 import { Button } from "./button";
 import { Sheet, SheetTrigger, SheetContent } from "./sheet";
+import { useMessages } from "../i18n/provider";
 
 /**
  * MobileNav — the docs shell at phone width (mockup 3b): a condensed top app
  * bar, a slide-in section drawer (built on the shipped `Sheet`), and a
- * persistent bottom "Search or ask AI" bar. Data-driven and presentational —
+ * persistent bottom "Search or ask" bar. Data-driven and presentational —
  * callers own routing (`href`s) and the search/AI action.
  */
 export interface MobileNavItem {
@@ -50,13 +51,14 @@ export function MobileNav({
   logo,
   onSearch,
   changelogHref,
-  searchPlaceholder = "Search or ask AI…",
+  searchPlaceholder,
   open,
   onOpenChange,
   className,
   children,
   ...props
 }: MobileNavProps) {
+  const m = useMessages();
   const [internalOpen, setInternalOpen] = React.useState(false);
   const drawerOpen = open ?? internalOpen;
   const setDrawerOpen = React.useCallback(
@@ -76,7 +78,7 @@ export function MobileNav({
               <Button
                 variant="outline"
                 size="icon"
-                aria-label="Open navigation"
+                aria-label={m.mobileNav.openNavigation}
                 className={cn(
                   drawerOpen && "border-[var(--primary)] bg-[var(--primary-soft)] text-[var(--primary-emphasis)]",
                 )}
@@ -86,7 +88,7 @@ export function MobileNav({
             <Menu aria-hidden className="h-[18px] w-[18px]" />
           </SheetTrigger>
           <div className="flex flex-1 items-center gap-2 overflow-hidden">{logo}</div>
-          <Button variant="outline" size="icon" aria-label="Search" onClick={onSearch}>
+          <Button variant="outline" size="icon" aria-label={m.mobileNav.searchLabel} onClick={onSearch}>
             <Search aria-hidden className="h-[17px] w-[17px]" />
           </Button>
         </header>
@@ -100,7 +102,7 @@ export function MobileNav({
             className="flex h-11 w-full items-center gap-2.5 rounded-xl border border-[var(--border-strong)] bg-[var(--muted)] px-3.5 text-[var(--subtle-foreground)]"
           >
             <Search aria-hidden className="h-4 w-4 text-[var(--primary-emphasis)]" />
-            <span className="flex-1 text-left text-sm">{searchPlaceholder}</span>
+            <span className="flex-1 text-left text-sm">{searchPlaceholder ?? m.mobileNav.searchPlaceholder}</span>
             <Sparkle aria-hidden className="h-[15px] w-[15px] text-[var(--primary-emphasis)]" />
           </button>
         </div>
@@ -109,7 +111,7 @@ export function MobileNav({
       <SheetContent
         side="left"
         showCloseButton={false}
-        aria-label={section?.title ? `${section.title} navigation` : "Navigation menu"}
+        aria-label={section?.title ? `${section.title} navigation` : m.mobileNav.dialogLabel}
         className="flex w-72 flex-col gap-5 p-4"
       >
         {section ? (
@@ -131,7 +133,7 @@ export function MobileNav({
           </div>
         ) : null}
 
-        <nav aria-label="Mobile navigation" className="flex flex-1 flex-col gap-4 overflow-y-auto">
+        <nav aria-label={m.mobileNav.navLabel} className="flex flex-1 flex-col gap-4 overflow-y-auto">
           {groups.map((group) => (
             <div key={group.label} className="flex flex-col gap-1">
               <div className="px-2.5 font-mono text-[10.5px] font-semibold uppercase tracking-wider text-[var(--subtle-foreground)]">
@@ -173,7 +175,7 @@ export function MobileNav({
           render={changelogHref ? <a href={changelogHref} /> : undefined}
         >
           <History aria-hidden className="h-[15px] w-[15px]" />
-          Changelog
+          {m.mobileNav.changelog}
         </Button>
       </SheetContent>
     </Sheet>

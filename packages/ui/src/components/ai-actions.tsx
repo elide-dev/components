@@ -1,6 +1,7 @@
 import * as React from "react";
 import { Check, Copy, ExternalLink, Sparkles } from "lucide-react";
 import { cn } from "../lib/utils";
+import { useMessages } from "../i18n/provider";
 
 /**
  * AiActions — the "Use with AI" panel in the docs right rail: copy the page as
@@ -27,12 +28,13 @@ const itemClass =
   "flex items-center gap-2 rounded-lg border border-border bg-muted px-2.5 py-2 text-left text-[12.5px] font-medium text-foreground no-underline transition-colors hover:bg-accent";
 
 export function AiActions({
-  title = "Use with AI",
+  title,
   markdown,
   actions = [],
   className,
   ...props
 }: AiActionsProps) {
+  const m = useMessages();
   const [copied, setCopied] = React.useState(false);
 
   return (
@@ -42,7 +44,7 @@ export function AiActions({
     >
       <div className="mb-0.5 flex items-center gap-1.5 font-mono text-[11px] font-semibold tracking-wider text-subtle-foreground uppercase">
         <Sparkles aria-hidden className="h-[13px] w-[13px] text-[var(--primary-emphasis)]" />
-        {title}
+        {title ?? m.aiActions.title}
       </div>
 
       {markdown ? (
@@ -62,7 +64,7 @@ export function AiActions({
           ) : (
             <Copy aria-hidden className="h-3.5 w-3.5 shrink-0" />
           )}
-          {copied ? "Copied" : "Copy as Markdown"}
+          {copied ? m.aiActions.copied : m.aiActions.copyAsMarkdown}
         </button>
       ) : null}
 

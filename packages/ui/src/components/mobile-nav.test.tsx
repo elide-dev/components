@@ -53,7 +53,7 @@ describe("MobileNav", () => {
     const onSearch = vi.fn();
     render(<MobileNav groups={groups} onSearch={onSearch} />);
 
-    await user.click(screen.getByRole("button", { name: /search or ask ai/i }));
+    await user.click(screen.getByRole("button", { name: /search or ask/i }));
     expect(onSearch).toHaveBeenCalledTimes(1);
   });
 });

@@ -2,6 +2,7 @@ import * as React from "react";
 import { Check, Copy } from "lucide-react";
 import { Highlight, type PrismTheme } from "prism-react-renderer";
 import { cn } from "../lib/utils";
+import { useMessages } from "../i18n/provider";
 
 /**
  * CopyButton — copies `value` to the clipboard, flips to a check for 1.5s.
@@ -10,17 +11,19 @@ import { cn } from "../lib/utils";
 export function CopyButton({
   value,
   className,
-  label = "Copy",
+  label,
 }: {
   value: string;
   className?: string;
+  /** Visible label; omit or pass "" for an icon-only button. Defaults to the localized "Copy". */
   label?: string;
 }) {
+  const m = useMessages();
   const [copied, setCopied] = React.useState(false);
   return (
     <button
       type="button"
-      aria-label={copied ? "Copied" : label || "Copy"}
+      aria-label={copied ? m.codeBlock.copied : label || m.codeBlock.copy}
       onClick={() => {
         // Swallow clipboard rejections (e.g. no permission in a headless/denied
         // context) — the copy is optimistic and a failure shouldn't surface as an
@@ -36,7 +39,7 @@ export function CopyButton({
       )}
     >
       {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-      {label ? <span>{copied ? "Copied" : label}</span> : null}
+      {label ? <span>{copied ? m.codeBlock.copied : label}</span> : null}
     </button>
   );
 }
@@ -153,6 +156,7 @@ export function CodeBlock({
   statusBar = variant === "editor",
   className,
 }: CodeBlockProps) {
+  const m = useMessages();
   const trimmed = code.replace(/\n$/, "");
   const lines = trimmed.split("\n");
   // `children` (pre-highlighted) wins; otherwise highlight the raw code.
@@ -165,7 +169,7 @@ export function CodeBlock({
           className="flex h-8 items-center gap-2 border-b px-3.5 font-mono text-[11px] font-semibold uppercase tracking-wider text-[var(--eld-syntax-line-number)]"
           style={elev}
         >
-          <span>{lang ?? "Terminal"}</span>
+          <span>{lang ?? m.codeBlock.terminal}</span>
         </div>
         <pre className="m-0 overflow-x-auto p-4 font-mono text-[13px] leading-[1.7] text-[var(--eld-syntax-default)]">
           {body}

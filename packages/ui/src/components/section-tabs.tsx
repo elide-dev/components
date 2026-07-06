@@ -1,5 +1,6 @@
 import * as React from "react";
 import { cn } from "../lib/utils";
+import { useMessages } from "../i18n/provider";
 
 /**
  * SectionTabs — the 46px top-level section bar under the main nav (Start ·
@@ -32,9 +33,10 @@ const dotColor: Record<NonNullable<SectionTabsVersion["status"]>, string> = {
 };
 
 export function SectionTabs({ items, version, onSelect, className, ...props }: SectionTabsProps) {
+  const m = useMessages();
   return (
     <nav
-      aria-label="Sections"
+      aria-label={m.sectionTabs.navLabel}
       className={cn(
         "flex h-[46px] items-center gap-1 border-b border-border bg-background px-[22px]",
         className,

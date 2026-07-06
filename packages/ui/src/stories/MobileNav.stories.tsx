@@ -51,8 +51,8 @@ export const Default: Story = {
   play: async ({ args, canvasElement }) => {
     const canvas = within(canvasElement);
 
-    // Bottom "Search or ask AI" bar fires onSearch.
-    await userEvent.click(canvas.getByRole("button", { name: /search or ask ai/i }));
+    // Bottom "Search or ask" bar fires onSearch.
+    await userEvent.click(canvas.getByRole("button", { name: /search or ask/i }));
     await expect(args.onSearch).toHaveBeenCalledTimes(1);
 
     // Sheet portals the drawer to document.body, so query there once open.

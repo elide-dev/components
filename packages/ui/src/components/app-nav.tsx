@@ -3,6 +3,7 @@ import { ChevronDown, Globe, History, Search, Sparkles, Sun } from "lucide-react
 import { cn } from "../lib/utils";
 import { Button } from "./button";
 import { ElideLogo } from "./elide-logo";
+import { useMessages } from "../i18n/provider";
 
 /**
  * AppNav — the 56px top nav bar present on every docs page: brand + "DOCS"
@@ -36,7 +37,7 @@ const defaultLogo = <ElideLogo />;
 export function AppNav({
   links,
   logo,
-  searchPlaceholder = "Search or ask AI…",
+  searchPlaceholder,
   locale = "EN",
   installHref = "/install",
   changelogHref = "/changelog",
@@ -46,9 +47,10 @@ export function AppNav({
   className,
   ...props
 }: AppNavProps) {
+  const m = useMessages();
   return (
     <nav
-      aria-label="Main navigation"
+      aria-label={m.appNav.navLabel}
       className={cn(
         "flex h-14 items-center gap-[18px] border-b border-border px-[22px] backdrop-blur-xl [background:var(--nav-background)]",
         className,
@@ -58,7 +60,7 @@ export function AppNav({
       <div className="flex items-center gap-2">
         {logo ?? defaultLogo}
         <span className="rounded-md border border-border-strong px-[7px] py-0.5 font-mono text-[10px] font-semibold tracking-wider text-muted-foreground">
-          DOCS
+          {m.appNav.docsBadge}
         </span>
       </div>
 
@@ -87,11 +89,11 @@ export function AppNav({
       <button
         type="button"
         onClick={onSearchClick}
-        aria-label="Search"
+        aria-label={m.appNav.searchLabel}
         className="flex h-[34px] w-[280px] items-center gap-2 rounded-[9px] border border-border bg-muted px-3 text-subtle-foreground transition-colors hover:border-border-strong"
       >
         <Search aria-hidden className="h-[15px] w-[15px] shrink-0" />
-        <span className="flex-1 text-left text-[13px]">{searchPlaceholder}</span>
+        <span className="flex-1 text-left text-[13px]">{searchPlaceholder ?? m.appNav.searchPlaceholder}</span>
         <Sparkles aria-hidden className="h-[13px] w-[13px] shrink-0 text-primary" />
         <kbd className="rounded-[5px] border border-border-strong px-1.5 py-px font-mono text-[11px] font-medium">
           ⌘K
@@ -101,7 +103,7 @@ export function AppNav({
       <button
         type="button"
         onClick={onThemeToggle}
-        aria-label="Toggle theme"
+        aria-label={m.appNav.toggleTheme}
         className="flex h-[34px] w-[34px] items-center justify-center rounded-[9px] border border-border text-muted-foreground transition-colors hover:bg-[var(--hover)] hover:text-foreground"
       >
         <Sun aria-hidden className="h-4 w-4" />
@@ -110,7 +112,7 @@ export function AppNav({
       <button
         type="button"
         onClick={onLocaleClick}
-        aria-label="Language"
+        aria-label={m.appNav.language}
         className="flex h-[34px] items-center gap-1.5 rounded-[9px] border border-border px-[11px] text-[12.5px] font-medium text-muted-foreground transition-colors hover:bg-[var(--hover)] hover:text-foreground"
       >
         <Globe aria-hidden className="h-[15px] w-[15px]" />
@@ -120,11 +122,11 @@ export function AppNav({
 
       <Button variant="changelog" size="sm" render={<a href={changelogHref} />}>
         <History aria-hidden className="h-[15px] w-[15px]" />
-        Changelog
+        {m.appNav.changelog}
       </Button>
 
       <Button variant="gradient" size="sm" render={<a href={installHref} />}>
-        Install
+        {m.appNav.install}
       </Button>
     </nav>
   );

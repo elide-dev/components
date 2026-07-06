@@ -1,5 +1,6 @@
 import * as React from "react";
 import { cn } from "../lib/utils";
+import { useMessages } from "../i18n/provider";
 
 /**
  * TableOfContents — the "On this page" right-rail nav that lists in-page
@@ -28,11 +29,12 @@ export function TableOfContents({
   items,
   activeId,
   variant = "default",
-  title = "On this page",
+  title,
   onSelect,
   className,
   ...props
 }: TableOfContentsProps) {
+  const m = useMessages();
   const [visibleIds, setVisibleIds] = React.useState<Set<string>>(() => new Set());
 
   React.useEffect(() => {
@@ -69,12 +71,12 @@ export function TableOfContents({
 
   return (
     <nav
-      aria-label="Table of contents"
+      aria-label={m.tableOfContents.navLabel}
       className={cn("flex flex-col gap-[11px]", className)}
       {...props}
     >
       <div className="font-mono text-[11px] font-semibold uppercase tracking-wider text-subtle-foreground">
-        {title}
+        {title ?? m.tableOfContents.title}
       </div>
       {items.map((item) => {
         const isActive = item.id === currentId;

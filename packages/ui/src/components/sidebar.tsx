@@ -2,6 +2,7 @@ import * as React from "react";
 import { Check, ChevronDown, ExternalLink } from "lucide-react";
 import { cn } from "../lib/utils";
 import { Badge } from "./badge";
+import { useMessages } from "../i18n/provider";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -110,6 +111,7 @@ export interface SidebarItemProps {
 }
 
 export function SidebarItem({ label, href, active, external, comingSoon, onSelect }: SidebarItemProps) {
+  const m = useMessages();
   if (comingSoon) {
     return (
       <span
@@ -118,7 +120,7 @@ export function SidebarItem({ label, href, active, external, comingSoon, onSelec
       >
         {label}
         <Badge variant="neutral" size="sm" className="shrink-0">
-          Soon
+          {m.sidebar.comingSoon}
         </Badge>
       </span>
     );
@@ -177,9 +179,10 @@ export function Sidebar({
   className,
   ...props
 }: SidebarProps) {
+  const m = useMessages();
   return (
     <nav
-      aria-label="Sidebar"
+      aria-label={m.sidebar.navLabel}
       className={cn("flex w-[264px] flex-col gap-[22px] border-r border-border bg-background p-3.5", className)}
       {...props}
     >
