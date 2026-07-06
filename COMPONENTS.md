@@ -24,12 +24,12 @@ radii, type. See the package README.
 | `Dialog` | **done** | — | modal base |
 | `Sheet` / `Drawer` | **done** | side | **mobile nav drawer** |
 | `Tabs` | **done** | — | (content tabbing) |
-| `Select` / `NativeSelect` | registry | — | forms |
+| `Select` / `NativeSelect` | **done** | — | forms |
 | `Combobox` / `Command` | deferred | — | **⌘K command palette** — deferred to CommandPalette composite (see note) |
 | `Switch` | **done** | — | theme toggle option |
 | `Separator` | **done** | orientation | nav dividers |
 | `ScrollArea` | **done** | — | sidebar / palette scroll |
-| `Accordion` | registry | — | FAQ, collapsible nav groups |
+| `Accordion` | **done** | — | FAQ, collapsible nav groups |
 | `Breadcrumb` | registry | — | page breadcrumbs |
 | `NavigationMenu` | **done** | — | primary nav links |
 | `Avatar` | registry | — | (marketing) |
@@ -39,23 +39,23 @@ radii, type. See the package README.
 | Component | Status | Composition / props | Source |
 | --- | --- | --- | --- |
 | `Callout` | **done** | tone: note·tip·important·warning·caution; `title` | guide admonitions |
-| `CodeBlock` | todo | variant: editor·terminal; `filename`, `lang`, `lineNumbers`, `statusBar` (vim NORMAL), `highlight`; slot: `CopyButton` | SQLite editor, terminal, snippet blocks |
-| `CopyButton` | todo | `value`, `size` | code block + copy-command |
-| `CopyCommand` | todo | `command`, prompt glyph | install one-liner |
-| `AppNav` | todo | brand · `NavLinks` · `SearchTrigger` · `ThemeToggle` · `LocaleSwitcher` · `ChangelogButton` · `InstallButton` | top nav (all pages) |
-| `SectionTabs` | todo | `items`, `active` | Start·Runtime·Toolchain·API·Resources |
-| `Sidebar` | todo | `SectionSwitcher`, `NavGroup`, `NavItem` (active, external, comingSoon), progress | left nav |
-| `TableOfContents` | todo | `items`, active-on-scroll; mono variant for API methods | right rail "On this page" |
-| `AiActions` | todo | Copy as Markdown · View as text · Open in ChatGPT/Claude | right rail panel |
+| `CodeBlock` | **done** | variant: editor·terminal; `filename`, `lang`, `lineNumbers`, `statusBar` (vim NORMAL), `highlight`; slot: `CopyButton` | SQLite editor, terminal, snippet blocks |
+| `CopyButton` | **done** | `value`, `size` | code block + copy-command |
+| `CopyCommand` | **done** | `command`, prompt glyph | install one-liner |
+| `AppNav` | **done** | brand · `NavLinks` · `SearchTrigger` · `ThemeToggle` · `LocaleSwitcher` · `ChangelogButton` · `InstallButton` | top nav (all pages) |
+| `SectionTabs` | **done** | `items`, `active` | Start·Runtime·Toolchain·API·Resources |
+| `Sidebar` | **done** | `SectionSwitcher`, `NavGroup`, `NavItem` (active, external, comingSoon), progress | left nav |
+| `TableOfContents` | **done** | `items`, active-on-scroll; mono variant for API methods | right rail "On this page" |
+| `AiActions` | **done** | Copy as Markdown · View as text · Open in ChatGPT/Claude | right rail panel |
 | `Breadcrumbs` | **done** | `segments` | above page title |
 | `PageFooterNav` | **done** | `prev?`, `next?` (right-grouped cards) | bottom prev/next |
-| `CardGrid` + `FeatureCard` | todo | cols; card: icon·title·description·badge·href | "Start here", category grid |
-| `StatStrip` | todo | `stats: {value,label}[]` | API landing metrics |
-| `StatusBadge` | todo | thin wrapper over `Badge` status tones | reference status |
-| `ApiMethod` + `ParamRow` | todo | `signature`, `status`, params, example slot | node:fs entries |
-| `SupportMatrix` / `DataTable` | todo | columns, status cells (✓/✗) | method support table |
+| `CardGrid` + `FeatureCard` | **done** | cols; card: icon·title·description·badge·href | "Start here", category grid |
+| `StatStrip` | **done** | `stats: {value,label}[]` | API landing metrics |
+| `StatusBadge` | **done** | thin wrapper over `Badge` status tones | reference status |
+| `ApiMethod` + `ParamRow` | **done** | `signature`, `status`, params, example slot | node:fs entries |
+| `SupportMatrix` / `DataTable` | **done** | columns, status cells (✓/✗) | method support table |
 | `CommandPalette` | registry+ | built on `Command`; groups: pages·actions; recent | ⌘K overlay |
-| `MobileNav` | todo | top bar + `Sheet` drawer + bottom "Search or ask AI" bar | mobile screens |
+| `MobileNav` | **done** | top bar + `Sheet` drawer + bottom "Search or ask AI" bar | mobile screens |
 | `ThemeProvider` / `useTheme` | **done** | class/`data-theme` on `<html>`, persisted | dark/light toggle |
 
 ## Tier 3 — Marketing widgets (from elide.dev)

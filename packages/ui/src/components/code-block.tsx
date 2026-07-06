@@ -19,9 +19,12 @@ export function CopyButton({
   return (
     <button
       type="button"
-      aria-label={label || "Copy"}
+      aria-label={copied ? "Copied" : label || "Copy"}
       onClick={() => {
-        void navigator.clipboard?.writeText(value);
+        // Swallow clipboard rejections (e.g. no permission in a headless/denied
+        // context) — the copy is optimistic and a failure shouldn't surface as an
+        // unhandled promise rejection.
+        void navigator.clipboard?.writeText(value)?.catch(() => {});
         setCopied(true);
         setTimeout(() => setCopied(false), 1500);
       }}
