@@ -73,7 +73,7 @@ export function SupportMatrix({
             const StatusIcon = status.icon;
             return (
               <tr key={i} className="border-t border-border">
-                <td className="px-4 py-2.5 font-mono text-[var(--primary)]">{row.method}</td>
+                <td className="px-4 py-2.5 font-mono text-[var(--primary-emphasis)]">{row.method}</td>
                 <td className="px-4 py-2.5 text-center">
                   <StatusIcon
                     role="img"

@@ -89,7 +89,7 @@ export function TableOfContents({
               "border-l-2 text-[13px] no-underline transition-colors",
               variant === "mono" && "font-mono",
               isActive
-                ? "border-[var(--primary)] font-semibold text-[var(--primary)]"
+                ? "border-[var(--primary)] font-semibold text-[var(--primary-emphasis)]"
                 : "border-transparent text-muted-foreground hover:text-foreground",
             )}
           >

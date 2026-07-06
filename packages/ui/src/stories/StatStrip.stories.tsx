@@ -25,7 +25,7 @@ export const ApiCompatibility: Story = {
     await expect(canvas.getByText("Node modules")).toBeInTheDocument();
     const testPassRate = canvas.getByText("94%");
     await expect(testPassRate).toBeInTheDocument();
-    await expect(testPassRate).toHaveClass("text-[var(--primary)]");
+    await expect(testPassRate).toHaveClass("text-[var(--primary-emphasis)]");
   },
 };
 

@@ -58,7 +58,7 @@ export function SectionTabs({ items, version, onSelect, className, ...props }: S
           }
           className={cn(
             "relative px-3 py-3.5 text-[13.5px] text-muted-foreground transition-colors",
-            item.active && "font-semibold text-[var(--primary)]",
+            item.active && "font-semibold text-[var(--primary-emphasis)]",
           )}
         >
           {item.label}

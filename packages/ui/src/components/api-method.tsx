@@ -18,10 +18,10 @@ export interface ParamRowProps {
 export function ParamRow({ name, type, description, className }: ParamRowProps) {
   return (
     <div className={cn("flex items-baseline gap-3", className)}>
-      <code className="w-24 shrink-0 font-mono text-[12.5px] text-[var(--primary)]">{name}</code>
+      <code className="w-24 shrink-0 font-mono text-[12.5px] text-[var(--primary-emphasis)]">{name}</code>
       <span className="shrink-0 font-mono text-xs text-[var(--eld-syntax-type)]">{type}</span>
       {description ? (
-        <span className="text-[13.5px] text-muted-foreground [&_code]:font-mono [&_code]:text-[var(--primary)]">
+        <span className="text-[13.5px] text-muted-foreground [&_code]:font-mono [&_code]:text-[var(--primary-emphasis)]">
           {description}
         </span>
       ) : null}
@@ -79,14 +79,14 @@ export function ApiMethod({
           <a
             href={`#${anchorId}`}
             aria-label={`Link to ${typeof signature === "string" ? signature : "this method"}`}
-            className="text-[var(--primary)] opacity-55 transition-opacity hover:opacity-100"
+            className="text-[var(--primary-emphasis)] opacity-55 transition-opacity hover:opacity-100"
           >
             <Hash aria-hidden className="h-3.5 w-3.5" />
           </a>
         ) : null}
       </div>
       {description ? (
-        <p className="mb-4 max-w-[640px] text-[14.5px] leading-relaxed text-muted-foreground [&_code]:font-mono [&_code]:text-[var(--primary)]">
+        <p className="mb-4 max-w-[640px] text-[14.5px] leading-relaxed text-muted-foreground [&_code]:font-mono [&_code]:text-[var(--primary-emphasis)]">
           {description}
         </p>
       ) : null}

@@ -78,7 +78,7 @@ export function MobileNav({
                 size="icon"
                 aria-label="Open navigation"
                 className={cn(
-                  drawerOpen && "border-[var(--primary)] bg-[var(--primary-soft)] text-[var(--primary)]",
+                  drawerOpen && "border-[var(--primary)] bg-[var(--primary-soft)] text-[var(--primary-emphasis)]",
                 )}
               />
             }
@@ -99,20 +99,25 @@ export function MobileNav({
             onClick={onSearch}
             className="flex h-11 w-full items-center gap-2.5 rounded-xl border border-[var(--border-strong)] bg-[var(--muted)] px-3.5 text-[var(--subtle-foreground)]"
           >
-            <Search aria-hidden className="h-4 w-4 text-[var(--primary)]" />
+            <Search aria-hidden className="h-4 w-4 text-[var(--primary-emphasis)]" />
             <span className="flex-1 text-left text-sm">{searchPlaceholder}</span>
-            <Sparkle aria-hidden className="h-[15px] w-[15px] text-[var(--primary)]" />
+            <Sparkle aria-hidden className="h-[15px] w-[15px] text-[var(--primary-emphasis)]" />
           </button>
         </div>
       </div>
 
-      <SheetContent side="left" showCloseButton={false} className="flex w-72 flex-col gap-5 p-4">
+      <SheetContent
+        side="left"
+        showCloseButton={false}
+        aria-label={section?.title ? `${section.title} navigation` : "Navigation menu"}
+        className="flex w-72 flex-col gap-5 p-4"
+      >
         {section ? (
           <div className="flex items-center gap-2.5">
             {section.icon ? (
               <span
                 aria-hidden
-                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[var(--primary-soft)] text-[var(--primary)]"
+                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[var(--primary-soft)] text-[var(--primary-emphasis)]"
               >
                 {section.icon}
               </span>
@@ -136,7 +141,7 @@ export function MobileNav({
                 const linkClassName = cn(
                   "rounded-lg px-2.5 py-2 text-sm",
                   item.active
-                    ? "font-semibold text-[var(--primary)] bg-[var(--primary-soft)]"
+                    ? "font-semibold text-[var(--primary-emphasis)] bg-[var(--primary-soft)]"
                     : "text-muted-foreground",
                 );
                 return item.href ? (

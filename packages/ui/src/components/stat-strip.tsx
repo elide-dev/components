@@ -42,15 +42,17 @@ export function StatStrip({
             key={i}
             className={cn("flex flex-col gap-1.5 p-5", !lastInRow && !last && "border-r border-border")}
           >
+            {/* Semantic order is <dt> (term/label) then <dd> (value); `order-*`
+                keeps the value visually on top per the mockup. */}
+            <dt className="order-2 text-xs text-muted-foreground">{stat.label}</dt>
             <dd
               className={cn(
-                "m-0 font-display text-[28px] font-bold leading-none",
-                stat.emphasis ? "text-[var(--primary)]" : "text-foreground",
+                "order-1 m-0 font-display text-[28px] font-bold leading-none",
+                stat.emphasis ? "text-[var(--primary-emphasis)]" : "text-foreground",
               )}
             >
               {stat.value}
             </dd>
-            <dt className="text-xs text-muted-foreground">{stat.label}</dt>
           </div>
         );
       })}

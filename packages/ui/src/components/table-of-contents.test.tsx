@@ -21,7 +21,7 @@ describe("TableOfContents", () => {
     render(<TableOfContents items={items} activeId="installation" />);
     const active = screen.getByRole("link", { name: "Installation" });
     expect(active).toHaveAttribute("aria-current", "location");
-    expect(active).toHaveClass("text-[var(--primary)]");
+    expect(active).toHaveClass("text-[var(--primary-emphasis)]");
 
     const inactive = screen.getByRole("link", { name: "Overview" });
     expect(inactive).not.toHaveAttribute("aria-current");

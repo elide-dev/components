@@ -24,9 +24,9 @@ describe("StatStrip", () => {
 
   it("emphasizes only the flagged stat's value", () => {
     render(<StatStrip stats={stats} />);
-    expect(screen.getByText("94%")).toHaveClass("text-[var(--primary)]");
-    expect(screen.getByText("24")).not.toHaveClass("text-[var(--primary)]");
-    expect(screen.getByText("89%")).not.toHaveClass("text-[var(--primary)]");
+    expect(screen.getByText("94%")).toHaveClass("text-[var(--primary-emphasis)]");
+    expect(screen.getByText("24")).not.toHaveClass("text-[var(--primary-emphasis)]");
+    expect(screen.getByText("89%")).not.toHaveClass("text-[var(--primary-emphasis)]");
   });
 
   it("exposes an accessible label on the region", () => {

@@ -41,7 +41,7 @@ export function AiActions({
       {...props}
     >
       <div className="mb-0.5 flex items-center gap-1.5 font-mono text-[11px] font-semibold tracking-wider text-subtle-foreground uppercase">
-        <Sparkles aria-hidden className="h-[13px] w-[13px] text-[var(--primary)]" />
+        <Sparkles aria-hidden className="h-[13px] w-[13px] text-[var(--primary-emphasis)]" />
         {title}
       </div>
 
@@ -49,7 +49,9 @@ export function AiActions({
         <button
           type="button"
           onClick={() => {
-            void navigator.clipboard?.writeText(markdown);
+            // Swallow clipboard rejections (no permission / headless) so a failed
+            // copy doesn't surface as an unhandled promise rejection.
+            void navigator.clipboard?.writeText(markdown)?.catch(() => {});
             setCopied(true);
             setTimeout(() => setCopied(false), 1500);
           }}

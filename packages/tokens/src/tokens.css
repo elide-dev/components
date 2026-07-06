@@ -142,7 +142,9 @@
 
   --muted: var(--eld-neutral-800);
   --muted-foreground: var(--eld-neutral-400);
-  --subtle-foreground: var(--eld-neutral-500);
+  /* neutral-500 (#737373) fails WCAG AA for small text on the dark surfaces;
+     step up to neutral-400 so micro-labels clear 4.5:1 (light stays 500). */
+  --subtle-foreground: var(--eld-neutral-400);
 
   --accent: var(--eld-neutral-700);
   --accent-foreground: var(--eld-neutral-50);

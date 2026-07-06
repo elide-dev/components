@@ -51,7 +51,7 @@ export function SectionSwitcher({
           >
             <span className="flex min-w-0 items-center gap-2.5">
               {active?.icon ? (
-                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-[var(--primary-soft)] text-[var(--primary)]">
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-[var(--primary-soft)] text-[var(--primary-emphasis)]">
                   {active.icon}
                 </span>
               ) : null}
@@ -78,7 +78,7 @@ export function SectionSwitcher({
             className="items-center gap-2.5 py-1.5"
           >
             {section.icon ? (
-              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-[var(--primary-soft)] text-[var(--primary)]">
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-[var(--primary-soft)] text-[var(--primary-emphasis)]">
                 {section.icon}
               </span>
             ) : null}
@@ -89,7 +89,7 @@ export function SectionSwitcher({
               ) : null}
             </span>
             {section.id === activeId ? (
-              <Check aria-hidden className="ml-auto h-4 w-4 shrink-0 text-[var(--primary)]" />
+              <Check aria-hidden className="ml-auto h-4 w-4 shrink-0 text-[var(--primary-emphasis)]" />
             ) : null}
           </DropdownMenuItem>
         ))}
@@ -134,7 +134,7 @@ export function SidebarItem({ label, href, active, external, comingSoon, onSelec
       className={cn(
         "flex items-center justify-between gap-2 rounded-lg px-2.5 py-1.5 text-[13.5px] transition-colors",
         active
-          ? "bg-[var(--primary-soft)] font-semibold text-[var(--primary)]"
+          ? "bg-[var(--primary-soft)] font-semibold text-[var(--primary-emphasis)]"
           : "text-muted-foreground hover:bg-[var(--hover)] hover:text-foreground",
       )}
     >
