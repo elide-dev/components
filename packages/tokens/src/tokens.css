@@ -1,0 +1,172 @@
+/* =============================================================================
+ * Elide Design Tokens
+ * -----------------------------------------------------------------------------
+ * Values are lifted verbatim from the Figma "Elide Design System" variable
+ * collections (eld/colors, mode, eld/font, eld/syntax, tw/border-radius).
+ * Do not round or re-derive — these are the source of truth.
+ *
+ * Two layers:
+ *   1. Primitive tokens (--eld-*)  — raw scales, theme-independent.
+ *   2. Semantic tokens             — role-based, remapped per theme.
+ *
+ * Theming follows the shadcn convention: light is the default on :root,
+ * dark is applied by adding `.dark` (or [data-theme="dark"]) on a container
+ * (usually <html>). The Elide docs app opts into dark by default at the app
+ * level; the token package stays neutral.
+ * ========================================================================== */
+
+:root {
+  /* ---- Primitive · Magenta (eld/colors) ---- */
+  --eld-magenta-50: #fff0fb;
+  --eld-magenta-100: #ffe4f8;
+  --eld-magenta-200: #ffc9f2;
+  --eld-magenta-300: #ff9ce4;
+  --eld-magenta-400: #ff5fd0;
+  --eld-magenta-500: #ff30bc;
+  --eld-magenta-600: #e7008c;
+  --eld-magenta-700: #d4007f;
+  --eld-magenta-800: #b00469;
+  --eld-magenta-900: #920959;
+  --eld-magenta-950: #5b0035;
+
+  /* ---- Primitive · Neutral (mode base scale) ---- */
+  --eld-neutral-50: #fafcfa;
+  --eld-neutral-100: #f5f5f5;
+  --eld-neutral-200: #d4d4d4;
+  --eld-neutral-300: #c0c0c0;
+  --eld-neutral-400: #9a9a9a;
+  --eld-neutral-500: #737373;
+  --eld-neutral-600: #525252;
+  --eld-neutral-700: #3a3a3a;
+  --eld-neutral-800: #1e1e22;
+  --eld-neutral-900: #0e0e11;
+  --eld-neutral-950: #0a0a0a;
+
+  /* ---- Primitive · Brand + accents ---- */
+  --eld-brand-purple: #662d91;
+  --eld-brand-magenta: #e7008c;
+  --eld-accent-violet: #9747ff; /* used for the Changelog affordance */
+  --eld-gradient-brand: linear-gradient(135deg, #8a3bd4, #e7008c);
+
+  /* ---- Primitive · Status hues ---- */
+  --eld-info: #3b82f6;
+  --eld-success: #22c55e;
+  --eld-success-strong: #3fb950;
+  --eld-warning: #eab308;
+  --eld-warning-strong: #e0a020;
+  --eld-danger: #ef4444;
+
+  /* ---- Primitive · Radius (tw/border-radius) ---- */
+  --eld-radius-xs: 2px;
+  --eld-radius-sm: 6px;
+  --eld-radius-md: 8px;
+  --eld-radius-lg: 10px;
+  --eld-radius-xl: 14px;
+  --eld-radius-2xl: 18px;
+  --eld-radius-3xl: 22px;
+  --eld-radius-full: 9999px;
+
+  /* ---- Primitive · Type (eld/font) ---- */
+  --eld-font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --eld-font-display: "Instrument Sans", "Inter", sans-serif;
+  --eld-font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  /* ---- Primitive · Syntax (eld/syntax) — for the always-dark code surface ---- */
+  --eld-syntax-default: #d4d4d4;
+  --eld-syntax-comment: #6a9955;
+  --eld-syntax-keyword: #569cd6;
+  --eld-syntax-string: #ce9178;
+  --eld-syntax-number: #b5cea8;
+  --eld-syntax-function: #dcdcaa;
+  --eld-syntax-type: #4ec9b0;
+  --eld-syntax-param: #9cdcfe;
+  --eld-syntax-line-number: #858585;
+
+  /* =========================================================================
+   * Semantic tokens · LIGHT (default)
+   * ====================================================================== */
+  --background: var(--eld-neutral-50);
+  --foreground: var(--eld-neutral-950);
+
+  --card: #ffffff;
+  --card-foreground: var(--eld-neutral-950);
+  --popover: #ffffff;
+  --popover-foreground: var(--eld-neutral-950);
+
+  --muted: var(--eld-neutral-100);
+  --muted-foreground: var(--eld-neutral-600);
+  --subtle-foreground: var(--eld-neutral-500);
+
+  --accent: var(--eld-neutral-100);
+  --accent-foreground: var(--eld-neutral-950);
+
+  --primary: var(--eld-magenta-700);
+  --primary-foreground: var(--eld-magenta-50);
+  /* --primary-emphasis: the on-surface accent text/icon color; deepens in light */
+  --primary-emphasis: var(--eld-magenta-700);
+  --primary-soft: color-mix(in oklab, var(--eld-magenta-700) 9%, transparent);
+
+  --destructive: var(--eld-danger);
+  --destructive-foreground: #ffffff;
+
+  --border: color-mix(in oklab, var(--eld-neutral-950) 10%, transparent);
+  --border-strong: color-mix(in oklab, var(--eld-neutral-950) 16%, transparent);
+  --input: var(--border);
+  --ring: color-mix(in oklab, var(--eld-magenta-700) 30%, transparent);
+
+  --hover: color-mix(in oklab, var(--eld-neutral-950) 4%, transparent);
+
+  /* Navigation surface (blurred bar) */
+  --nav-background: color-mix(in oklab, var(--eld-neutral-50) 75%, transparent);
+
+  /* Code surface — intentionally dark in BOTH themes (matches Figma Code Block) */
+  --code-background: #0d0d10;
+  --code-background-elev: #141418;
+  --code-border: color-mix(in oklab, var(--eld-neutral-50) 9%, transparent);
+
+  --radius: var(--eld-radius-lg);
+}
+
+/* ===========================================================================
+ * Semantic tokens · DARK
+ * ======================================================================== */
+.dark,
+[data-theme="dark"] {
+  --background: var(--eld-neutral-950);
+  --foreground: var(--eld-neutral-50);
+
+  --card: var(--eld-neutral-900);
+  --card-foreground: var(--eld-neutral-50);
+  --popover: var(--eld-neutral-800);
+  --popover-foreground: var(--eld-neutral-50);
+
+  --muted: var(--eld-neutral-800);
+  --muted-foreground: var(--eld-neutral-400);
+  --subtle-foreground: var(--eld-neutral-500);
+
+  --accent: var(--eld-neutral-700);
+  --accent-foreground: var(--eld-neutral-50);
+
+  --primary: var(--eld-magenta-700);
+  --primary-foreground: var(--eld-magenta-50);
+  /* brighter accent reads better on near-black */
+  --primary-emphasis: var(--eld-magenta-400);
+  --primary-soft: color-mix(in oklab, var(--eld-magenta-400) 13%, transparent);
+
+  --destructive: var(--eld-danger);
+  --destructive-foreground: #ffffff;
+
+  --border: color-mix(in oklab, var(--eld-neutral-50) 9%, transparent);
+  --border-strong: color-mix(in oklab, var(--eld-neutral-50) 15%, transparent);
+  --input: var(--border);
+  --ring: color-mix(in oklab, var(--eld-magenta-400) 40%, transparent);
+
+  --hover: color-mix(in oklab, var(--eld-neutral-50) 5%, transparent);
+
+  --nav-background: color-mix(in oklab, var(--eld-neutral-950) 62%, transparent);
+
+  /* code surface is already dark; keep identical */
+  --code-background: #0d0d10;
+  --code-background-elev: #141418;
+  --code-border: color-mix(in oklab, var(--eld-neutral-50) 9%, transparent);
+}
