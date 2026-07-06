@@ -34,6 +34,11 @@ export {
   NavigationMenuContent, NavigationMenuLink, NavigationMenuIndicator,
   NavigationMenuPositioner, navigationMenuTriggerStyle,
 } from "./components/navigation-menu";
+export { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "./components/accordion";
+export {
+  Select, SelectContent, SelectGroup, SelectItem, SelectLabel,
+  SelectScrollDownButton, SelectScrollUpButton, SelectSeparator, SelectTrigger, SelectValue,
+} from "./components/select";
 
 // As components are ported from the mockups they are exported here. Base-UI-backed
 // primitives (Dialog, Popover, DropdownMenu, Combobox/Command, Tooltip, Tabs,
