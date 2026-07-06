@@ -1,0 +1,43 @@
+name: CI
+
+"on":
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: "push-${{ github.ref }}"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: "Build"
+    uses: ./.github/workflows/job.build.yml
+    permissions:
+      contents: read
+    secrets: inherit
+
+  lint:
+    name: "Lint"
+    uses: ./.github/workflows/check.lint.yml
+    permissions:
+      contents: read
+    secrets: inherit
+
+  storybook:
+    name: "Storybook"
+    uses: ./.github/workflows/job.storybook.yml
+    permissions:
+      contents: read
+    secrets: inherit
+
+  chromatic:
+    name: "Chromatic"
+    uses: ./.github/workflows/check.chromatic.yml
+    with:
+      auto-accept: true
+    permissions:
+      contents: read
+    secrets: inherit

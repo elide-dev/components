@@ -1,0 +1,40 @@
+name: PR
+
+"on":
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: "pr-${{ github.event.number }}"
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: "Build"
+    uses: ./.github/workflows/job.build.yml
+    permissions:
+      contents: read
+    secrets: inherit
+
+  lint:
+    name: "Lint"
+    uses: ./.github/workflows/check.lint.yml
+    permissions:
+      contents: read
+    secrets: inherit
+
+  storybook:
+    name: "Storybook"
+    uses: ./.github/workflows/job.storybook.yml
+    permissions:
+      contents: read
+    secrets: inherit
+
+  chromatic:
+    name: "Chromatic"
+    uses: ./.github/workflows/check.chromatic.yml
+    permissions:
+      contents: read
+    secrets: inherit
