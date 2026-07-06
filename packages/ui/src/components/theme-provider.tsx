@@ -27,7 +27,11 @@ function resolveInitialTheme(defaultTheme: Theme, storageKey: string): Theme {
   if (typeof window === "undefined") return defaultTheme; // SSR
   const stored = window.localStorage.getItem(storageKey);
   if (stored === "light" || stored === "dark") return stored;
-  return window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : defaultTheme;
+  // Honor the OS preference in both directions; fall back to defaultTheme only
+  // when matchMedia is unavailable.
+  const prefersDark = window.matchMedia?.("(prefers-color-scheme: dark)");
+  if (prefersDark) return prefersDark.matches ? "dark" : "light";
+  return defaultTheme;
 }
 
 export function ThemeProvider({
