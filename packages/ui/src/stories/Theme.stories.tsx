@@ -31,12 +31,14 @@ export const Toggle: StoryObj = {
     // Storybook theme decorator, which also touches <html>). Toggle, then assert
     // the reported theme changed and that <html> reflects *that* theme — reading
     // intent from the provider avoids coupling to the decorator's initial value.
-    const initial = button.textContent;
+    const initiallyDark = button.textContent?.includes("dark") ?? false;
+    const expected = initiallyDark ? "Theme: light" : "Theme: dark";
     await userEvent.click(button);
-    await waitFor(() => expect(button.textContent).not.toBe(initial));
-    const nowDark = button.textContent?.includes("dark") ?? false;
+    // Assert the exact toggled value (deterministic: theme initializes
+    // synchronously, so nothing re-initializes over the click).
+    await waitFor(() => expect(button.textContent).toBe(expected));
     await waitFor(() =>
-      expect(document.documentElement.classList.contains("dark")).toBe(nowDark),
+      expect(document.documentElement.classList.contains("dark")).toBe(!initiallyDark),
     );
   },
 };

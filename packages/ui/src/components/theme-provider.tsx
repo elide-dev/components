@@ -23,23 +23,22 @@ export interface ThemeProviderProps {
   storageKey?: string;
 }
 
+function resolveInitialTheme(defaultTheme: Theme, storageKey: string): Theme {
+  if (typeof window === "undefined") return defaultTheme; // SSR
+  const stored = window.localStorage.getItem(storageKey);
+  if (stored === "light" || stored === "dark") return stored;
+  return window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : defaultTheme;
+}
+
 export function ThemeProvider({
   children,
   defaultTheme = "dark",
   storageKey = "eld-theme",
 }: ThemeProviderProps) {
-  const [theme, setTheme] = React.useState<Theme>(defaultTheme);
-
-  // Resolve the initial theme on the client: stored value, else OS preference,
-  // else the provided default. Runs once on mount (SSR-safe).
-  React.useEffect(() => {
-    const stored = localStorage.getItem(storageKey);
-    if (stored === "light" || stored === "dark") {
-      setTheme(stored);
-    } else if (window.matchMedia?.("(prefers-color-scheme: dark)").matches) {
-      setTheme("dark");
-    }
-  }, [storageKey]);
+  // Resolve the initial theme synchronously (stored value, else OS preference,
+  // else the default) in a lazy initializer rather than a mount effect — an
+  // async init effect can run after an early user interaction and clobber it.
+  const [theme, setTheme] = React.useState<Theme>(() => resolveInitialTheme(defaultTheme, storageKey));
 
   // Reflect the theme onto <html> and persist it.
   React.useEffect(() => {
