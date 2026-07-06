@@ -1,0 +1,32 @@
+/* The catalog's styles: Tailwind + Elide tokens. A consuming app can either
+ * import this file directly, or wire Tailwind itself and just import
+ * "@elide/tokens/theme.css". Keeping it here means Storybook and quick
+ * consumers get a working baseline with one import. */
+/* Fonts first: a remote `@import url()` must precede all other rules, so it has
+ * to come before `@import "tailwindcss"` (which expands to rules inline). */
+@import "@elide/tokens/fonts.css";
+@import "tailwindcss";
+@import "@elide/tokens/theme.css";
+/* Enter/exit animation utilities used by the shadcn/Base UI overlay primitives
+ * (animate-in, fade-in-0, zoom-in-95, slide-in-from-*). */
+@import "tw-animate-css";
+
+/* Tailwind v4 auto-detection roots at this file's location. When consumed via
+ * the `node_modules/@elide/ui` symlink (Storybook, and any downstream app), that
+ * tree is gitignored, so auto-detection finds nothing and no component utilities
+ * are generated. Declaring the sources explicitly always scans them, regardless
+ * of where this stylesheet is imported from. */
+@source "./components";
+@source "./stories";
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--eld-font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+}
