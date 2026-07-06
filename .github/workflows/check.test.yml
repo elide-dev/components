@@ -9,7 +9,7 @@ permissions:
 
 jobs:
   test:
-    name: "Vitest (stories)"
+    name: "Vitest (unit + stories)"
     runs-on: ${{ vars.RUNNER_DEFAULT || 'ubuntu-latest' }}
     permissions:
       contents: read
@@ -38,5 +38,30 @@ jobs:
         run: bun install --frozen-lockfile
       - name: "Setup: Playwright Chromium"
         run: bunx playwright install --with-deps chromium
-      - name: "Test: Stories via Vitest (browser mode)"
-        run: bun run test
+      - name: "Test: Vitest (jsdom unit + Storybook browser mode) with coverage"
+        # `-- --coverage` forwards through Turbo's passthrough args to every
+        # workspace's `test` script (`vitest run`), so both suites emit their
+        # own coverage/lcov.info without a dedicated turbo task.
+        run: bunx turbo run test -- --coverage
+      - name: "Test Analytics: Upload results to Codecov"
+        # Upload JUnit results even when tests fail, so failing/flaky tests show
+        # up in Codecov Test Analytics.
+        if: ${{ !cancelled() }}
+        uses: codecov/test-results-action@0fa95f0e1eeaafde2c782583b36b28ad0d8c77d3 # v1.2.1
+        with:
+          files: packages/ui/test-report.junit.xml,apps/storybook/test-report.junit.xml
+          token: ${{ secrets.CODECOV_TOKEN }}
+      - name: "Coverage: Upload ui-unit (jsdom) to Codecov"
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
+        with:
+          files: packages/ui/coverage/lcov.info
+          flags: ui-unit
+          fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
+      - name: "Coverage: Upload ui-browser (Storybook) to Codecov"
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
+        with:
+          files: apps/storybook/coverage/lcov.info
+          flags: ui-browser
+          fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}

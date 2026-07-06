@@ -4,3 +4,9 @@ storybook-static/
 .turbo/
 *.log
 .DS_Store
+
+# Coverage output
+coverage/
+
+# Test reports
+*.junit.xml

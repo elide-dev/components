@@ -3,6 +3,10 @@ export { Badge, badgeVariants, type BadgeProps } from "./components/badge";
 export { Callout, type CalloutProps } from "./components/callout";
 export { CodeBlock, CopyButton, type CodeBlockProps } from "./components/code-block";
 export { cn } from "./lib/utils";
+export {
+  MessagesProvider, useMessages, type MessagesProviderProps,
+} from "./i18n/provider";
+export { en as defaultMessages, type Messages, type PartialMessages } from "./i18n/messages";
 export { ThemeProvider, useTheme, type Theme, type ThemeProviderProps } from "./components/theme-provider";
 export { Breadcrumbs, type BreadcrumbSegment, type BreadcrumbsProps } from "./components/breadcrumbs";
 export { PageFooterNav, type PageFooterNavLink, type PageFooterNavProps } from "./components/page-footer-nav";
@@ -34,6 +38,39 @@ export {
   NavigationMenuContent, NavigationMenuLink, NavigationMenuIndicator,
   NavigationMenuPositioner, navigationMenuTriggerStyle,
 } from "./components/navigation-menu";
+export { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "./components/accordion";
+export {
+  Select, SelectContent, SelectGroup, SelectItem, SelectLabel,
+  SelectScrollDownButton, SelectScrollUpButton, SelectSeparator, SelectTrigger, SelectValue,
+} from "./components/select";
+
+// --- Tier-2 docs composites (cycle 2, ported from the Elide Docs mockup) ---
+export { AppNav, type AppNavProps, type NavLink } from "./components/app-nav";
+export { ElideLogo, ElideMark, ElideWordmark, type ElideLogoProps } from "./components/elide-logo";
+export {
+  SectionTabs, type SectionTabsProps, type SectionTabItem, type SectionTabsVersion,
+} from "./components/section-tabs";
+export {
+  Sidebar, SectionSwitcher, SidebarGroup, SidebarItem,
+  type SidebarProps, type SectionSwitcherProps, type SidebarGroupProps,
+  type SidebarItemProps, type SidebarSection,
+} from "./components/sidebar";
+export {
+  TableOfContents, type TableOfContentsProps, type TocItem,
+} from "./components/table-of-contents";
+export {
+  MobileNav, type MobileNavProps, type MobileNavItem, type MobileNavGroup, type MobileNavSection,
+} from "./components/mobile-nav";
+export { CardGrid, FeatureCard, type CardGridProps, type FeatureCardProps } from "./components/card-grid";
+export { StatStrip, type Stat, type StatStripProps } from "./components/stat-strip";
+export { AiActions, type AiActionsProps, type AiActionItem } from "./components/ai-actions";
+export { CopyCommand, type CopyCommandProps } from "./components/copy-command";
+export { StatusBadge, type ApiStatus, type StatusBadgeProps } from "./components/status-badge";
+export { ApiMethod, ParamRow, type ApiMethodProps, type ParamRowProps } from "./components/api-method";
+export {
+  SupportMatrix, type SupportMatrixProps, type SupportMatrixColumn,
+  type SupportRow, type SupportStatus,
+} from "./components/support-matrix";
 
 // As components are ported from the mockups they are exported here. Base-UI-backed
 // primitives (Dialog, Popover, DropdownMenu, Combobox/Command, Tooltip, Tabs,

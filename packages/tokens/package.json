@@ -23,5 +23,10 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "dev": "tsc -p tsconfig.json --watch"
+  },
+  "dependencies": {
+    "@fontsource/instrument-sans": "^5.2.8",
+    "@fontsource/inter": "^5.2.8",
+    "@fontsource/jetbrains-mono": "^5.2.8"
   }
 }

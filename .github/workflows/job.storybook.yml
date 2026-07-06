@@ -37,7 +37,11 @@ jobs:
       - name: "Install: Dependencies"
         run: bun install --frozen-lockfile
       - name: "Build: Storybook static site"
+        # CODECOV_TOKEN enables the @codecov/vite-plugin bundle-analysis upload
+        # during the Vite build (no-op if the secret is absent).
         run: bunx turbo run build --filter=@elide/storybook
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       - name: "Artifact: Upload storybook-static"
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
