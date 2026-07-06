@@ -48,7 +48,7 @@ radii, type. See the package README.
 | `TableOfContents` | todo | `items`, active-on-scroll; mono variant for API methods | right rail "On this page" |
 | `AiActions` | todo | Copy as Markdown · View as text · Open in ChatGPT/Claude | right rail panel |
 | `Breadcrumbs` | **done** | `segments` | above page title |
-| `PageFooterNav` | todo | `prev?`, `next?` (right-grouped cards) | bottom prev/next |
+| `PageFooterNav` | **done** | `prev?`, `next?` (right-grouped cards) | bottom prev/next |
 | `CardGrid` + `FeatureCard` | todo | cols; card: icon·title·description·badge·href | "Start here", category grid |
 | `StatStrip` | todo | `stats: {value,label}[]` | API landing metrics |
 | `StatusBadge` | todo | thin wrapper over `Badge` status tones | reference status |
