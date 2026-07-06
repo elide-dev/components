@@ -47,7 +47,7 @@ radii, type. See the package README.
 | `Sidebar` | todo | `SectionSwitcher`, `NavGroup`, `NavItem` (active, external, comingSoon), progress | left nav |
 | `TableOfContents` | todo | `items`, active-on-scroll; mono variant for API methods | right rail "On this page" |
 | `AiActions` | todo | Copy as Markdown · View as text · Open in ChatGPT/Claude | right rail panel |
-| `Breadcrumbs` | todo | `segments` | above page title |
+| `Breadcrumbs` | **done** | `segments` | above page title |
 | `PageFooterNav` | todo | `prev?`, `next?` (right-grouped cards) | bottom prev/next |
 | `CardGrid` + `FeatureCard` | todo | cols; card: icon·title·description·badge·href | "Start here", category grid |
 | `StatStrip` | todo | `stats: {value,label}[]` | API landing metrics |
