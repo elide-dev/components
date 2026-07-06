@@ -56,7 +56,7 @@ radii, type. See the package README.
 | `SupportMatrix` / `DataTable` | todo | columns, status cells (✓/✗) | method support table |
 | `CommandPalette` | registry+ | built on `Command`; groups: pages·actions; recent | ⌘K overlay |
 | `MobileNav` | todo | top bar + `Sheet` drawer + bottom "Search or ask AI" bar | mobile screens |
-| `ThemeProvider` / `useTheme` | todo | class/`data-theme` on `<html>`, persisted | dark/light toggle |
+| `ThemeProvider` / `useTheme` | **done** | class/`data-theme` on `<html>`, persisted | dark/light toggle |
 
 ## Tier 3 — Marketing widgets (from elide.dev)
 
