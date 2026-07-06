@@ -2,6 +2,7 @@ import * as React from "react";
 import { ChevronDown, Globe, History, Search, Sparkles, Sun } from "lucide-react";
 import { cn } from "../lib/utils";
 import { Button } from "./button";
+import { ElideLogo } from "./elide-logo";
 
 /**
  * AppNav — the 56px top nav bar present on every docs page: brand + "DOCS"
@@ -30,17 +31,7 @@ export interface AppNavProps extends React.ComponentProps<"nav"> {
   onLocaleClick?: () => void;
 }
 
-const defaultLogo = (
-  <span className="flex items-center gap-1.5">
-    <span
-      aria-hidden
-      className="flex h-5 w-5 items-center justify-center rounded-md text-[11px] font-bold text-white [background:var(--eld-gradient-brand)]"
-    >
-      e
-    </span>
-    <span className="font-display text-sm font-semibold text-foreground">Elide</span>
-  </span>
-);
+const defaultLogo = <ElideLogo />;
 
 export function AppNav({
   links,
