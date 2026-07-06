@@ -19,7 +19,7 @@ export function ParamRow({ name, type, description, className }: ParamRowProps) 
   return (
     <div className={cn("flex items-baseline gap-3", className)}>
       <code className="w-24 shrink-0 font-mono text-[12.5px] text-[var(--primary-emphasis)]">{name}</code>
-      <span className="shrink-0 font-mono text-xs text-[var(--eld-syntax-type)]">{type}</span>
+      <span className="shrink-0 font-mono text-xs text-muted-foreground">{type}</span>
       {description ? (
         <span className="text-[13.5px] text-muted-foreground [&_code]:font-mono [&_code]:text-[var(--primary-emphasis)]">
           {description}
@@ -36,7 +36,7 @@ function emphasizeSignature(signature: string | React.ReactNode) {
   if (parenIndex === -1) return signature;
   return (
     <>
-      <span className="text-[var(--eld-syntax-function)]">{signature.slice(0, parenIndex)}</span>
+      <span className="text-[var(--primary-emphasis)]">{signature.slice(0, parenIndex)}</span>
       {signature.slice(parenIndex)}
     </>
   );
