@@ -1,0 +1,46 @@
+# Two suites report coverage for the same components under two flags:
+#   ui-unit    — jsdom unit suite (packages/ui/vitest.config.ts)
+#   ui-browser — Storybook browser-mode suite (apps/storybook/vitest.config.ts)
+# Both exercise packages/ui/src/components; Codecov merges them into one view.
+# Status checks are informational only while the suites are still filling in —
+# flip to blocking once coverage on `main` is representative.
+codecov:
+  require_ci_to_pass: false
+
+coverage:
+  precision: 2
+  round: down
+  range: "70...100"
+  status:
+    project:
+      default:
+        informational: true
+    patch:
+      default:
+        informational: true
+
+flags:
+  ui-unit:
+    paths:
+      - packages/ui/src/components/
+    carryforward: true
+  ui-browser:
+    paths:
+      - packages/ui/src/components/
+    carryforward: true
+
+comment:
+  layout: "reach, diff, flags, files"
+  behavior: default
+  require_changes: false
+
+ignore:
+  - "**/*.stories.tsx"
+  - "**/stories/**"
+  - "**/*.test.ts"
+  - "**/*.test.tsx"
+  - "**/dist/**"
+  - "**/.storybook/**"
+  - "**/*.config.ts"
+  - "**/*.config.js"
+  - "**/*.config.mjs"

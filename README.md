@@ -1,5 +1,7 @@
 # components
 
+[![codecov](https://codecov.io/gh/elide-dev/components/graph/badge.svg)](https://codecov.io/gh/elide-dev/components)
+
 Elide's shared UI. One repository, consumed by many: the docs site (Astro) and
 the marketing site both depend on it, so brand, tokens, and behavior stay in one
 place and move together.
