@@ -1,0 +1,25 @@
+{
+  "name": "@elide/components-monorepo",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Elide's shared component catalog and design tokens. Consumed by the docs site (Astro) and the marketing site.",
+  "packageManager": "bun@1.3.14",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "storybook": "bun run --filter @elide/storybook dev",
+    "chromatic": "bun run --filter @elide/storybook chromatic",
+    "changeset": "changeset",
+    "release": "changeset publish"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.31.0",
+    "turbo": "^2.10.3",
+    "typescript": "^6.0.3"
+  }
+}
