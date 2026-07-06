@@ -63,7 +63,9 @@ export interface ElideLogoProps extends React.HTMLAttributes<HTMLSpanElement> {
 export function ElideLogo({ markOnly, className, ...props }: ElideLogoProps) {
   return (
     <span className={cn("inline-flex items-center gap-[9px] text-foreground", className)} {...props}>
-      <ElideMark aria-hidden={!markOnly} className="h-[23px]" />
+      {/* The mark keeps its role="img" aria-label="Elide" so the lockup is
+          announced once; the wordmark is decorative alongside it. */}
+      <ElideMark className="h-[23px]" />
       {markOnly ? null : <ElideWordmark aria-hidden className="h-[14px]" />}
     </span>
   );
