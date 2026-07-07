@@ -1,11 +1,12 @@
 import * as React from "react";
-import { Info, Lightbulb, TriangleAlert, OctagonAlert } from "lucide-react";
+import { Info, Lightbulb, MessageSquareWarning, TriangleAlert, OctagonAlert } from "lucide-react";
 import { cn } from "../lib/utils";
 
 /**
- * Callout — composite. GFM-style admonition matching the Elide docs content
- * (Note / Tip / Important / Warning / Caution). Each tone carries its own hue,
- * left accent rule, and icon. Body accepts arbitrary rich content.
+ * Callout — composite. GitHub-style admonition (Note / Tip / Important /
+ * Warning / Caution): a plain left rule with the icon + label line tinted in
+ * the tone color, no surface fill or outer border. Body accepts arbitrary
+ * rich content and renders in the regular foreground color.
  */
 type CalloutTone = "note" | "tip" | "important" | "warning" | "caution";
 
@@ -15,7 +16,7 @@ const TONES: Record<
 > = {
   note: { label: "Note", color: "var(--eld-info)", icon: Info },
   tip: { label: "Tip", color: "var(--eld-success)", icon: Lightbulb },
-  important: { label: "Important", color: "var(--eld-magenta-500)", icon: Info },
+  important: { label: "Important", color: "var(--eld-magenta-500)", icon: MessageSquareWarning },
   warning: { label: "Warning", color: "var(--eld-warning)", icon: TriangleAlert },
   caution: { label: "Caution", color: "var(--eld-danger)", icon: OctagonAlert },
 };
@@ -32,21 +33,19 @@ export function Callout({ tone = "note", title, className, children, ...props }:
   return (
     <div
       role="note"
-      className={cn("flex gap-3 rounded-xl border p-4", className)}
-      style={{
-        // tone-tinted surface + left accent, expressed off the tone color
-        background: `color-mix(in oklab, ${t.color} 9%, transparent)`,
-        borderColor: `color-mix(in oklab, ${t.color} 25%, transparent)`,
-        borderLeft: `3px solid ${t.color}`,
-      }}
+      className={cn("flex flex-col gap-2 py-2 pl-4 pr-2", className)}
+      style={{ borderLeft: `3px solid ${t.color}` }}
       {...props}
     >
-      <Icon className="mt-0.5 h-[18px] w-[18px] shrink-0" style={{ color: t.color } as React.CSSProperties} />
-      <div className="min-w-0">
-        <div className="mb-1 text-sm font-bold text-foreground">{title ?? t.label}</div>
-        <div className="text-sm leading-relaxed text-muted-foreground [&_code]:font-mono [&_code]:text-[var(--primary-emphasis)]">
-          {children}
-        </div>
+      <div
+        className="flex items-center gap-2 text-sm font-semibold leading-none"
+        style={{ color: t.color }}
+      >
+        <Icon className="h-4 w-4 shrink-0" />
+        {title ?? t.label}
+      </div>
+      <div className="text-sm leading-relaxed text-foreground [&_code]:font-mono [&_code]:text-[var(--primary-emphasis)]">
+        {children}
       </div>
     </div>
   );
