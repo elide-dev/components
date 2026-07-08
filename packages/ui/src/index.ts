@@ -2,6 +2,12 @@ export { Button, buttonVariants, type ButtonProps } from "./components/button";
 export { Badge, badgeVariants, type BadgeProps } from "./components/badge";
 export { Callout, type CalloutProps } from "./components/callout";
 export { CodeBlock, CopyButton, type CodeBlockProps } from "./components/code-block";
+export {
+  CommandPalette,
+  type CommandPaletteProps,
+  type CommandGroup,
+  type CommandItem,
+} from "./components/command-palette";
 export { cn } from "./lib/utils";
 export {
   MessagesProvider, useMessages, type MessagesProviderProps,
