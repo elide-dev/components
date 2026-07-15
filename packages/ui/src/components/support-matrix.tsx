@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Check, CircleDot, X, type LucideIcon } from "lucide-react";
 import { cn, keyed } from "../lib/utils";
-import { useMessages } from "../i18n/provider";
+import { useMessages } from "../i18n/context";
 import type { Messages } from "../i18n/messages";
 
 /**

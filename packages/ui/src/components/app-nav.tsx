@@ -3,7 +3,7 @@ import { ChevronDown, Globe, History, Search, Sparkles, Sun } from "lucide-react
 import { cn } from "../lib/utils";
 import { Button } from "./button";
 import { ElideLogo } from "./elide-logo";
-import { useMessages } from "../i18n/provider";
+import { useMessages } from "../i18n/context";
 
 /**
  * AppNav — the 56px top nav bar present on every docs page: brand + "DOCS"

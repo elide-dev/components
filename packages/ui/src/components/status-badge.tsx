@@ -1,5 +1,5 @@
 import { Badge, type BadgeProps } from "./badge";
-import { useMessages } from "../i18n/provider";
+import { useMessages } from "../i18n/context";
 
 /**
  * StatusBadge — thin wrapper over `Badge`'s status tones. Maps an API-support

@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Check, Copy, ExternalLink, Sparkles } from "lucide-react";
 import { cn } from "../lib/utils";
-import { useMessages } from "../i18n/provider";
+import { useMessages } from "../i18n/context";
 
 /**
  * AiActions — the "Use with AI" panel in the docs right rail: copy the page as

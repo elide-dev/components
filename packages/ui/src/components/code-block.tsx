@@ -2,7 +2,7 @@ import * as React from "react";
 import { Check, Copy } from "lucide-react";
 import { Highlight, type PrismTheme } from "prism-react-renderer";
 import { cn, keyed } from "../lib/utils";
-import { useMessages } from "../i18n/provider";
+import { useMessages } from "../i18n/context";
 
 /**
  * CopyButton — copies `value` to the clipboard, flips to a check for 1.5s.
