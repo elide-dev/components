@@ -1,6 +1,6 @@
 import * as React from "react";
 import { cn } from "../lib/utils";
-import { useMessages } from "../i18n/provider";
+import { useMessages } from "../i18n/context";
 
 /**
  * TableOfContents — the "On this page" right-rail nav that lists in-page

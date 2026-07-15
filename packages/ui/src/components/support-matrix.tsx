@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Check, CircleDot, X, type LucideIcon } from "lucide-react";
-import { cn } from "../lib/utils";
-import { useMessages } from "../i18n/provider";
+import { cn, keyed } from "../lib/utils";
+import { useMessages } from "../i18n/context";
 import type { Messages } from "../i18n/messages";
 
 /**
@@ -71,12 +71,15 @@ export function SupportMatrix({
           </tr>
         </thead>
         <tbody>
-          {rows.map((row, i) => {
+          {/* Rows carry no ids — key by the method name when it's a string
+              (the common case), disambiguated for repeats via `keyed`. */}
+          {keyed(rows, (row) => (typeof row.method === "string" ? row.method : row.status)).map(
+            ({ item: row, key }) => {
             const status = STATUS_META[row.status];
             const StatusIcon = status.icon;
             const statusLabel = m.supportMatrix[status.messageKey];
             return (
-              <tr key={i} className="border-t border-border">
+              <tr key={key} className="border-t border-border">
                 <td className="px-4 py-2.5 font-mono text-[var(--primary-emphasis)]">{row.method}</td>
                 <td className="px-4 py-2.5 text-center">
                   <StatusIcon

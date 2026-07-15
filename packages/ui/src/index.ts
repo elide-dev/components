@@ -1,5 +1,7 @@
-export { Button, buttonVariants, type ButtonProps } from "./components/button";
-export { Badge, badgeVariants, type BadgeProps } from "./components/badge";
+export { Button, type ButtonProps } from "./components/button";
+export { buttonVariants } from "./components/button-variants";
+export { Badge, type BadgeProps } from "./components/badge";
+export { badgeVariants } from "./components/badge-variants";
 export { Callout, type CalloutProps } from "./components/callout";
 export { CodeBlock, CopyButton, type CodeBlockProps } from "./components/code-block";
 export {
@@ -9,11 +11,11 @@ export {
   type CommandItem,
 } from "./components/command-palette";
 export { cn } from "./lib/utils";
-export {
-  MessagesProvider, useMessages, type MessagesProviderProps,
-} from "./i18n/provider";
+export { MessagesProvider, type MessagesProviderProps } from "./i18n/provider";
+export { useMessages } from "./i18n/context";
 export { en as defaultMessages, type Messages, type PartialMessages } from "./i18n/messages";
-export { ThemeProvider, useTheme, type Theme, type ThemeProviderProps } from "./components/theme-provider";
+export { ThemeProvider, type ThemeProviderProps } from "./components/theme-provider";
+export { useTheme, type Theme } from "./components/theme-context";
 export { Breadcrumbs, type BreadcrumbSegment, type BreadcrumbsProps } from "./components/breadcrumbs";
 export { PageFooterNav, type PageFooterNavLink, type PageFooterNavProps } from "./components/page-footer-nav";
 
@@ -38,12 +40,14 @@ export {
 export { Separator } from "./components/separator";
 export { ScrollArea, ScrollBar } from "./components/scroll-area";
 export { Switch } from "./components/switch";
-export { Tabs, TabsList, TabsTrigger, TabsContent, tabsListVariants } from "./components/tabs";
+export { Tabs, TabsList, TabsTrigger, TabsContent } from "./components/tabs";
+export { tabsListVariants } from "./components/tabs-variants";
 export {
   NavigationMenu, NavigationMenuList, NavigationMenuItem, NavigationMenuTrigger,
   NavigationMenuContent, NavigationMenuLink, NavigationMenuIndicator,
-  NavigationMenuPositioner, navigationMenuTriggerStyle,
+  NavigationMenuPositioner,
 } from "./components/navigation-menu";
+export { navigationMenuTriggerStyle } from "./components/navigation-menu-variants";
 export { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "./components/accordion";
 export {
   Select, SelectContent, SelectGroup, SelectItem, SelectLabel,

@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, waitFor, within } from "storybook/test";
-import { ThemeProvider, useTheme } from "../components/theme-provider";
+import { ThemeProvider } from "../components/theme-provider";
+import { useTheme } from "../components/theme-context";
 import { Button } from "../components/button";
 
 function ThemeToggleDemo() {

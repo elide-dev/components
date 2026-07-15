@@ -3,7 +3,7 @@ import { History, Menu, Search, Sparkle } from "lucide-react";
 import { cn } from "../lib/utils";
 import { Button } from "./button";
 import { Sheet, SheetTrigger, SheetContent } from "./sheet";
-import { useMessages } from "../i18n/provider";
+import { useMessages } from "../i18n/context";
 
 /**
  * MobileNav — the docs shell at phone width (mockup 3b): a condensed top app
@@ -172,7 +172,9 @@ export function MobileNav({
         <Button
           variant="changelog"
           className="w-full justify-start"
-          render={changelogHref ? <a href={changelogHref} /> : undefined}
+          render={
+            changelogHref ? <a href={changelogHref} aria-label={m.mobileNav.changelog} /> : undefined
+          }
         >
           <History aria-hidden className="h-[15px] w-[15px]" />
           {m.mobileNav.changelog}

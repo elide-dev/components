@@ -39,7 +39,7 @@ export function StatStrip({
         const last = i === stats.length - 1;
         return (
           <div
-            key={i}
+            key={stat.label}
             className={cn("flex flex-col gap-1.5 p-5", !lastInRow && !last && "border-r border-border")}
           >
             {/* Semantic order is <dt> (term/label) then <dd> (value); `order-*`

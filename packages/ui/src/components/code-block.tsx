@@ -1,8 +1,8 @@
 import * as React from "react";
 import { Check, Copy } from "lucide-react";
 import { Highlight, type PrismTheme } from "prism-react-renderer";
-import { cn } from "../lib/utils";
-import { useMessages } from "../i18n/provider";
+import { cn, keyed } from "../lib/utils";
+import { useMessages } from "../i18n/context";
 
 /**
  * CopyButton — copies `value` to the clipboard, flips to a check for 1.5s.
@@ -102,13 +102,16 @@ function Highlighted({ code, lang }: { code: string; lang?: string }) {
     <Highlight theme={eldPrismTheme} code={code} language={prismLang(lang)}>
       {({ tokens, getLineProps, getTokenProps }) => (
         <>
-          {tokens.map((line, i) => (
-            <span key={i} {...getLineProps({ line })} className="block">
-              {line.map((token, j) => (
-                <span key={j} {...getTokenProps({ token })} />
-              ))}
-            </span>
-          ))}
+          {/* Lines carry no ids, so key by content (disambiguated for repeats). */}
+          {keyed(tokens, (line) => line.map((token) => token.content).join("")).map(
+            ({ item: line, key }) => (
+              <span key={key} {...getLineProps({ line })} className="block">
+                {line.map((token, j) => (
+                  <span key={j} {...getTokenProps({ token })} />
+                ))}
+              </span>
+            ),
+          )}
         </>
       )}
     </Highlight>

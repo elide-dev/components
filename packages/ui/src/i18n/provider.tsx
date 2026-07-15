@@ -1,5 +1,6 @@
 import * as React from "react";
-import { en, mergeMessages, type Messages, type PartialMessages } from "./messages";
+import { en, mergeMessages, type PartialMessages } from "./messages";
+import { MessagesContext } from "./context";
 
 /**
  * i18n for @elide/ui. Components read their own chrome strings from
@@ -10,8 +11,6 @@ import { en, mergeMessages, type Messages, type PartialMessages } from "./messag
  *   import fr from "./locales/fr.json"; // a PartialMessages dictionary
  *   <MessagesProvider messages={fr}>{app}</MessagesProvider>
  */
-const MessagesContext = React.createContext<Messages>(en);
-
 export interface MessagesProviderProps {
   /** Locale dictionary; deep-merged (two levels) over the English defaults. */
   messages?: PartialMessages;
@@ -21,9 +20,4 @@ export interface MessagesProviderProps {
 export function MessagesProvider({ messages, children }: MessagesProviderProps) {
   const value = React.useMemo(() => mergeMessages(en, messages), [messages]);
   return <MessagesContext.Provider value={value}>{children}</MessagesContext.Provider>;
-}
-
-/** Access the merged message dictionary (defaults ⊕ provider override). */
-export function useMessages(): Messages {
-  return React.useContext(MessagesContext);
 }

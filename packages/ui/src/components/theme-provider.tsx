@@ -1,20 +1,11 @@
 import * as React from "react";
+import { ThemeContext, type Theme, type ThemeContextValue } from "./theme-context";
 
 /**
  * ThemeProvider — sets the active color theme on <html> so that both the page
  * and Base UI overlays (which portal to <body>) pick it up. Persists the choice
  * to localStorage and initializes from the stored value or the OS preference.
  */
-export type Theme = "light" | "dark";
-
-interface ThemeContextValue {
-  theme: Theme;
-  setTheme: (theme: Theme) => void;
-  toggle: () => void;
-}
-
-const ThemeContext = React.createContext<ThemeContextValue | null>(null);
-
 export interface ThemeProviderProps {
   children: React.ReactNode;
   /** Theme used until the stored/system value resolves on mount. */
@@ -62,10 +53,4 @@ export function ThemeProvider({
   );
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
-}
-
-export function useTheme(): ThemeContextValue {
-  const ctx = React.useContext(ThemeContext);
-  if (!ctx) throw new Error("useTheme must be used within a ThemeProvider");
-  return ctx;
 }
