@@ -23,7 +23,7 @@ export function Breadcrumbs({ segments, className, ...props }: BreadcrumbsProps)
         {segments.map((segment, i) => {
           const isLast = i === segments.length - 1;
           return (
-            <li key={`${segment.label}-${i}`} className="flex items-center gap-1.5">
+            <li key={segment.href ?? segment.label} className="flex items-center gap-1.5">
               {isLast ? (
                 <span aria-current="page" className="font-medium text-foreground">
                   {segment.label}
