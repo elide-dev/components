@@ -120,12 +120,23 @@ export function AppNav({
         <ChevronDown aria-hidden className="h-[13px] w-[13px]" />
       </button>
 
-      <Button variant="changelog" size="sm" render={<a href={changelogHref} />}>
+      {/* The render-prop anchors get their visible text merged in by Button at
+          runtime; the aria-label keeps them labelled for static analysis and
+          mirrors the visible text exactly. */}
+      <Button
+        variant="changelog"
+        size="sm"
+        render={<a href={changelogHref} aria-label={m.appNav.changelog} />}
+      >
         <History aria-hidden className="h-[15px] w-[15px]" />
         {m.appNav.changelog}
       </Button>
 
-      <Button variant="gradient" size="sm" render={<a href={installHref} />}>
+      <Button
+        variant="gradient"
+        size="sm"
+        render={<a href={installHref} aria-label={m.appNav.install} />}
+      >
         {m.appNav.install}
       </Button>
     </nav>

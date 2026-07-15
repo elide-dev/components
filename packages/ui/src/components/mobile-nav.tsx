@@ -172,7 +172,9 @@ export function MobileNav({
         <Button
           variant="changelog"
           className="w-full justify-start"
-          render={changelogHref ? <a href={changelogHref} /> : undefined}
+          render={
+            changelogHref ? <a href={changelogHref} aria-label={m.mobileNav.changelog} /> : undefined
+          }
         >
           <History aria-hidden className="h-[15px] w-[15px]" />
           {m.mobileNav.changelog}
