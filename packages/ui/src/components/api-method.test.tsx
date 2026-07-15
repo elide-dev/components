@@ -9,6 +9,12 @@ describe("ParamRow", () => {
     expect(screen.getByText("string | Buffer | URL")).toBeInTheDocument();
     expect(screen.getByText("Filename to read.")).toBeInTheDocument();
   });
+
+  it("omits the description span when no description is given", () => {
+    render(<ParamRow name="signal" type="AbortSignal" />);
+    expect(screen.getByText("signal")).toBeInTheDocument();
+    expect(screen.getByText("AbortSignal")).toBeInTheDocument();
+  });
 });
 
 describe("ApiMethod", () => {
@@ -44,5 +50,22 @@ describe("ApiMethod", () => {
   it("renders example content", () => {
     render(<ApiMethod signature="fs.readFile()" example={<div>{'console.log("hi")'}</div>} />);
     expect(screen.getByText('console.log("hi")')).toBeInTheDocument();
+  });
+
+  it("renders a non-string (ReactNode) signature as-is and labels the anchor generically", () => {
+    render(
+      <ApiMethod signature={<span data-testid="sig">custom signature node</span>} anchorId="custom" />,
+    );
+    expect(screen.getByTestId("sig")).toBeInTheDocument();
+    // emphasizeSignature can't split a node, so the anchor uses the fallback name.
+    expect(screen.getByRole("link", { name: "Link to this method" })).toHaveAttribute(
+      "href",
+      "#custom",
+    );
+  });
+
+  it("leaves a signature with no parenthesis unsplit", () => {
+    const { container } = render(<ApiMethod signature="fs.constants" />);
+    expect(container).toHaveTextContent("fs.constants");
   });
 });

@@ -1,6 +1,6 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { TableOfContents } from "./table-of-contents";
 
 const items = [
@@ -50,5 +50,101 @@ describe("TableOfContents", () => {
     expect(() => render(<TableOfContents items={items} />)).not.toThrow();
     const links = screen.getAllByRole("link");
     expect(links.every((link) => !link.hasAttribute("aria-current"))).toBe(true);
+  });
+});
+
+describe("TableOfContents — scroll-spy", () => {
+  // Minimal IntersectionObserver stub: capture the callback so the test can
+  // drive section visibility manually (jsdom ships none).
+  class MockIntersectionObserver {
+    static instances: MockIntersectionObserver[] = [];
+    callback: IntersectionObserverCallback;
+    constructor(cb: IntersectionObserverCallback) {
+      this.callback = cb;
+      MockIntersectionObserver.instances.push(this);
+    }
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+    takeRecords(): IntersectionObserverEntry[] {
+      return [];
+    }
+    // Test helper: fire the observer callback with synthetic entries.
+    emit(entries: { id: string; isIntersecting: boolean }[]) {
+      const records = entries.map((e) => ({
+        isIntersecting: e.isIntersecting,
+        target: document.getElementById(e.id)!,
+      })) as unknown as IntersectionObserverEntry[];
+      act(() => this.callback(records, this as unknown as IntersectionObserver));
+    }
+  }
+
+  beforeEach(() => {
+    MockIntersectionObserver.instances = [];
+    vi.stubGlobal("IntersectionObserver", MockIntersectionObserver);
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  function renderWithSections() {
+    return render(
+      <>
+        <div id="overview">Overview section</div>
+        <div id="installation">Installation section</div>
+        <div id="advanced">Advanced section</div>
+        <TableOfContents items={items} />
+      </>,
+    );
+  }
+
+  it("marks the intersecting section as current, then clears it when it leaves", () => {
+    renderWithSections();
+    const observer = MockIntersectionObserver.instances[0];
+    expect(observer).toBeDefined();
+
+    observer.emit([{ id: "installation", isIntersecting: true }]);
+    expect(screen.getByRole("link", { name: "Installation" })).toHaveAttribute(
+      "aria-current",
+      "location",
+    );
+
+    observer.emit([{ id: "installation", isIntersecting: false }]);
+    expect(screen.getByRole("link", { name: "Installation" })).not.toHaveAttribute("aria-current");
+  });
+
+  it("picks the first item in list order when several sections are visible", () => {
+    renderWithSections();
+    const observer = MockIntersectionObserver.instances[0];
+
+    observer.emit([
+      { id: "advanced", isIntersecting: true },
+      { id: "installation", isIntersecting: true },
+    ]);
+
+    // Both visible, but "installation" precedes "advanced" in `items`.
+    expect(screen.getByRole("link", { name: "Installation" })).toHaveAttribute(
+      "aria-current",
+      "location",
+    );
+    expect(screen.getByRole("link", { name: "Advanced usage" })).not.toHaveAttribute(
+      "aria-current",
+    );
+  });
+
+  it("does not scroll-spy when activeId is controlled", () => {
+    render(
+      <>
+        <div id="overview">Overview section</div>
+        <TableOfContents items={items} activeId="overview" />
+      </>,
+    );
+    // The effect returns early for a controlled activeId — no observer created.
+    expect(MockIntersectionObserver.instances).toHaveLength(0);
+    expect(screen.getByRole("link", { name: "Overview" })).toHaveAttribute(
+      "aria-current",
+      "location",
+    );
   });
 });
