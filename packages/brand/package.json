@@ -1,0 +1,36 @@
+{
+  "name": "@elide/brand",
+  "version": "0.1.0",
+  "description": "Elide's brand artwork \u2014 logo geometry, generated SVG, and png/webp/avif renditions. No framework dependency; safe to consume from any repo.",
+  "license": "UNLICENSED",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./assets/*": "./assets/*"
+  },
+  "files": [
+    "dist",
+    "src",
+    "assets"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "build:assets": "bun scripts/build-assets.mjs",
+    "dev": "tsc -p tsconfig.json --watch",
+    "lint": "eslint src scripts",
+    "test": "vitest run",
+    "verify:assets": "bun scripts/verify-fidelity.mjs"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.8.0",
+    "globals": "^17.9.0",
+    "sharp": "^0.34.5",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.66.0",
+    "vitest": "^4.1.10"
+  }
+}

@@ -23,6 +23,8 @@
 ├─────────────────────────────────────────────────────────────┤
 │  @elide/icons    Lucide (react re-exports + raw SVG)          │  framework-agnostic
 ├─────────────────────────────────────────────────────────────┤
+│  @elide/brand    logo geometry · svg/png/webp/avif renditions │  framework-agnostic
+├─────────────────────────────────────────────────────────────┤
 │  @elide/tokens   CSS vars · Tailwind theme · typed JS object  │  framework-agnostic
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -108,6 +110,7 @@ components/
 ├─ COMPONENTS.md
 ├─ packages/
 │  ├─ tokens/              # @elide/tokens  (done)
+│  ├─ brand/               # @elide/brand   (done)
 │  ├─ ui/                  # @elide/ui      (exemplars landed)
 │  └─ icons/               # @elide/icons   (planned)
 └─ apps/

@@ -38,4 +38,30 @@ describe("AppNav", () => {
     await user.click(screen.getByRole("button", { name: "Search" }));
     expect(onSearchClick).toHaveBeenCalledTimes(1);
   });
+
+  it("renders the badge-plus-wordmark brand lockup, not the official full lockup", () => {
+    // The nav's lockup is deliberately different artwork from
+    // <ElideLogo form="full" />. Guards against it being silently swapped.
+    const { container } = render(<AppNav links={links} />);
+    const svgs = Array.from(container.querySelectorAll("svg[viewBox]"));
+    const viewBoxes = svgs.map((s) => s.getAttribute("viewBox"));
+    expect(viewBoxes).toContain("0 0 102.700292 114.027098"); // the filled badge
+    expect(viewBoxes).toContain("0 0 179.42 42.36"); // the wide wordmark cut
+    expect(viewBoxes).not.toContain("0 0 272.122583 90.385516"); // the full lockup
+  });
+
+  it("announces the brand once — the wordmark beside the mark is decorative", () => {
+    render(<AppNav links={links} />);
+    expect(screen.getAllByRole("img", { name: "Elide" })).toHaveLength(1);
+  });
+
+  it("uses a caller-supplied logo instead of the default lockup", () => {
+    const { container } = render(
+      <AppNav links={links} logo={<span data-testid="custom-logo">Custom</span>} />,
+    );
+    expect(screen.getByTestId("custom-logo")).toBeInTheDocument();
+    expect(
+      container.querySelector('svg[viewBox="0 0 102.700292 114.027098"]'),
+    ).not.toBeInTheDocument();
+  });
 });

@@ -2,7 +2,7 @@ import * as React from "react";
 import { ChevronDown, Globe, History, Search, Sparkles, Sun } from "lucide-react";
 import { cn } from "../lib/utils";
 import { Button } from "./button";
-import { ElideLogo } from "./elide-logo";
+import { ElideMark, ElideWordmark } from "./elide-logo";
 import { useMessages } from "../i18n/context";
 
 /**
@@ -32,7 +32,24 @@ export interface AppNavProps extends React.ComponentProps<"nav"> {
   onLocaleClick?: () => void;
 }
 
-const defaultLogo = <ElideLogo />;
+/**
+ * The nav's brand lockup: the hexagon badge beside the standalone wordmark.
+ *
+ * This is composed here rather than reaching for `<ElideLogo form="full" />`
+ * because the two are different artwork. The official full lockup pairs an
+ * *outlined* glyph with a narrower wordmark; the nav has always used the filled
+ * badge and the wider wordmark cut, and that is what ships on every docs page.
+ * To adopt the official lockup instead, pass `logo={<ElideLogo variant="blend"
+ * height={24} />}`.
+ */
+const defaultLogo = (
+  <span className="inline-flex items-center gap-[9px] text-foreground">
+    {/* The mark carries the accessible name, so the wordmark beside it is
+        decorative — otherwise the brand would be announced twice. */}
+    <ElideMark className="h-[23px]" />
+    <ElideWordmark aria-hidden className="h-[14px]" />
+  </span>
+);
 
 export function AppNav({
   links,
