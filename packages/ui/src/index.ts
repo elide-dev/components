@@ -56,7 +56,10 @@ export {
 
 // --- Tier-2 docs composites (cycle 2, ported from the Elide Docs mockup) ---
 export { AppNav, type AppNavProps, type NavLink } from "./components/app-nav";
-export { ElideLogo, ElideMark, ElideWordmark, type ElideLogoProps } from "./components/elide-logo";
+export {
+  ElideLogo, ElideMark, ElideWordmark,
+  type ElideLogoProps, type ElideLogoForm, type ElideLogoVariant, type ElideLogoFormat,
+} from "./components/elide-logo";
 export {
   SectionTabs, type SectionTabsProps, type SectionTabItem, type SectionTabsVersion,
 } from "./components/section-tabs";
