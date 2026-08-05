@@ -19,8 +19,8 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "dev": "tsc -p tsconfig.json --watch",
-    "build:assets": "node scripts/build-assets.mjs",
-    "verify:assets": "node scripts/verify-fidelity.mjs",
+    "build:assets": "bun scripts/build-assets.mjs",
+    "verify:assets": "bun scripts/verify-fidelity.mjs",
     "test": "vitest run"
   },
   "devDependencies": {
