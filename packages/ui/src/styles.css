@@ -11,6 +11,16 @@
  * (animate-in, fade-in-0, zoom-in-95, slide-in-from-*). */
 @import "tw-animate-css";
 
+/* Bind the `dark:` variant to the `.dark` class on <html>, which is how
+ * ThemeProvider (and the Storybook decorator) applies the theme.
+ *
+ * Tailwind v4's default `dark:` is `@media (prefers-color-scheme: dark)`, so
+ * without this every `dark:` utility in the catalog silently follows the OS
+ * instead of the site theme — a user who toggles to light while their OS is
+ * dark gets dark-mode styling. The token layer was unaffected (it keys off
+ * `.dark` directly), which is why this stayed hidden. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* Tailwind v4 auto-detection roots at this file's location. When consumed via
  * the `node_modules/@elide/ui` symlink (Storybook, and any downstream app), that
  * tree is gitignored, so auto-detection finds nothing and no component utilities

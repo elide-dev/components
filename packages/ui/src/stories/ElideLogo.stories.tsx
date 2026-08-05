@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { expect } from "storybook/test";
 import { ElideLogo } from "../components/elide-logo";
 import { AppNav } from "../components/app-nav";
 
@@ -148,6 +149,41 @@ export const RasterThemeSwap: Story = {
       </Cell>
     </div>
   ),
+  /**
+   * Asserts the swap in real CSS, which is the only place it can be checked:
+   * jsdom sees the `dark:hidden` / `hidden dark:block` class names but never
+   * evaluates them, so a unit test passes even when the variant is misconfigured
+   * and both themes show the light cut. That exact bug shipped once — Tailwind
+   * v4's default `dark:` is a `prefers-color-scheme` media query, so it ignored
+   * the `.dark` class until `styles.css` bound it with `@custom-variant`.
+   */
+  play: async ({ canvasElement }) => {
+    const root = document.documentElement;
+    const wasDark = root.classList.contains("dark");
+    // Queried by selector, not by role: the dark cut carries alt="" so the pair
+    // is announced once, which also makes it presentational and invisible to
+    // getAllByRole("img").
+    const shown = (src: string) => {
+      const img = canvasElement.querySelector<HTMLImageElement>(`img[src$="${src}"]`);
+      if (!img) throw new Error(`no <img> for ${src}`);
+      return getComputedStyle(img).display !== "none";
+    };
+
+    try {
+      root.classList.remove("dark");
+      await expect(shown("elide-full-blend-light.webp")).toBe(true);
+      await expect(shown("elide-full-blend-dark.webp")).toBe(false);
+
+      root.classList.add("dark");
+      await expect(shown("elide-full-blend-light.webp")).toBe(false);
+      await expect(shown("elide-full-blend-dark.webp")).toBe(true);
+
+      // The theme-agnostic gradient stays visible either way.
+      await expect(shown("elide-full-gradient.webp")).toBe(true);
+    } finally {
+      root.classList.toggle("dark", wasDark);
+    }
+  },
 };
 
 /** Width always follows the artwork's aspect ratio; nothing is ever stretched. */
