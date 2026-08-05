@@ -21,11 +21,11 @@
     "doctor": "npx react-doctor@latest"
   },
   "devDependencies": {
-    "@changesets/cli": "^2.31.0",
-    "turbo": "^2.10.3",
+    "@changesets/cli": "^2.31.1",
+    "turbo": "^2.10.8",
     "typescript": "^6.0.3"
   },
   "dependencies": {
-    "chromatic": "^18.0.1"
+    "chromatic": "^18.1.0"
   }
 }
