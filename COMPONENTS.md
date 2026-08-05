@@ -57,6 +57,7 @@ radii, type. See the package README.
 | `CommandPalette` | registry+ | built on `Command`; groups: pages·actions; recent | ⌘K overlay |
 | `MobileNav` | **done** | top bar + `Sheet` drawer + bottom "Search or ask AI" bar | mobile screens |
 | `ThemeProvider` / `useTheme` | **done** | class/`data-theme` on `<html>`, persisted | dark/light toggle |
+| `ElideLogo` | **done** | form: square·full; variant: gradient·mono·blend; format: svg·png·webp·avif; `linked`, `height`, `decorative`, `assetBase` | brand mark; artwork from `@elide/brand` |
 
 ## Tier 3 — Marketing widgets (from elide.dev)
 

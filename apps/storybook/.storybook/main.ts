@@ -16,6 +16,10 @@ const config: StorybookConfig = {
     name: "@storybook/react-vite",
     options: {},
   },
+  // ElideLogo's raster modes read from @elide/brand/assets under `assetBase`,
+  // which defaults to /brand. Serving it here is what a consuming app does when
+  // it copies the package's assets into its public directory.
+  staticDirs: [{ from: "../../../packages/brand/assets", to: "/brand" }],
   core: { disableTelemetry: true },
   async viteFinal(cfg) {
     const { default: tailwindcss } = await import("@tailwindcss/vite");
