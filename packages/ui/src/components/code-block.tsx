@@ -1,6 +1,7 @@
 import * as React from "react";
 import { Check, Copy } from "lucide-react";
 import { Highlight, type PrismTheme } from "prism-react-renderer";
+import "./prism-languages";
 import { cn, keyed } from "../lib/utils";
 import { useMessages } from "../i18n/context";
 
