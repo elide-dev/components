@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Check, Copy } from "lucide-react";
 import { Highlight, type PrismTheme } from "prism-react-renderer";
-import "./prism-languages";
+import { ensureGrammars } from "./prism-languages";
 import { cn, keyed } from "../lib/utils";
 import { useMessages } from "../i18n/context";
 
@@ -99,6 +99,7 @@ function prismLang(lang?: string): string {
 
 /** Prism-highlighted code lines, themed from `--eld-syntax-*`. */
 function Highlighted({ code, lang }: { code: string; lang?: string }) {
+  ensureGrammars();
   return (
     <Highlight theme={eldPrismTheme} code={code} language={prismLang(lang)}>
       {({ tokens, getLineProps, getTokenProps }) => (

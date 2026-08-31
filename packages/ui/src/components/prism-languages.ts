@@ -2,12 +2,37 @@ import { Prism, type PrismGrammar } from "prism-react-renderer";
 
 /**
  * Extra grammars for the Prism instance vendored by prism-react-renderer, which
- * ships without `bash` or `java`; `pkl` has no upstream grammar at all. Imported
- * for its side effects by CodeBlock.
+ * ships without `bash` or `java`; `pkl` has no upstream grammar at all.
+ * Registered by `ensureGrammars()`, which CodeBlock calls before highlighting —
+ * a plain call (rather than a side-effect import) so no bundler configuration
+ * can tree-shake the registration away.
  *
- * `bash` and `java` are ported from Prism v1.30.0 (https://prismjs.com, MIT ©
- * Lea Verou), with `bun` and `elide` added to bash's known-command list. `pkl`
- * is our own.
+ * The `bash` and `java` grammars are ported from Prism v1.30.0
+ * (https://prismjs.com), with `bun` and `elide` added to bash's known-command
+ * list; `pkl` is our own. Prism is distributed under the MIT license, whose
+ * notice follows and applies to those ported portions:
+ *
+ *   MIT LICENSE
+ *
+ *   Copyright (c) 2012 Lea Verou
+ *
+ *   Permission is hereby granted, free of charge, to any person obtaining a
+ *   copy of this software and associated documentation files (the "Software"),
+ *   to deal in the Software without restriction, including without limitation
+ *   the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ *   and/or sell copies of the Software, and to permit persons to whom the
+ *   Software is furnished to do so, subject to the following conditions:
+ *
+ *   The above copyright notice and this permission notice shall be included in
+ *   all copies or substantial portions of the Software.
+ *
+ *   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ *   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ *   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+ *   THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ *   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ *   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ *   DEALINGS IN THE SOFTWARE.
  */
 
 interface Tok {
@@ -249,10 +274,6 @@ for (const name of [
   commandSubstitutionInside[name] = bash[name];
 }
 
-register("bash", bash);
-register("sh", bash);
-register("shell", bash);
-
 // ---------------------------------------------------------------------------
 // java
 // ---------------------------------------------------------------------------
@@ -278,7 +299,8 @@ const javaClassName: Tok = {
   },
 };
 
-const java = Prism.languages.extend("clike", {
+// Overrides applied on top of the vendored `clike` grammar (via extend).
+const javaOverrides = {
   string: {
     pattern: /(^|[^\\])"(?:\\.|[^"\\\r\n])*"/,
     lookbehind: true,
@@ -320,11 +342,9 @@ const java = Prism.languages.extend("clike", {
     lookbehind: true,
   },
   constant: /\b[A-Z][A-Z_\d]+\b/,
-} as PrismGrammar);
+} as PrismGrammar;
 
-Prism.languages.java = java;
-
-Prism.languages.insertBefore("java", "string", {
+const javaStringAdditions = {
   "triple-quoted-string": {
     // http://openjdk.java.net/jeps/355#Description
     pattern: /"""[ \t]*[\r\n](?:(?:"|"")?(?:\\.|[^"\\]))*"""/,
@@ -335,9 +355,9 @@ Prism.languages.insertBefore("java", "string", {
     pattern: /'(?:\\.|[^'\\\r\n]){1,6}'/,
     greedy: true,
   },
-} as PrismGrammar);
+} as PrismGrammar;
 
-Prism.languages.insertBefore("java", "class-name", {
+const javaClassNameAdditions = {
   annotation: {
     pattern: /(^|[^.])@\w+(?:\s*\.\s*\w+)*/,
     lookbehind: true,
@@ -389,7 +409,7 @@ Prism.languages.insertBefore("java", "class-name", {
       punctuation: /\./,
     },
   },
-} as PrismGrammar);
+} as PrismGrammar;
 
 // ---------------------------------------------------------------------------
 // pkl — https://pkl-lang.org
@@ -434,4 +454,23 @@ const pkl: GrammarDef = {
   punctuation: /[{}[\]();,.:]/,
 };
 
-register("pkl", pkl);
+let registered = false;
+
+/**
+ * Idempotently registers the grammars above; CodeBlock calls this before every
+ * highlight, so the registration survives any bundler's tree-shaking.
+ */
+export function ensureGrammars(): void {
+  if (registered) return;
+  registered = true;
+
+  register("bash", bash);
+  register("sh", bash);
+  register("shell", bash);
+
+  Prism.languages.java = Prism.languages.extend("clike", javaOverrides);
+  Prism.languages.insertBefore("java", "string", javaStringAdditions);
+  Prism.languages.insertBefore("java", "class-name", javaClassNameAdditions);
+
+  register("pkl", pkl);
+}

@@ -1,6 +1,8 @@
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect } from "vitest";
+import { Prism } from "prism-react-renderer";
 import { CodeBlock } from "./code-block";
+import { ensureGrammars } from "./prism-languages";
 
 describe("CodeBlock — editor variant", () => {
   it("renders the filename, a line-number gutter, a vim status bar, and a copy button", () => {
@@ -67,5 +69,43 @@ describe("CodeBlock — body", () => {
     // Each highlighted line is a `span.block`; keyed() keeps the React keys
     // unique across the duplicate content, so all three render.
     expect(container.querySelectorAll("span.block")).toHaveLength(3);
+  });
+});
+
+describe("CodeBlock — registered grammars", () => {
+  it("registers bash, java, and pkl on the vendored Prism instance", () => {
+    ensureGrammars();
+    for (const lang of ["bash", "sh", "shell", "java", "pkl"]) {
+      expect(Prism.languages[lang], `grammar: ${lang}`).toBeDefined();
+    }
+  });
+
+  it("highlights java keywords, class names, and strings", () => {
+    const { container } = render(
+      <CodeBlock lang="java" filename="Main.java" code={'public final class Main {\n  String s = "hi";\n}'} />,
+    );
+    const text = (sel: string) =>
+      [...container.querySelectorAll(sel)].map((el) => el.textContent);
+    expect(text(".token.keyword")).toContain("public");
+    expect(text(".token.class-name")).toContain("Main");
+    expect(text(".token.string")).toContain('"hi"');
+  });
+
+  it("highlights pkl keywords, properties, and strings", () => {
+    const { container } = render(
+      <CodeBlock lang="pkl" filename="elide.pkl" code={'amends "elide:project.pkl"\nname = "app"'} />,
+    );
+    const text = (sel: string) =>
+      [...container.querySelectorAll(sel)].map((el) => el.textContent);
+    expect(text(".token.keyword")).toContain("amends");
+    expect(text(".token.property")).toContain("name");
+    expect(text(".token.string")).toContain('"app"');
+  });
+
+  it("highlights bash commands in the terminal variant", () => {
+    const { container } = render(<CodeBlock variant="terminal" code={"elide build"} />);
+    expect(
+      [...container.querySelectorAll(".token.function")].map((el) => el.textContent),
+    ).toContain("elide");
   });
 });
