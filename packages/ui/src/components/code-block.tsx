@@ -175,6 +175,7 @@ export function CodeBlock({
           style={elev}
         >
           <span>{lang ?? m.codeBlock.terminal}</span>
+          <CopyButton value={code} label="" className="ml-auto px-1.5 py-1" />
         </div>
         <pre className="m-0 overflow-x-auto p-4 font-mono text-[13px] leading-[1.7] text-[var(--eld-syntax-default)]">
           {body}

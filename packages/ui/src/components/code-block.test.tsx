@@ -48,6 +48,11 @@ describe("CodeBlock — terminal variant", () => {
     expect(container.querySelector('[class*="ff5f56"]')).toBeNull();
   });
 
+  it("renders a copy button, same as the editor variant", () => {
+    render(<CodeBlock variant="terminal" lang="bash" code={"elide build"} />);
+    expect(screen.getByRole("button", { name: "Copy" })).toBeInTheDocument();
+  });
+
   it("falls back to the localized TERMINAL title when no lang is given", () => {
     render(<CodeBlock variant="terminal" code={"echo hi"} />);
     expect(screen.getByText("Terminal")).toBeInTheDocument();
