@@ -1,4 +1,4 @@
-import { render, screen, act } from "@testing-library/react";
+import { render, screen, act, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { TableOfContents } from "./table-of-contents";
@@ -44,9 +44,7 @@ describe("TableOfContents", () => {
     expect(onSelect).toHaveBeenCalledWith("installation");
   });
 
-  it("degrades gracefully without IntersectionObserver when uncontrolled", () => {
-    // jsdom has no IntersectionObserver; the component must not throw and
-    // should render with no active item rather than self-managing state.
+  it("renders no active item when no headings are on the page", () => {
     expect(() => render(<TableOfContents items={items} />)).not.toThrow();
     const links = screen.getAllByRole("link");
     expect(links.every((link) => !link.hasAttribute("aria-current"))).toBe(true);
@@ -54,39 +52,47 @@ describe("TableOfContents", () => {
 });
 
 describe("TableOfContents — scroll-spy", () => {
-  // Minimal IntersectionObserver stub: capture the callback so the test can
-  // drive section visibility manually (jsdom ships none).
-  class MockIntersectionObserver {
-    static instances: MockIntersectionObserver[] = [];
-    callback: IntersectionObserverCallback;
-    constructor(cb: IntersectionObserverCallback) {
-      this.callback = cb;
-      MockIntersectionObserver.instances.push(this);
-    }
-    observe() {}
-    unobserve() {}
-    disconnect() {}
-    takeRecords(): IntersectionObserverEntry[] {
-      return [];
-    }
-    // Test helper: fire the observer callback with synthetic entries.
-    emit(entries: { id: string; isIntersecting: boolean }[]) {
-      const records = entries.map((e) => ({
-        isIntersecting: e.isIntersecting,
-        target: document.getElementById(e.id)!,
-      })) as unknown as IntersectionObserverEntry[];
-      act(() => this.callback(records, this as unknown as IntersectionObserver));
-    }
-  }
+  // jsdom has no layout: give each section a settable viewport top.
+  const tops: Record<string, number> = {};
+  let frames: FrameRequestCallback[] = [];
 
   beforeEach(() => {
-    MockIntersectionObserver.instances = [];
-    vi.stubGlobal("IntersectionObserver", MockIntersectionObserver);
+    frames = [];
+    vi.stubGlobal("requestAnimationFrame", (cb: FrameRequestCallback) => frames.push(cb));
+    vi.stubGlobal("cancelAnimationFrame", () => {});
+    vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      return { top: tops[this.id] ?? 0 } as DOMRect;
+    });
+    Object.defineProperty(document.documentElement, "scrollHeight", {
+      configurable: true,
+      value: 10_000,
+    });
   });
 
   afterEach(() => {
     vi.unstubAllGlobals();
+    vi.restoreAllMocks();
   });
+
+  function scrollTo(next: Record<string, number>) {
+    Object.assign(tops, next);
+    act(() => {
+      // Two scroll events in one frame schedule a single update.
+      fireEvent.scroll(window);
+      fireEvent.scroll(window);
+      expect(frames).toHaveLength(1);
+      frames.splice(0).forEach((cb) => cb(0));
+    });
+  }
+
+  function current() {
+    return screen
+      .getAllByRole("link")
+      .filter((link) => link.getAttribute("aria-current") === "location")
+      .map((link) => link.textContent);
+  }
 
   function renderWithSections() {
     return render(
@@ -99,52 +105,50 @@ describe("TableOfContents — scroll-spy", () => {
     );
   }
 
-  it("marks the intersecting section as current, then clears it when it leaves", () => {
+  it("highlights the first entry above the first heading", () => {
+    Object.assign(tops, { overview: 300, installation: 900, advanced: 1500 });
     renderWithSections();
-    const observer = MockIntersectionObserver.instances[0];
-    expect(observer).toBeDefined();
-
-    observer.emit([{ id: "installation", isIntersecting: true }]);
-    expect(screen.getByRole("link", { name: "Installation" })).toHaveAttribute(
-      "aria-current",
-      "location",
-    );
-
-    observer.emit([{ id: "installation", isIntersecting: false }]);
-    expect(screen.getByRole("link", { name: "Installation" })).not.toHaveAttribute("aria-current");
+    expect(current()).toEqual(["Overview"]);
   });
 
-  it("picks the first item in list order when several sections are visible", () => {
+  it("highlights the last heading above the activation line", () => {
+    Object.assign(tops, { overview: 300, installation: 900, advanced: 1500 });
     renderWithSections();
-    const observer = MockIntersectionObserver.instances[0];
 
-    observer.emit([
-      { id: "advanced", isIntersecting: true },
-      { id: "installation", isIntersecting: true },
-    ]);
+    scrollTo({ overview: -500, installation: 50, advanced: 650 });
+    expect(current()).toEqual(["Installation"]);
 
-    // Both visible, but "installation" precedes "advanced" in `items`.
-    expect(screen.getByRole("link", { name: "Installation" })).toHaveAttribute(
-      "aria-current",
-      "location",
-    );
-    expect(screen.getByRole("link", { name: "Advanced usage" })).not.toHaveAttribute(
-      "aria-current",
-    );
+    // Long section: its heading is far above, but it stays current.
+    scrollTo({ overview: -3000, installation: -2400, advanced: 4000 });
+    expect(current()).toEqual(["Installation"]);
+
+    scrollTo({ overview: -3600, installation: -3000, advanced: 90 });
+    expect(current()).toEqual(["Advanced usage"]);
+  });
+
+  it("highlights the lowest visible heading at the bottom of the page", () => {
+    Object.assign(tops, { overview: 300, installation: 900, advanced: 1500 });
+    renderWithSections();
+    Object.defineProperty(document.documentElement, "scrollHeight", {
+      configurable: true,
+      value: window.innerHeight,
+    });
+    scrollTo({ overview: -200, installation: 40, advanced: 400 });
+    expect(current()).toEqual(["Advanced usage"]);
   });
 
   it("does not scroll-spy when activeId is controlled", () => {
+    Object.assign(tops, { overview: -100 });
     render(
       <>
         <div id="overview">Overview section</div>
+        <div id="installation">Installation section</div>
         <TableOfContents items={items} activeId="overview" />
       </>,
     );
-    // The effect returns early for a controlled activeId — no observer created.
-    expect(MockIntersectionObserver.instances).toHaveLength(0);
-    expect(screen.getByRole("link", { name: "Overview" })).toHaveAttribute(
-      "aria-current",
-      "location",
-    );
+    Object.assign(tops, { overview: -500, installation: -100 });
+    fireEvent.scroll(window);
+    expect(frames).toHaveLength(0);
+    expect(current()).toEqual(["Overview"]);
   });
 });

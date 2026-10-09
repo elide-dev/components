@@ -6,7 +6,7 @@ import { useMessages } from "../i18n/context";
  * TableOfContents — the "On this page" right-rail nav that lists in-page
  * anchor headings. Pass `activeId` to control the highlighted item directly
  * (e.g. from route state); omit it and the component scroll-spies the
- * headings itself via `IntersectionObserver`.
+ * headings itself on scroll (rAF-throttled), so one item is always current.
  */
 export interface TocItem {
   id: string;
@@ -23,6 +23,11 @@ export interface TableOfContentsProps extends Omit<React.ComponentProps<"nav">, 
   variant?: "default" | "mono";
   title?: string;
   onSelect?: (id: string) => void;
+  /**
+   * Pixels from the viewport top to the activation line: the active item is
+   * the last heading whose top has scrolled above it. Defaults to 96.
+   */
+  activationOffset?: number;
 }
 
 export function TableOfContents({
@@ -31,42 +36,55 @@ export function TableOfContents({
   variant = "default",
   title,
   onSelect,
+  activationOffset = 96,
   className,
   ...props
 }: TableOfContentsProps) {
   const m = useMessages();
-  const [visibleIds, setVisibleIds] = React.useState<Set<string>>(() => new Set());
+  const [spiedId, setSpiedId] = React.useState<string | undefined>(undefined);
 
   React.useEffect(() => {
-    // Controlled from outside — don't fight the caller with our own observer.
+    // Controlled from outside — don't fight the caller with our own spy.
     if (activeId !== undefined) return;
-    // jsdom (and older browsers) have no IntersectionObserver; degrade to "no
-    // active item" rather than throwing.
-    if (typeof IntersectionObserver === "undefined") return;
 
-    const targets = items
-      .map((item) => document.getElementById(item.id))
-      .filter((el): el is HTMLElement => el !== null);
-    if (targets.length === 0) return;
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const atBottom =
+        window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2;
+      // At the bottom the last headings may never reach the activation line,
+      // so the lowest heading on screen wins instead.
+      const line = atBottom ? window.innerHeight : activationOffset;
+      let first: string | undefined;
+      let next: string | undefined;
+      let nextTop = -Infinity;
+      for (const item of items) {
+        const el = document.getElementById(item.id);
+        if (!el) continue;
+        first ??= item.id;
+        const top = el.getBoundingClientRect().top;
+        if (top <= line && top >= nextTop) {
+          nextTop = top;
+          next = item.id;
+        }
+      }
+      // Above the first heading, the first entry stays highlighted.
+      setSpiedId(next ?? first);
+    };
+    const schedule = () => {
+      if (frame === 0) frame = requestAnimationFrame(update);
+    };
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        setVisibleIds((prev) => {
-          const next = new Set(prev);
-          for (const entry of entries) {
-            if (entry.isIntersecting) next.add(entry.target.id);
-            else next.delete(entry.target.id);
-          }
-          return next;
-        });
-      },
-      { rootMargin: "0px 0px -70% 0px" },
-    );
-    targets.forEach((el) => observer.observe(el));
-    return () => observer.disconnect();
-  }, [items, activeId]);
+    update();
+    window.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", schedule);
+    return () => {
+      window.removeEventListener("scroll", schedule);
+      window.removeEventListener("resize", schedule);
+      if (frame !== 0) cancelAnimationFrame(frame);
+    };
+  }, [items, activeId, activationOffset]);
 
-  const spiedId = items.find((item) => visibleIds.has(item.id))?.id;
   const currentId = activeId ?? spiedId;
 
   return (
