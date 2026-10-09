@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect } from "vitest";
-import { ElideLogo, ElideMark, ElideWordmark } from "./elide-logo";
+import { ElideGlyph, ElideLogo, ElideMark, ElideWordmark } from "./elide-logo";
 
 /** The single <svg> rendered in vector mode. */
 function svg(container: HTMLElement): SVGSVGElement {
@@ -269,5 +269,15 @@ describe("back-compat", () => {
   it("ElideWordmark still draws in currentColor", () => {
     const { container } = render(<ElideWordmark />);
     expect(container.querySelector("path")).toHaveAttribute("fill", "currentColor");
+  });
+
+  it("ElideGlyph draws the lockup glyph alone, mono by default and gradient on request", () => {
+    const mono = render(<ElideGlyph />).container;
+    expect(mono.querySelector("svg")).toHaveAttribute("viewBox", "0 0 80.72 90.39");
+    expect(mono.querySelectorAll("path")).toHaveLength(1);
+    expect(mono.querySelector("path")).toHaveAttribute("fill", "currentColor");
+    const gradient = render(<ElideGlyph variant="gradient" />).container;
+    expect(gradient.querySelector("linearGradient")).not.toBeNull();
+    expect(gradient.querySelector("path")?.getAttribute("fill")).toMatch(/^url\(#/);
   });
 });

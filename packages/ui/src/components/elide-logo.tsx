@@ -336,6 +336,43 @@ export function ElideMark({ className, ...props }: React.SVGProps<SVGSVGElement>
  * setting, on its own 179.42x42.36 canvas). It is kept because `AppNav`'s
  * lockup is built from it; `<ElideLogo form="full" />` is the official lockup.
  */
+/** The lockup's glyph alone, on its own canvas; the wordmark starts to its right. */
+const GLYPH_VIEWBOX = "0 0 80.72 90.39";
+
+export interface ElideGlyphProps extends React.SVGProps<SVGSVGElement> {
+  /** `mono` draws in `currentColor`; `gradient` is the brand gradient. */
+  variant?: "mono" | "gradient";
+}
+
+/**
+ * ElideGlyph — the interlocking-layers glyph from the `full` lockup, without the
+ * wordmark and without the hexagon badge. In `mono` it follows the text color,
+ * so a header can set it beside `ElideWordmark` at any size.
+ */
+export function ElideGlyph({ variant = "mono", className, ...props }: ElideGlyphProps) {
+  const gid = React.useId().replace(/:/g, "");
+  const gradient = variant === "gradient";
+  return (
+    <svg
+      viewBox={GLYPH_VIEWBOX}
+      role="img"
+      aria-label="Elide"
+      className={cn("h-6 w-auto", className)}
+      {...props}
+    >
+      {gradient && (
+        <defs>
+          <linearGradient id={gid} {...GRADIENTS.fullGlyph} gradientUnits="userSpaceOnUse">
+            <stop offset="0" stopColor={BRAND_PURPLE} />
+            <stop offset="1" stopColor={BRAND_MAGENTA} />
+          </linearGradient>
+        </defs>
+      )}
+      <path fill={gradient ? `url(#${gid})` : "currentColor"} d={paths.fullGlyph} />
+    </svg>
+  );
+}
+
 export function ElideWordmark({ className, ...props }: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
