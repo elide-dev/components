@@ -45,9 +45,19 @@
   --color-code: var(--code-background);
   --color-code-elev: var(--code-background-elev);
 
+  /* Base hues are fills; use the -emphasis colors for text and icons. */
   --color-info: var(--eld-info);
+  --color-info-emphasis: var(--info-emphasis);
+  --color-info-soft: var(--info-soft);
   --color-success: var(--eld-success);
+  --color-success-emphasis: var(--success-emphasis);
+  --color-success-soft: var(--success-soft);
   --color-warning: var(--eld-warning);
+  --color-warning-emphasis: var(--warning-emphasis);
+  --color-warning-soft: var(--warning-soft);
+  --color-danger: var(--eld-danger);
+  --color-danger-emphasis: var(--danger-emphasis);
+  --color-danger-soft: var(--danger-soft);
 
   --font-sans: var(--eld-font-sans);
   --font-display: var(--eld-font-display);

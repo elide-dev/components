@@ -22,7 +22,8 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "dev": "tsc -p tsconfig.json --watch"
+    "dev": "tsc -p tsconfig.json --watch",
+    "test": "bun test"
   },
   "dependencies": {
     "@fontsource/instrument-sans": "^5.3.0",

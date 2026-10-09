@@ -37,9 +37,9 @@ const DEFAULT_COLUMNS: SupportMatrixColumn[] = [
 ];
 
 const STATUS_META: Record<SupportStatus, { messageKey: keyof Messages["supportMatrix"]; icon: LucideIcon; color: string }> = {
-  yes: { messageKey: "supported", icon: Check, color: "var(--eld-success-strong)" },
+  yes: { messageKey: "supported", icon: Check, color: "var(--success-emphasis)" },
   no: { messageKey: "notSupported", icon: X, color: "var(--subtle-foreground)" },
-  partial: { messageKey: "partial", icon: CircleDot, color: "var(--eld-warning-strong)" },
+  partial: { messageKey: "partial", icon: CircleDot, color: "var(--warning-emphasis)" },
 };
 
 export function SupportMatrix({

@@ -4,21 +4,32 @@ import { cn } from "../lib/utils";
 
 /**
  * Callout — composite. GitHub-style admonition (Note / Tip / Important /
- * Warning / Caution): a plain left rule with the icon + label line tinted in
- * the tone color, no surface fill or outer border. Body accepts arbitrary
- * rich content and renders in the regular foreground color.
+ * Warning / Caution): a plain left rule in the tone's base hue, with the icon +
+ * label line in its text-safe emphasis color, no surface fill or outer border.
+ * Body accepts arbitrary rich content and renders in the regular foreground
+ * color.
  */
 type CalloutTone = "note" | "tip" | "important" | "warning" | "caution";
 
 const TONES: Record<
   CalloutTone,
-  { label: string; color: string; icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }> }
+  {
+    label: string;
+    rule: string;
+    color: string;
+    icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
+  }
 > = {
-  note: { label: "Note", color: "var(--eld-info)", icon: Info },
-  tip: { label: "Tip", color: "var(--eld-success)", icon: Lightbulb },
-  important: { label: "Important", color: "var(--eld-magenta-500)", icon: MessageSquareWarning },
-  warning: { label: "Warning", color: "var(--eld-warning)", icon: TriangleAlert },
-  caution: { label: "Caution", color: "var(--eld-danger)", icon: OctagonAlert },
+  note: { label: "Note", rule: "var(--eld-info)", color: "var(--info-emphasis)", icon: Info },
+  tip: { label: "Tip", rule: "var(--eld-success)", color: "var(--success-emphasis)", icon: Lightbulb },
+  important: {
+    label: "Important",
+    rule: "var(--eld-magenta-500)",
+    color: "var(--primary-emphasis)",
+    icon: MessageSquareWarning,
+  },
+  warning: { label: "Warning", rule: "var(--eld-warning)", color: "var(--warning-emphasis)", icon: TriangleAlert },
+  caution: { label: "Caution", rule: "var(--eld-danger)", color: "var(--danger-emphasis)", icon: OctagonAlert },
 };
 
 export interface CalloutProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "title"> {
@@ -34,7 +45,7 @@ export function Callout({ tone = "note", title, className, children, ...props }:
     <div
       role="note"
       className={cn("flex flex-col gap-2 py-2 pl-4 pr-2", className)}
-      style={{ borderLeft: `3px solid ${t.color}` }}
+      style={{ borderLeft: `3px solid ${t.rule}` }}
       {...props}
     >
       <div

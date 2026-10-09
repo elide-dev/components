@@ -49,5 +49,12 @@ Light is the default (on `:root`). Enable dark by adding `.dark` (or
 `[data-theme="dark"]`) to `<html>`. The docs app defaults to dark at the app
 level; this package stays neutral so the marketing site can default to light.
 
+Text and icons in an accent or status color use the theme-aware emphasis
+tokens — `--primary-emphasis`, `--info-emphasis`, `--success-emphasis`,
+`--warning-emphasis`, `--danger-emphasis` (Tailwind: `text-success-emphasis`) —
+over their `--*-soft` tints. The base hues (`--eld-info`, `--eld-success`, …)
+are fill colors and fail AA as text on light surfaces. `bun test` checks every
+semantic text/surface pairing against WCAG AA in both themes.
+
 The **code surface is intentionally dark in both themes** (matching the Figma
 Code Block), so `--code-*` and `--eld-syntax-*` do not change with theme.

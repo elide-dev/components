@@ -27,9 +27,9 @@ export interface SectionTabsProps extends Omit<React.ComponentProps<"nav">, "onS
 }
 
 const dotColor: Record<NonNullable<SectionTabsVersion["status"]>, string> = {
-  ok: "var(--eld-success-strong)",
-  beta: "var(--eld-info)",
-  warn: "var(--eld-warning-strong)",
+  ok: "var(--success-emphasis)",
+  beta: "var(--info-emphasis)",
+  warn: "var(--warning-emphasis)",
 };
 
 export function SectionTabs({ items, version, onSelect, className, ...props }: SectionTabsProps) {

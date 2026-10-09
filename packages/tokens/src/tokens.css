@@ -3,7 +3,9 @@
  * -----------------------------------------------------------------------------
  * Values are lifted verbatim from the Figma "Elide Design System" variable
  * collections (eld/colors, mode, eld/font, eld/syntax, tw/border-radius).
- * Do not round or re-derive — these are the source of truth.
+ * Do not round or re-derive — these are the source of truth. The exceptions
+ * are the WCAG AA text steps (status -strong/-deep, neutral-550, magenta-750):
+ * same hue, lightness solved in OKLCH, guarded by test/contrast.test.ts.
  *
  * Two layers:
  *   1. Primitive tokens (--eld-*)  — raw scales, theme-independent.
@@ -25,6 +27,7 @@
   --eld-magenta-500: #ff30bc;
   --eld-magenta-600: #e7008c;
   --eld-magenta-700: #d4007f;
+  --eld-magenta-750: #c30073;
   --eld-magenta-800: #b00469;
   --eld-magenta-900: #920959;
   --eld-magenta-950: #5b0035;
@@ -36,6 +39,7 @@
   --eld-neutral-300: #c0c0c0;
   --eld-neutral-400: #9a9a9a;
   --eld-neutral-500: #737373;
+  --eld-neutral-550: #696969;
   --eld-neutral-600: #525252;
   --eld-neutral-700: #3a3a3a;
   --eld-neutral-800: #1e1e22;
@@ -48,13 +52,22 @@
   --eld-accent-violet: #9747ff; /* used for the Changelog affordance */
   --eld-gradient-brand: linear-gradient(135deg, #8a3bd4, #e7008c);
 
-  /* ---- Primitive · Status hues ---- */
+  /* ---- Primitive · Status hues ----
+   * Base: fills, rules and tints. -strong: text/icons on dark surfaces.
+   * -deep: text/icons on light surfaces. Use the theme-aware --*-emphasis
+   * semantic tokens for text rather than picking a step. */
   --eld-info: #3b82f6;
+  --eld-info-strong: #60a5fa;
+  --eld-info-deep: #235fe5;
   --eld-success: #22c55e;
   --eld-success-strong: #3fb950;
+  --eld-success-deep: #117c3a;
   --eld-warning: #eab308;
   --eld-warning-strong: #e0a020;
+  --eld-warning-deep: #9c5e02;
   --eld-danger: #ef4444;
+  --eld-danger-strong: #f87171;
+  --eld-danger-deep: #cd1b1e;
 
   /* ---- Primitive · Radius (tw/border-radius) ---- */
   --eld-radius-xs: 2px;
@@ -95,7 +108,7 @@
 
   --muted: var(--eld-neutral-100);
   --muted-foreground: var(--eld-neutral-600);
-  --subtle-foreground: var(--eld-neutral-500);
+  --subtle-foreground: var(--eld-neutral-550);
 
   --accent: var(--eld-neutral-100);
   --accent-foreground: var(--eld-neutral-950);
@@ -103,10 +116,20 @@
   --primary: var(--eld-magenta-700);
   --primary-foreground: var(--eld-magenta-50);
   /* --primary-emphasis: the on-surface accent text/icon color; deepens in light */
-  --primary-emphasis: var(--eld-magenta-700);
+  --primary-emphasis: var(--eld-magenta-750);
   --primary-soft: color-mix(in oklab, var(--eld-magenta-700) 9%, transparent);
 
-  --destructive: var(--eld-danger);
+  /* Status text/icons (--*-emphasis) and tinted surfaces (--*-soft) */
+  --info-emphasis: var(--eld-info-deep);
+  --info-soft: color-mix(in oklab, var(--eld-info) 12%, transparent);
+  --success-emphasis: var(--eld-success-deep);
+  --success-soft: color-mix(in oklab, var(--eld-success) 12%, transparent);
+  --warning-emphasis: var(--eld-warning-deep);
+  --warning-soft: color-mix(in oklab, var(--eld-warning) 12%, transparent);
+  --danger-emphasis: var(--eld-danger-deep);
+  --danger-soft: color-mix(in oklab, var(--eld-danger) 12%, transparent);
+
+  --destructive: var(--eld-danger-deep);
   --destructive-foreground: #ffffff;
 
   --border: color-mix(in oklab, var(--eld-neutral-950) 10%, transparent);
@@ -142,8 +165,7 @@
 
   --muted: var(--eld-neutral-800);
   --muted-foreground: var(--eld-neutral-400);
-  /* neutral-500 (#737373) fails WCAG AA for small text on the dark surfaces;
-     step up to neutral-400 so micro-labels clear 4.5:1 (light stays 500). */
+  /* neutral-500/550 fail WCAG AA for small text on the dark surfaces */
   --subtle-foreground: var(--eld-neutral-400);
 
   --accent: var(--eld-neutral-700);
@@ -155,7 +177,16 @@
   --primary-emphasis: var(--eld-magenta-400);
   --primary-soft: color-mix(in oklab, var(--eld-magenta-400) 13%, transparent);
 
-  --destructive: var(--eld-danger);
+  --info-emphasis: var(--eld-info-strong);
+  --info-soft: color-mix(in oklab, var(--eld-info-strong) 14%, transparent);
+  --success-emphasis: var(--eld-success-strong);
+  --success-soft: color-mix(in oklab, var(--eld-success-strong) 14%, transparent);
+  --warning-emphasis: var(--eld-warning-strong);
+  --warning-soft: color-mix(in oklab, var(--eld-warning-strong) 14%, transparent);
+  --danger-emphasis: var(--eld-danger-strong);
+  --danger-soft: color-mix(in oklab, var(--eld-danger-strong) 14%, transparent);
+
+  --destructive: var(--eld-danger-deep);
   --destructive-foreground: #ffffff;
 
   --border: color-mix(in oklab, var(--eld-neutral-50) 9%, transparent);

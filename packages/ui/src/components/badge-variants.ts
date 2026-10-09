@@ -11,8 +11,8 @@ export const badgeVariants = cva(
       variant: {
         neutral: "border border-border text-muted-foreground",
         primary: "text-[var(--primary-emphasis)] [background:var(--primary-soft)]",
-        supported: "text-[var(--eld-success-strong)] [background:color-mix(in_oklab,var(--eld-success-strong)_14%,transparent)]",
-        partial: "text-[var(--eld-warning-strong)] [background:color-mix(in_oklab,var(--eld-warning-strong)_14%,transparent)]",
+        supported: "text-[var(--success-emphasis)] [background:var(--success-soft)]",
+        partial: "text-[var(--warning-emphasis)] [background:var(--warning-soft)]",
         missing: "text-muted-foreground [background:var(--muted)]",
       },
       size: {

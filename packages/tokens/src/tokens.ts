@@ -14,6 +14,7 @@ export const magenta = {
   500: "#ff30bc",
   600: "#e7008c",
   700: "#d4007f",
+  750: "#c30073",
   800: "#b00469",
   900: "#920959",
   950: "#5b0035",
@@ -26,6 +27,7 @@ export const neutral = {
   300: "#c0c0c0",
   400: "#9a9a9a",
   500: "#737373",
+  550: "#696969",
   600: "#525252",
   700: "#3a3a3a",
   800: "#1e1e22",
@@ -40,13 +42,20 @@ export const brand = {
   gradient: "linear-gradient(135deg, #8a3bd4, #e7008c)",
 } as const;
 
+/** Base hues for fills; `*Strong` is text on dark surfaces, `*Deep` text on light. */
 export const status = {
   info: "#3b82f6",
+  infoStrong: "#60a5fa",
+  infoDeep: "#235fe5",
   success: "#22c55e",
   successStrong: "#3fb950",
+  successDeep: "#117c3a",
   warning: "#eab308",
   warningStrong: "#e0a020",
+  warningDeep: "#9c5e02",
   danger: "#ef4444",
+  dangerStrong: "#f87171",
+  dangerDeep: "#cd1b1e",
 } as const;
 
 export const syntax = {
@@ -86,9 +95,19 @@ export const cssVar = {
   card: "--card",
   muted: "--muted",
   mutedForeground: "--muted-foreground",
+  subtleForeground: "--subtle-foreground",
   primary: "--primary",
   primaryForeground: "--primary-foreground",
   primaryEmphasis: "--primary-emphasis",
+  primarySoft: "--primary-soft",
+  infoEmphasis: "--info-emphasis",
+  infoSoft: "--info-soft",
+  successEmphasis: "--success-emphasis",
+  successSoft: "--success-soft",
+  warningEmphasis: "--warning-emphasis",
+  warningSoft: "--warning-soft",
+  dangerEmphasis: "--danger-emphasis",
+  dangerSoft: "--danger-soft",
   border: "--border",
   ring: "--ring",
   codeBackground: "--code-background",
