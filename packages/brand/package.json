@@ -1,7 +1,7 @@
 {
   "name": "@elide/brand",
   "version": "0.1.0",
-  "description": "Elide's brand artwork \u2014 logo geometry, generated SVG, and png/webp/avif renditions. No framework dependency; safe to consume from any repo.",
+  "description": "Elide's brand artwork — logo geometry, generated SVG, and png/webp/avif renditions. No framework dependency; safe to consume from any repo.",
   "license": "UNLICENSED",
   "type": "module",
   "exports": {
@@ -26,11 +26,11 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "eslint": "^10.11.0",
-    "globals": "^17.12.0",
-    "sharp": "^0.35.4",
+    "eslint": "^10.12.0",
+    "globals": "^17.13.0",
+    "sharp": "^0.35.5",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.70.1",
-    "vitest": "^5.0.1"
+    "typescript-eslint": "^8.71.1",
+    "vitest": "^5.0.3"
   }
 }
