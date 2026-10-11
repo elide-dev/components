@@ -22,10 +22,10 @@
   },
   "devDependencies": {
     "@changesets/cli": "^3.0.3",
-    "turbo": "^2.11.3",
+    "turbo": "^2.11.7",
     "typescript": "^7.0.2"
   },
   "dependencies": {
-    "chromatic": "^18.9.5"
+    "chromatic": "^18.12.0"
   }
 }
