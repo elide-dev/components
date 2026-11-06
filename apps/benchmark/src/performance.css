@@ -1,0 +1,41 @@
+@source "./PerformanceApp.tsx";
+
+.performance-document {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 15rem;
+  align-items: start;
+  gap: 2.5rem;
+}
+
+.performance-document article p,
+.performance-introduction p {
+  margin-block: 1rem;
+  line-height: 1.75;
+  color: var(--muted-foreground);
+}
+
+.performance-toc {
+  position: sticky;
+  top: 1.5rem;
+  max-height: calc(100dvh - 3rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  margin-block-start: 3.5rem;
+  padding-inline-end: .75rem;
+}
+
+.performance-selection {
+  margin-block: 1rem;
+  font-size: .875rem;
+  color: var(--muted-foreground);
+}
+
+.performance-introduction {
+  margin-block-start: 2rem;
+  max-width: 42rem;
+}
+
+@media (max-width: 48rem) {
+  .performance-document { grid-template-columns: minmax(0, 1fr); }
+  .performance-toc { position: static; grid-row: 1; max-height: 18rem; }
+}

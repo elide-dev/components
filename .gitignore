@@ -13,3 +13,4 @@ coverage/
 
 # Local performance audit artifacts
 apps/benchmark/lighthouse*.json
+apps/benchmark/.profiles/

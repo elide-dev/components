@@ -38,6 +38,64 @@ export interface CommandPaletteProps {
 const groupHeadingCls =
   "px-2.5 pt-1.5 pb-1 font-mono text-[10.5px] font-semibold tracking-normal text-subtle-foreground";
 
+interface CommandRowProps {
+  item: CommandItem;
+  index: number;
+  active: boolean;
+  onActivate: (index: number) => void;
+  onSelect: (item: CommandItem) => void;
+}
+
+// Navigation changes only the previous and next active rows. Keep their label
+// width fixed as well, so moving the cursor does not lay out the list again.
+const CommandRow = React.memo(function CommandRow({
+  item,
+  index,
+  active,
+  onActivate,
+  onSelect,
+}: CommandRowProps) {
+  return (
+    <button
+      type="button"
+      onMouseMove={() => { if (!active) onActivate(index); }}
+      onClick={() => onSelect(item)}
+      className={cn(
+        "flex w-full items-center gap-[11px] rounded-md px-2.5 py-[9px] text-left",
+        active && "[background:var(--primary-soft)]",
+      )}
+    >
+      <span
+        className={cn(
+          "flex h-4 w-4 shrink-0 items-center justify-center [&_svg]:h-4 [&_svg]:w-4",
+          active ? "text-primary-emphasis" : "text-muted-foreground",
+        )}
+      >
+        {item.icon}
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block truncate text-[13.5px] font-semibold text-foreground">
+          {item.title}
+        </span>
+        {item.subtitle ? (
+          <span className="block truncate text-[11.5px] text-subtle-foreground">
+            {item.subtitle}
+          </span>
+        ) : null}
+      </span>
+      {/* Visibility reserves the icon's space without the SVG layout work that
+          Chrome performs when its opacity changes. */}
+      <CornerDownLeft
+        aria-hidden="true"
+        className={cn(
+          "h-3.5 w-3.5 shrink-0 text-primary-emphasis",
+          active ? "visible" : "invisible",
+        )}
+      />
+    </button>
+  );
+});
+
 export function CommandPalette({
   open,
   onOpenChange,
@@ -62,14 +120,22 @@ export function CommandPalette({
 
   // Flatten for keyboard navigation across groups.
   const flat = React.useMemo(() => filtered.flatMap((g) => g.items), [filtered]);
+  const indexedGroups = React.useMemo(() => {
+    let offset = 0;
+    return filtered.map(group => {
+      const indexed = { group, offset };
+      offset += group.items.length;
+      return indexed;
+    });
+  }, [filtered]);
   const [active, setActive] = React.useState(0);
   React.useEffect(() => setActive(0), [query, open]);
 
-  const select = (item: CommandItem | undefined) => {
+  const select = React.useCallback((item: CommandItem | undefined) => {
     if (!item) return;
     item.onSelect?.();
     onOpenChange?.(false);
-  };
+  }, [onOpenChange]);
 
   const onKeyDown = (e: React.KeyboardEvent) => {
     if (flat.length === 0) return;
@@ -121,47 +187,19 @@ export function CommandPalette({
                 {emptyMessage}
               </div>
             ) : (
-              filtered.map((group) => (
+              indexedGroups.map(({ group, offset }) => (
                 <div key={group.heading}>
                   <div className={groupHeadingCls}>{group.heading}</div>
-                  {group.items.map((item) => {
-                    const idx = flat.indexOf(item);
-                    const isActive = idx === active;
-                    return (
-                      <button
-                        key={item.id}
-                        type="button"
-                        onMouseMove={() => setActive(idx)}
-                        onClick={() => select(item)}
-                        className={cn(
-                          "flex w-full items-center gap-[11px] rounded-md px-2.5 py-[9px] text-left",
-                          isActive && "[background:var(--primary-soft)]",
-                        )}
-                      >
-                        <span
-                          className={cn(
-                            "flex h-4 w-4 shrink-0 items-center justify-center [&_svg]:h-4 [&_svg]:w-4",
-                            isActive ? "text-primary-emphasis" : "text-muted-foreground",
-                          )}
-                        >
-                          {item.icon}
-                        </span>
-                        <span className="min-w-0 flex-1">
-                          <span className="block truncate text-[13.5px] font-semibold text-foreground">
-                            {item.title}
-                          </span>
-                          {item.subtitle ? (
-                            <span className="block truncate text-[11.5px] text-subtle-foreground">
-                              {item.subtitle}
-                            </span>
-                          ) : null}
-                        </span>
-                        {isActive ? (
-                          <CornerDownLeft className="h-3.5 w-3.5 shrink-0 text-primary-emphasis" />
-                        ) : null}
-                      </button>
-                    );
-                  })}
+                  {group.items.map((item, index) => (
+                    <CommandRow
+                      key={item.id}
+                      item={item}
+                      index={offset + index}
+                      active={offset + index === active}
+                      onActivate={setActive}
+                      onSelect={select}
+                    />
+                  ))}
                 </div>
               ))
             )}

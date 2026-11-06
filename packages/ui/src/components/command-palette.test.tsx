@@ -96,4 +96,37 @@ describe("CommandPalette", () => {
 
     expect(python).toHaveBeenCalledTimes(1);
   });
+
+  it("continues keyboard navigation from the hovered row across groups", async () => {
+    const user = userEvent.setup();
+    const docs = vi.fn();
+    const python = vi.fn();
+    render(<CommandPalette open groups={makeGroups({ docs, python })} />);
+    await waitFor(() => expect(screen.getByRole("textbox")).toHaveFocus());
+
+    await user.hover(screen.getByRole("button", { name: /Docs/ }));
+    await user.keyboard("{ArrowDown}{Enter}");
+
+    expect(python).toHaveBeenCalledTimes(1);
+    expect(docs).not.toHaveBeenCalled();
+  });
+
+  it("uses the current selection and close callbacks after props change", async () => {
+    const user = userEvent.setup();
+    const previousHome = vi.fn();
+    const home = vi.fn();
+    const previousClose = vi.fn();
+    const close = vi.fn();
+    const { rerender } = render(
+      <CommandPalette open groups={makeGroups({ home: previousHome })} onOpenChange={previousClose} />,
+    );
+    rerender(<CommandPalette open groups={makeGroups({ home })} onOpenChange={close} />);
+
+    await user.click(screen.getByRole("button", { name: /Home/ }));
+
+    expect(home).toHaveBeenCalledTimes(1);
+    expect(close).toHaveBeenCalledWith(false);
+    expect(previousHome).not.toHaveBeenCalled();
+    expect(previousClose).not.toHaveBeenCalled();
+  });
 });

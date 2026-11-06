@@ -254,6 +254,10 @@ table of contents for accessible navigation.
 dialogs, switches, cards, accordions, and copy controls. Its initial content is
 available before JavaScript executes. `/platform.html` exercises container
 layouts, native/floating overlays, reduced motion, and long-document rendering.
+`/performance.html` exercises an 80-section document and 250-command palette.
+Its [Chrome DevTools MCP profiling workflow](./apps/benchmark/profiling/README.md)
+records repeatable scrolling and keyboard navigation traces; browser checks
+guard stable text geometry, dynamic document layout, selection, and focus.
 From the repository root:
 
 ```sh
@@ -265,6 +269,7 @@ bun run --filter @elide/benchmark audit
 # Optional local cross-browser sweep (CI runs Chromium):
 bun apps/benchmark/node_modules/playwright/cli.js install firefox webkit
 BROWSERS=chromium,firefox,webkit bun --cwd apps/benchmark platform-check.mjs
+BROWSERS=chromium,firefox,webkit bun --cwd apps/benchmark performance-check.mjs
 ```
 
 The test starts its own preview server and checks mobile layout, both themes,
@@ -276,7 +281,7 @@ responsive containers, scroll progress, print, and reduced motion. The catalog a
 violations. These checks supplement visual and assistive-technology review.
 
 Lighthouse 13.6.0 scored **100 performance / 100 accessibility / 100 best
-practices / 100 SEO / 100 agentic browsing** on both local production examples in
+practices / 100 SEO / 100 agentic browsing** on the index and platform examples in
 mobile simulation on November 6, 2026. These are measured examples, not a guarantee
 for consuming sites or Storybook. Scores depend on hosting, content, device, and
 network conditions. The example includes `robots.txt` and `llms.txt`; it exposes
