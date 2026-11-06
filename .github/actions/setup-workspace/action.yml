@@ -1,0 +1,44 @@
+name: Setup workspace
+description: Install the pinned Bun toolchain and restore dependency and Turbo caches.
+
+inputs:
+  cache-scope:
+    description: Job name used to keep independently populated Turbo caches separate.
+    required: true
+  turbo-cache:
+    description: Restore and save Turbo outputs when this job runs Turbo tasks.
+    default: "true"
+
+runs:
+  using: composite
+  steps:
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+      with:
+        bun-version: "1.4.4"
+    - name: Identify Node toolchain
+      id: toolchain
+      shell: bash
+      run: echo "node=$(node -p 'process.versions.node')" >> "$GITHUB_OUTPUT"
+    - name: Cache Bun downloads
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        # Cache package downloads, not node_modules or generated workspace links.
+        path: ~/.bun/install/cache
+        key: ${{ runner.os }}-${{ runner.arch }}-bun-1.4.4-node-${{ steps.toolchain.outputs.node }}-downloads-v1-${{ hashFiles('bun.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-${{ runner.arch }}-bun-1.4.4-node-${{ steps.toolchain.outputs.node }}-downloads-v1-
+    - name: Cache Turbo outputs
+      if: inputs.turbo-cache == 'true'
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        # Each job/commit saves its own immutable cache. Prefer that job's previous
+        # outputs, then share compatible tasks from another job on a cold start.
+        path: .turbo/cache
+        key: ${{ runner.os }}-${{ runner.arch }}-bun-1.4.4-node-${{ steps.toolchain.outputs.node }}-turbo-v1-${{ hashFiles('bun.lock') }}-${{ inputs.cache-scope }}-${{ github.event.pull_request.head.sha || github.sha }}
+        restore-keys: |
+          ${{ runner.os }}-${{ runner.arch }}-bun-1.4.4-node-${{ steps.toolchain.outputs.node }}-turbo-v1-${{ hashFiles('bun.lock') }}-${{ inputs.cache-scope }}-
+          ${{ runner.os }}-${{ runner.arch }}-bun-1.4.4-node-${{ steps.toolchain.outputs.node }}-turbo-v1-${{ hashFiles('bun.lock') }}-
+    - name: Install dependencies
+      shell: bash
+      run: bun install --frozen-lockfile

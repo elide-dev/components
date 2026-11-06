@@ -42,9 +42,11 @@ jobs:
 
   chromatic:
     name: "Chromatic"
+    needs: storybook
     uses: ./.github/workflows/check.chromatic.yml
     with:
       auto-accept: true
+      storybook-artifact: storybook-static
     permissions:
       contents: read
     secrets: inherit

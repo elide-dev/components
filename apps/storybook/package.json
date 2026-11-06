@@ -5,9 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "storybook dev -p 6006",
-    "build": "storybook build",
-    "build-storybook": "storybook build",
-    "chromatic": "chromatic --exit-zero-on-changes",
+    "build": "storybook build --stats-json && bun verify-build.mjs",
+    "build-storybook": "bun run build",
+    "chromatic": "cd ../.. && bun run chromatic",
+    "lint": "tsc --noEmit",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage"
   },

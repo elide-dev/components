@@ -1,0 +1,15 @@
+{
+  "$schema": "https://www.chromatic.com/config-file.schema.json",
+  "onlyChanged": true,
+  "exitZeroOnChanges": true,
+  "storybookBaseDir": "apps/storybook",
+  "storybookConfigDir": "apps/storybook/.storybook",
+  "storybookBuildDir": "apps/storybook/storybook-static",
+  "externals": [
+    "bun.lock",
+    "packages/brand/assets/**",
+    "packages/brand/src/**",
+    "packages/ui/src/**/*.css",
+    "packages/tokens/src/**/*.css"
+  ]
+}

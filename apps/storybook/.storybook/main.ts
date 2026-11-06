@@ -1,7 +1,7 @@
 import type { StorybookConfig } from "@storybook/react-vite";
 
 /**
- * Storybook 9 + React + Vite. Tailwind v4 is added through the Vite plugin in
+ * Storybook 10 + React + Vite. Tailwind v4 is added through the Vite plugin in
  * viteFinal (v4 has automatic content detection, so no `content` array needed).
  */
 const config: StorybookConfig = {
@@ -16,6 +16,9 @@ const config: StorybookConfig = {
     name: "@storybook/react-vite",
     options: {},
   },
+  // Expose component APIs and story examples to the local Storybook MCP server.
+  features: { componentsManifest: true },
+  typescript: { reactDocgen: "react-docgen-typescript" },
   // ElideLogo's raster modes read from @elide/brand/assets under `assetBase`,
   // which defaults to /brand. Serving it here is what a consuming app does when
   // it copies the package's assets into its public directory.
@@ -30,7 +33,7 @@ const config: StorybookConfig = {
     const { codecovVitePlugin } = await import("@codecov/vite-plugin");
     cfg.plugins.push(
       codecovVitePlugin({
-        enableBundleAnalysis: process.env.CODECOV_TOKEN !== undefined,
+        enableBundleAnalysis: Boolean(process.env.CODECOV_TOKEN),
         bundleName: "elide-storybook",
         uploadToken: process.env.CODECOV_TOKEN,
       }),

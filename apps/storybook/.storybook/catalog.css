@@ -1,2 +1,4 @@
-@import "@elide/ui/styles.css";
+/* Keep class scanning tied to component/story sources, not incidental files
+   in the build working directory. The UI stylesheet declares components. */
+@import "@elide/ui/styles.css" source(none);
 @source "../../../packages/ui/src/stories";

@@ -59,6 +59,11 @@ bun run build       # build all packages (use `bun run build`, not `bun build`)
 bun run changeset   # record a version bump before releasing
 ```
 
+The catalog's [Storybook MCP server](./apps/storybook/MCP.md) exposes component
+documentation, story discovery, previews, and focused interaction/a11y tests.
+See [visual CI and caching](./apps/storybook/CI.md) for the Turbo build,
+Chromatic TurboSnap configuration, and local dependency-tracing commands.
+
 ## Updating dependencies and shadcn
 
 The shadcn CLI is pinned to **4.23.0** in `@elide/ui`. Components are owned source,

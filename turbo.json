@@ -21,6 +21,14 @@
       ],
       "cache": false
     },
+    "@elide/storybook#build": {
+      "dependsOn": ["^build"],
+      "outputs": ["storybook-static/**"],
+      "passThroughEnv": ["CODECOV_TOKEN", "GITHUB_*"]
+    },
+    "@elide/storybook#lint": {
+      "dependsOn": ["^build"]
+    },
     "@elide/benchmark#test": {
       "dependsOn": [
         "build"

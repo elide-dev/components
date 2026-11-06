@@ -41,7 +41,12 @@ jobs:
 
   chromatic:
     name: "Chromatic"
+    needs: storybook
+    # Fork PRs build and test normally, but have no Chromatic project secret.
+    if: github.event.pull_request.head.repo.full_name == github.repository
     uses: ./.github/workflows/check.chromatic.yml
+    with:
+      storybook-artifact: storybook-static
     permissions:
       contents: read
     secrets: inherit
