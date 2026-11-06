@@ -34,6 +34,9 @@ Apps (Storybook, and later the Astro docs site) live under `apps/`.
 @import "@elide/tokens/fonts.css"; /* self-hosted variable fonts */
 @import "tailwindcss";
 @import "@elide/tokens/theme.css";
+@import "@elide/ui/platform.css";
+@source "./node_modules/@elide/ui/src/components"; /* relative to this stylesheet */
+@custom-variant dark (&:where(.dark, .dark *));
 ```
 
 ```tsx
@@ -70,8 +73,8 @@ import "@elide/ui/styles.css";
 The stylesheet requires Tailwind CSS 4 in the consuming build. It includes
 self-hosted variable WOFF2 fonts with `font-display: swap` and Unicode subsets;
 unused scripts are not downloaded. Catalog story styles are excluded. For a
-custom Tailwind pipeline, import the tokens/theme and scan the component sources
-you use. Inter remains the body font from the design mandate, Instrument Sans
+custom Tailwind pipeline, import the tokens/theme and `@elide/ui/platform.css`,
+then scan the component sources you use. Inter remains the body font from the design mandate, Instrument Sans
 is for display text, and JetBrains Mono is for code and labels.
 
 Colors use sRGB gradient fallbacks, OKLCH stops, Oklab interpolation, and
@@ -89,11 +92,59 @@ ES modules work with bundlers; raw browser use needs a dependency resolver or
 import map and precompiled CSS. An import map is application configuration, not
 something this library injects.
 
+## Progressive platform features
+
+The theme sets `color-scheme` so native browser controls match the selected mode.
+Supported browsers use `light-dark()` for paired colors and `alpha()` to adjust
+opacity without converting wide-gamut overrides. Filled button borders use
+`background-clip: border-area`. Each enhancement retains its existing CSS fallback
+and preserves the approved palette.
+
+`CardGrid` and `StatStrip` wrap to fit their parent, with `columns` setting a maximum.
+Named container queries refine cell spacing; set `--eld-density: compact` on their
+container or an ancestor for tighter spacing where style queries are supported.
+Dialog footers respond to dialog width. The intrinsic grid layout works without
+container queries. Overlays use interruptible opacity/scale transitions,
+`@starting-style`, and discrete transitions where supported; Base UI's lifecycle
+attributes supply the fallback. Reduced motion disables overlay animation.
+
+`AnchoredPopover` opts into CSS anchor positioning with Base UI focus management,
+Escape/outside dismissal, and accessible naming. Unsupported browsers use the
+existing floating positioner; `positioning="floating"` explicitly selects it.
+An already open or focused instance retains its floating renderer during
+hydration to preserve focus and child state.
+Use the existing `Popover` for virtual anchors or custom clipping boundaries.
+
+```tsx
+import { AnchoredPopover, Button, DeferredContent, ReadingProgress } from "@elide/ui";
+
+<>
+  <AnchoredPopover trigger={<Button>Project details</Button>} title="Project details">
+    <p>Details and actions for this project.</p>
+  </AnchoredPopover>
+  <ReadingProgress />
+  <section>
+    {/* Keep headings outside containment; estimate the body's real height. */}
+    <h2 id="configuration">Configuration</h2>
+    <DeferredContent intrinsicBlockSize="42rem">{/* Expensive body */}</DeferredContent>
+  </section>
+</>
+```
+
+`DeferredContent` skips offscreen layout/paint, not React rendering or network
+requests. Avoid wrapping sticky/fixed content or non-portaled overlays. Printing
+restores full rendering. `ReadingProgress` follows the root document scroll
+timeline without JavaScript scroll listeners; it is decorative and hidden for
+reduced motion, printing, or unsupported browsers. Pair it with headings and a
+table of contents for accessible navigation.
+
 ## Performance example
 
 `apps/benchmark` is a prerendered production consumer covering buttons, tabs,
 dialogs, switches, cards, accordions, and copy controls. Its initial content is
-available before JavaScript executes. From the repository root:
+available before JavaScript executes. `/platform.html` exercises container
+layouts, native/floating overlays, reduced motion, and long-document rendering.
+From the repository root:
 
 ```sh
 bun run build
@@ -101,17 +152,22 @@ bun run test
 bun run --filter @elide/benchmark preview
 # In another terminal, with Chrome installed:
 bun run --filter @elide/benchmark audit
+# Optional local cross-browser sweep (CI runs Chromium):
+bun apps/benchmark/node_modules/playwright/cli.js install firefox webkit
+BROWSERS=chromium,firefox,webkit bun --cwd apps/benchmark platform-check.mjs
 ```
 
 The test starts its own preview server and checks mobile layout, both themes,
 keyboard interaction, dialog focus return, selection, reduced motion, and forced
 colors. Leaf imports have a 14 KB gzip budget each (React external), including
-shared class utilities. The catalog additionally fails on automated accessibility
+shared class utilities. Platform checks compare enhanced and fallback theme
+colors, test native/floating and nested focus behavior, viewport collision,
+responsive containers, scroll progress, print, and reduced motion. The catalog additionally fails on automated accessibility
 violations. These checks supplement visual and assistive-technology review.
 
 Lighthouse 13.6.0 scored **100 performance / 100 accessibility / 100 best
-practices / 100 SEO / 100 agentic browsing** on the local production example in
-mobile simulation on November 6, 2026. This is a measured example, not a guarantee
+practices / 100 SEO / 100 agentic browsing** on both local production examples in
+mobile simulation on November 6, 2026. These are measured examples, not a guarantee
 for consuming sites or Storybook. Scores depend on hosting, content, device, and
 network conditions. The example includes `robots.txt` and `llms.txt`; it exposes
 no agent service and does not advertise an ARD endpoint. Unknown paths return

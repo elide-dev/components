@@ -26,9 +26,9 @@ export const buttonVariants = cva(
     variants: {
       variant: {
         primary:
-          "[background:var(--button-primary-background)_border-box_padding-box,var(--button-border-background)_border-box] text-primary-foreground shadow-[var(--button-shadow)] before:[background:var(--button-primary-hover-background)_border-box_padding-box,var(--button-border-hover-background)_border-box] before:shadow-[var(--button-shadow-hover)]",
+          "[background:var(--button-primary-background)_border-box_padding-box,var(--button-border-background)_border-box] text-primary-foreground shadow-[var(--button-shadow)] before:[background:var(--button-primary-hover-background)_border-box_padding-box,var(--button-border-hover-background)_border-box] before:shadow-[var(--button-shadow-hover)] supports-[background-clip:border-area]:[background-clip:padding-box,border-area] supports-[background-clip:border-area]:before:[background-clip:padding-box,border-area]",
         gradient:
-          "text-primary-foreground [background:var(--eld-gradient-brand)_border-box_padding-box,var(--button-border-background)_border-box] shadow-[var(--button-shadow)] before:[background:var(--eld-gradient-hover)_border-box_padding-box,var(--button-border-hover-background)_border-box] before:shadow-[var(--button-shadow-hover)]",
+          "text-primary-foreground [background:var(--eld-gradient-brand)_border-box_padding-box,var(--button-border-background)_border-box] shadow-[var(--button-shadow)] before:[background:var(--eld-gradient-hover)_border-box_padding-box,var(--button-border-hover-background)_border-box] before:shadow-[var(--button-shadow-hover)] supports-[background-clip:border-area]:[background-clip:padding-box,border-area] supports-[background-clip:border-area]:before:[background-clip:padding-box,border-area]",
         outline:
           "border-foreground/25 bg-card text-foreground shadow-xs before:border-primary-emphasis/60 before:bg-primary-soft",
         ghost:

@@ -1,0 +1,67 @@
+@layer components {
+  /* Only explicit DeferredContent bodies opt into containment. Headings used by
+   * a scroll spy should remain siblings, outside the skipped subtree. */
+  @supports (content-visibility: auto) and (contain-intrinsic-block-size: auto 1px) {
+    .eld-deferred-content {
+      content-visibility: auto;
+      contain-intrinsic-size: none;
+      contain-intrinsic-block-size: auto var(--eld-deferred-content-size, 32rem);
+    }
+  }
+
+  .eld-reading-progress {
+    display: none;
+    position: fixed;
+    inset-block-start: 0;
+    inset-inline: 0;
+    z-index: 40;
+    block-size: 2px;
+    pointer-events: none;
+    background: var(--primary);
+    background: var(--eld-gradient-brand);
+    transform: scaleX(0);
+    transform-origin: left center;
+  }
+
+  .eld-reading-progress:dir(rtl) {
+    transform-origin: right center;
+  }
+
+  /* No timer fallback: an unsupported timeline must not imply false progress. */
+  @supports (animation-timeline: scroll(root block)) {
+    @media (prefers-reduced-motion: no-preference) {
+      .eld-reading-progress {
+        display: block;
+        animation-name: eld-reading-progress;
+        animation-duration: auto;
+        animation-timing-function: linear;
+        animation-fill-mode: both;
+        animation-timeline: scroll(root block);
+      }
+    }
+  }
+
+  @keyframes eld-reading-progress {
+    from { transform: scaleX(0); }
+    to { transform: scaleX(1); }
+  }
+
+  @media (forced-colors: active) {
+    .eld-reading-progress {
+      background: Highlight;
+      forced-color-adjust: none;
+    }
+  }
+
+  @media print {
+    .eld-deferred-content {
+      content-visibility: visible;
+      contain-intrinsic-size: none;
+    }
+
+    .eld-reading-progress {
+      display: none;
+      animation: none;
+    }
+  }
+}

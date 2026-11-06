@@ -21,7 +21,7 @@ export interface FeatureCardProps extends Omit<React.HTMLAttributes<HTMLElement>
 }
 
 const cardBase =
-  "group flex flex-col gap-2 rounded-xl border border-border bg-card p-4 text-left no-underline transition-[background-color,border-color] duration-[var(--eld-motion-hover)] ease-[var(--eld-motion-ease-out)] motion-reduce:transition-none";
+  "group flex flex-col gap-[var(--eld-card-gap,0.5rem)] rounded-xl border border-border bg-card p-[var(--eld-card-padding,1rem)] text-left no-underline transition-[background-color,border-color] duration-[var(--eld-motion-hover)] ease-[var(--eld-motion-ease-out)] motion-reduce:transition-none";
 const cardInteractive =
   "cursor-pointer hover:border-primary-emphasis/50 hover:bg-primary-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
 
@@ -62,6 +62,7 @@ export function FeatureCard({
   if (href) {
     return (
       <a
+        data-slot="feature-card"
         href={href}
         onClick={onSelect}
         className={cardClassName}
@@ -75,6 +76,7 @@ export function FeatureCard({
 
   return (
     <div
+      data-slot="feature-card"
       role={onSelect ? "button" : undefined}
       tabIndex={onSelect ? 0 : undefined}
       onClick={onSelect}
@@ -99,21 +101,20 @@ export function FeatureCard({
 /**
  * CardGrid — responsive wrapper for `FeatureCard`s (or arbitrary children):
  * the "Browse by category" API grid, the mobile "Start here" stack.
- * Collapses to a single column on small widths regardless of `columns`.
+ * Uses its available inline size, including inside narrow sidebars and panels.
+ * `columns` is the maximum count; each card keeps a useful minimum width.
  */
 export interface CardGridProps extends React.HTMLAttributes<HTMLDivElement> {
   columns?: 1 | 2 | 3;
 }
 
-const columnClasses: Record<NonNullable<CardGridProps["columns"]>, string> = {
-  1: "grid-cols-1",
-  2: "grid-cols-1 sm:grid-cols-2",
-  3: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3",
-};
-
-export function CardGrid({ columns = 3, className, children, ...props }: CardGridProps) {
+export function CardGrid({ columns = 3, className, style, children, ...props }: CardGridProps) {
   return (
-    <div className={cn("grid gap-3.5", columnClasses[columns], className)} {...props}>
+    <div
+      className={cn("eld-card-grid grid gap-3.5", className)}
+      style={{ "--eld-card-columns": columns, ...style } as React.CSSProperties}
+      {...props}
+    >
       {children}
     </div>
   );

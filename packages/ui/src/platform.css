@@ -1,0 +1,6 @@
+/* Import beside tokens/theme.css when using your own Tailwind pipeline.
+ * The full styles.css entry already includes these component enhancements. */
+@import "./container-layouts.css";
+@import "./overlay-motion.css";
+@import "./native-anchor.css";
+@import "./document-motion.css";

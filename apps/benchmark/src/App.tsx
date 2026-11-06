@@ -23,6 +23,6 @@ export function App() {
         <Tabs defaultValue="overview"><TabsList aria-label="Component examples"><TabsTrigger value="overview">Overview</TabsTrigger><TabsTrigger value="install">Installation</TabsTrigger></TabsList><TabsContent value="overview"><CardGrid><FeatureCard title="Purposeful motion" description="Quick responses, gentle settling, and respect for reduced motion." /><FeatureCard title="Accessible by design" description="Keyboard navigation, clear focus, and semantic controls." badge={<Badge>Native</Badge>} /><FeatureCard title="Color with depth" description="Royal purple and muted rose, with progressive color enhancement." /></CardGrid></TabsContent><TabsContent value="install"><CopyCommand command="bun add @elide/ui @elide/tokens" /></TabsContent></Tabs>
       </section>
       <section aria-labelledby="questions-heading"><h2 id="questions-heading">Built for your workflow</h2><Accordion><AccordionItem value="keyboard"><AccordionTrigger>Can I use the keyboard?</AccordionTrigger><AccordionContent>Yes. Tabs support arrow keys, dialogs manage focus, and controls retain native keyboard behavior.</AccordionContent></AccordionItem><AccordionItem value="motion"><AccordionTrigger>What if I prefer less motion?</AccordionTrigger><AccordionContent>The components follow your system's reduced-motion preference.</AccordionContent></AccordionItem></Accordion></section>
-    </main><footer>Elide · Interface components</footer>
+    </main><footer>Elide · Interface components · <a href="/platform.html">Platform examples</a></footer>
   </>;
 }

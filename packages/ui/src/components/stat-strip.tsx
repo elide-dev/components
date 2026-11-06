@@ -15,7 +15,7 @@ export interface Stat {
 
 export interface StatStripProps extends React.ComponentProps<"dl"> {
   stats: Stat[];
-  /** Number of columns; defaults to one column per stat (a single row). */
+  /** Maximum number of columns; narrower containers wrap the cells. */
   columns?: number;
 }
 
@@ -23,24 +23,24 @@ export function StatStrip({
   stats,
   columns,
   className,
+  style,
   "aria-label": ariaLabel = "Statistics",
   ...props
 }: StatStripProps) {
-  const cols = columns ?? stats.length;
+  const cols = Math.max(1, Math.floor(columns ?? stats.length));
   return (
     <dl
       aria-label={ariaLabel}
-      className={cn("m-0 grid overflow-hidden rounded-xl border border-border", className)}
-      style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
+      className={cn("eld-stat-strip m-0 grid overflow-hidden rounded-xl border border-border bg-card", className)}
+      style={{ "--eld-stat-columns": cols, ...style } as React.CSSProperties}
       {...props}
     >
-      {stats.map((stat, i) => {
-        const lastInRow = (i + 1) % cols === 0;
-        const last = i === stats.length - 1;
+      {stats.map((stat) => {
         return (
           <div
             key={stat.label}
-            className={cn("flex flex-col gap-1.5 p-5", !lastInRow && !last && "border-r border-border")}
+            data-slot="stat-cell"
+            className="flex min-w-0 flex-col gap-[var(--eld-stat-gap,0.375rem)] p-[var(--eld-stat-padding,1.25rem)]"
           >
             {/* Semantic order is <dt> (term/label) then <dd> (value); `order-*`
                 keeps the value visually on top per the mockup. */}

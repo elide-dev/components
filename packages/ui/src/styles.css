@@ -1,14 +1,14 @@
 /* The catalog's styles: Tailwind + Elide tokens. A consuming app can either
- * import this file directly, or wire Tailwind itself and just import
- * "@elide/tokens/theme.css". Keeping it here means Storybook and quick
+ * import this file directly, or wire Tailwind itself with
+ * "@elide/tokens/theme.css" and "@elide/ui/platform.css". Storybook and quick
  * consumers get a working baseline with one import. */
 /* Self-hosted variable fonts, shared tokens, and compiled utility styles. */
 @import "@elide/tokens/fonts.css";
 @import "tailwindcss";
 @import "@elide/tokens/theme.css";
-/* Enter/exit animation utilities used by the shadcn/Base UI overlay primitives
- * (animate-in, fade-in-0, zoom-in-95, slide-in-from-*). */
+/* Animation utilities for components such as sheets and accordions. */
 @import "tw-animate-css";
+@import "./platform.css";
 
 /* Bind the `dark:` variant to the `.dark` class on <html>, which is how
  * ThemeProvider (and the Storybook decorator) applies the theme.

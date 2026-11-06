@@ -1,0 +1,62 @@
+/* Base UI's starting/ending attributes are the fallback for browsers without
+ * @starting-style. Transitions reverse smoothly if an overlay closes mid-entry;
+ * only opacity and scale change, leaving positioning and layout untouched. */
+@layer components {
+  [data-eld-motion="popup"],
+  [data-eld-motion="backdrop"] {
+    opacity: 1;
+    transition: opacity var(--eld-motion-hover) var(--eld-motion-ease-out),
+      scale var(--eld-motion-hover) var(--eld-motion-ease-out);
+  }
+
+  [data-eld-motion="popup"] { scale: 1; }
+
+  [data-eld-motion]:is([data-starting-style], [data-ending-style]) {
+    opacity: 0;
+  }
+
+  [data-eld-motion="popup"]:is([data-starting-style], [data-ending-style]) {
+    scale: 0.98;
+  }
+
+  /* Native select-style alignment must remain fixed under the selected item. */
+  [data-eld-motion="popup"][data-align-trigger="true"],
+  [data-eld-motion][data-instant] {
+    transition: none;
+    scale: 1;
+  }
+
+  @supports (transition-behavior: allow-discrete) {
+    [data-eld-motion="popup"],
+    [data-eld-motion="backdrop"] {
+      transition: opacity var(--eld-motion-hover) var(--eld-motion-ease-out),
+        scale var(--eld-motion-hover) var(--eld-motion-ease-out),
+        display var(--eld-motion-hover) allow-discrete,
+        overlay var(--eld-motion-hover) allow-discrete;
+    }
+    [data-eld-motion="popup"][data-align-trigger="true"],
+    [data-eld-motion][data-instant] { transition: none; }
+  }
+
+  @starting-style {
+    [data-eld-motion="popup"][data-open] { opacity: 0; scale: 0.98; }
+    [data-eld-motion="backdrop"][data-open] { opacity: 0; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-eld-motion] { transition: none; animation: none; }
+  }
+
+  [data-slot="dialog-content"] { container: eld-dialog / inline-size; }
+  [data-slot="dialog-footer"] { flex-direction: column-reverse; }
+
+  @container eld-dialog (min-width: 22rem) {
+    [data-slot="dialog-footer"] { flex-direction: row; justify-content: flex-end; }
+  }
+
+  @supports not (container-type: inline-size) {
+    @media (min-width: 40rem) {
+      [data-slot="dialog-footer"] { flex-direction: row; justify-content: flex-end; }
+    }
+  }
+}

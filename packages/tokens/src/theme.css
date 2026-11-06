@@ -3,7 +3,7 @@
  * -----------------------------------------------------------------------------
  * Import this from a consuming app's global stylesheet:
  *
- *     @import "@elide/tokens/fonts.css";   // must be first — it's a remote @import
+ *     @import "@elide/tokens/fonts.css";   — self-hosted variable fonts
  *     @import "tailwindcss";
  *     @import "@elide/tokens/theme.css";
  *
@@ -12,10 +12,8 @@
  * `font-mono`, etc. all resolve to Elide tokens. Because the values are `var()`
  * references, dark mode still works by toggling `.dark` on <html>.
  *
- * Fonts are intentionally NOT imported here: a remote `@import url()` is only
- * valid at the very top of a stylesheet, but this file is imported *after*
- * `@import "tailwindcss"`, so a nested font import would be illegal and dropped.
- * Import `@elide/tokens/fonts.css` first instead (as above).
+ * Fonts are optional and intentionally separate. Import fonts.css when the app
+ * uses the bundled self-hosted fonts, or supply your own typography instead.
  * ========================================================================== */
 
 @import "./tokens.css";

@@ -36,14 +36,14 @@ Anything below the line is portable to any target; anything above is React/Preac
 
 | Target | Components | Tokens |
 | --- | --- | --- |
-| **React** (18+) | ✅ primary | ✅ |
-| **Preact** | ✅ via `preact/compat` alias | ✅ |
+| **React** (19.2.8+) | ✅ primary, tested | ✅ |
+| **Preact** | Intended via `preact/compat` alias; no current smoke suite | ✅ |
 | Anything else (Astro static, native, Figma…) | — | ✅ tokens only |
 
 **Preact** works by aliasing `react`/`react-dom` → `preact/compat` in the
 consumer's bundler. Base UI and our components are written against the React API
-and render under compat within reason. We keep a Preact smoke app in CI so the
-boundary can't silently break. Guidelines that keep us compat-safe:
+and target compat, but the current automated suites run React. Validate Preact
+integration in the consuming application. Guidelines that keep us compat-safe:
 
 - No React-internal imports; only the public API.
 - Prefer `ref` callbacks / `useRef`; avoid `findDOMNode` and legacy context.
@@ -71,6 +71,9 @@ pattern.
 (`@elide/tokens/theme.css`). Component internals use utility classes; every color
 / radius / font resolves to a token `var()`, so dark mode is a class toggle and
 consumers can retheme by overriding tokens only.
+Shared rules in `@elide/ui/platform.css` provide intrinsic/container layouts,
+overlay transitions, optional native anchors, and document rendering features.
+`@elide/ui/styles.css` includes them; custom Tailwind pipelines must import them.
 
 ## Distribution
 
@@ -84,7 +87,7 @@ Dual model, both backed by the same source:
 
 ## Catalog: Storybook + Chromatic
 
-- Storybook 8 (Vite builder) in `apps/storybook`.
+- Storybook 10 (Vite builder) in `apps/storybook`.
 - Every component ships stories covering its variants **× light/dark**.
 - Addons: a11y (axe), interaction tests (`@storybook/test`).
 - **Chromatic** runs on every PR for visual regression and is the review surface;
@@ -114,6 +117,7 @@ components/
 │  ├─ ui/                  # @elide/ui      (exemplars landed)
 │  └─ icons/               # @elide/icons   (planned)
 └─ apps/
-   ├─ storybook/           # catalog (planned)
+   ├─ storybook/           # catalog + browser interaction/a11y tests
+   ├─ benchmark/           # prerendered production consumers + platform checks
    └─ docs/                # Astro docs site (planned)
 ```

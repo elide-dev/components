@@ -1,0 +1,24 @@
+@layer components {
+  /* Kept separate from the existing Positioner: native positioning never fights
+   * its inline transform. The full cross-axis area lets anchor-center shift at
+   * viewport edges; flip-block chooses the other side when there is no room. */
+  @supports (position-area: bottom span-all) and (position-try-fallbacks: flip-block) {
+    [data-slot="anchored-popover-content"][data-positioning="css"] {
+      position: fixed;
+      inset: auto;
+      position-area: bottom span-all;
+      justify-self: anchor-center;
+      position-try-fallbacks: flip-block;
+      margin: var(--eld-anchor-offset, 6px) 8px 8px;
+      max-inline-size: calc(100vw - 16px);
+      max-block-size: min(28rem, calc(100% - var(--eld-anchor-offset, 6px) - 8px), calc(100dvh - 16px));
+      overflow: auto;
+      overscroll-behavior: contain;
+    }
+
+    [data-slot="anchored-popover-content"][data-positioning="css"][data-side="top"] {
+      position-area: top span-all;
+      margin-block: 8px var(--eld-anchor-offset, 6px);
+    }
+  }
+}

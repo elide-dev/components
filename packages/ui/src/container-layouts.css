@@ -1,0 +1,73 @@
+/* Intrinsic grids work without container-query support and preserve the host
+ * element's className/style layout overrides. Container queries refine the
+ * cells without an extra wrapper or a viewport-dependent breakpoint. */
+@layer components {
+  .eld-card-grid {
+    container: elide-card-grid / inline-size;
+    /* A readable cell minimum, capped by both host width and requested count. */
+    grid-template-columns: repeat(
+      auto-fit,
+      minmax(
+        min(100%, max(16rem, calc((100% - (var(--eld-card-columns, 3) - 1) * 0.875rem) / var(--eld-card-columns, 3)))),
+        1fr
+      )
+    );
+  }
+
+  .eld-card-grid > * {
+    min-inline-size: 0;
+  }
+
+  .eld-stat-strip {
+    container: elide-stat-strip / inline-size;
+    gap: 1px;
+    grid-template-columns: repeat(
+      auto-fit,
+      minmax(
+        min(100%, max(11rem, calc((100% - (var(--eld-stat-columns, 1) - 1) * 1px) / var(--eld-stat-columns, 1)))),
+        1fr
+      )
+    );
+  }
+
+  .eld-stat-strip > [data-slot="stat-cell"] {
+    /* Follow automatically wrapped rows without nth-child column assumptions.
+     * The outer border clips the final row/column's separator. */
+    box-shadow: 1px 0 0 var(--border), 0 1px 0 var(--border);
+    overflow-wrap: anywhere;
+  }
+
+  @container elide-card-grid (width < 32rem) {
+    .eld-card-grid > [data-slot="feature-card"] {
+      --eld-card-padding: 0.875rem;
+    }
+  }
+
+  @container elide-stat-strip (width < 24rem) {
+    .eld-stat-strip > [data-slot="stat-cell"] {
+      --eld-stat-padding: 1rem;
+    }
+  }
+
+  /* Optional, inherited density contract. Unsupported style queries simply
+   * keep the default spacing; the layout and content remain fully usable. */
+  @container elide-card-grid style(--eld-density: compact) {
+    .eld-card-grid > [data-slot="feature-card"] {
+      --eld-card-gap: 0.375rem;
+      --eld-card-padding: 0.75rem;
+    }
+  }
+
+  @container elide-stat-strip style(--eld-density: compact) {
+    .eld-stat-strip > [data-slot="stat-cell"] {
+      --eld-stat-gap: 0.25rem;
+      --eld-stat-padding: 0.75rem;
+    }
+  }
+
+  @media (forced-colors: active) {
+    .eld-stat-strip > [data-slot="stat-cell"] {
+      outline: 1px solid CanvasText;
+    }
+  }
+}

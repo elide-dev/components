@@ -75,7 +75,7 @@ describe("CardGrid", () => {
         <FeatureCard title="One" />
       </CardGrid>,
     );
-    expect(container.firstChild).toHaveClass("lg:grid-cols-3");
+    expect(container.firstChild).toHaveStyle({ "--eld-card-columns": "3" });
   });
 
   it("applies a requested column count", () => {
@@ -84,7 +84,24 @@ describe("CardGrid", () => {
         <FeatureCard title="One" />
       </CardGrid>,
     );
-    expect(container.firstChild).toHaveClass("sm:grid-cols-2");
-    expect(container.firstChild).not.toHaveClass("lg:grid-cols-3");
+    expect(container.firstChild).toHaveStyle({ "--eld-card-columns": "2" });
+  });
+
+  it("keeps consumer layout overrides and attributes on the grid host", () => {
+    const { container } = render(
+      <CardGrid
+        id="feature-grid"
+        className="gap-8"
+        style={{ maxWidth: 320, gridTemplateColumns: "1fr 2fr" }}
+      >
+        <FeatureCard title="One" />
+        <FeatureCard title="Two" />
+      </CardGrid>,
+    );
+    const grid = container.firstElementChild!;
+    expect(grid).toHaveAttribute("id", "feature-grid");
+    expect(grid).toHaveClass("gap-8");
+    expect(grid).toHaveStyle({ maxWidth: "320px", gridTemplateColumns: "1fr 2fr" });
+    expect(grid.children).toHaveLength(2);
   });
 });

@@ -9,7 +9,7 @@ Legend for source: which mockup element each maps to.
 
 ## Tier 0 — Tokens (`@elide/tokens`) · done
 
-Palette (magenta + neutral scales), semantic light/dark roles, syntax colors,
+Palette (royal purple, muted rose, original magenta, and neutrals), semantic light/dark roles, syntax colors,
 radii, type. See the package README.
 
 ## Tier 1 — Primitives
@@ -20,6 +20,7 @@ radii, type. See the package README.
 | `Badge` | **done** | variant: neutral·primary·supported·partial·missing; `dot` | version pill, "24" count, API status pills |
 | `Tooltip` | **done** | — | nav icon button titles |
 | `Popover` | **done** | — | language / section switchers |
+| `AnchoredPopover` | **done** | `trigger`, `title`, `positioning`, `side`; native CSS anchor positioning with floating fallback | opt-in contextual panels |
 | `DropdownMenu` | **done** | — | locale menu, "Ask AI" split |
 | `Dialog` | **done** | — | modal base |
 | `Sheet` / `Drawer` | **done** | side | **mobile nav drawer** |
@@ -46,15 +47,17 @@ radii, type. See the package README.
 | `SectionTabs` | **done** | `items`, `active` | Start·Runtime·Toolchain·API·Resources |
 | `Sidebar` | **done** | `SectionSwitcher`, `NavGroup`, `NavItem` (active, external, comingSoon), progress | left nav |
 | `TableOfContents` | **done** | `items`, active-on-scroll; mono variant for API methods | right rail "On this page" |
+| `DeferredContent` | **done** | `intrinsicBlockSize`; opt-in offscreen layout/paint containment | long document bodies |
+| `ReadingProgress` | **done** | decorative root scroll-timeline indicator; reduced-motion and print aware | long documents |
 | `AiActions` | **done** | Copy as Markdown · View as text · Open in ChatGPT/Claude | right rail panel |
 | `Breadcrumbs` | **done** | `segments` | above page title |
 | `PageFooterNav` | **done** | `prev?`, `next?` (right-grouped cards) | bottom prev/next |
-| `CardGrid` + `FeatureCard` | **done** | cols; card: icon·title·description·badge·href | "Start here", category grid |
-| `StatStrip` | **done** | `stats: {value,label}[]` | API landing metrics |
+| `CardGrid` + `FeatureCard` | **done** | `columns` maximum; container-aware wrapping; card: icon·title·description·badge·href | "Start here", category grid |
+| `StatStrip` | **done** | `stats: {value,label}[]`, `columns` maximum; container-aware wrapping | API landing metrics |
 | `StatusBadge` | **done** | thin wrapper over `Badge` status tones | reference status |
 | `ApiMethod` + `ParamRow` | **done** | `signature`, `status`, params, example slot | node:fs entries |
 | `SupportMatrix` / `DataTable` | **done** | columns, status cells (✓/✗) | method support table |
-| `CommandPalette` | registry+ | built on `Command`; groups: pages·actions; recent | ⌘K overlay |
+| `CommandPalette` | **done** | Base UI dialog + grouped actions, filtering, keyboard navigation | ⌘K overlay |
 | `MobileNav` | **done** | top bar + `Sheet` drawer + bottom "Search or ask AI" bar | mobile screens |
 | `ThemeProvider` / `useTheme` | **done** | class/`data-theme` on `<html>`, persisted | dark/light toggle |
 | `ElideLogo` | **done** | form: square·full; variant: gradient·mono·blend; format: svg·png·webp·avif; `linked`, `height`, `decorative`, `assetBase` | brand mark; artwork from `@elide/brand` |
@@ -68,10 +71,9 @@ site is on the catalog.
 
 ## Notes
 
-- **CodeBlock** is the signature component — pull highlighting from **Shiki**
-  (matches `--eld-syntax-*` and works in Astro/MDX at build time) rather than a
-  runtime highlighter.
-- Icons: **Lucide** everywhere (`@elide/icons`).
+- **CodeBlock** currently uses `prism-react-renderer`; import `CopyButton` from
+  its own leaf entry point when highlighting is unnecessary.
+- Icons: **Lucide** via `lucide-react`; `@elide/icons` is planned.
 - Anything interactive on the Astro docs site is a **React island**; the prose
   shell stays static HTML + token CSS to keep JS minimal.
 
@@ -82,13 +84,13 @@ site is on the catalog.
   / `default` would pull Radix). Add with `bunx shadcn@latest add <name> -y`.
 - shadcn writes `cn` as a literal `src/lib/utils` import; rewrite it to the relative
   `../lib/utils` after generating (the repo uses relative imports, no `@/` path alias).
-- Overlay primitives use `tw-animate-css` (imported in `packages/ui/src/styles.css`)
-  for the `animate-in` / `fade-in` / `slide-in-*` utilities.
+- Popups and dialogs use shared transitions in `platform.css`, including
+  `@starting-style`, discrete transitions, and Base UI lifecycle fallbacks.
+  Sheets and accordions retain `tw-animate-css` utilities. Both are included by
+  `packages/ui/src/styles.css`.
 - Base UI overlays render through a **Portal into `<body>`**, so the theme must be on
   `<html>` (the Storybook decorator toggles `.dark` on `documentElement`; consumers do
   the same). A `.dark` class on a wrapper div would leave portaled content light.
-- **`Combobox` / `Command` is deferred.** shadcn's `command` is `cmdk`-based (not Base
-  UI) and drags in `input-group`/`input`. It'll be built in the **CommandPalette**
-  composite cycle, on Base UI Combobox or a themed `cmdk`. Not shipped as a primitive.
-- `Select`, `Accordion`, `Breadcrumb`, `Avatar` remain `registry` — add them when their
-  composite needs them.
+- **`Combobox` / `Command` is deferred.** The current `CommandPalette` composite
+  uses a Base UI dialog with its own filtering and keyboard navigation.
+- `Breadcrumb` and `Avatar` remain `registry` — add them when their composite needs them.

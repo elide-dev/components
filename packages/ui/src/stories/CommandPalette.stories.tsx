@@ -42,6 +42,7 @@ const groups: CommandGroup[] = [
 const meta = {
   title: "Docs/CommandPalette",
   component: CommandPalette,
+  args: { groups },
   parameters: { layout: "fullscreen" },
 } satisfies Meta<typeof CommandPalette>;
 

@@ -90,3 +90,7 @@ export {
 // primitives (Dialog, Popover, DropdownMenu, Combobox/Command, Tooltip, Tabs,
 // Select, Sheet, NavigationMenu, ScrollArea, Accordion) are added via the shadcn
 // registry — `bunx shadcn@latest add <name>` — then re-themed from tokens.
+
+export { DeferredContent, type DeferredContentProps } from "./components/deferred-content";
+export { ReadingProgress, type ReadingProgressProps } from "./components/reading-progress";
+export { AnchoredPopover, type AnchoredPopoverProps } from "./components/anchored-popover";

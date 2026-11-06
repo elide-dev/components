@@ -38,4 +38,29 @@ describe("StatStrip", () => {
     const { container } = render(<StatStrip stats={stats} aria-label="Compatibility metrics" />);
     expect(container.querySelector("dl")).toHaveAttribute("aria-label", "Compatibility metrics");
   });
+
+  it("keeps consumer layout overrides on the semantic list", () => {
+    const { container } = render(
+      <StatStrip
+        stats={stats}
+        columns={2}
+        id="metrics"
+        className="gap-3"
+        style={{ maxWidth: 320, gridTemplateColumns: "1fr 2fr" }}
+      />,
+    );
+    const list = container.firstElementChild!;
+    expect(list.tagName).toBe("DL");
+    expect(list).toHaveAttribute("id", "metrics");
+    expect(list).toHaveClass("gap-3");
+    expect(list).toHaveStyle({ maxWidth: "320px", gridTemplateColumns: "1fr 2fr" });
+    expect(list.querySelectorAll(":scope > div > dt")).toHaveLength(stats.length);
+    expect(list.querySelectorAll(":scope > div > dd")).toHaveLength(stats.length);
+  });
+
+  it("renders an empty collection without an invalid column count", () => {
+    const { container } = render(<StatStrip stats={[]} />);
+    expect(container.firstElementChild).toHaveStyle({ "--eld-stat-columns": "1" });
+    expect(container.querySelectorAll("dd")).toHaveLength(0);
+  });
 });

@@ -17,6 +17,7 @@
  * ========================================================================== */
 
 :root {
+  color-scheme: light;
   /* ---- Primitive · Royal purple (UI accents) ---- */
   --eld-purple-50: #f5f3ff;
   --eld-purple-100: #ede9fe;
@@ -183,6 +184,7 @@
  * ======================================================================== */
 .dark,
 [data-theme="dark"] {
+  color-scheme: dark;
   --background: var(--eld-neutral-950);
   --foreground: var(--eld-neutral-50);
 
@@ -265,4 +267,53 @@
   --button-primary-background: var(--eld-gradient-brand);
   --button-primary-hover-background: var(--eld-gradient-hover);
   --button-accent-background: linear-gradient(115deg, var(--primary-soft), color-mix(in oklab, var(--eld-gradient-end) 10%, transparent));
+}
+
+/* The selected theme also controls browser UI. light-dark() keeps paired
+ * colors together; explicit light/dark declarations above remain the fallback. */
+@supports (color: light-dark(white, black)) {
+  :root, .dark, [data-theme="dark"] {
+    --background: light-dark(var(--eld-neutral-50), var(--eld-neutral-950));
+    --foreground: light-dark(var(--eld-neutral-950), var(--eld-neutral-50));
+    --card: light-dark(#ffffff, var(--eld-neutral-900));
+    --card-foreground: light-dark(var(--eld-neutral-950), var(--eld-neutral-50));
+    --popover: light-dark(#ffffff, var(--eld-neutral-800));
+    --popover-foreground: light-dark(var(--eld-neutral-950), var(--eld-neutral-50));
+    --muted: light-dark(var(--eld-neutral-100), var(--eld-neutral-800));
+    --muted-foreground: light-dark(var(--eld-neutral-600), var(--eld-neutral-400));
+    --subtle-foreground: light-dark(var(--eld-neutral-550), var(--eld-neutral-400));
+    --accent: light-dark(var(--eld-neutral-100), var(--eld-neutral-700));
+    --accent-foreground: light-dark(var(--eld-neutral-950), var(--eld-neutral-50));
+    --primary-emphasis: light-dark(var(--eld-purple-800), var(--eld-purple-300));
+    --ring: light-dark(var(--eld-purple-600), var(--eld-purple-400));
+  }
+}
+
+/* Relative alpha preserves the source color space, including wide-gamut
+ * consumer overrides. The color-mix() declarations remain the fallback. */
+@supports (color: alpha(from red / 50%)) {
+  :root {
+    --primary-soft: alpha(from var(--eld-purple-700) / calc(alpha * 0.07));
+    --info-soft: alpha(from var(--eld-info) / calc(alpha * 0.12));
+    --success-soft: alpha(from var(--eld-success) / calc(alpha * 0.12));
+    --warning-soft: alpha(from var(--eld-warning) / calc(alpha * 0.12));
+    --danger-soft: alpha(from var(--eld-danger) / calc(alpha * 0.12));
+    --border: alpha(from var(--eld-neutral-950) / calc(alpha * 0.1));
+    --border-strong: alpha(from var(--eld-neutral-950) / calc(alpha * 0.16));
+    --hover: alpha(from var(--eld-neutral-950) / calc(alpha * 0.04));
+    --nav-background: alpha(from var(--eld-neutral-50) / calc(alpha * 0.75));
+    --code-border: alpha(from var(--eld-neutral-50) / calc(alpha * 0.09));
+  }
+  .dark, [data-theme="dark"] {
+    --primary-soft: alpha(from var(--eld-purple-400) / calc(alpha * 0.12));
+    --info-soft: alpha(from var(--eld-info-strong) / calc(alpha * 0.14));
+    --success-soft: alpha(from var(--eld-success-strong) / calc(alpha * 0.14));
+    --warning-soft: alpha(from var(--eld-warning-strong) / calc(alpha * 0.14));
+    --danger-soft: alpha(from var(--eld-danger-strong) / calc(alpha * 0.14));
+    --border: alpha(from var(--eld-neutral-50) / calc(alpha * 0.09));
+    --border-strong: alpha(from var(--eld-neutral-50) / calc(alpha * 0.15));
+    --hover: alpha(from var(--eld-neutral-50) / calc(alpha * 0.05));
+    --nav-background: alpha(from var(--eld-neutral-950) / calc(alpha * 0.62));
+    --code-border: alpha(from var(--eld-neutral-50) / calc(alpha * 0.09));
+  }
 }

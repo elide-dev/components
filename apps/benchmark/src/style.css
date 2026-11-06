@@ -1,5 +1,6 @@
 @import "@elide/ui/styles.css";
 @source "./App.tsx";
+@source "./PlatformApp.tsx";
 html { scroll-padding-top: 2rem; }
 body { margin: 0; }
 header, main, footer { width: min(100% - 3rem, 64rem); margin-inline: auto; }
@@ -16,3 +17,19 @@ h2 { font-family: var(--eld-font-display); font-size: 1.4rem; font-weight: 600; 
 footer { padding-block: 1.5rem; border-top: 1px solid var(--border); color: var(--muted-foreground); font-size: .8rem; }
 .skip { position: absolute; top: .5rem; left: 1rem; padding: .5rem; background: var(--background); transform: translateY(-200%); z-index: 100; }
 .skip:focus { transform: none; }
+
+.platform-narrow { width: min(100%, 20rem); margin-block-start: 1.5rem; display: grid; gap: 1rem; }
+.platform-document { display: grid; grid-template-columns: minmax(0, 1fr) 12rem; gap: 2rem; }
+.platform-document article { container: platform-document / inline-size; }
+/* Estimates follow text wrapping, limiting scrollbar/progress corrections when
+ * an offscreen body is first rendered. The browser then remembers its real size. */
+@container platform-document (width < 30rem) {
+  .platform-document .eld-deferred-content { --platform-body-size: 81rem; }
+}
+.platform-document aside { align-self: start; position: sticky; top: 2rem; margin-block-start: 3.5rem; }
+.platform-settings { margin: 0; padding: 0 1.25rem; border: 1px solid var(--border); border-radius: var(--eld-radius-md); }
+.platform-settings > div { padding-block: 1.5rem; }
+.platform-settings > div + div { border-top: 1px solid var(--border); }
+.platform-settings dt { font-family: var(--eld-font-mono); font-size: .875rem; color: var(--primary-emphasis); }
+.platform-settings dd { margin: .5rem 0 0; color: var(--muted-foreground); line-height: 1.6; }
+@media (max-width: 42rem) { .platform-document { grid-template-columns: minmax(0,1fr); } .platform-document aside { position: static; grid-row: 1; } }

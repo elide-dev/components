@@ -16,7 +16,8 @@
     "./components/*": {
       "types": "./dist/components/*.d.ts",
       "import": "./dist/components/*.js"
-    }
+    },
+    "./platform.css": "./src/platform.css"
   },
   "files": [
     "dist",

@@ -39,3 +39,38 @@ export const FourColumns: Story = {
     ],
   },
 };
+
+/** Column counts are caps: cells wrap inside a narrow host without overflow. */
+export const ContainerWidths: Story = {
+  args: {
+    stats: [
+      { value: "24", label: "Node modules" },
+      { value: "94%", label: "Test262 pass rate", emphasis: true },
+      { value: "89%", label: "WinterTC coverage" },
+    ],
+  },
+  render: (args) => (
+    <div style={{ display: "grid", gap: 24 }}>
+      <StatStrip {...args} aria-label="Narrow statistics" style={{ width: "100%", maxWidth: 300 }} />
+      <StatStrip {...args} aria-label="Wide statistics" style={{ width: "100%", maxWidth: 900 }} />
+      <StatStrip {...args} columns={2} aria-label="Two column statistics" style={{ width: "100%", maxWidth: 900 }} />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const narrow = canvas.getByLabelText("Narrow statistics");
+    const wide = canvas.getByLabelText("Wide statistics");
+    const capped = canvas.getByLabelText("Two column statistics");
+    const narrowCells = [...narrow.children].map((node) => node.getBoundingClientRect());
+    await expect(narrowCells[1].top).toBeGreaterThan(narrowCells[0].bottom);
+    await expect(narrow.scrollWidth).toBeLessThanOrEqual(narrow.clientWidth);
+    await expect(getComputedStyle(narrow.firstElementChild!).paddingTop).toBe("16px");
+    if (wide.clientWidth >= 530) {
+      const wideCells = [...wide.children].map((node) => node.getBoundingClientRect());
+      await expect(wideCells[2].top).toBe(wideCells[0].top);
+      const cappedCells = [...capped.children].map((node) => node.getBoundingClientRect());
+      await expect(cappedCells[1].top).toBe(cappedCells[0].top);
+      await expect(cappedCells[2].top).toBeGreaterThan(cappedCells[0].bottom);
+    }
+  },
+};

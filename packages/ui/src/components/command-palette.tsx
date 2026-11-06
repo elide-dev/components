@@ -88,16 +88,16 @@ export function CommandPalette({
   return (
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Backdrop className="fixed inset-0 z-50 bg-black/50 supports-backdrop-filter:backdrop-blur-[2px] data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0" />
+        <DialogPrimitive.Backdrop data-slot="command-palette-overlay" data-eld-motion="backdrop" className="fixed inset-0 z-50 bg-black/50 supports-backdrop-filter:backdrop-blur-[2px]" />
         <DialogPrimitive.Popup
+          data-slot="command-palette-content"
+          data-eld-motion="popup"
           aria-label="Command palette"
           onKeyDown={onKeyDown}
           className={cn(
             "fixed left-1/2 top-24 z-50 w-[560px] max-w-[calc(100%-2rem)] -translate-x-1/2",
             "overflow-hidden rounded-2xl border border-border-strong bg-popover",
             "shadow-[0_30px_70px_-20px_rgba(0,0,0,0.8)] outline-none",
-            "data-open:animate-in data-open:fade-in-0 data-open:zoom-in-[0.98]",
-            "data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-[0.98]",
           )}
         >
           <div className="flex items-center gap-3 border-b border-border px-[18px] py-[15px]">

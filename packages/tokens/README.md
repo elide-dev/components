@@ -26,6 +26,8 @@ darker gradient border under the face, matching its direction and stop positions
 hover deepens both layers. Both layers share a border-box origin so their color
 transitions line up at the edge. The radius scale also tightens panels
 and other controls, while explicitly circular shapes remain circular.
+Where supported, `background-clip: border-area` clips the rim to the border
+without painting beneath the face; other browsers retain the layered fallback.
 
 Button hover surfaces and shadows crossfade over 180ms on a separate pseudo
 element. A press scales the control to 98% over 80ms, then settles back over
@@ -40,7 +42,7 @@ mirrors the `--eld-motion-*` timing tokens for other consumers.
 | Export | Use it for |
 | --- | --- |
 | `@elide/tokens/tokens.css` | Raw CSS custom properties (primitives + semantic light/dark). Import once at the app root. |
-| `@elide/tokens/theme.css` | The above **plus** a Tailwind v4 `@theme` bridge and font `@import`s. Use in Tailwind apps. |
+| `@elide/tokens/theme.css` | The above **plus** a Tailwind v4 `@theme` bridge. Use in Tailwind apps. |
 | `@elide/tokens/fonts.css` | Self-hosted variable WOFF2 fonts with Unicode subsets and swap display. |
 | `@elide/tokens` (JS) | Typed token object — `magenta`, `neutral`, `syntax`, `radius`, `font`, `cssVar`… |
 
@@ -50,6 +52,7 @@ mirrors the `--eld-motion-*` timing tokens for other consumers.
 
 ```css
 /* app/styles/global.css */
+@import "@elide/tokens/fonts.css";
 @import "tailwindcss";
 @import "@elide/tokens/theme.css";
 ```
@@ -75,6 +78,10 @@ chart.setSeriesColor(magenta[400]);
 Light is the default (on `:root`). Enable dark by adding `.dark` (or
 `[data-theme="dark"]`) to `<html>`. The docs app defaults to dark at the app
 level; this package stays neutral so the marketing site can default to light.
+The selected theme sets `color-scheme` for native controls and scrollbars.
+Feature-detected `light-dark()` pairs semantic colors and `alpha()` preserves
+the source color space and alpha when deriving translucent colors. Explicit
+theme values and `color-mix()` remain the fallbacks.
 
 Text and icons in an accent or status color use the theme-aware emphasis
 tokens — `--primary-emphasis`, `--info-emphasis`, `--success-emphasis`,
