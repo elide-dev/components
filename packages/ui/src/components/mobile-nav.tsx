@@ -136,7 +136,7 @@ export function MobileNav({
         <nav aria-label={m.mobileNav.navLabel} className="flex flex-1 flex-col gap-4 overflow-y-auto">
           {groups.map((group) => (
             <div key={group.label} className="flex flex-col gap-1">
-              <div className="px-2.5 font-mono text-[10.5px] font-semibold uppercase tracking-wider text-[var(--subtle-foreground)]">
+              <div className="px-2.5 font-mono text-[10.5px] font-semibold tracking-normal text-[var(--subtle-foreground)]">
                 {group.label}
               </div>
               {group.items.map((item) => {

@@ -31,7 +31,7 @@ export function Breadcrumbs({ segments, className, ...props }: BreadcrumbsProps)
               ) : segment.href ? (
                 <a
                   href={segment.href}
-                  className="text-muted-foreground transition-colors hover:text-foreground"
+                  className="text-muted-foreground transition-colors duration-[var(--eld-motion-hover)] ease-[var(--eld-motion-ease-out)] motion-reduce:transition-none hover:text-foreground"
                 >
                   {segment.label}
                 </a>

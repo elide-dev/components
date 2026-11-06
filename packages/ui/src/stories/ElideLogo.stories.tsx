@@ -208,9 +208,10 @@ export const InAppNav: Story = {
   parameters: { layout: "fullscreen" },
   render: () => (
     <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-      <AppNav links={[{ label: "Docs", href: "#", active: true }, { label: "Blog", href: "#" }]} />
+      <AppNav aria-label="Default logo navigation" links={[{ label: "Docs", href: "#docs", active: true }, { label: "Blog", href: "#blog" }]} />
       <AppNav
-        links={[{ label: "Docs", href: "#", active: true }, { label: "Blog", href: "#" }]}
+        aria-label="Custom logo navigation"
+        links={[{ label: "Docs", href: "#docs", active: true }, { label: "Blog", href: "#blog" }]}
         logo={<ElideLogo variant="blend" height={24} />}
       />
     </div>

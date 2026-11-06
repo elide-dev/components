@@ -22,7 +22,7 @@ export default defineConfig({
     reporters: ["default", ["junit", { outputFile: "./test-report.junit.xml" }]],
     browser: {
       enabled: true,
-      provider: playwright(),
+      provider: playwright({ contextOptions: { permissions: ["clipboard-read", "clipboard-write"] } }),
       headless: true,
       instances: [{ browser: "chromium" }],
     },

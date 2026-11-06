@@ -1,7 +1,7 @@
 {
   "name": "@elide/tokens",
   "version": "0.1.0",
-  "description": "Framework-agnostic design tokens for Elide — CSS custom properties, a Tailwind v4 theme, and a typed JS/TS object. No framework dependency; safe to consume from any repo.",
+  "description": "Framework-agnostic design tokens for Elide \u2014 CSS custom properties, a Tailwind v4 theme, and a typed JS/TS object. No framework dependency; safe to consume from any repo.",
   "license": "UNLICENSED",
   "type": "module",
   "sideEffects": [
@@ -26,8 +26,8 @@
     "test": "bun test"
   },
   "dependencies": {
-    "@fontsource/instrument-sans": "^5.3.0",
-    "@fontsource/inter": "^5.3.0",
-    "@fontsource/jetbrains-mono": "^5.3.0"
+    "@fontsource-variable/instrument-sans": "^5.3.0",
+    "@fontsource-variable/inter": "^5.3.0",
+    "@fontsource-variable/jetbrains-mono": "^5.3.0"
   }
 }

@@ -1,0 +1,12 @@
+# Elide components
+
+> A production example of Elide's React component library and design tokens.
+
+This page demonstrates buttons, tabs, dialogs, switches, accordion panels, and
+cards. It has no account, payment, or remote mutation features. Theme changes
+are local. Copy controls write the displayed command to the user's clipboard.
+
+## Resources
+
+- [Component examples](/): Interactive examples with server-rendered content.
+- [Source and documentation](https://github.com/elide-dev/components): Component APIs, tokens, and integration guidance.

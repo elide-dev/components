@@ -17,7 +17,7 @@ export interface PageFooterNavProps extends React.ComponentProps<"nav"> {
 }
 
 const cardBase =
-  "group flex flex-1 flex-col gap-1 rounded-xl border p-4 transition-colors hover:bg-[var(--hover)]";
+  "group flex flex-1 flex-col gap-1 rounded-xl border p-4 transition-colors duration-[var(--eld-motion-hover)] ease-[var(--eld-motion-ease-out)] motion-reduce:transition-none hover:bg-[var(--hover)]";
 
 export function PageFooterNav({ prev, next, className, ...props }: PageFooterNavProps) {
   return (

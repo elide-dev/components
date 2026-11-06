@@ -5,6 +5,20 @@
  * hardcoded from here.
  */
 
+export const purple = {
+  50: "#f5f3ff",
+  100: "#ede9fe",
+  200: "#ddd6fe",
+  300: "#c4b5fd",
+  400: "#a78bfa",
+  500: "#8b5cf6",
+  600: "#7c3aed",
+  700: "#6d28d9",
+  800: "#5b21b6",
+  900: "#4c1d95",
+  950: "#2e1065",
+} as const;
+
 export const magenta = {
   50: "#fff0fb",
   100: "#ffe4f8",
@@ -38,8 +52,9 @@ export const neutral = {
 export const brand = {
   purple: "#662d91",
   magenta: "#e7008c",
-  accentViolet: "#9747ff",
-  gradient: "linear-gradient(135deg, #8a3bd4, #e7008c)",
+  accentViolet: "#7c3aed",
+  gradient: "linear-gradient(115deg in oklab, oklch(52% 0.19 295), oklch(52% 0.18 307) 65%, oklch(53% 0.16 345))",
+  gradientFallback: "linear-gradient(115deg, #7447c8, #8443b8 65%, #a83c81)",
 } as const;
 
 /** Base hues for fills; `*Strong` is text on dark surfaces, `*Deep` text on light. */
@@ -72,19 +87,27 @@ export const syntax = {
 
 export const radius = {
   xs: 2,
-  sm: 6,
-  md: 8,
-  lg: 10,
-  xl: 14,
-  "2xl": 18,
-  "3xl": 22,
+  sm: 4,
+  md: 6,
+  lg: 6,
+  xl: 8,
+  "2xl": 10,
+  "3xl": 12,
   full: 9999,
 } as const;
 
 export const font = {
-  sans: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
-  display: '"Instrument Sans", "Inter", sans-serif',
-  mono: '"JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace',
+  sans: '"Inter Variable", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+  display: '"Instrument Sans Variable", "Instrument Sans", "Inter Variable", "Inter", sans-serif',
+  mono: '"JetBrains Mono Variable", "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace',
+} as const;
+
+/** CSS timings for immediate press feedback and a gentler release. */
+export const motion = {
+  press: "80ms",
+  hover: "180ms",
+  settle: "240ms",
+  easeOut: "cubic-bezier(0.16, 1, 0.3, 1)",
 } as const;
 
 /** Semantic role → CSS custom-property name. Read the live value with
@@ -97,6 +120,7 @@ export const cssVar = {
   mutedForeground: "--muted-foreground",
   subtleForeground: "--subtle-foreground",
   primary: "--primary",
+  primaryHover: "--primary-hover",
   primaryForeground: "--primary-foreground",
   primaryEmphasis: "--primary-emphasis",
   primarySoft: "--primary-soft",
@@ -113,5 +137,5 @@ export const cssVar = {
   codeBackground: "--code-background",
 } as const;
 
-export const tokens = { magenta, neutral, brand, status, syntax, radius, font, cssVar } as const;
+export const tokens = { purple, magenta, neutral, brand, status, syntax, radius, font, motion, cssVar } as const;
 export default tokens;

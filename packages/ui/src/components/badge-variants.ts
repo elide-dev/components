@@ -5,7 +5,7 @@ import { cva } from "class-variance-authority";
  * components and Fast Refresh can preserve state on edit.
  */
 export const badgeVariants = cva(
-  "inline-flex items-center gap-1.5 rounded-full font-semibold leading-none",
+  "inline-flex items-center gap-1.5 rounded-sm font-mono font-medium leading-none",
   {
     variants: {
       variant: {

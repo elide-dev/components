@@ -59,7 +59,7 @@ export function SectionTabs({ items, version, onSelect, className, ...props }: S
               : undefined
           }
           className={cn(
-            "relative px-3 py-3.5 text-[13.5px] text-muted-foreground transition-colors",
+            "relative px-3 py-3.5 text-[13.5px] text-muted-foreground transition-colors duration-[var(--eld-motion-hover)] ease-[var(--eld-motion-ease-out)] motion-reduce:transition-none",
             item.active && "font-semibold text-[var(--primary-emphasis)]",
           )}
         >

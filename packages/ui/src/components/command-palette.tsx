@@ -36,7 +36,7 @@ export interface CommandPaletteProps {
 }
 
 const groupHeadingCls =
-  "px-2.5 pt-1.5 pb-1 font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-subtle-foreground";
+  "px-2.5 pt-1.5 pb-1 font-mono text-[10.5px] font-semibold tracking-normal text-subtle-foreground";
 
 export function CommandPalette({
   open,
@@ -96,8 +96,8 @@ export function CommandPalette({
             "fixed left-1/2 top-24 z-50 w-[560px] max-w-[calc(100%-2rem)] -translate-x-1/2",
             "overflow-hidden rounded-2xl border border-border-strong bg-popover",
             "shadow-[0_30px_70px_-20px_rgba(0,0,0,0.8)] outline-none",
-            "data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95",
-            "data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
+            "data-open:animate-in data-open:fade-in-0 data-open:zoom-in-[0.98]",
+            "data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-[0.98]",
           )}
         >
           <div className="flex items-center gap-3 border-b border-border px-[18px] py-[15px]">
@@ -134,14 +134,14 @@ export function CommandPalette({
                         onMouseMove={() => setActive(idx)}
                         onClick={() => select(item)}
                         className={cn(
-                          "flex w-full items-center gap-[11px] rounded-[9px] px-2.5 py-[9px] text-left",
+                          "flex w-full items-center gap-[11px] rounded-md px-2.5 py-[9px] text-left",
                           isActive && "[background:var(--primary-soft)]",
                         )}
                       >
                         <span
                           className={cn(
                             "flex h-4 w-4 shrink-0 items-center justify-center [&_svg]:h-4 [&_svg]:w-4",
-                            isActive ? "text-primary" : "text-muted-foreground",
+                            isActive ? "text-primary-emphasis" : "text-muted-foreground",
                           )}
                         >
                           {item.icon}
@@ -157,7 +157,7 @@ export function CommandPalette({
                           ) : null}
                         </span>
                         {isActive ? (
-                          <CornerDownLeft className="h-3.5 w-3.5 shrink-0 text-primary" />
+                          <CornerDownLeft className="h-3.5 w-3.5 shrink-0 text-primary-emphasis" />
                         ) : null}
                       </button>
                     );

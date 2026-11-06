@@ -1,6 +1,6 @@
 import * as React from "react";
 import { cn } from "../lib/utils";
-import { CopyButton } from "./code-block";
+import { CopyButton } from "./copy-button";
 
 /**
  * CopyCommand — the single-line install command (`$ curl elide.sh | bash`):

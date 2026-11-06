@@ -36,7 +36,7 @@ export const Default: Story = {
       "aria-current",
     );
 
-    await userEvent.click(canvas.getByRole("button", { name: "Search" }));
+    await userEvent.click(canvas.getByRole("button", { name: /Search/ }));
     await expect(args.onSearchClick).toHaveBeenCalledTimes(1);
   },
 };

@@ -76,7 +76,7 @@ export function AppNav({
     >
       <div className="flex items-center gap-2">
         {logo ?? defaultLogo}
-        <span className="rounded-md border border-border-strong px-[7px] py-0.5 font-mono text-[10px] font-semibold tracking-wider text-muted-foreground">
+        <span className="rounded-md border border-border-strong px-[7px] py-0.5 font-mono text-[10px] font-semibold tracking-normal text-muted-foreground">
           {m.appNav.docsBadge}
         </span>
       </div>
@@ -90,7 +90,7 @@ export function AppNav({
             href={link.href}
             aria-current={link.active ? "page" : undefined}
             className={cn(
-              "rounded-[7px] px-2.5 py-1.5 transition-colors hover:bg-[var(--hover)]",
+              "rounded-md px-2.5 py-1.5 transition-colors duration-[var(--eld-motion-hover)] ease-[var(--eld-motion-ease-out)] motion-reduce:transition-none hover:bg-[var(--hover)]",
               link.active
                 ? "font-medium text-foreground"
                 : "text-muted-foreground hover:text-foreground",
@@ -106,12 +106,11 @@ export function AppNav({
       <button
         type="button"
         onClick={onSearchClick}
-        aria-label={m.appNav.searchLabel}
-        className="flex h-[34px] w-[280px] items-center gap-2 rounded-[9px] border border-border bg-muted px-3 text-subtle-foreground transition-colors hover:border-border-strong"
+        className="flex h-[34px] w-[280px] items-center gap-2 rounded-md border border-border bg-muted px-3 text-subtle-foreground transition-colors duration-[var(--eld-motion-hover)] ease-[var(--eld-motion-ease-out)] motion-reduce:transition-none hover:border-border-strong"
       >
         <Search aria-hidden className="h-[15px] w-[15px] shrink-0" />
         <span className="flex-1 text-left text-[13px]">{searchPlaceholder ?? m.appNav.searchPlaceholder}</span>
-        <Sparkles aria-hidden className="h-[13px] w-[13px] shrink-0 text-primary" />
+        <Sparkles aria-hidden className="h-[13px] w-[13px] shrink-0 text-primary-emphasis" />
         <kbd className="rounded-[5px] border border-border-strong px-1.5 py-px font-mono text-[11px] font-medium">
           ⌘K
         </kbd>
@@ -121,7 +120,7 @@ export function AppNav({
         type="button"
         onClick={onThemeToggle}
         aria-label={m.appNav.toggleTheme}
-        className="flex h-[34px] w-[34px] items-center justify-center rounded-[9px] border border-border text-muted-foreground transition-colors hover:bg-[var(--hover)] hover:text-foreground"
+        className="flex h-[34px] w-[34px] items-center justify-center rounded-md border border-border text-muted-foreground transition-colors duration-[var(--eld-motion-hover)] ease-[var(--eld-motion-ease-out)] motion-reduce:transition-none hover:bg-[var(--hover)] hover:text-foreground"
       >
         <Sun aria-hidden className="h-4 w-4" />
       </button>
@@ -129,8 +128,8 @@ export function AppNav({
       <button
         type="button"
         onClick={onLocaleClick}
-        aria-label={m.appNav.language}
-        className="flex h-[34px] items-center gap-1.5 rounded-[9px] border border-border px-[11px] text-[12.5px] font-medium text-muted-foreground transition-colors hover:bg-[var(--hover)] hover:text-foreground"
+        aria-label={`${m.appNav.language}: ${locale}`}
+        className="flex h-[34px] items-center gap-1.5 rounded-md border border-border px-[11px] text-[12.5px] font-medium text-muted-foreground transition-colors duration-[var(--eld-motion-hover)] ease-[var(--eld-motion-ease-out)] motion-reduce:transition-none hover:bg-[var(--hover)] hover:text-foreground"
       >
         <Globe aria-hidden className="h-[15px] w-[15px]" />
         {locale}

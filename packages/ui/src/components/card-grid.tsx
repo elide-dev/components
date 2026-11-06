@@ -21,9 +21,9 @@ export interface FeatureCardProps extends Omit<React.HTMLAttributes<HTMLElement>
 }
 
 const cardBase =
-  "group flex flex-col gap-2 rounded-xl border border-border bg-card p-4 text-left no-underline transition-[transform,background-color,border-color]";
+  "group flex flex-col gap-2 rounded-xl border border-border bg-card p-4 text-left no-underline transition-[background-color,border-color] duration-[var(--eld-motion-hover)] ease-[var(--eld-motion-ease-out)] motion-reduce:transition-none";
 const cardInteractive =
-  "cursor-pointer hover:-translate-y-px hover:border-border-strong hover:bg-[var(--hover)]";
+  "cursor-pointer hover:border-primary-emphasis/50 hover:bg-primary-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
 
 export function FeatureCard({
   title,
@@ -42,7 +42,7 @@ export function FeatureCard({
   const content = (
     <>
       {icon ? (
-        <span className="flex h-8 w-8 items-center justify-center rounded-[9px] bg-[var(--primary-soft)] text-[var(--primary-emphasis)] [&_svg]:h-[17px] [&_svg]:w-[17px]">
+        <span className="flex h-8 w-8 items-center justify-center rounded-md bg-[var(--primary-soft)] text-[var(--primary-emphasis)] [&_svg]:h-[17px] [&_svg]:w-[17px]">
           {icon}
         </span>
       ) : null}

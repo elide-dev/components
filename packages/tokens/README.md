@@ -4,9 +4,36 @@ Framework-agnostic design tokens for Elide. No dependencies, no framework — sa
 to consume from any repo (docs site, marketing site, a React app, a Figma
 plugin, a native target).
 
-Values are lifted verbatim from the Figma **Elide Design System** variable
-collections (`eld/colors`, `mode`, `eld/font`, `eld/syntax`, `tw/border-radius`).
-Treat this package as the single source of truth; don't re-derive colors.
+Values originate in the Figma **Elide Design System** variable collections
+(`eld/colors`, `mode`, `eld/font`, `eld/syntax`, `tw/border-radius`). The UI now
+uses purple-to-muted-rose gradients for primary actions, lavender for accent
+text, tighter corner radii, and restrained button shadows. Original magenta and brand artwork colors remain
+available. Treat this package as the single source of truth.
+
+`purple` is exported for JS/TS consumers alongside the existing scales. Use
+`--primary`, `--primary-hover`, `--primary-emphasis`, and `--primary-soft` for UI
+colors that adapt to light and dark themes. CTA gradients use OKLCH stops and
+explicit Oklab interpolation. The stops hold nearly constant lightness, keep
+purple through 65% of the fill, and use the same restrained palette across
+display gamuts. Both filled variants share this treatment. Hover
+colors use relative OKLCH lightness where supported, with `color-mix()` and
+sRGB fallbacks. `brand.gradient` exports the modern gradient;
+`brand.gradientFallback` provides its sRGB alternative. Read CSS variables for
+the active display-aware values. The brand artwork retains its original palette.
+
+Buttons use a 6px radius and 1px border at every size. Filled buttons layer a
+darker gradient border under the face, matching its direction and stop positions;
+hover deepens both layers. Both layers share a border-box origin so their color
+transitions line up at the edge. The radius scale also tightens panels
+and other controls, while explicitly circular shapes remain circular.
+
+Button hover surfaces and shadows crossfade over 180ms on a separate pseudo
+element. A press scales the control to 98% over 80ms, then settles back over
+240ms. Hover never moves the hit area. Motion uses scale and opacity, with no
+gradient, shadow, or layout interpolation and no JavaScript animation loop.
+Keyboard focus appears immediately; reduced-motion preferences disable the
+scale and transitions while preserving state feedback. The `motion` export
+mirrors the `--eld-motion-*` timing tokens for other consumers.
 
 ## What's inside
 
@@ -14,7 +41,7 @@ Treat this package as the single source of truth; don't re-derive colors.
 | --- | --- |
 | `@elide/tokens/tokens.css` | Raw CSS custom properties (primitives + semantic light/dark). Import once at the app root. |
 | `@elide/tokens/theme.css` | The above **plus** a Tailwind v4 `@theme` bridge and font `@import`s. Use in Tailwind apps. |
-| `@elide/tokens/fonts.css` | Just the font `@import`s (swap for self-hosted in prod). |
+| `@elide/tokens/fonts.css` | Self-hosted variable WOFF2 fonts with Unicode subsets and swap display. |
 | `@elide/tokens` (JS) | Typed token object — `magenta`, `neutral`, `syntax`, `radius`, `font`, `cssVar`… |
 
 ## Consuming

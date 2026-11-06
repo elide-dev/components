@@ -2,8 +2,13 @@
   "$schema": "https://turbo.build/schema.json",
   "tasks": {
     "build": {
-      "dependsOn": ["^build"],
-      "outputs": ["dist/**", "storybook-static/**"]
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": [
+        "dist/**",
+        "storybook-static/**"
+      ]
     },
     "dev": {
       "cache": false,
@@ -11,8 +16,21 @@
     },
     "lint": {},
     "test": {
-      "dependsOn": ["^build"],
+      "dependsOn": [
+        "^build"
+      ],
       "cache": false
+    },
+    "@elide/benchmark#test": {
+      "dependsOn": [
+        "build"
+      ],
+      "cache": false
+    },
+    "@elide/benchmark#lint": {
+      "dependsOn": [
+        "^build"
+      ]
     }
   }
 }

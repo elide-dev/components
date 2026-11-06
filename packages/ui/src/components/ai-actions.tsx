@@ -25,7 +25,7 @@ export interface AiActionsProps extends Omit<React.HTMLAttributes<HTMLDivElement
 }
 
 const itemClass =
-  "flex items-center gap-2 rounded-lg border border-border bg-muted px-2.5 py-2 text-left text-[12.5px] font-medium text-foreground no-underline transition-colors hover:bg-accent";
+  "flex items-center gap-2 rounded-lg border border-border bg-muted px-2.5 py-2 text-left text-[12.5px] font-medium text-foreground no-underline transition-colors duration-[var(--eld-motion-hover)] ease-[var(--eld-motion-ease-out)] motion-reduce:transition-none hover:bg-accent";
 
 export function AiActions({
   title,
@@ -42,7 +42,7 @@ export function AiActions({
       className={cn("flex flex-col gap-2 rounded-xl border border-border bg-card p-3.5", className)}
       {...props}
     >
-      <div className="mb-0.5 flex items-center gap-1.5 font-mono text-[11px] font-semibold tracking-wider text-subtle-foreground uppercase">
+      <div className="mb-0.5 flex items-center gap-1.5 font-mono text-[11px] font-semibold tracking-normal text-subtle-foreground">
         <Sparkles aria-hidden className="h-[13px] w-[13px] text-[var(--primary-emphasis)]" />
         {title ?? m.aiActions.title}
       </div>

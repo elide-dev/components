@@ -93,7 +93,7 @@ export function TableOfContents({
       className={cn("flex flex-col gap-[11px]", className)}
       {...props}
     >
-      <div className="font-mono text-[11px] font-semibold uppercase tracking-wider text-subtle-foreground">
+      <div className="font-mono text-[11px] font-semibold tracking-normal text-subtle-foreground">
         {title ?? m.tableOfContents.title}
       </div>
       {items.map((item) => {
@@ -106,7 +106,7 @@ export function TableOfContents({
             onClick={onSelect ? () => onSelect(item.id) : undefined}
             style={{ paddingLeft: 11 + (item.depth ?? 0) * 12 }}
             className={cn(
-              "border-l-2 text-[13px] no-underline transition-colors",
+              "border-l-2 text-[13px] no-underline transition-colors duration-[var(--eld-motion-hover)] ease-[var(--eld-motion-ease-out)] motion-reduce:transition-none",
               variant === "mono" && "font-mono",
               isActive
                 ? "border-[var(--primary)] font-semibold text-[var(--primary-emphasis)]"

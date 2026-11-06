@@ -1,0 +1,18 @@
+@import "@elide/ui/styles.css";
+@source "./App.tsx";
+html { scroll-padding-top: 2rem; }
+body { margin: 0; }
+header, main, footer { width: min(100% - 3rem, 64rem); margin-inline: auto; }
+header { display: flex; justify-content: space-between; align-items: center; padding-block: 1.5rem; border-bottom: 1px solid var(--border); }
+.wordmark { font-family: var(--eld-font-display); font-weight: 700; font-size: 1.5rem; }
+.theme { display: flex; align-items: center; gap: .75rem; font-size: .875rem; }
+main { padding-block: 4rem; }
+.eyebrow { font-family: var(--eld-font-mono); color: var(--primary-emphasis); font-size: .8rem; margin-bottom: 1rem; }
+h1 { font-family: var(--eld-font-display); font-size: clamp(2.75rem, 7vw, 5rem); font-weight: 600; line-height: 1.05; letter-spacing: -.04em; text-wrap: balance; }
+.intro { max-width: 36rem; margin-block: 1.5rem; font-size: 1.125rem; line-height: 1.6; color: var(--muted-foreground); }
+.actions { display: flex; gap: .75rem; flex-wrap: wrap; }
+section { margin-top: 3.5rem; }
+h2 { font-family: var(--eld-font-display); font-size: 1.4rem; font-weight: 600; margin-bottom: 1rem; }
+footer { padding-block: 1.5rem; border-top: 1px solid var(--border); color: var(--muted-foreground); font-size: .8rem; }
+.skip { position: absolute; top: .5rem; left: 1rem; padding: .5rem; background: var(--background); transform: translateY(-200%); z-index: 100; }
+.skip:focus { transform: none; }

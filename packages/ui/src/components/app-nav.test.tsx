@@ -35,7 +35,7 @@ describe("AppNav", () => {
     const onSearchClick = vi.fn();
     render(<AppNav links={links} onSearchClick={onSearchClick} />);
 
-    await user.click(screen.getByRole("button", { name: "Search" }));
+    await user.click(screen.getByRole("button", { name: /Search/ }));
     expect(onSearchClick).toHaveBeenCalledTimes(1);
   });
 

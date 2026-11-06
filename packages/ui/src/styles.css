@@ -2,8 +2,7 @@
  * import this file directly, or wire Tailwind itself and just import
  * "@elide/tokens/theme.css". Keeping it here means Storybook and quick
  * consumers get a working baseline with one import. */
-/* Fonts first: a remote `@import url()` must precede all other rules, so it has
- * to come before `@import "tailwindcss"` (which expands to rules inline). */
+/* Self-hosted variable fonts, shared tokens, and compiled utility styles. */
 @import "@elide/tokens/fonts.css";
 @import "tailwindcss";
 @import "@elide/tokens/theme.css";
@@ -27,7 +26,7 @@
  * are generated. Declaring the sources explicitly always scans them, regardless
  * of where this stylesheet is imported from. */
 @source "./components";
-@source "./stories";
+
 
 @layer base {
   * {
@@ -39,4 +38,31 @@
     font-family: var(--eld-font-sans);
     -webkit-font-smoothing: antialiased;
   }
+}
+
+/* Controls suppress accidental selection; prose, links, inputs and code retain
+ * native selection. Keep the selector low-specificity for consumer overrides. */
+@layer base {
+  :where(button, [role="button"], [role="tab"], [role="switch"],
+    [role="menuitem"], [role="menuitemcheckbox"], [role="menuitemradio"], [role="option"]) {
+    -webkit-user-select: none;
+    user-select: none;
+    touch-action: manipulation;
+  }
+  :where(input, textarea, [contenteditable="true"], pre, code) {
+    -webkit-user-select: text;
+    user-select: text;
+  }
+  :where(button, [role="button"], a, input, textarea, select):focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 3px;
+  }
+}
+
+/* System colors preserve affordances when gradients/shadows are suppressed. */
+@media (forced-colors: active) {
+  :where(button, [role="button"], [role="switch"], [role="tab"]) {
+    border: 1px solid ButtonText;
+  }
+  :where(button, [role="button"]):disabled { border-color: GrayText; }
 }

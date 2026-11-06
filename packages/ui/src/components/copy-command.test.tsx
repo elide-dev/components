@@ -33,4 +33,16 @@ describe("CopyCommand", () => {
 
     expect(writeText).toHaveBeenCalledWith("curl elide.sh | bash");
   });
+  it("does not announce success when clipboard access is denied", async () => {
+    const user = userEvent.setup();
+    Object.defineProperty(navigator, "clipboard", {
+      value: { writeText: vi.fn().mockRejectedValue(new Error("Permission denied")) },
+      configurable: true,
+    });
+    render(<CopyCommand command="elide run app.ts" label="Copy" />);
+    await user.click(screen.getByRole("button", { name: "Copy" }));
+    expect(screen.getByRole("button", { name: "Copy" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Copied" })).not.toBeInTheDocument();
+  });
+
 });

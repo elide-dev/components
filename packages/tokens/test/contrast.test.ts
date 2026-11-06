@@ -6,7 +6,7 @@
  */
 import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
-import { magenta, neutral, status, syntax } from "../src/tokens";
+import { purple, magenta, neutral, status, syntax } from "../src/tokens";
 
 type RGBA = [number, number, number, number];
 
@@ -92,6 +92,9 @@ const cases: Case[] = [
   ["--popover-foreground", "--popover", "--popover"],
   ["--accent-foreground", "--accent", "--accent"],
   ["--primary-foreground", "--primary", "--primary"],
+  ["--primary-foreground", "--primary-hover", "--primary-hover"],
+  // Fallback gradient stops must support white button labels.
+  ...["start", "middle", "end"].map((stop): Case => ["--primary-foreground", `--eld-gradient-${stop}`, `--eld-gradient-${stop}`]),
   ["--destructive-foreground", "--destructive", "--destructive"],
   ...SYNTAX.flatMap((t) => ["--code-background", "--code-background-elev"].map((s): Case => [t, s, s])),
 ];
@@ -113,11 +116,25 @@ for (const theme of Object.keys(themes) as Theme[]) {
       expect(contrast(theme, text, surface, base)).toBeGreaterThanOrEqual(AA);
     });
   });
+
+  test(`${theme} sRGB gradient fallback keeps WCAG AA throughout the blend`, () => {
+    const stops = ["start", "middle", "end"].map((stop) => resolve(theme, `var(--eld-gradient-${stop})`));
+    for (let segment = 0; segment < stops.length - 1; segment++) {
+      for (let step = 0; step <= 20; step++) {
+        const amount = step / 20;
+        const mixed = stops[segment].map((c, channel) =>
+          c * (1 - amount) + stops[segment + 1][channel] * amount,
+        ) as RGBA;
+        expect(ratio(resolve(theme, "var(--primary-foreground)"), mixed)).toBeGreaterThanOrEqual(AA);
+      }
+    }
+  });
 }
 
 describe("tokens.ts mirrors tokens.css primitives", () => {
   const camel = (s: string) => s.replace(/-(\w)/g, (_, c: string) => c.toUpperCase());
   const scales: [string, Record<string, string>][] = [
+    ["purple", purple],
     ["magenta", magenta],
     ["neutral", neutral],
     ["syntax", syntax],

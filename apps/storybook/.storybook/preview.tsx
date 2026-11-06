@@ -3,7 +3,7 @@ import type { Preview, Decorator } from "@storybook/react-vite";
 
 // Pulls in Tailwind + @elide/tokens (theme.css + fonts). One import themes the
 // whole catalog.
-import "@elide/ui/styles.css";
+import "./catalog.css";
 
 /** Global theme toggle in the toolbar. */
 export const globalTypes = {
@@ -54,7 +54,7 @@ const preview: Preview = {
   parameters: {
     layout: "fullscreen",
     controls: { matchers: { color: /(background|color)$/i, date: /Date$/ } },
-    a11y: { test: "todo" },
+    a11y: { test: "error" },
     // Chromatic snapshots every story in both themes.
     chromatic: {
       modes: {

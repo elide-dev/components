@@ -1,49 +1,11 @@
 import * as React from "react";
-import { Check, Copy } from "lucide-react";
 import { Highlight, type PrismTheme } from "prism-react-renderer";
 import { ensureGrammars } from "./prism-languages";
 import { cn, keyed } from "../lib/utils";
 import { useMessages } from "../i18n/context";
 
-/**
- * CopyButton — copies `value` to the clipboard, flips to a check for 1.5s.
- * Used by CodeBlock and CopyCommand.
- */
-export function CopyButton({
-  value,
-  className,
-  label,
-}: {
-  value: string;
-  className?: string;
-  /** Visible label; omit or pass "" for an icon-only button. Defaults to the localized "Copy". */
-  label?: string;
-}) {
-  const m = useMessages();
-  const [copied, setCopied] = React.useState(false);
-  return (
-    <button
-      type="button"
-      aria-label={copied ? m.codeBlock.copied : label || m.codeBlock.copy}
-      onClick={() => {
-        // Swallow clipboard rejections (e.g. no permission in a headless/denied
-        // context) — the copy is optimistic and a failure shouldn't surface as an
-        // unhandled promise rejection.
-        void navigator.clipboard?.writeText(value)?.catch(() => {});
-        setCopied(true);
-        setTimeout(() => setCopied(false), 1500);
-      }}
-      className={cn(
-        "inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-xs transition-colors",
-        "border-[var(--code-border)] text-[#a8a8ac] hover:text-white hover:bg-white/5",
-        className,
-      )}
-    >
-      {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-      {label ? <span>{copied ? m.codeBlock.copied : label}</span> : null}
-    </button>
-  );
-}
+export { CopyButton } from "./copy-button";
+import { CopyButton } from "./copy-button";
 
 /**
  * Prism theme mapped entirely onto the Elide `--eld-syntax-*` tokens, so the
@@ -171,7 +133,7 @@ export function CodeBlock({
     return (
       <div className={cn("overflow-hidden rounded-xl border", className)} style={surface}>
         <div
-          className="flex h-8 items-center gap-2 border-b px-3.5 font-mono text-[11px] font-semibold uppercase tracking-wider text-[var(--eld-syntax-line-number)]"
+          className="flex h-8 items-center gap-2 border-b px-3.5 font-mono text-[11px] font-semibold tracking-normal text-[var(--eld-syntax-line-number)]"
           style={elev}
         >
           <span>{lang ?? m.codeBlock.terminal}</span>
@@ -201,7 +163,7 @@ export function CodeBlock({
         </div>
         <div className="flex w-[70px] shrink-0 items-center justify-end gap-2">
           {lang ? (
-            <span className="font-mono text-[10.5px] font-semibold uppercase tracking-wide text-[var(--eld-syntax-line-number)]">
+            <span className="font-mono text-[10.5px] font-semibold tracking-normal text-[var(--eld-syntax-line-number)]">
               {lang}
             </span>
           ) : null}
@@ -229,7 +191,7 @@ export function CodeBlock({
       {statusBar ? (
         <div className="flex h-[30px] items-center border-t font-mono text-[11px] font-semibold" style={elev}>
           <span
-            className="inline-flex h-full items-center px-3 tracking-[0.16em]"
+            className="inline-flex h-full items-center px-3 tracking-normal"
             style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}
           >
             NORMAL

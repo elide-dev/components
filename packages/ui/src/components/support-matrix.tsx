@@ -61,7 +61,7 @@ export function SupportMatrix({
                 key={column.key}
                 scope="col"
                 className={cn(
-                  "px-4 py-2.5 font-mono text-xs font-semibold uppercase tracking-wide text-[var(--subtle-foreground)]",
+                  "px-4 py-2.5 font-mono text-xs font-semibold tracking-normal text-[var(--subtle-foreground)]",
                   column.align === "center" ? "text-center" : "text-left",
                 )}
               >

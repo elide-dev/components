@@ -1,0 +1,30 @@
+{
+  "name": "@elide/benchmark",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1",
+    "audit": "lighthouse http://127.0.0.1:4173 --chrome-flags='--headless' --output=json --output-path=./lighthouse.json",
+    "test": "bun bundle-check.ts && bun check.mjs",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@elide/ui": "workspace:*",
+    "@elide/tokens": "workspace:*",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@vitejs/plugin-react": "^6.1.2",
+    "vite": "^8.3.5",
+    "lighthouse": "^13.6.0",
+    "tailwindcss": "^4.3.3",
+    "playwright": "^1.64.1",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "typescript": "^6.0.3"
+  }
+}

@@ -45,7 +45,7 @@ export function SectionSwitcher({
           <button
             type="button"
             className={cn(
-              "flex w-full items-center justify-between gap-2 rounded-lg border border-border bg-muted px-2.5 py-2 text-left transition-colors hover:bg-[var(--hover)]",
+              "flex w-full items-center justify-between gap-2 rounded-lg border border-border bg-muted px-2.5 py-2 text-left transition-colors duration-[var(--eld-motion-hover)] ease-[var(--eld-motion-ease-out)] motion-reduce:transition-none hover:bg-[var(--hover)]",
               className,
             )}
             {...props}
@@ -134,7 +134,7 @@ export function SidebarItem({ label, href, active, external, comingSoon, onSelec
       rel={external ? "noopener noreferrer" : undefined}
       onClick={onSelect}
       className={cn(
-        "flex items-center justify-between gap-2 rounded-lg px-2.5 py-1.5 text-[13.5px] transition-colors",
+        "flex items-center justify-between gap-2 rounded-lg px-2.5 py-1.5 text-[13.5px] transition-colors duration-[var(--eld-motion-hover)] ease-[var(--eld-motion-ease-out)] motion-reduce:transition-none",
         active
           ? "bg-[var(--primary-soft)] font-semibold text-[var(--primary-emphasis)]"
           : "text-muted-foreground hover:bg-[var(--hover)] hover:text-foreground",
@@ -154,7 +154,7 @@ export interface SidebarGroupProps extends React.ComponentProps<"div"> {
 export function SidebarGroup({ label, items, className, ...props }: SidebarGroupProps) {
   return (
     <div className={cn("flex flex-col gap-0.5", className)} {...props}>
-      <div className="px-2.5 pb-1 font-mono text-[11px] font-semibold tracking-wider text-subtle-foreground uppercase">
+      <div className="px-2.5 pb-1 font-mono text-[11px] font-semibold tracking-normal text-subtle-foreground">
         {label}
       </div>
       {items.map((item) => (

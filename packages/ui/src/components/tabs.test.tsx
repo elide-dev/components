@@ -84,4 +84,15 @@ describe("Tabs", () => {
     expect(container.querySelector('[data-slot="tabs"]')).toBeInTheDocument();
     expect(container.querySelector('[data-slot="tabs-trigger"]')).toBeInTheDocument();
   });
+  it("passes vertical orientation through to keyboard navigation", async () => {
+    const user = userEvent.setup();
+    renderTabs({ orientation: "vertical" });
+    const tabs = screen.getAllByRole("tab");
+    await user.tab();
+    expect(tabs[0]).toHaveFocus();
+    await user.keyboard("{ArrowDown}");
+    expect(tabs[1]).toHaveFocus();
+    expect(screen.getByRole("tablist")).toHaveAttribute("aria-orientation", "vertical");
+  });
+
 });

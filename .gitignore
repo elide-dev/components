@@ -10,3 +10,6 @@ coverage/
 
 # Test reports
 *.junit.xml
+
+# Local performance audit artifacts
+apps/benchmark/lighthouse*.json

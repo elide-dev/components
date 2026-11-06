@@ -24,7 +24,7 @@ const TONES: Record<
   tip: { label: "Tip", rule: "var(--eld-success)", color: "var(--success-emphasis)", icon: Lightbulb },
   important: {
     label: "Important",
-    rule: "var(--eld-magenta-500)",
+    rule: "var(--primary-emphasis)",
     color: "var(--primary-emphasis)",
     icon: MessageSquareWarning,
   },
