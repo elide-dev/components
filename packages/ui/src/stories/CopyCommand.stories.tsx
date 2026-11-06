@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect, userEvent, waitFor, within } from "storybook/test";
+import { expect, userEvent, within } from "storybook/test";
 import { CopyCommand } from "../components/copy-command";
 
 const meta = {
@@ -34,12 +34,22 @@ export const WithLabel: Story = {
       <CopyCommand {...args} />
     </div>
   ),
-  play: async ({ canvasElement }) => {
+  play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement);
     const button = canvas.getByRole("button", { name: "Copy" });
+    const clipboardOwner = canvasElement.ownerDocument.defaultView!.navigator;
+    const descriptor = Object.getOwnPropertyDescriptor(clipboardOwner, "clipboard");
+    // setup() supplies a clipboard stub. Synthetic clicks cannot grant Safari's
+    // native clipboard permission, so test the copy contract independently.
+    const user = userEvent.setup({ document: canvasElement.ownerDocument });
 
-    await userEvent.click(button);
-
-    await waitFor(() => expect(canvas.getByRole("button", { name: "Copied" })).toBeInTheDocument());
+    try {
+      await user.click(button);
+      await expect(await clipboardOwner.clipboard.readText()).toBe(args.command);
+      await expect(await canvas.findByRole("button", { name: "Copied" })).toBeInTheDocument();
+    } finally {
+      if (descriptor) Object.defineProperty(clipboardOwner, "clipboard", descriptor);
+      else Reflect.deleteProperty(clipboardOwner, "clipboard");
+    }
   },
 };
