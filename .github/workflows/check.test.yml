@@ -37,7 +37,9 @@ jobs:
       - name: "Install: Dependencies"
         run: bun install --frozen-lockfile
       - name: "Setup: Playwright Chromium"
-        run: bunx playwright install --with-deps chromium
+        # Resolve the CLI from the locked workspace dependency. A root-level
+        # bunx can download a newer CLI and install a mismatched browser.
+        run: bun apps/storybook/node_modules/playwright/cli.js install --with-deps chromium
       - name: "Test: Vitest (jsdom unit + Storybook browser mode) with coverage"
         # `-- --coverage` forwards through Turbo's passthrough args to every
         # workspace's `test` script (`vitest run`), so both suites emit their
