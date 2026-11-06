@@ -102,8 +102,8 @@ export function CommandPalette({
         >
           <div className="flex items-center gap-3 border-b border-border px-[18px] py-[15px]">
             <Search className="h-[18px] w-[18px] shrink-0 text-subtle-foreground" />
+            {/* Let the dialog capture the invoker before focusing this input. */}
             <input
-              autoFocus
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={placeholder}

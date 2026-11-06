@@ -31,6 +31,19 @@
       "dependsOn": [
         "^build"
       ]
+    },
+    "@elide/preact#test": {
+      "dependsOn": ["build", "lint"],
+      "cache": false
+    },
+    "@elide/preact#build": {
+      "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/apps/benchmark/src/**"],
+      "outputs": ["dist/**"]
+    },
+    "@elide/preact#lint": {
+      "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/apps/benchmark/src/**"]
     }
   }
 }

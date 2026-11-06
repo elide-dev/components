@@ -37,13 +37,18 @@ Anything below the line is portable to any target; anything above is React/Preac
 | Target | Components | Tokens |
 | --- | --- | --- |
 | **React** (19.2.8+) | ✅ primary, tested | ✅ |
-| **Preact** | Intended via `preact/compat` alias; no current smoke suite | ✅ |
+| **Preact** (11.2) | Supported via `preact/compat`; maintained Chromium consumer smoke | ✅ |
 | Anything else (Astro static, native, Figma…) | — | ✅ tokens only |
 
-**Preact** works by aliasing `react`/`react-dom` → `preact/compat` in the
-consumer's bundler. Base UI and our components are written against the React API
-and target compat, but the current automated suites run React. Validate Preact
-integration in the consuming application. Guidelines that keep us compat-safe:
+**Preact** uses the same published React API through `preact/compat`, configured
+in the consumer's bundler and TypeScript resolver. The aliases must apply to
+client and server builds, including transitive dependencies and JSX runtimes.
+See the [consumer setup](./README.md#preact) and [`apps/preact`](./apps/preact).
+That fixture checks a production build without the React runtime, typechecking,
+SSR/hydration, and representative keyboard and overlay focus behavior in Chromium.
+React remains the primary full-catalog test environment; the Preact smoke does
+not cover every component or browser. Validate application-specific integration.
+Guidelines that keep us compat-safe:
 
 - No React-internal imports; only the public API.
 - Prefer `ref` callbacks / `useRef`; avoid `findDOMNode` and legacy context.
@@ -119,5 +124,6 @@ components/
 └─ apps/
    ├─ storybook/           # catalog + browser interaction/a11y tests
    ├─ benchmark/           # prerendered production consumers + platform checks
+   ├─ preact/              # compat consumer, SSR/hydration + Chromium smoke
    └─ docs/                # Astro docs site (planned)
 ```

@@ -98,11 +98,14 @@ try {
       assert.equal(await page.locator('h2[id]').evaluateAll(headings => headings.some(h => h.closest('[data-slot="deferred-content"]'))), false);
       await page.emulateMedia({ reducedMotion: "reduce" });
       assert.equal(await progress.evaluate(el => getComputedStyle(el).display), "none");
-      await page.getByRole("button", { name: "Search commands" }).click();
+      const commandsTrigger = page.getByRole("button", { name: "Search commands" });
+      await commandsTrigger.focus(); await page.keyboard.press("Space");
       const commands = page.getByRole("dialog", { name: "Command palette" }); await commands.waitFor();
+      await page.waitForFunction(input => input === document.activeElement, await commands.getByRole("textbox").elementHandle());
       const motion = await commands.evaluate(el => ({ animation: getComputedStyle(el).animationName, transition: getComputedStyle(el).transitionProperty }));
       assert.deepEqual(motion, { animation: "none", transition: "none" });
       await page.keyboard.press("Escape"); await commands.waitFor({ state: "hidden" });
+      assert.equal(await commandsTrigger.evaluate(el => el === document.activeElement), true);
       await page.emulateMedia({ media: "print" });
       assert.equal(await page.locator('[data-slot="deferred-content"]').first().evaluate(el => getComputedStyle(el).contentVisibility), "visible");
       await page.emulateMedia({ media: "screen", reducedMotion: "no-preference" });

@@ -133,6 +133,75 @@ ES modules work with bundlers; raw browser use needs a dependency resolver or
 import map and precompiled CSS. An import map is application configuration, not
 something this library injects.
 
+## Preact
+
+`@elide/ui` supports Preact 11.2 through `preact/compat`. Its published imports,
+types, and React peer dependencies retain the React API contract; there is no
+separate native Preact build. The maintained [`apps/preact`](./apps/preact)
+consumer checks typechecking, production bundling, SSR/hydration, and representative
+keyboard and overlay focus behavior in Chromium. React remains the primary
+full-catalog test environment.
+
+Keep the React peer packages installed for dependency resolution; the aliases
+replace their runtime code in the application bundles.
+
+Use [`@preact/preset-vite`](https://preactjs.com/guide/v11/getting-started/#aliasing-react-to-preact)
+to configure JSX and runtime aliases. For SSR, bundle dependencies that import
+React so their imports pass through those aliases too:
+
+```ts
+// vite.config.ts
+import preact from "@preact/preset-vite";
+import { defineConfig } from "vite";
+
+export default defineConfig({
+  plugins: [preact()],
+  resolve: { dedupe: ["preact"] },
+  ssr: { noExternal: true },
+});
+```
+
+`noExternal: true` is the simple configuration used by our fixture. Applications
+can narrow it to their React-using dependency graph; leaving a dependency external
+can bypass the bundler aliases and load React on the server. Render the server
+tree with `preact-render-to-string`, then hydrate it with Preact.
+
+For other bundlers, apply these exact aliases in both client and server builds:
+
+| Import | Replacement |
+| --- | --- |
+| `react`, `react-dom` | `preact/compat` |
+| `react-dom/client` | `preact/compat/client` |
+| `react/jsx-runtime` | `preact/jsx-runtime` |
+| `react/jsx-dev-runtime` | `preact/jsx-dev-runtime` |
+
+TypeScript needs matching resolution independently of the bundler. `skipLibCheck`
+accommodates Base UI's React-specific declarations; application code can retain
+strict typechecking:
+
+```jsonc
+// tsconfig.json; paths are relative to this file
+{
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "jsxImportSource": "preact",
+    "skipLibCheck": true,
+    "paths": {
+      "react": ["./node_modules/preact/compat"],
+      "react-dom": ["./node_modules/preact/compat"],
+      "react-dom/*": ["./node_modules/preact/compat/*"],
+      "react/jsx-runtime": ["./node_modules/preact/jsx-runtime"],
+      "react/jsx-dev-runtime": ["./node_modules/preact/jsx-runtime"]
+    }
+  }
+}
+```
+
+The existing CSS setup applies unchanged. Run the maintained consumer locally
+with `bun run test:preact`; it also rejects React runtime modules in the generated
+bundles. Validate the components and framework integration used by your app;
+this smoke suite is not exhaustive catalog or cross-browser coverage.
+
 ## Progressive platform features
 
 The theme sets `color-scheme` so native browser controls match the selected mode.

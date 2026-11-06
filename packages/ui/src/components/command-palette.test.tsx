@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi } from "vitest";
 import { CommandPalette, type CommandGroup } from "./command-palette";
@@ -77,6 +77,7 @@ describe("CommandPalette", () => {
     const home = vi.fn();
     const docs = vi.fn();
     render(<CommandPalette open groups={makeGroups({ home, docs })} />);
+    await waitFor(() => expect(screen.getByRole("textbox")).toHaveFocus());
 
     // Cursor starts on the first item (Home); ArrowDown moves to Docs.
     await user.keyboard("{ArrowDown}{Enter}");
@@ -89,6 +90,7 @@ describe("CommandPalette", () => {
     const user = userEvent.setup();
     const python = vi.fn();
     render(<CommandPalette open groups={makeGroups({ python })} />);
+    await waitFor(() => expect(screen.getByRole("textbox")).toHaveFocus());
 
     await user.keyboard("{ArrowUp}{Enter}");
 
