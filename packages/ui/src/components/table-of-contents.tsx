@@ -104,11 +104,11 @@ export function TableOfContents({
             href={`#${item.id}`}
             aria-current={isActive ? "location" : undefined}
             onClick={onSelect ? () => onSelect(item.id) : undefined}
-            style={{ paddingLeft: 11 + (item.depth ?? 0) * 12 }}
+            style={{ paddingInlineStart: 11 + (item.depth ?? 0) * 12 }}
             className={cn(
               // Keep text metrics stable when the active section changes;
               // varying the font weight can rewrap the rail during scrolling.
-              "border-l-2 text-[13px] font-medium no-underline transition-colors duration-[var(--eld-motion-hover)] ease-[var(--eld-motion-ease-out)] motion-reduce:transition-none",
+              "border-s-2 text-[13px] font-medium no-underline transition-colors duration-[var(--eld-motion-hover)] ease-[var(--eld-motion-ease-out)] motion-reduce:transition-none",
               variant === "mono" && "font-mono",
               isActive
                 ? "border-[var(--primary)] text-[var(--primary-emphasis)]"

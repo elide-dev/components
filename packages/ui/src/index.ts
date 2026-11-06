@@ -12,9 +12,7 @@ export {
 } from "./components/command-palette";
 export { CopyButton } from "./components/copy-button";
 export { cn } from "./lib/utils";
-export { MessagesProvider, type MessagesProviderProps } from "./i18n/provider";
-export { useMessages } from "./i18n/context";
-export { en as defaultMessages, type Messages, type PartialMessages } from "./i18n/messages";
+export * from "./i18n/index";
 export { ThemeProvider, type ThemeProviderProps } from "./components/theme-provider";
 export { useTheme, type Theme } from "./components/theme-context";
 export { Breadcrumbs, type BreadcrumbSegment, type BreadcrumbsProps } from "./components/breadcrumbs";

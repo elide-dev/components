@@ -7,7 +7,9 @@ import { App } from "./src/App.tsx";
 import { PlatformApp } from "./src/PlatformApp.tsx";
 import { PerformanceApp } from "./src/PerformanceApp.tsx";
 
-const pages = { "platform.html": PlatformApp, "performance.html": PerformanceApp };
+import { I18nApp } from "./src/I18nApp.tsx";
+
+const pages = { "i18n.html": I18nApp, "platform.html": PlatformApp, "performance.html": PerformanceApp };
 
 export default defineConfig({
   appType: "mpa",
@@ -18,5 +20,5 @@ export default defineConfig({
       return html.replace("<!--app-->", renderToString(React.createElement(page)));
     },
   }],
-  build: { target: "es2022", cssCodeSplit: true, rolldownOptions: { input: { index: "index.html", platform: "platform.html", performance: "performance.html" } } },
+  build: { target: "es2022", cssCodeSplit: true, rolldownOptions: { input: { index: "index.html", platform: "platform.html", performance: "performance.html", i18n: "i18n.html" } } },
 });

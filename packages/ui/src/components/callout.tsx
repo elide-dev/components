@@ -1,3 +1,4 @@
+import { useMessages } from "../i18n/context";
 import * as React from "react";
 import { Info, Lightbulb, MessageSquareWarning, TriangleAlert, OctagonAlert } from "lucide-react";
 import { cn } from "../lib/utils";
@@ -14,22 +15,20 @@ type CalloutTone = "note" | "tip" | "important" | "warning" | "caution";
 const TONES: Record<
   CalloutTone,
   {
-    label: string;
     rule: string;
     color: string;
     icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
   }
 > = {
-  note: { label: "Note", rule: "var(--eld-info)", color: "var(--info-emphasis)", icon: Info },
-  tip: { label: "Tip", rule: "var(--eld-success)", color: "var(--success-emphasis)", icon: Lightbulb },
+  note: { rule: "var(--eld-info)", color: "var(--info-emphasis)", icon: Info },
+  tip: { rule: "var(--eld-success)", color: "var(--success-emphasis)", icon: Lightbulb },
   important: {
-    label: "Important",
     rule: "var(--primary-emphasis)",
     color: "var(--primary-emphasis)",
     icon: MessageSquareWarning,
   },
-  warning: { label: "Warning", rule: "var(--eld-warning)", color: "var(--warning-emphasis)", icon: TriangleAlert },
-  caution: { label: "Caution", rule: "var(--eld-danger)", color: "var(--danger-emphasis)", icon: OctagonAlert },
+  warning: { rule: "var(--eld-warning)", color: "var(--warning-emphasis)", icon: TriangleAlert },
+  caution: { rule: "var(--eld-danger)", color: "var(--danger-emphasis)", icon: OctagonAlert },
 };
 
 export interface CalloutProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "title"> {
@@ -39,13 +38,14 @@ export interface CalloutProps extends Omit<React.HTMLAttributes<HTMLDivElement>,
 }
 
 export function Callout({ tone = "note", title, className, children, ...props }: CalloutProps) {
+  const m = useMessages();
   const t = TONES[tone];
   const Icon = t.icon;
   return (
     <div
       role="note"
-      className={cn("flex flex-col gap-2 py-2 pl-4 pr-2", className)}
-      style={{ borderLeft: `3px solid ${t.rule}` }}
+      className={cn("flex flex-col gap-2 py-2 ps-4 pe-2", className)}
+      style={{ borderInlineStart: `3px solid ${t.rule}` }}
       {...props}
     >
       <div
@@ -53,7 +53,7 @@ export function Callout({ tone = "note", title, className, children, ...props }:
         style={{ color: t.color }}
       >
         <Icon className="h-4 w-4 shrink-0" />
-        {title ?? t.label}
+        {title ?? m.callout[tone]}
       </div>
       <div className="text-sm leading-relaxed text-foreground [&_code]:font-mono [&_code]:text-[var(--primary-emphasis)]">
         {children}

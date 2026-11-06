@@ -25,7 +25,7 @@ export interface AiActionsProps extends Omit<React.HTMLAttributes<HTMLDivElement
 }
 
 const itemClass =
-  "flex items-center gap-2 rounded-lg border border-border bg-muted px-2.5 py-2 text-left text-[12.5px] font-medium text-foreground no-underline transition-colors duration-[var(--eld-motion-hover)] ease-[var(--eld-motion-ease-out)] motion-reduce:transition-none hover:bg-accent";
+  "flex items-center gap-2 rounded-lg border border-border bg-muted px-2.5 py-2 text-start text-[12.5px] font-medium text-foreground no-underline transition-colors duration-[var(--eld-motion-hover)] ease-[var(--eld-motion-ease-out)] motion-reduce:transition-none hover:bg-accent";
 
 export function AiActions({
   title,

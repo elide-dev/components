@@ -1,0 +1,98 @@
+// Generated from ar.json. Run bun run i18n:generate; do not edit.
+import type { Messages } from "../messages";
+const messages: Messages = {
+  "appNav": {
+    "navLabel": "التنقل الرئيسي",
+    "docsBadge": "التوثيق",
+    "searchPlaceholder": "ابحث أو اسأل",
+    "searchLabel": "بحث",
+    "toggleTheme": "تبديل المظهر",
+    "language": "اللغة",
+    "changelog": "سجل التغييرات",
+    "install": "تثبيت"
+  },
+  "mobileNav": {
+    "openNavigation": "فتح التنقل",
+    "navLabel": "التنقل على الهاتف",
+    "dialogLabel": "قائمة التنقل",
+    "searchPlaceholder": "ابحث أو اسأل",
+    "searchLabel": "بحث",
+    "changelog": "سجل التغييرات",
+    "sectionNavigation": "التنقل في {section}"
+  },
+  "sectionTabs": {
+    "navLabel": "الأقسام"
+  },
+  "sidebar": {
+    "navLabel": "الشريط الجانبي",
+    "comingSoon": "قريبًا"
+  },
+  "tableOfContents": {
+    "title": "في هذه الصفحة",
+    "navLabel": "جدول المحتويات"
+  },
+  "codeBlock": {
+    "copy": "نسخ",
+    "copied": "تم النسخ",
+    "terminal": "الطرفية",
+    "normal": "عادي",
+    "text": "نص",
+    "lines": "الأسطر: {count}"
+  },
+  "copyCommand": {
+    "copy": "نسخ",
+    "copied": "تم النسخ"
+  },
+  "aiActions": {
+    "title": "الاستخدام مع الذكاء الاصطناعي",
+    "copyAsMarkdown": "نسخ بصيغة Markdown",
+    "copied": "تم النسخ"
+  },
+  "supportMatrix": {
+    "caption": "جدول الدعم",
+    "supported": "مدعوم",
+    "partial": "جزئي",
+    "notSupported": "غير مدعوم",
+    "method": "الطريقة",
+    "status": "الحالة",
+    "notes": "ملاحظات"
+  },
+  "statusBadge": {
+    "implemented": "منفّذ",
+    "supported": "مدعوم",
+    "partial": "جزئي",
+    "missing": "غير متوفر",
+    "planned": "مخطط له"
+  },
+  "common": {
+    "close": "إغلاق"
+  },
+  "breadcrumbs": {
+    "navLabel": "مسار التنقل"
+  },
+  "pageFooterNav": {
+    "navLabel": "التنقل بين الصفحات",
+    "previous": "السابق",
+    "next": "التالي"
+  },
+  "commandPalette": {
+    "label": "لوحة الأوامر",
+    "placeholder": "ابحث في التوثيق والأوامر وواجهات API…",
+    "empty": "لم يتم العثور على نتائج."
+  },
+  "statStrip": {
+    "label": "الإحصاءات"
+  },
+  "apiMethod": {
+    "linkTo": "رابط إلى {name}",
+    "thisMethod": "هذه الطريقة"
+  },
+  "callout": {
+    "note": "ملاحظة",
+    "tip": "نصيحة",
+    "important": "مهم",
+    "warning": "تحذير",
+    "caution": "تنبيه"
+  }
+};
+export default messages;

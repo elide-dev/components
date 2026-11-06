@@ -294,3 +294,23 @@ no agent service and does not advertise an ARD endpoint. Unknown paths return
 404. Production hosting should compress responses and cache hashed assets with
 `Cache-Control: public, max-age=31536000, immutable`, while allowing HTML to
 revalidate.
+
+## Internationalization
+
+Built-in component labels are available in the docs languages (`en`, `es`, `de`,
+`fr`, `ru`, `uk`, `ar`) plus Simplified/Traditional Chinese, Japanese, Korean and
+Hebrew. Import one data-only locale and pass it to `I18nProvider`; the default
+bundle does not include all translations. RTL support covers logical layout,
+keyboard controls and portals.
+
+```tsx
+import { I18nProvider } from "@elide/ui/i18n";
+import he from "@elide/ui/locales/he";
+
+<I18nProvider locale="he" messages={he}>{app}</I18nProvider>
+```
+
+See [the internationalization guide](./docs/internationalization.md) for tiers,
+SSR, lazy loading, caching, custom dictionaries and translation checks. Preview
+`/i18n.html` in the production benchmark or the Internationalization stories in
+Storybook. New translations still need native-speaker editorial review.

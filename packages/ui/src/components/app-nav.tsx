@@ -1,3 +1,4 @@
+import { useLocale } from "../i18n/locale-context";
 import * as React from "react";
 import { ChevronDown, Globe, History, Search, Sparkles, Sun } from "lucide-react";
 import { cn } from "../lib/utils";
@@ -55,7 +56,7 @@ export function AppNav({
   links,
   logo,
   searchPlaceholder,
-  locale = "EN",
+  locale,
   installHref = "/install",
   changelogHref = "/changelog",
   onSearchClick,
@@ -65,6 +66,8 @@ export function AppNav({
   ...props
 }: AppNavProps) {
   const m = useMessages();
+  const language = useLocale().locale;
+  const currentLocale = locale ?? language.toUpperCase();
   return (
     <nav
       aria-label={m.appNav.navLabel}
@@ -109,7 +112,7 @@ export function AppNav({
         className="flex h-[34px] w-[280px] items-center gap-2 rounded-md border border-border bg-muted px-3 text-subtle-foreground transition-colors duration-[var(--eld-motion-hover)] ease-[var(--eld-motion-ease-out)] motion-reduce:transition-none hover:border-border-strong"
       >
         <Search aria-hidden className="h-[15px] w-[15px] shrink-0" />
-        <span className="flex-1 text-left text-[13px]">{searchPlaceholder ?? m.appNav.searchPlaceholder}</span>
+        <span className="flex-1 text-start text-[13px]">{searchPlaceholder ?? m.appNav.searchPlaceholder}</span>
         <Sparkles aria-hidden className="h-[13px] w-[13px] shrink-0 text-primary-emphasis" />
         <kbd className="rounded-[5px] border border-border-strong px-1.5 py-px font-mono text-[11px] font-medium">
           ⌘K
@@ -128,11 +131,11 @@ export function AppNav({
       <button
         type="button"
         onClick={onLocaleClick}
-        aria-label={`${m.appNav.language}: ${locale}`}
+        aria-label={`${m.appNav.language}: ${currentLocale}`}
         className="flex h-[34px] items-center gap-1.5 rounded-md border border-border px-[11px] text-[12.5px] font-medium text-muted-foreground transition-colors duration-[var(--eld-motion-hover)] ease-[var(--eld-motion-ease-out)] motion-reduce:transition-none hover:bg-[var(--hover)] hover:text-foreground"
       >
         <Globe aria-hidden className="h-[15px] w-[15px]" />
-        {locale}
+        <bdi>{currentLocale}</bdi>
         <ChevronDown aria-hidden className="h-[13px] w-[13px]" />
       </button>
 

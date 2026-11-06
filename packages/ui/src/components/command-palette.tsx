@@ -1,3 +1,5 @@
+import { useLocale } from "../i18n/locale-context";
+import { useMessages } from "../i18n/context";
 import * as React from "react";
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog";
 import { Search, CornerDownLeft } from "lucide-react";
@@ -61,7 +63,7 @@ const CommandRow = React.memo(function CommandRow({
       onMouseMove={() => { if (!active) onActivate(index); }}
       onClick={() => onSelect(item)}
       className={cn(
-        "flex w-full items-center gap-[11px] rounded-md px-2.5 py-[9px] text-left",
+        "flex w-full items-center gap-[11px] rounded-md px-2.5 py-[9px] text-start",
         active && "[background:var(--primary-soft)]",
       )}
     >
@@ -100,23 +102,25 @@ export function CommandPalette({
   open,
   onOpenChange,
   groups,
-  placeholder = "Search docs, commands, APIs…",
-  emptyMessage = "No results found.",
+  placeholder,
+  emptyMessage,
   filter = true,
 }: CommandPaletteProps) {
+  const m = useMessages();
+  const { locale: language, direction } = useLocale();
   const [query, setQuery] = React.useState("");
 
   const filtered = React.useMemo(() => {
     if (!filter || !query.trim()) return groups;
-    const q = query.toLowerCase();
+    const q = query.normalize("NFC").toLocaleLowerCase(language);
     const match = (i: CommandItem) => {
       const hay = i.keywords ?? (typeof i.title === "string" ? i.title : "");
-      return `${hay} ${i.subtitle ?? ""}`.toLowerCase().includes(q);
+      return `${hay} ${i.subtitle ?? ""}`.normalize("NFC").toLocaleLowerCase(language).includes(q);
     };
     return groups
       .map((g) => ({ ...g, items: g.items.filter(match) }))
       .filter((g) => g.items.length > 0);
-  }, [groups, query, filter]);
+  }, [groups, query, filter, language]);
 
   // Flatten for keyboard navigation across groups.
   const flat = React.useMemo(() => filtered.flatMap((g) => g.items), [filtered]);
@@ -138,7 +142,7 @@ export function CommandPalette({
   }, [onOpenChange]);
 
   const onKeyDown = (e: React.KeyboardEvent) => {
-    if (flat.length === 0) return;
+    if (e.nativeEvent.isComposing || e.keyCode === 229 || flat.length === 0) return;
     if (e.key === "ArrowDown") {
       e.preventDefault();
       setActive((i) => (i + 1) % flat.length);
@@ -156,9 +160,9 @@ export function CommandPalette({
       <DialogPrimitive.Portal>
         <DialogPrimitive.Backdrop data-slot="command-palette-overlay" data-eld-motion="backdrop" className="fixed inset-0 z-50 bg-black/50 supports-backdrop-filter:backdrop-blur-[2px]" />
         <DialogPrimitive.Popup
-          data-slot="command-palette-content"
+          data-slot="command-palette-content" lang={language} dir={direction}
           data-eld-motion="popup"
-          aria-label="Command palette"
+          aria-label={m.commandPalette.label}
           onKeyDown={onKeyDown}
           className={cn(
             "fixed left-1/2 top-24 z-50 w-[560px] max-w-[calc(100%-2rem)] -translate-x-1/2",
@@ -172,8 +176,8 @@ export function CommandPalette({
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder={placeholder}
-              aria-label={placeholder}
+              placeholder={placeholder ?? m.commandPalette.placeholder}
+              aria-label={placeholder ?? m.commandPalette.placeholder}
               className="flex-1 bg-transparent text-[15px] text-foreground outline-none placeholder:text-subtle-foreground"
             />
             <kbd className="rounded-md border border-border px-2 py-0.5 font-mono text-[11px] text-subtle-foreground">
@@ -184,7 +188,7 @@ export function CommandPalette({
           <div className="flex max-h-[320px] flex-col gap-0.5 overflow-y-auto p-2">
             {flat.length === 0 ? (
               <div className="px-2.5 py-6 text-center text-[13.5px] text-muted-foreground">
-                {emptyMessage}
+                {emptyMessage ?? m.commandPalette.empty}
               </div>
             ) : (
               indexedGroups.map(({ group, offset }) => (

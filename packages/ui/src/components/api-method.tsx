@@ -1,3 +1,6 @@
+import { useLocale } from "../i18n/locale-context";
+import { formatMessage, isolateText } from "../i18n/format";
+import { useMessages } from "../i18n/context";
 import * as React from "react";
 import { Hash } from "lucide-react";
 import { cn } from "../lib/utils";
@@ -18,8 +21,8 @@ export interface ParamRowProps {
 export function ParamRow({ name, type, description, className }: ParamRowProps) {
   return (
     <div className={cn("flex items-baseline gap-3", className)}>
-      <code className="w-24 shrink-0 font-mono text-[12.5px] text-[var(--primary-emphasis)]">{name}</code>
-      <span className="shrink-0 font-mono text-xs text-muted-foreground">{type}</span>
+      <code dir="ltr" className="w-24 shrink-0 font-mono text-[12.5px] text-[var(--primary-emphasis)]">{name}</code>
+      <span dir="ltr" className="shrink-0 font-mono text-xs text-muted-foreground">{type}</span>
       {description ? (
         <span className="text-[13.5px] text-muted-foreground [&_code]:font-mono [&_code]:text-[var(--primary-emphasis)]">
           {description}
@@ -68,17 +71,19 @@ export function ApiMethod({
   className,
   ...props
 }: ApiMethodProps) {
+  const m = useMessages();
+  const { direction } = useLocale();
   return (
     <div id={anchorId} className={cn("border-t border-border pt-6", className)} {...props}>
       <div className="mb-3 flex flex-wrap items-center gap-2.5">
-        <code className="font-mono text-[17px] font-medium leading-snug text-foreground">
+        <code dir="ltr" className="font-mono text-[17px] font-medium leading-snug text-foreground">
           {emphasizeSignature(signature)}
         </code>
         {status ? <StatusBadge status={status} size="sm" /> : null}
         {anchorId ? (
           <a
             href={`#${anchorId}`}
-            aria-label={`Link to ${typeof signature === "string" ? signature : "this method"}`}
+            aria-label={formatMessage(m.apiMethod.linkTo, { name: typeof signature === "string" ? (direction === "rtl" ? isolateText(signature) : signature) : m.apiMethod.thisMethod })}
             className="text-[var(--primary-emphasis)] opacity-55 transition-opacity hover:opacity-100"
           >
             <Hash aria-hidden className="h-3.5 w-3.5" />

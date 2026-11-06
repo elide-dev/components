@@ -1,3 +1,4 @@
+import { useMessages } from "../i18n/context";
 import * as React from "react";
 import { ChevronRight } from "lucide-react";
 import { cn } from "../lib/utils";
@@ -17,8 +18,9 @@ export interface BreadcrumbsProps extends React.ComponentProps<"nav"> {
 }
 
 export function Breadcrumbs({ segments, className, ...props }: BreadcrumbsProps) {
+  const m = useMessages();
   return (
-    <nav aria-label="Breadcrumb" className={cn("text-sm", className)} {...props}>
+    <nav aria-label={m.breadcrumbs.navLabel} className={cn("text-sm", className)} {...props}>
       <ol className="flex items-center gap-1.5">
         {segments.map((segment, i) => {
           const isLast = i === segments.length - 1;
@@ -39,7 +41,7 @@ export function Breadcrumbs({ segments, className, ...props }: BreadcrumbsProps)
                 <span className="text-muted-foreground">{segment.label}</span>
               )}
               {isLast ? null : (
-                <ChevronRight aria-hidden className="h-4 w-4 text-muted-foreground/60" />
+                <ChevronRight aria-hidden className="h-4 w-4 text-muted-foreground/60 rtl:rotate-180" />
               )}
             </li>
           );

@@ -1,0 +1,98 @@
+// Generated from he.json. Run bun run i18n:generate; do not edit.
+import type { Messages } from "../messages";
+const messages: Messages = {
+  "appNav": {
+    "navLabel": "ניווט ראשי",
+    "docsBadge": "תיעוד",
+    "searchPlaceholder": "חיפוש או שאלה",
+    "searchLabel": "חיפוש",
+    "toggleTheme": "החלפת ערכת נושא",
+    "language": "שפה",
+    "changelog": "יומן שינויים",
+    "install": "התקנה"
+  },
+  "mobileNav": {
+    "openNavigation": "פתיחת הניווט",
+    "navLabel": "ניווט בנייד",
+    "dialogLabel": "תפריט ניווט",
+    "searchPlaceholder": "חיפוש או שאלה",
+    "searchLabel": "חיפוש",
+    "changelog": "יומן שינויים",
+    "sectionNavigation": "ניווט ב{section}"
+  },
+  "sectionTabs": {
+    "navLabel": "מקטעים"
+  },
+  "sidebar": {
+    "navLabel": "סרגל צד",
+    "comingSoon": "בקרוב"
+  },
+  "tableOfContents": {
+    "title": "בעמוד זה",
+    "navLabel": "תוכן העניינים"
+  },
+  "codeBlock": {
+    "copy": "העתקה",
+    "copied": "הועתק",
+    "terminal": "מסוף",
+    "normal": "רגיל",
+    "text": "טקסט",
+    "lines": "שורות: {count}"
+  },
+  "copyCommand": {
+    "copy": "העתקה",
+    "copied": "הועתק"
+  },
+  "aiActions": {
+    "title": "שימוש עם AI",
+    "copyAsMarkdown": "העתקה כ־Markdown",
+    "copied": "הועתק"
+  },
+  "supportMatrix": {
+    "caption": "טבלת תמיכה",
+    "supported": "נתמך",
+    "partial": "חלקי",
+    "notSupported": "לא נתמך",
+    "method": "שיטה",
+    "status": "מצב",
+    "notes": "הערות"
+  },
+  "statusBadge": {
+    "implemented": "מומש",
+    "supported": "נתמך",
+    "partial": "חלקי",
+    "missing": "חסר",
+    "planned": "מתוכנן"
+  },
+  "common": {
+    "close": "סגירה"
+  },
+  "breadcrumbs": {
+    "navLabel": "נתיב ניווט"
+  },
+  "pageFooterNav": {
+    "navLabel": "ניווט בין עמודים",
+    "previous": "הקודם",
+    "next": "הבא"
+  },
+  "commandPalette": {
+    "label": "לוח פקודות",
+    "placeholder": "חיפוש בתיעוד, בפקודות ובממשקי API…",
+    "empty": "לא נמצאו תוצאות."
+  },
+  "statStrip": {
+    "label": "נתונים סטטיסטיים"
+  },
+  "apiMethod": {
+    "linkTo": "קישור אל {name}",
+    "thisMethod": "שיטה זו"
+  },
+  "callout": {
+    "note": "הערה",
+    "tip": "טיפ",
+    "important": "חשוב",
+    "warning": "אזהרה",
+    "caution": "זהירות"
+  }
+};
+export default messages;

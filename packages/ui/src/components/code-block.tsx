@@ -1,3 +1,4 @@
+import { formatMessage } from "../i18n/format";
 import * as React from "react";
 import { Highlight, type PrismTheme } from "prism-react-renderer";
 import { ensureGrammars } from "./prism-languages";
@@ -137,9 +138,9 @@ export function CodeBlock({
           style={elev}
         >
           <span>{lang ?? m.codeBlock.terminal}</span>
-          <CopyButton value={code} label="" className="ml-auto px-1.5 py-1" />
+          <CopyButton value={code} label="" className="ms-auto px-1.5 py-1" />
         </div>
-        <pre className="m-0 overflow-x-auto p-4 font-mono text-[13px] leading-[1.7] text-[var(--eld-syntax-default)]">
+        <pre dir="ltr" className="m-0 overflow-x-auto p-4 font-mono text-[13px] leading-[1.7] text-[var(--eld-syntax-default)]">
           {body}
         </pre>
       </div>
@@ -159,7 +160,7 @@ export function CodeBlock({
           <span className="h-[11px] w-[11px] rounded-full bg-[#27c93f]" />
         </div>
         <div className="flex-1 text-center font-mono text-[12.5px] tracking-wide text-[#b7b7bb]">
-          {filename}
+          <bdi dir="ltr">{filename}</bdi>
         </div>
         <div className="flex w-[70px] shrink-0 items-center justify-end gap-2">
           {lang ? (
@@ -172,36 +173,36 @@ export function CodeBlock({
       </div>
 
       {/* body */}
-      <div className="flex">
+      <div dir="ltr" className="flex">
         {lineNumbers ? (
           <div
             aria-hidden
-            className="shrink-0 select-none whitespace-pre border-r px-3.5 py-4 text-right font-mono text-[13px] leading-[1.65] text-[var(--eld-syntax-line-number)]"
+            className="shrink-0 select-none whitespace-pre border-e px-3.5 py-4 text-end font-mono text-[13px] leading-[1.65] text-[var(--eld-syntax-line-number)]"
             style={{ borderColor: "var(--code-border)" }}
           >
             {lines.map((_, i) => `${i + 1}`).join("\n")}
           </div>
         ) : null}
-        <pre className="m-0 flex-1 overflow-x-auto py-4 pl-4 pr-5 font-mono text-[13px] leading-[1.65] text-[var(--eld-syntax-default)]">
+        <pre dir="ltr" className="m-0 flex-1 overflow-x-auto py-4 ps-4 pe-5 font-mono text-[13px] leading-[1.65] text-[var(--eld-syntax-default)]">
           {body}
         </pre>
       </div>
 
       {/* vim status bar */}
       {statusBar ? (
-        <div className="flex h-[30px] items-center border-t font-mono text-[11px] font-semibold" style={elev}>
+        <div data-slot="code-block-status" className="flex min-h-[30px] flex-wrap items-center border-t font-mono text-[11px] font-semibold" style={elev}>
           <span
-            className="inline-flex h-full items-center px-3 tracking-normal"
+            className="inline-flex min-h-[30px] items-center whitespace-nowrap px-3 tracking-normal"
             style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}
           >
-            NORMAL
+            {m.codeBlock.normal}
           </span>
           {filename ? (
-            <span className="px-3 tracking-wide text-muted-foreground">{filename}</span>
+            <span className="whitespace-nowrap px-3 py-1 tracking-wide text-[var(--eld-syntax-line-number)]"><bdi dir="ltr">{filename}</bdi></span>
           ) : null}
           <span className="flex-1" />
-          <span className="px-3.5 tracking-wide text-[var(--eld-syntax-line-number)]">
-            utf-8 · {lang ?? "text"} · {lines.length}L
+          <span className="whitespace-nowrap px-3.5 py-1 tracking-wide text-[var(--eld-syntax-line-number)]">
+            utf-8 · {lang ?? m.codeBlock.text} · {formatMessage(m.codeBlock.lines, { count: lines.length })}
           </span>
         </div>
       ) : null}

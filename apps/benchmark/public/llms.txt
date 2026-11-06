@@ -10,3 +10,5 @@ are local. Copy controls write the displayed command to the user's clipboard.
 
 - [Component examples](/): Interactive examples with server-rendered content.
 - [Source and documentation](https://github.com/elide-dev/components): Component APIs, tokens, and integration guidance.
+
+- [Internationalization examples](/i18n.html): Prerendered Hebrew UI with optional locale loading, RTL navigation and isolated code.

@@ -1,0 +1,95 @@
+{
+  "appNav": {
+    "navLabel": "Navigation principale",
+    "docsBadge": "DOCS",
+    "searchPlaceholder": "Rechercher ou poser une question",
+    "searchLabel": "Rechercher",
+    "toggleTheme": "Changer de thème",
+    "language": "Langue",
+    "changelog": "Journal des modifications",
+    "install": "Installer"
+  },
+  "mobileNav": {
+    "openNavigation": "Ouvrir la navigation",
+    "navLabel": "Navigation mobile",
+    "dialogLabel": "Menu de navigation",
+    "searchPlaceholder": "Rechercher ou poser une question",
+    "searchLabel": "Rechercher",
+    "changelog": "Journal des modifications",
+    "sectionNavigation": "Navigation de {section}"
+  },
+  "sectionTabs": {
+    "navLabel": "Sections"
+  },
+  "sidebar": {
+    "navLabel": "Barre latérale",
+    "comingSoon": "Bientôt"
+  },
+  "tableOfContents": {
+    "title": "Sur cette page",
+    "navLabel": "Table des matières"
+  },
+  "codeBlock": {
+    "copy": "Copier",
+    "copied": "Copié",
+    "terminal": "Terminal",
+    "normal": "NORMAL",
+    "text": "texte",
+    "lines": "Lignes : {count}"
+  },
+  "copyCommand": {
+    "copy": "Copier",
+    "copied": "Copié"
+  },
+  "aiActions": {
+    "title": "Utiliser avec l’IA",
+    "copyAsMarkdown": "Copier en Markdown",
+    "copied": "Copié"
+  },
+  "supportMatrix": {
+    "caption": "Tableau de compatibilité",
+    "supported": "Pris en charge",
+    "partial": "Partiel",
+    "notSupported": "Non pris en charge",
+    "method": "Méthode",
+    "status": "État",
+    "notes": "Notes"
+  },
+  "statusBadge": {
+    "implemented": "Implémenté",
+    "supported": "Pris en charge",
+    "partial": "Partiel",
+    "missing": "Non disponible",
+    "planned": "Prévu"
+  },
+  "common": {
+    "close": "Fermer"
+  },
+  "breadcrumbs": {
+    "navLabel": "Fil d’Ariane"
+  },
+  "pageFooterNav": {
+    "navLabel": "Pagination",
+    "previous": "Précédent",
+    "next": "Suivant"
+  },
+  "commandPalette": {
+    "label": "Palette de commandes",
+    "placeholder": "Rechercher dans la documentation, les commandes, les API…",
+    "empty": "Aucun résultat trouvé."
+  },
+  "statStrip": {
+    "label": "Statistiques"
+  },
+  "apiMethod": {
+    "linkTo": "Lien vers {name}",
+    "thisMethod": "cette méthode"
+  },
+  "callout": {
+    "note": "Note",
+    "tip": "Conseil",
+    "important": "Important",
+    "warning": "Avertissement",
+    "caution": "Attention"
+  }
+}

@@ -20,7 +20,8 @@ export interface SupportRow {
 export interface SupportMatrixColumn {
   key: string;
   label: string;
-  align?: "left" | "center";
+  /** Omitted/start follows reading direction; left remains a physical override. */
+  align?: "start" | "left" | "center";
 }
 
 export interface SupportMatrixProps extends React.ComponentProps<"div"> {
@@ -30,12 +31,6 @@ export interface SupportMatrixProps extends React.ComponentProps<"div"> {
   caption?: string;
 }
 
-const DEFAULT_COLUMNS: SupportMatrixColumn[] = [
-  { key: "method", label: "Method" },
-  { key: "status", label: "Status", align: "center" },
-  { key: "notes", label: "Notes" },
-];
-
 const STATUS_META: Record<SupportStatus, { messageKey: keyof Messages["supportMatrix"]; icon: LucideIcon; color: string }> = {
   yes: { messageKey: "supported", icon: Check, color: "var(--success-emphasis)" },
   no: { messageKey: "notSupported", icon: X, color: "var(--subtle-foreground)" },
@@ -43,26 +38,31 @@ const STATUS_META: Record<SupportStatus, { messageKey: keyof Messages["supportMa
 };
 
 export function SupportMatrix({
-  columns = DEFAULT_COLUMNS,
+  columns,
   rows,
   caption,
   className,
   ...props
 }: SupportMatrixProps) {
   const m = useMessages();
+  const resolvedColumns: SupportMatrixColumn[] = columns ?? [
+    { key: "method", label: m.supportMatrix.method },
+    { key: "status", label: m.supportMatrix.status, align: "center" },
+    { key: "notes", label: m.supportMatrix.notes },
+  ];
   return (
     <div className={cn("overflow-hidden rounded-xl border border-border", className)} {...props}>
       <table className="w-full border-collapse text-sm">
         <caption className="sr-only">{caption ?? m.supportMatrix.caption}</caption>
         <thead className="bg-[var(--muted)]">
           <tr>
-            {columns.map((column) => (
+            {resolvedColumns.map((column) => (
               <th
                 key={column.key}
                 scope="col"
                 className={cn(
                   "px-4 py-2.5 font-mono text-xs font-semibold tracking-normal text-[var(--subtle-foreground)]",
-                  column.align === "center" ? "text-center" : "text-left",
+                  column.align === "center" ? "text-center" : column.align === "left" ? "text-left" : "text-start",
                 )}
               >
                 {column.label}
@@ -80,7 +80,7 @@ export function SupportMatrix({
             const statusLabel = m.supportMatrix[status.messageKey];
             return (
               <tr key={key} className="border-t border-border">
-                <td className="px-4 py-2.5 font-mono text-[var(--primary-emphasis)]">{row.method}</td>
+                <td className="px-4 py-2.5 font-mono text-[var(--primary-emphasis)]"><bdi dir="ltr">{row.method}</bdi></td>
                 <td className="px-4 py-2.5 text-center">
                   <StatusIcon
                     role="img"

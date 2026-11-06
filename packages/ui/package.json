@@ -17,7 +17,28 @@
       "types": "./dist/components/*.d.ts",
       "import": "./dist/components/*.js"
     },
-    "./platform.css": "./src/platform.css"
+    "./platform.css": "./src/platform.css",
+    "./i18n": {
+      "types": "./dist/i18n/index.d.ts",
+      "import": "./dist/i18n/index.js"
+    },
+    "./i18n/locales": {
+      "types": "./dist/i18n/locales.d.ts",
+      "import": "./dist/i18n/locales.js"
+    },
+    "./i18n/loader": {
+      "types": "./dist/i18n/loader.d.ts",
+      "import": "./dist/i18n/loader.js"
+    },
+    "./locales/*": {
+      "types": "./dist/i18n/locales/*.d.ts",
+      "import": "./dist/i18n/locales/*.js"
+    },
+    "./locales/*.json": "./src/i18n/locales/*.json",
+    "./i18n/messages": {
+      "types": "./dist/i18n/messages.d.ts",
+      "import": "./dist/i18n/messages.js"
+    }
   },
   "files": [
     "dist",
@@ -26,10 +47,12 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
-    "lint": "eslint src",
+    "lint": "eslint src && bun run i18n:check",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "shadcn": "shadcn"
+    "shadcn": "shadcn",
+    "i18n:check": "bun scripts/generate-i18n.ts && bun scripts/check-i18n.ts",
+    "i18n:generate": "bun scripts/generate-i18n.ts --write"
   },
   "peerDependencies": {
     "react": ">=19.2.8",

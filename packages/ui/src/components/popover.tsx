@@ -1,3 +1,4 @@
+import { useLocale } from "../i18n/locale-context";
 import * as React from "react"
 import { Popover as PopoverPrimitive } from "@base-ui/react/popover"
 
@@ -23,6 +24,7 @@ function PopoverContent({
     PopoverPrimitive.Positioner.Props,
     "align" | "alignOffset" | "side" | "sideOffset"
   >) {
+  const { locale: language, direction } = useLocale();
   return (
     <PopoverPrimitive.Portal>
       <PopoverPrimitive.Positioner
@@ -34,6 +36,7 @@ function PopoverContent({
       >
         <PopoverPrimitive.Popup
           data-slot="popover-content"
+          lang={language} dir={direction}
           data-eld-motion="popup"
           className={cn(
             "z-50 flex w-72 origin-(--transform-origin) flex-col gap-2.5 rounded-lg bg-popover p-2.5 text-sm text-popover-foreground shadow-md ring-1 ring-foreground/10 outline-hidden",

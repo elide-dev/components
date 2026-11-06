@@ -33,3 +33,6 @@ footer { padding-block: 1.5rem; border-top: 1px solid var(--border); color: var(
 .platform-settings dt { font-family: var(--eld-font-mono); font-size: .875rem; color: var(--primary-emphasis); }
 .platform-settings dd { margin: .5rem 0 0; color: var(--muted-foreground); line-height: 1.6; }
 @media (max-width: 42rem) { .platform-document { grid-template-columns: minmax(0,1fr); } .platform-document aside { position: static; grid-row: 1; } }
+
+@source "./I18nApp.tsx";
+.i18n-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; }

@@ -29,6 +29,15 @@ async function load(page, platform, mode) {
   assert.equal(await button.getAttribute("data-ref-checked"), "true", "Preact ref reaches the native button");
   assert.equal(await page.getByRole("link", { name: "Back to content" }).getAttribute("href"), "#main");
   assert.equal(await button.evaluate(el => getComputedStyle(el).userSelect), "none");
+  assert.equal(await page.getByTestId("preact-i18n").getAttribute("dir"), "rtl");
+  await page.getByRole("navigation", { name: "נתיב ניווט" }).waitFor();
+  await page.getByTestId("preact-i18n-dialog").click();
+  const localizedDialog = page.getByRole("dialog", { name: "תפריט ניווט" });
+  await localizedDialog.waitFor();
+  assert.equal(await localizedDialog.getAttribute("lang"), "he");
+  assert.equal(await localizedDialog.getAttribute("dir"), "rtl");
+  await localizedDialog.getByRole("button", { name: "סגירה" }).click();
+  await localizedDialog.waitFor({ state: "hidden" });
 }
 
 async function controls(page) {

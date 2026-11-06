@@ -11,11 +11,16 @@ export function CopyButton({
   value,
   className,
   label,
+  copyLabel,
+  copiedLabel,
 }: {
   value: string;
   className?: string;
   /** Visible label; omit or pass "" for an icon-only button. Defaults to the localized "Copy". */
   label?: string;
+  /** Accessible copy action and success text overrides for composed controls. */
+  copyLabel?: string;
+  copiedLabel?: string;
 }) {
   const m = useMessages();
   const [copied, setCopied] = React.useState(false);
@@ -28,7 +33,7 @@ export function CopyButton({
   return (
     <button
       type="button"
-      aria-label={copied ? m.codeBlock.copied : label || m.codeBlock.copy}
+      aria-label={copied ? copiedLabel ?? m.codeBlock.copied : label || copyLabel || m.codeBlock.copy}
       onClick={async () => {
         if (!navigator.clipboard) return;
         try {
@@ -49,7 +54,7 @@ export function CopyButton({
       )}
     >
       {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-      {label ? <span>{copied ? m.codeBlock.copied : label}</span> : null}
+      {label ? <span>{copied ? copiedLabel ?? m.codeBlock.copied : label}</span> : null}
     </button>
   );
 }

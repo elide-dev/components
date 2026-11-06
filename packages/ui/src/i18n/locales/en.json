@@ -1,0 +1,95 @@
+{
+  "appNav": {
+    "navLabel": "Main navigation",
+    "docsBadge": "DOCS",
+    "searchPlaceholder": "Search or ask",
+    "searchLabel": "Search",
+    "toggleTheme": "Toggle theme",
+    "language": "Language",
+    "changelog": "Changelog",
+    "install": "Install"
+  },
+  "mobileNav": {
+    "openNavigation": "Open navigation",
+    "navLabel": "Mobile navigation",
+    "dialogLabel": "Navigation menu",
+    "searchPlaceholder": "Search or ask",
+    "searchLabel": "Search",
+    "changelog": "Changelog",
+    "sectionNavigation": "{section} navigation"
+  },
+  "sectionTabs": {
+    "navLabel": "Sections"
+  },
+  "sidebar": {
+    "navLabel": "Sidebar",
+    "comingSoon": "Soon"
+  },
+  "tableOfContents": {
+    "title": "On this page",
+    "navLabel": "Table of contents"
+  },
+  "codeBlock": {
+    "copy": "Copy",
+    "copied": "Copied",
+    "terminal": "Terminal",
+    "normal": "NORMAL",
+    "text": "text",
+    "lines": "{count}L"
+  },
+  "copyCommand": {
+    "copy": "Copy",
+    "copied": "Copied"
+  },
+  "aiActions": {
+    "title": "Use with AI",
+    "copyAsMarkdown": "Copy as Markdown",
+    "copied": "Copied"
+  },
+  "supportMatrix": {
+    "caption": "Support matrix",
+    "supported": "Supported",
+    "partial": "Partial",
+    "notSupported": "Not supported",
+    "method": "Method",
+    "status": "Status",
+    "notes": "Notes"
+  },
+  "statusBadge": {
+    "implemented": "Implemented",
+    "supported": "Supported",
+    "partial": "Partial",
+    "missing": "Missing",
+    "planned": "Planned"
+  },
+  "common": {
+    "close": "Close"
+  },
+  "breadcrumbs": {
+    "navLabel": "Breadcrumb"
+  },
+  "pageFooterNav": {
+    "navLabel": "Pagination",
+    "previous": "Previous",
+    "next": "Next"
+  },
+  "commandPalette": {
+    "label": "Command palette",
+    "placeholder": "Search docs, commands, APIs…",
+    "empty": "No results found."
+  },
+  "statStrip": {
+    "label": "Statistics"
+  },
+  "apiMethod": {
+    "linkTo": "Link to {name}",
+    "thisMethod": "this method"
+  },
+  "callout": {
+    "note": "Note",
+    "tip": "Tip",
+    "important": "Important",
+    "warning": "Warning",
+    "caution": "Caution"
+  }
+}

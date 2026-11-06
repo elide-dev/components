@@ -45,7 +45,7 @@ export function SectionSwitcher({
           <button
             type="button"
             className={cn(
-              "flex w-full items-center justify-between gap-2 rounded-lg border border-border bg-muted px-2.5 py-2 text-left transition-colors duration-[var(--eld-motion-hover)] ease-[var(--eld-motion-ease-out)] motion-reduce:transition-none hover:bg-[var(--hover)]",
+              "flex w-full items-center justify-between gap-2 rounded-lg border border-border bg-muted px-2.5 py-2 text-start transition-colors duration-[var(--eld-motion-hover)] ease-[var(--eld-motion-ease-out)] motion-reduce:transition-none hover:bg-[var(--hover)]",
               className,
             )}
             {...props}
@@ -90,7 +90,7 @@ export function SectionSwitcher({
               ) : null}
             </span>
             {section.id === activeId ? (
-              <Check aria-hidden className="ml-auto h-4 w-4 shrink-0 text-[var(--primary-emphasis)]" />
+              <Check aria-hidden className="ms-auto h-4 w-4 shrink-0 text-[var(--primary-emphasis)]" />
             ) : null}
           </DropdownMenuItem>
         ))}
@@ -183,7 +183,7 @@ export function Sidebar({
   return (
     <nav
       aria-label={m.sidebar.navLabel}
-      className={cn("flex w-[264px] flex-col gap-[22px] border-r border-border bg-background p-3.5", className)}
+      className={cn("flex w-[264px] flex-col gap-[22px] border-e border-border bg-background p-3.5", className)}
       {...props}
     >
       <SectionSwitcher sections={sections} activeId={activeSectionId} onSectionChange={onSectionChange} />

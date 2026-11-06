@@ -1,3 +1,7 @@
+import { I18nProvider } from "@elide/ui/i18n";
+import he from "@elide/ui/locales/he";
+import { Breadcrumbs } from "@elide/ui/components/breadcrumbs";
+import { Dialog, DialogTrigger, DialogContent, DialogTitle } from "@elide/ui/components/dialog";
 import { useRef, useState } from "preact/hooks";
 import { Button } from "@elide/ui/components/button";
 import { Switch } from "@elide/ui/components/switch";
@@ -19,5 +23,10 @@ export function Consumer({ platform }: { platform: boolean }) {
       </Button>
       <Button render={<a href="#main" />}>Back to content</Button>
     </section>
+    <I18nProvider locale="he" messages={he} data-testid="preact-i18n">
+      <Breadcrumbs segments={[{ label: "Elide" }]} />
+      <Dialog><DialogTrigger render={<Button data-testid="preact-i18n-dialog" />}>{he.mobileNav.dialogLabel}</DialogTrigger>
+        <DialogContent><DialogTitle>{he.mobileNav.dialogLabel}</DialogTitle></DialogContent></Dialog>
+    </I18nProvider>
   </>;
 }

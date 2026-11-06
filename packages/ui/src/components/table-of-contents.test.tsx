@@ -31,8 +31,8 @@ describe("TableOfContents", () => {
     render(<TableOfContents items={items} activeId="overview" />);
     const nested = screen.getByRole("link", { name: "Advanced usage" });
     const top = screen.getByRole("link", { name: "Overview" });
-    expect(parseFloat(nested.style.paddingLeft)).toBeGreaterThan(
-      parseFloat(top.style.paddingLeft),
+    expect(parseFloat(nested.style.paddingInlineStart)).toBeGreaterThan(
+      parseFloat(top.style.paddingInlineStart),
     );
   });
 

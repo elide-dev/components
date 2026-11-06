@@ -1,3 +1,5 @@
+import { useLocale } from "../i18n/locale-context";
+import { useMessages } from "../i18n/context";
 import * as React from "react";
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog";
 import { Popover as PopoverPrimitive } from "@base-ui/react/popover";
@@ -45,8 +47,10 @@ function supportsAnchor() {
 export function AnchoredPopover({
   trigger, title, description, children, open, defaultOpen = false,
   onOpenChange, className, side = "bottom", sideOffset = 6,
-  positioning = "auto", closeLabel = "Close",
+  positioning = "auto", closeLabel,
 }: AnchoredPopoverProps) {
+  const m = useMessages();
+  const { locale: language, direction } = useLocale();
   const supported = React.useSyncExternalStore(subscribe, supportsAnchor, serverSupportsAnchor);
   const id = React.useId();
   const anchorName = `--eld-anchor-${id.replace(/[^a-zA-Z0-9_-]/g,
@@ -83,7 +87,7 @@ export function AnchoredPopover({
     <>
       <div className="flex items-start justify-between gap-3">
         <Title className="font-medium">{title}</Title>
-        <Close render={<Button variant="ghost" size="icon-sm" className="-mt-1 -mr-1" />} aria-label={closeLabel}>
+        <Close render={<Button variant="ghost" size="icon-sm" className="-mt-1 -me-1" />} aria-label={closeLabel ?? m.common.close}>
           <XIcon />
         </Close>
       </div>
@@ -96,7 +100,7 @@ export function AnchoredPopover({
     return (
       <Popover open={isOpen} onOpenChange={changeOpen}>
         <PopoverTrigger ref={triggerRef} render={trigger} />
-        <PopoverContent data-slot="anchored-popover-content" data-positioning="floating"
+        <PopoverContent data-slot="anchored-popover-content" lang={language} dir={direction} data-positioning="floating"
           side={side} sideOffset={sideOffset}
           className={cn("max-h-[min(28rem,var(--available-height))] max-w-[calc(100vw-1rem)] overflow-y-auto", className)}>
           {contents}
@@ -110,7 +114,7 @@ export function AnchoredPopover({
       <DialogPrimitive.Trigger ref={triggerRef} render={trigger} style={{ anchorName }} />
       <DialogPrimitive.Portal>
         <DialogPrimitive.Popup
-          data-slot="anchored-popover-content"
+          data-slot="anchored-popover-content" lang={language} dir={direction}
           data-positioning="css"
           data-eld-motion="popup"
           data-side={side}

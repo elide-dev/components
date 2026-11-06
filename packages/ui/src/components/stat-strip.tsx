@@ -1,3 +1,4 @@
+import { useMessages } from "../i18n/context";
 import * as React from "react";
 import { cn } from "../lib/utils";
 
@@ -24,13 +25,14 @@ export function StatStrip({
   columns,
   className,
   style,
-  "aria-label": ariaLabel = "Statistics",
+  "aria-label": ariaLabel,
   ...props
 }: StatStripProps) {
+  const m = useMessages();
   const cols = Math.max(1, Math.floor(columns ?? stats.length));
   return (
     <dl
-      aria-label={ariaLabel}
+      aria-label={ariaLabel ?? m.statStrip.label}
       className={cn("eld-stat-strip m-0 grid overflow-hidden rounded-xl border border-border bg-card", className)}
       style={{ "--eld-stat-columns": cols, ...style } as React.CSSProperties}
       {...props}

@@ -6,67 +6,11 @@
  * `MessagesProvider`. Content passed in as props (nav items, method params,
  * etc.) is the consumer's responsibility to localize.
  *
- * Shape is two levels: `messages.<component>.<key>`. Add new strings here (not
+ * Shape is two levels: `messages.<component>.<key>`. Add new strings to locales/en.json (not
  * inline in components) and read them via `useMessages()`.
  */
-export const en = {
-  appNav: {
-    navLabel: "Main navigation",
-    docsBadge: "DOCS",
-    searchPlaceholder: "Search or ask",
-    searchLabel: "Search",
-    toggleTheme: "Toggle theme",
-    language: "Language",
-    changelog: "Changelog",
-    install: "Install",
-  },
-  mobileNav: {
-    openNavigation: "Open navigation",
-    navLabel: "Mobile navigation",
-    dialogLabel: "Navigation menu",
-    searchPlaceholder: "Search or ask",
-    searchLabel: "Search",
-    changelog: "Changelog",
-  },
-  sectionTabs: {
-    navLabel: "Sections",
-  },
-  sidebar: {
-    navLabel: "Sidebar",
-    comingSoon: "Soon",
-  },
-  tableOfContents: {
-    title: "On this page",
-    navLabel: "Table of contents",
-  },
-  codeBlock: {
-    copy: "Copy",
-    copied: "Copied",
-    terminal: "Terminal",
-  },
-  copyCommand: {
-    copy: "Copy",
-    copied: "Copied",
-  },
-  aiActions: {
-    title: "Use with AI",
-    copyAsMarkdown: "Copy as Markdown",
-    copied: "Copied",
-  },
-  supportMatrix: {
-    caption: "Support matrix",
-    supported: "Supported",
-    partial: "Partial",
-    notSupported: "Not supported",
-  },
-  statusBadge: {
-    implemented: "Implemented",
-    supported: "Supported",
-    partial: "Partial",
-    missing: "Missing",
-    planned: "Planned",
-  },
-} as const;
+import en from "./locales/en";
+export { en };
 
 /** The full messages dictionary shape (mutable — `en` is `as const`). */
 export type Messages = {
@@ -83,7 +27,10 @@ export function mergeMessages(base: Messages, override?: PartialMessages): Messa
   if (!override) return base;
   const out = {} as Record<keyof Messages, Record<string, string>>;
   for (const key of Object.keys(base) as (keyof Messages)[]) {
-    out[key] = { ...base[key], ...(override[key] ?? {}) };
+    out[key] = { ...base[key] };
+    for (const [field, value] of Object.entries(override[key] ?? {})) {
+      if (value !== undefined) out[key][field] = value;
+    }
   }
   return out as Messages;
 }

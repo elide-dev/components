@@ -21,7 +21,7 @@ export interface FeatureCardProps extends Omit<React.HTMLAttributes<HTMLElement>
 }
 
 const cardBase =
-  "group flex flex-col gap-[var(--eld-card-gap,0.5rem)] rounded-xl border border-border bg-card p-[var(--eld-card-padding,1rem)] text-left no-underline transition-[background-color,border-color] duration-[var(--eld-motion-hover)] ease-[var(--eld-motion-ease-out)] motion-reduce:transition-none";
+  "group flex flex-col gap-[var(--eld-card-gap,0.5rem)] rounded-xl border border-border bg-card p-[var(--eld-card-padding,1rem)] text-start no-underline transition-[background-color,border-color] duration-[var(--eld-motion-hover)] ease-[var(--eld-motion-ease-out)] motion-reduce:transition-none";
 const cardInteractive =
   "cursor-pointer hover:border-primary-emphasis/50 hover:bg-primary-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
 
@@ -51,7 +51,7 @@ export function FeatureCard({
         {external ? (
           <ExternalLink aria-hidden className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
         ) : null}
-        {badge ? <span className="ml-auto shrink-0">{badge}</span> : null}
+        {badge ? <span className="ms-auto shrink-0">{badge}</span> : null}
       </div>
       {description ? (
         <p className="text-[12.5px] leading-relaxed text-muted-foreground">{description}</p>

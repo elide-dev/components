@@ -1,0 +1,98 @@
+// Generated from zh-Hans.json. Run bun run i18n:generate; do not edit.
+import type { Messages } from "../messages";
+const messages: Messages = {
+  "appNav": {
+    "navLabel": "主导航",
+    "docsBadge": "文档",
+    "searchPlaceholder": "搜索或提问",
+    "searchLabel": "搜索",
+    "toggleTheme": "切换主题",
+    "language": "语言",
+    "changelog": "更新日志",
+    "install": "安装"
+  },
+  "mobileNav": {
+    "openNavigation": "打开导航",
+    "navLabel": "移动端导航",
+    "dialogLabel": "导航菜单",
+    "searchPlaceholder": "搜索或提问",
+    "searchLabel": "搜索",
+    "changelog": "更新日志",
+    "sectionNavigation": "{section}导航"
+  },
+  "sectionTabs": {
+    "navLabel": "分区"
+  },
+  "sidebar": {
+    "navLabel": "侧边栏",
+    "comingSoon": "即将推出"
+  },
+  "tableOfContents": {
+    "title": "本页内容",
+    "navLabel": "目录"
+  },
+  "codeBlock": {
+    "copy": "复制",
+    "copied": "已复制",
+    "terminal": "终端",
+    "normal": "普通模式",
+    "text": "文本",
+    "lines": "行数：{count}"
+  },
+  "copyCommand": {
+    "copy": "复制",
+    "copied": "已复制"
+  },
+  "aiActions": {
+    "title": "与 AI 一起使用",
+    "copyAsMarkdown": "复制为 Markdown",
+    "copied": "已复制"
+  },
+  "supportMatrix": {
+    "caption": "支持情况表",
+    "supported": "支持",
+    "partial": "部分支持",
+    "notSupported": "不支持",
+    "method": "方法",
+    "status": "状态",
+    "notes": "备注"
+  },
+  "statusBadge": {
+    "implemented": "已实现",
+    "supported": "支持",
+    "partial": "部分支持",
+    "missing": "缺失",
+    "planned": "已计划"
+  },
+  "common": {
+    "close": "关闭"
+  },
+  "breadcrumbs": {
+    "navLabel": "面包屑导航"
+  },
+  "pageFooterNav": {
+    "navLabel": "分页导航",
+    "previous": "上一页",
+    "next": "下一页"
+  },
+  "commandPalette": {
+    "label": "命令面板",
+    "placeholder": "搜索文档、命令、API…",
+    "empty": "未找到结果。"
+  },
+  "statStrip": {
+    "label": "统计信息"
+  },
+  "apiMethod": {
+    "linkTo": "链接到{name}",
+    "thisMethod": "此方法"
+  },
+  "callout": {
+    "note": "注意",
+    "tip": "提示",
+    "important": "重要",
+    "warning": "警告",
+    "caution": "小心"
+  }
+};
+export default messages;

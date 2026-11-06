@@ -1,0 +1,98 @@
+// Generated from de.json. Run bun run i18n:generate; do not edit.
+import type { Messages } from "../messages";
+const messages: Messages = {
+  "appNav": {
+    "navLabel": "Hauptnavigation",
+    "docsBadge": "DOKU",
+    "searchPlaceholder": "Suchen oder fragen",
+    "searchLabel": "Suchen",
+    "toggleTheme": "Farbschema wechseln",
+    "language": "Sprache",
+    "changelog": "Änderungsprotokoll",
+    "install": "Installieren"
+  },
+  "mobileNav": {
+    "openNavigation": "Navigation öffnen",
+    "navLabel": "Mobile Navigation",
+    "dialogLabel": "Navigationsmenü",
+    "searchPlaceholder": "Suchen oder fragen",
+    "searchLabel": "Suchen",
+    "changelog": "Änderungsprotokoll",
+    "sectionNavigation": "Navigation für {section}"
+  },
+  "sectionTabs": {
+    "navLabel": "Bereiche"
+  },
+  "sidebar": {
+    "navLabel": "Seitenleiste",
+    "comingSoon": "Demnächst"
+  },
+  "tableOfContents": {
+    "title": "Auf dieser Seite",
+    "navLabel": "Inhaltsverzeichnis"
+  },
+  "codeBlock": {
+    "copy": "Kopieren",
+    "copied": "Kopiert",
+    "terminal": "Terminal",
+    "normal": "NORMAL",
+    "text": "Text",
+    "lines": "Zeilen: {count}"
+  },
+  "copyCommand": {
+    "copy": "Kopieren",
+    "copied": "Kopiert"
+  },
+  "aiActions": {
+    "title": "Mit KI verwenden",
+    "copyAsMarkdown": "Als Markdown kopieren",
+    "copied": "Kopiert"
+  },
+  "supportMatrix": {
+    "caption": "Kompatibilitätsübersicht",
+    "supported": "Unterstützt",
+    "partial": "Teilweise",
+    "notSupported": "Nicht unterstützt",
+    "method": "Methode",
+    "status": "Status",
+    "notes": "Hinweise"
+  },
+  "statusBadge": {
+    "implemented": "Implementiert",
+    "supported": "Unterstützt",
+    "partial": "Teilweise",
+    "missing": "Nicht verfügbar",
+    "planned": "Geplant"
+  },
+  "common": {
+    "close": "Schließen"
+  },
+  "breadcrumbs": {
+    "navLabel": "Brotkrümelnavigation"
+  },
+  "pageFooterNav": {
+    "navLabel": "Seitennavigation",
+    "previous": "Zurück",
+    "next": "Weiter"
+  },
+  "commandPalette": {
+    "label": "Befehlspalette",
+    "placeholder": "Dokumentation, Befehle, APIs durchsuchen…",
+    "empty": "Keine Ergebnisse gefunden."
+  },
+  "statStrip": {
+    "label": "Statistiken"
+  },
+  "apiMethod": {
+    "linkTo": "Link zu {name}",
+    "thisMethod": "dieser Methode"
+  },
+  "callout": {
+    "note": "Hinweis",
+    "tip": "Tipp",
+    "important": "Wichtig",
+    "warning": "Warnung",
+    "caution": "Vorsicht"
+  }
+};
+export default messages;

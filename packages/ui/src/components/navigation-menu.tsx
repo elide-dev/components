@@ -1,3 +1,4 @@
+import { useLocale } from "../i18n/locale-context";
 import { NavigationMenu as NavigationMenuPrimitive } from "@base-ui/react/navigation-menu"
 
 import { cn } from "../lib/utils"
@@ -67,7 +68,7 @@ function NavigationMenuTrigger({
       {...props}
     >
       {children}{" "}
-      <ChevronDownIcon className="relative top-px ml-1 size-3 transition-transform duration-[var(--eld-motion-settle)] motion-reduce:transition-none group-data-popup-open/navigation-menu-trigger:rotate-180 group-data-open/navigation-menu-trigger:rotate-180" aria-hidden="true" />
+      <ChevronDownIcon className="relative top-px ms-1 size-3 transition-transform duration-[var(--eld-motion-settle)] motion-reduce:transition-none group-data-popup-open/navigation-menu-trigger:rotate-180 group-data-open/navigation-menu-trigger:rotate-180" aria-hidden="true" />
     </NavigationMenuPrimitive.Trigger>
   )
 }
@@ -96,9 +97,10 @@ function NavigationMenuPositioner({
   alignOffset = 0,
   ...props
 }: NavigationMenuPrimitive.Positioner.Props) {
+  const { locale: language, direction } = useLocale();
   return (
     <NavigationMenuPrimitive.Portal>
-      <NavigationMenuPrimitive.Positioner
+      <NavigationMenuPrimitive.Positioner lang={language} dir={direction}
         side={side}
         sideOffset={sideOffset}
         align={align}

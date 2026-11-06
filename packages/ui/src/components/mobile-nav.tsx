@@ -1,3 +1,5 @@
+import { formatMessage, isolateText } from "../i18n/format";
+import { useLocale } from "../i18n/locale-context";
 import * as React from "react";
 import { History, Menu, Search, Sparkle } from "lucide-react";
 import { cn } from "../lib/utils";
@@ -59,6 +61,7 @@ export function MobileNav({
   ...props
 }: MobileNavProps) {
   const m = useMessages();
+  const { direction } = useLocale();
   const [internalOpen, setInternalOpen] = React.useState(false);
   const drawerOpen = open ?? internalOpen;
   const setDrawerOpen = React.useCallback(
@@ -102,16 +105,16 @@ export function MobileNav({
             className="flex h-11 w-full items-center gap-2.5 rounded-xl border border-[var(--border-strong)] bg-[var(--muted)] px-3.5 text-[var(--subtle-foreground)]"
           >
             <Search aria-hidden className="h-4 w-4 text-[var(--primary-emphasis)]" />
-            <span className="flex-1 text-left text-sm">{searchPlaceholder ?? m.mobileNav.searchPlaceholder}</span>
+            <span className="flex-1 text-start text-sm">{searchPlaceholder ?? m.mobileNav.searchPlaceholder}</span>
             <Sparkle aria-hidden className="h-[15px] w-[15px] text-[var(--primary-emphasis)]" />
           </button>
         </div>
       </div>
 
       <SheetContent
-        side="left"
+        side="start"
         showCloseButton={false}
-        aria-label={section?.title ? `${section.title} navigation` : m.mobileNav.dialogLabel}
+        aria-label={section?.title ? formatMessage(m.mobileNav.sectionNavigation, { section: direction === "rtl" ? isolateText(section.title) : section.title }) : m.mobileNav.dialogLabel}
         className="flex w-72 flex-col gap-5 p-4"
       >
         {section ? (
