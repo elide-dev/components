@@ -26,10 +26,12 @@
     "typescript": "^7.0.2"
   },
   "overrides": {
+    "glob@13": "14.0.4",
+    "minimatch@10": "11.0.5",
     "undici@6": "6.29.1",
     "undici@8": "8.12.2"
   },
   "dependencies": {
-    "chromatic": "^18.13.6"
+    "chromatic": "^18.14.2"
   }
 }

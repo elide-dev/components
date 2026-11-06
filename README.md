@@ -59,6 +59,47 @@ bun run build       # build all packages (use `bun run build`, not `bun build`)
 bun run changeset   # record a version bump before releasing
 ```
 
+## Updating dependencies and shadcn
+
+The shadcn CLI is pinned to **4.23.0** in `@elide/ui`. Components are owned source,
+not a versioned shadcn runtime. Inspect registry changes before applying them:
+
+```sh
+bun --bun run --cwd packages/ui shadcn info
+bun --bun run --cwd packages/ui shadcn add dialog select --dry-run
+bun --bun run --cwd packages/ui shadcn add dialog --diff src/components/dialog.tsx
+```
+
+Our `base-nova` components preserve the upstream Base UI composition while
+customizing tokens, animation and accessibility. Merge relevant upstream changes
+selectively; blanket overwrite or preset application would replace those choices.
+The docs `Sidebar` has a different API from shadcn's application sidebar.
+See the [CLI documentation](https://ui.shadcn.com/docs/cli) and
+[cloud component priorities](./COMPONENTS.md#cloud-component-priorities).
+
+The November 6, 2026 refresh updates Storybook to 10.6.6, Tailwind to 4.3.5,
+Vitest to 5.1.0, Vite to 8.3.6, React's Vite plugin to 6.2.1, Playwright to 1.65.0,
+Lucide to 1.70.0, Chromatic to 18.14.2, globals to 17.14.0, and jsdom to 31.0.0.
+Base UI 1.9.0 and React 19.3.1 were already current. Keep these coupled packages
+aligned across workspaces when updating them.
+
+Workspace TypeScript remains 6.0.3 because tsup's declaration generation uses its
+JavaScript compiler API; TypeScript 7 at the root does not provide that API.
+The newer shadcn `cn` package was checked against 30,753 repository class cases
+without a mismatch, but its full merger measured 11,031 bytes gzip versus 8,783
+for the existing helper. Keep `clsx` + `tailwind-merge` until a library-safe
+migration improves the delivery cost as well as merge performance.
+
+Scoped `glob@13` and `minimatch@10` overrides select 14.0.4 and 11.0.5 together
+to fix their matching/traversal advisories. Their used APIs and repository
+patterns were checked; remove the overrides when upstream consumers upgrade.
+`bun audit` still reports two development-tool findings: the Codecov build
+plugin's Zod 3 dependency ([advisory](https://github.com/advisories/GHSA-mrhx-c7xc-m3w5))
+and shadcn's unpatched deepmerge dependency
+([advisory](https://github.com/advisories/GHSA-gcqx-w48m-w2h4)). Neither is a
+component runtime dependency. Do not force Zod 4 into the plugin's Zod 3 API
+contract or silently replace deepmerge to make the audit count disappear.
+
 ## Production integration
 
 The packages ship tree-shakeable ES modules targeting ES2022. Import a leaf

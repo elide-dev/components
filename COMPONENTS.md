@@ -77,6 +77,47 @@ site is on the catalog.
 - Anything interactive on the Astro docs site is a **React island**; the prose
   shell stays static HTML + token CSS to keep JS minimal.
 
+## Cloud component priorities
+
+Audit: `elide-dev/cloud` checkout `85ade74` on `feat/dashboard-posthog`, November
+6, 2026. These are proposed additions, not installed components. The dashboard
+uses Astro, React and Base UI/base-nova; the separate admin app uses Radix,
+new-york and shadcn-admin-kit/ra-core. Keep its data adapters and primitive
+conventions separate when sharing presentation.
+
+| Priority | Addition | Existing cloud need |
+| --- | --- | --- |
+| 1 | [Field](https://ui.shadcn.com/docs/components/base/field), Input, Label, Textarea, Checkbox | Account, domain and repository forms assemble labels/errors manually; automatic indexing uses a raw checkbox. Promote the dashboard's private Base UI controls into a tested shared family. |
+| 2 | [AlertDialog](https://ui.shadcn.com/docs/components/base/alert-dialog) | Hostname removal uses `window.confirm`; repository offboarding needs a consistent confirmation flow with cancellation, pending and error states. |
+| 3 | [Table](https://ui.shadcn.com/docs/components/base/table) and Pagination | Usage/billing tables and repository/agent cursor navigation are private implementations. Start with semantic presentation; keep Astro tables server-rendered. Admin already has a data-table controller. |
+| 4 | Progress, Meter, Spinner, Skeleton | Indexing progress and billing quota bars need distinct progress/meter semantics; private skeletons need shared reduced-motion behavior. |
+| 5 | Card, Empty and error-state composition | General cards and empty/error states repeat across resources. Preserve retry links and trace IDs; FeatureCard is a navigation tile rather than a generic panel. |
+| 6 | Avatar and a distinct AppSidebar family | Dashboard already has a Base UI avatar and a large collapsible/mobile application sidebar. Preserve the existing docs Sidebar API. |
+| 7 | [Combobox](https://ui.shadcn.com/docs/components/base/combobox) | Searchable resource selectors and membership lookups can share a primitive; keep ra-core reference/data adaptation inside admin. |
+
+Evidence is in cloud's `apps/dashboard/src/components/islands/` (`account-form`,
+`hostname-manager`, `repository-manager`, `agent-sessions`, `domain-ui`), its
+private `components/ui/` and `components/astro/` families, and the admin
+`components/admin/` controls. Its overview also copies tab-trigger styles to
+keep filters as normal links; exporting shared variants can remove that drift
+without adding hydration. Existing CopyButton/CopyCommand can replace its DNS
+copy helper without another dependency.
+
+For compatible extensions, [ReUI's Base UI Stepper](https://reui.io/docs/components/base/stepper)
+fits the existing domain-provisioning SetupSteps. Its Timeline/Tree/Filters may
+be useful for future activity and resource views. Free primitives are
+[MIT licensed](https://github.com/keenthemes/reui/blob/main/LICENSE.md); premium
+blocks have separate terms. Add a data-grid engine only when sorting, selection,
+editing or virtualization requirements justify it. Cloud already uses an admin
+kit; another kit is unnecessary. Official [Trace](https://ui.shadcn.com/docs/components/base/trace)
+and [Resizable](https://ui.shadcn.com/docs/components/base/resizable) are later
+options for run details and log panes; charts/date pickers should follow an
+actual metrics workflow.
+
+Before adopting the refreshed library, advance cloud's `vendor/components`
+submodule from `909b59f` and import `@elide/ui/platform.css` in the dashboard's
+custom Tailwind stylesheet. This audit did not change the cloud checkout.
+
 ## Primitive layer setup (2026-07-06)
 
 - Primitives are generated with the shadcn CLI in **Base UI mode** — `components.json`
