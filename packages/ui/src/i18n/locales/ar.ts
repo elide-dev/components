@@ -35,7 +35,6 @@ const messages: Messages = {
     "copy": "نسخ",
     "copied": "تم النسخ",
     "terminal": "الطرفية",
-    "normal": "عادي",
     "text": "نص",
     "lines": "الأسطر: {count}",
     "wrap": "التفاف الأسطر",

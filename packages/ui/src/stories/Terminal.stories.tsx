@@ -1,6 +1,7 @@
 import * as React from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, waitFor, within } from "storybook/test";
+import { releaseFocus } from "./fixtures/focus";
 import { Terminal } from "../components/terminal";
 import { I18nProvider } from "../i18n/provider";
 import ar from "../i18n/locales/ar";
@@ -112,6 +113,8 @@ export const PlaybackInteraction: Story = {
     canvas.getByRole("group", { name: "Terminal recording" }).focus();
     await userEvent.keyboard("{End}");
     await expect(canvasElement.querySelector('pre[aria-hidden="true"]')).toHaveTextContent("Hello from Elide!");
+    // Snapshot the resting state, not a focused control.
+    releaseFocus();
   },
 };
 

@@ -340,6 +340,9 @@
   --code-mark-fail: var(--eld-danger-deep);
   --code-mark-warn: var(--eld-warning-deep);
   --code-mark-insight: var(--eld-magenta-750);
+  /* Re-derived here: a var() resolves where it is declared, not where it is used. */
+  --code-breakpoint: var(--code-mark-fail);
+  --code-current-line: var(--code-mark-warn);
   --code-prompt: var(--eld-purple-700);
   --code-cursor: var(--eld-syntax-light-default);
   --code-title-foreground: var(--eld-syntax-light-comment);
@@ -373,6 +376,8 @@
   --code-mark-fail: var(--eld-ansi-red);
   --code-mark-warn: var(--eld-ansi-yellow);
   --code-mark-insight: var(--eld-ansi-magenta);
+  --code-breakpoint: var(--code-mark-fail);
+  --code-current-line: var(--code-mark-warn);
   --code-prompt: var(--eld-purple-300);
   --code-cursor: var(--eld-syntax-default);
   --code-title-foreground: #b7b7bb;

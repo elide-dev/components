@@ -35,7 +35,6 @@ const messages: Messages = {
     "copy": "複製",
     "copied": "已複製",
     "terminal": "終端機",
-    "normal": "一般模式",
     "text": "文字",
     "lines": "行數：{count}",
     "wrap": "自動換行",

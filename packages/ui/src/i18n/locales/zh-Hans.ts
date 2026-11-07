@@ -35,7 +35,6 @@ const messages: Messages = {
     "copy": "复制",
     "copied": "已复制",
     "terminal": "终端",
-    "normal": "普通模式",
     "text": "文本",
     "lines": "行数：{count}",
     "wrap": "自动换行",

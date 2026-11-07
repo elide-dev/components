@@ -19,8 +19,8 @@ describe("CodeBlock — editor variant", () => {
     expect(container.querySelector("pre")!.textContent).toBe(`${code}\n`);
 
     // Vim status bar.
-    expect(screen.getByText("NORMAL")).toBeInTheDocument();
-    expect(container).toHaveTextContent("utf-8 · typescript · 3L");
+    expect(screen.queryByText("NORMAL")).toBeNull();
+    expect(container).toHaveTextContent("utf-8 · typescript · Lines: 3");
 
     // Icon-only copy button, named from the localized "Copy".
     expect(screen.getByRole("button", { name: "Copy" })).toBeInTheDocument();
@@ -31,7 +31,7 @@ describe("CodeBlock — editor variant", () => {
       <CodeBlock variant="editor" filename="app.ts" lang="ts" code={"a\nb"} lineNumbers={false} statusBar={false} />,
     );
     expect(container.querySelector("[data-n]")).toBeNull();
-    expect(screen.queryByText("NORMAL")).not.toBeInTheDocument();
+    expect(container.querySelector('[data-slot="code-block-status"]')).toBeNull();
   });
 
   it("renders traffic lights", () => {
@@ -46,7 +46,7 @@ describe("CodeBlock — deprecated terminal variant", () => {
     expect(screen.getByText("Terminal")).toBeInTheDocument();
     expect(screen.getByText("bash")).toBeInTheDocument();
     expect(container.querySelector("[data-n]")).toBeNull();
-    expect(screen.queryByText("NORMAL")).not.toBeInTheDocument();
+    expect(container.querySelector('[data-slot="code-block-status"]')).toBeNull();
     expect(container.querySelector(".sh-command")).toHaveTextContent("elide");
   });
 });
@@ -152,6 +152,18 @@ describe("CodeBlock — editor features", () => {
     const badge = screen.getByRole("link", { name: "Note 1" });
     expect(badge).toHaveAttribute("href", "#app-ts-note-1");
     expect(screen.getByText("Opens the database.").closest("li")).toHaveAttribute("id", "app-ts-note-1");
+  });
+
+  it("highlights a note's line while the reader points at the note", async () => {
+    const user = userEvent.setup();
+    const { container } = render(<CodeBlock filename="app.ts" code={"a\nb\nc"} annotations={[{ line: 3, content: "Third line." }]} />);
+    const row = container.querySelector('[data-n="3"]')!;
+    expect(row).not.toHaveAttribute("data-annotation-active");
+    await user.hover(screen.getByText("Third line."));
+    expect(row).toHaveAttribute("data-annotation-active", "true");
+    expect(screen.getByText("Third line.").closest("li")).toHaveAttribute("data-active", "true");
+    await user.unhover(screen.getByText("Third line."));
+    expect(row).not.toHaveAttribute("data-annotation-active");
   });
 
   it("renders type hovers with descriptions outside the code", () => {

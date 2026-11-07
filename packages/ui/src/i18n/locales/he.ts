@@ -35,7 +35,6 @@ const messages: Messages = {
     "copy": "העתקה",
     "copied": "הועתק",
     "terminal": "מסוף",
-    "normal": "רגיל",
     "text": "טקסט",
     "lines": "שורות: {count}",
     "wrap": "גלישת שורות",
