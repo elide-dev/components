@@ -14,7 +14,8 @@
   "files": [
     "dist",
     "src",
-    "assets"
+    "assets",
+    "!src/**/*.test.ts"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
@@ -32,5 +33,13 @@
     "typescript": "^7.0.2",
     "typescript-eslint": "^8.72.1",
     "vitest": "^5.1.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/elide-dev/components.git",
+    "directory": "packages/brand"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
