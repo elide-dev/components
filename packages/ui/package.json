@@ -107,5 +107,13 @@
     "twoslash": {
       "optional": true
     }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/elide-dev/components.git",
+    "directory": "packages/ui"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
