@@ -7,7 +7,7 @@
     "build": "vite build",
     "preview": "vite preview --host 127.0.0.1",
     "audit": "lighthouse http://127.0.0.1:4173 --chrome-flags='--headless' --output=json --output-path=./lighthouse.json",
-    "test": "bun bundle-check.ts && bun check.mjs && bun platform-check.mjs && bun performance-check.mjs && bun i18n-check.mjs",
+    "test": "bun bundle-check.ts && bun check.mjs && bun platform-check.mjs && bun performance-check.mjs && bun i18n-check.mjs && bun code-check.mjs",
     "lint": "tsc --noEmit"
   },
   "dependencies": {

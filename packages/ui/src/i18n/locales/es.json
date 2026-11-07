@@ -35,7 +35,34 @@
     "terminal": "Terminal",
     "normal": "NORMAL",
     "text": "texto",
-    "lines": "Líneas: {count}"
+    "lines": "Líneas: {count}",
+    "wrap": "Ajustar líneas",
+    "added": "Añadida",
+    "removed": "Eliminada",
+    "breakpoint": "Punto de interrupción",
+    "currentLine": "Línea actual",
+    "warning": "Advertencia",
+    "error": "Error"
+  },
+  "terminal": {
+    "copyCommands": "Copiar comandos",
+    "recording": "Grabación de terminal",
+    "play": "Reproducir",
+    "pause": "Pausar",
+    "restart": "Reiniciar",
+    "speed": "Velocidad de reproducción: {speed}",
+    "seek": "Posición de reproducción",
+    "position": "{elapsed} de {total}",
+    "loading": "Cargando grabación…",
+    "unavailable": "Grabación no disponible",
+    "copyCommand": "Copiar comando",
+    "exitCode": "Código de salida {code}",
+    "jumpTo": "Ir a {label}"
+  },
+  "codeSample": {
+    "code": "Código",
+    "output": "Salida",
+    "panel": "Panel {n}"
   },
   "copyCommand": {
     "copy": "Copiar",

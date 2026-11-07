@@ -1,6 +1,7 @@
 @import "@elide/ui/styles.css";
 @source "./App.tsx";
 @source "./PlatformApp.tsx";
+@source "./CodeApp.tsx";
 html { scroll-padding-top: 2rem; }
 body { margin: 0; }
 header, main, footer { width: min(100% - 3rem, 64rem); margin-inline: auto; }

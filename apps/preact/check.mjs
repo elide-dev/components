@@ -23,6 +23,12 @@ async function load(page, platform, mode) {
   } finally { release(); }
   await page.waitForFunction(expected => document.documentElement.dataset.renderMode === expected, mode);
   if (heading) assert.equal(await heading.evaluate(el => el === document.querySelector("h1")), true, "Hydration must preserve server DOM");
+  // Terminal recordings render a synthesized poster frame on the server and keep playing after hydration.
+  const terminal = page.getByTestId("preact-terminal");
+  assert.match(await terminal.locator('pre[aria-hidden="true"]').textContent(), /Hello from Elide!/);
+  await terminal.getByRole("button", { name: "Play", exact: true }).click();
+  await terminal.getByRole("button", { name: "Pause", exact: true }).waitFor();
+  await terminal.getByRole("button", { name: "Pause", exact: true }).click();
   await page.getByRole("switch", { name: "Preact state", exact: true }).click();
   const button = page.getByRole("button", { name: "Preact enabled", exact: true });
   await button.click();

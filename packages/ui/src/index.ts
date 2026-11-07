@@ -5,6 +5,32 @@ export { badgeVariants } from "./components/badge-variants";
 export { Callout, type CalloutProps } from "./components/callout";
 export { CodeBlock, type CodeBlockProps } from "./components/code-block";
 export {
+  Terminal,
+  type TerminalProps, type TerminalPrompt, type TerminalLine, type TranscriptMode,
+  type TerminalRecordingOptions, type TerminalRecordingSource,
+} from "./components/terminal";
+export { CodeSample, type CodeSampleProps } from "./components/code-sample";
+export {
+  CodeSurface, CodeSurfaceTitleBar, CodeSurfaceBadge, codeChromeScript,
+  type CodeChrome, type CodeSurfaceProps, type CodeSurfaceTitleBarProps,
+} from "./components/code-surface";
+export { CodeLines, tokenStyleToCss, type CodeLinesProps } from "./components/code-lines";
+export { highlightLines } from "./components/highlight";
+export { tokenizeShell, DEFAULT_SUBCOMMANDS, type ShellTokenKind, type ShellTokenizeOptions } from "./lib/shell-tokens";
+export { usePlayback, prefersReducedMotion, type UsePlaybackOptions } from "./components/use-playback";
+export { createPlayback, cueIndexAt, type Playback, type PlaybackState, type PlaybackOptions } from "./lib/playback";
+export {
+  createTerminal, renderAnsi, stripAnsi, ansiColor,
+  type VirtualTerminal, type TerminalScreen, type TerminalCursor, type TerminalOptions,
+} from "./lib/vt";
+export {
+  parseAsciicast, normalizeCast, synthesizeCast, frameAt, CastRenderer, AsciicastError,
+  type Cast, type CastEvent, type CastMarker, type CastTheme, type SynthesizeOptions,
+} from "./lib/asciicast";
+export { parseTranscript, commandText, transcriptText } from "./lib/terminal-transcript";
+export type * from "./lib/code-model";
+export { lineText, decorationCovers, linkify } from "./lib/code-model";
+export {
   CommandPalette,
   type CommandPaletteProps,
   type CommandGroup,

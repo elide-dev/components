@@ -119,6 +119,27 @@
   --eld-syntax-param: #9cdcfe;
   --eld-syntax-line-number: #858585;
 
+  /* ---- Primitive · ANSI 16-color palette (eld/ansi) — terminal output on the
+   * always-dark code surface. Every hue except black clears WCAG AA on both
+   * code backgrounds (guarded by test/contrast.test.ts). 256-color and
+   * truecolor output is rendered as-is. ---- */
+  --eld-ansi-black: #3b3b42;
+  --eld-ansi-red: #f2777a;
+  --eld-ansi-green: #7ccf8a;
+  --eld-ansi-yellow: #e5c07b;
+  --eld-ansi-blue: #6cb0ff;
+  --eld-ansi-magenta: #ff7ad9;
+  --eld-ansi-cyan: #56c8d8;
+  --eld-ansi-white: #d4d4d4;
+  --eld-ansi-bright-black: #8a8a92;
+  --eld-ansi-bright-red: #ff9b9d;
+  --eld-ansi-bright-green: #a5e8a0;
+  --eld-ansi-bright-yellow: #f5dc8f;
+  --eld-ansi-bright-blue: #9ccbff;
+  --eld-ansi-bright-magenta: #ffaee8;
+  --eld-ansi-bright-cyan: #8ee3ef;
+  --eld-ansi-bright-white: #fafafa;
+
   /* =========================================================================
    * Semantic tokens · LIGHT (default)
    * ====================================================================== */
@@ -175,6 +196,26 @@
   --code-background: #0d0d10;
   --code-background-elev: #141418;
   --code-border: color-mix(in oklab, var(--eld-neutral-50) 9%, transparent);
+
+  /* Code surface chrome, rhythm and line decorations (theme-independent, like
+   * the surface). Every code body shares one line height so rows, gutters and
+   * recordings align. */
+  --code-line-height: 1.6;
+  --code-prompt: var(--eld-purple-300);
+  --code-cursor: var(--eld-syntax-default);
+  --code-title-foreground: #b7b7bb;
+  --code-control-foreground: #a8a8ac;
+  --code-control-hover: color-mix(in oklab, var(--eld-neutral-50) 6%, transparent);
+  --code-chrome-close: #ff5f56;
+  --code-chrome-minimize: #febc2e;
+  --code-chrome-zoom: #27c93f;
+  --code-line-highlight: color-mix(in oklab, var(--eld-purple-400) 16%, transparent);
+  --code-line-add: color-mix(in oklab, var(--eld-success-strong) 14%, transparent);
+  --code-line-remove: color-mix(in oklab, var(--eld-danger-strong) 14%, transparent);
+  --code-line-warning: color-mix(in oklab, var(--eld-warning-strong) 12%, transparent);
+  --code-line-error: color-mix(in oklab, var(--eld-danger-strong) 18%, transparent);
+  --code-breakpoint: var(--eld-ansi-red);
+  --code-current-line: var(--eld-ansi-yellow);
 
   --radius: var(--eld-radius-lg);
 }

@@ -37,7 +37,34 @@ const messages: Messages = {
     "terminal": "Термінал",
     "normal": "ЗВИЧАЙНИЙ",
     "text": "текст",
-    "lines": "Рядки: {count}"
+    "lines": "Рядки: {count}",
+    "wrap": "Перенесення рядків",
+    "added": "Додано",
+    "removed": "Видалено",
+    "breakpoint": "Точка зупинки",
+    "currentLine": "Поточний рядок",
+    "warning": "Попередження",
+    "error": "Помилка"
+  },
+  "terminal": {
+    "copyCommands": "Копіювати команди",
+    "recording": "Запис термінала",
+    "play": "Відтворити",
+    "pause": "Пауза",
+    "restart": "Почати знову",
+    "speed": "Швидкість відтворення: {speed}",
+    "seek": "Позиція відтворення",
+    "position": "{elapsed} з {total}",
+    "loading": "Завантаження запису…",
+    "unavailable": "Запис недоступний",
+    "copyCommand": "Копіювати команду",
+    "exitCode": "Код виходу {code}",
+    "jumpTo": "Перейти до {label}"
+  },
+  "codeSample": {
+    "code": "Код",
+    "output": "Вивід",
+    "panel": "Панель {n}"
   },
   "copyCommand": {
     "copy": "Копіювати",

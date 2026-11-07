@@ -37,7 +37,34 @@ const messages: Messages = {
     "terminal": "終端機",
     "normal": "一般模式",
     "text": "文字",
-    "lines": "行數：{count}"
+    "lines": "行數：{count}",
+    "wrap": "自動換行",
+    "added": "已新增",
+    "removed": "已刪除",
+    "breakpoint": "中斷點",
+    "currentLine": "目前行",
+    "warning": "警告",
+    "error": "錯誤"
+  },
+  "terminal": {
+    "copyCommands": "複製指令",
+    "recording": "終端機錄製",
+    "play": "播放",
+    "pause": "暫停",
+    "restart": "重新開始",
+    "speed": "播放速度：{speed}",
+    "seek": "播放位置",
+    "position": "{elapsed} / {total}",
+    "loading": "正在載入錄製…",
+    "unavailable": "無法使用錄製",
+    "copyCommand": "複製指令",
+    "exitCode": "結束代碼 {code}",
+    "jumpTo": "跳至 {label}"
+  },
+  "codeSample": {
+    "code": "程式碼",
+    "output": "輸出",
+    "panel": "面板 {n}"
   },
   "copyCommand": {
     "copy": "複製",

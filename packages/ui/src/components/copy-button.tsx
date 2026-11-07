@@ -49,7 +49,7 @@ export function CopyButton({
       }}
       className={cn(
         "inline-flex select-none touch-manipulation items-center gap-1.5 rounded-md border px-2 py-1 text-xs transition-colors duration-[var(--eld-motion-hover)] ease-[var(--eld-motion-ease-out)] motion-reduce:transition-none",
-        "border-[var(--code-border)] text-[#a8a8ac] hover:text-white hover:bg-white/5",
+        "border-[var(--code-border)] text-[var(--code-control-foreground)] hover:bg-[var(--code-control-hover)] hover:text-[var(--eld-syntax-default)] focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--code-prompt)]",
         className,
       )}
     >

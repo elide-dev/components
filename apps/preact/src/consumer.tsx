@@ -5,6 +5,7 @@ import { Dialog, DialogTrigger, DialogContent, DialogTitle } from "@elide/ui/com
 import { useRef, useState } from "preact/hooks";
 import { Button } from "@elide/ui/components/button";
 import { Switch } from "@elide/ui/components/switch";
+import { Terminal } from "@elide/ui/components/terminal";
 import { App } from "../../benchmark/src/App";
 import { PlatformApp } from "../../benchmark/src/PlatformApp";
 
@@ -23,6 +24,11 @@ export function Consumer({ platform }: { platform: boolean }) {
       </Button>
       <Button render={<a href="#main" />}>Back to content</Button>
     </section>
+    <Terminal
+      code={"$ elide run app.ts\nHello from Elide!"}
+      recording={{ synthesize: { seed: 1 } }}
+      data-testid="preact-terminal"
+    />
     <I18nProvider locale="he" messages={he} data-testid="preact-i18n">
       <Breadcrumbs segments={[{ label: "Elide" }]} />
       <Dialog><DialogTrigger render={<Button data-testid="preact-i18n-dialog" />}>{he.mobileNav.dialogLabel}</DialogTrigger>

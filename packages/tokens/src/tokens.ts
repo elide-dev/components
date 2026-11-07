@@ -85,6 +85,26 @@ export const syntax = {
   lineNumber: "#858585",
 } as const;
 
+/** ANSI 16-color palette for terminal output on the always-dark code surface. */
+export const ansi = {
+  black: "#3b3b42",
+  red: "#f2777a",
+  green: "#7ccf8a",
+  yellow: "#e5c07b",
+  blue: "#6cb0ff",
+  magenta: "#ff7ad9",
+  cyan: "#56c8d8",
+  white: "#d4d4d4",
+  brightBlack: "#8a8a92",
+  brightRed: "#ff9b9d",
+  brightGreen: "#a5e8a0",
+  brightYellow: "#f5dc8f",
+  brightBlue: "#9ccbff",
+  brightMagenta: "#ffaee8",
+  brightCyan: "#8ee3ef",
+  brightWhite: "#fafafa",
+} as const;
+
 export const radius = {
   xs: 2,
   sm: 4,
@@ -135,7 +155,18 @@ export const cssVar = {
   border: "--border",
   ring: "--ring",
   codeBackground: "--code-background",
+  codeLineHeight: "--code-line-height",
+  codePrompt: "--code-prompt",
+  codeCursor: "--code-cursor",
+  codeTitleForeground: "--code-title-foreground",
+  codeControlForeground: "--code-control-foreground",
+  codeControlHover: "--code-control-hover",
+  codeLineHighlight: "--code-line-highlight",
+  codeLineAdd: "--code-line-add",
+  codeLineRemove: "--code-line-remove",
+  codeBreakpoint: "--code-breakpoint",
+  codeCurrentLine: "--code-current-line",
 } as const;
 
-export const tokens = { purple, magenta, neutral, brand, status, syntax, radius, font, motion, cssVar } as const;
+export const tokens = { purple, magenta, neutral, brand, status, syntax, ansi, radius, font, motion, cssVar } as const;
 export default tokens;
