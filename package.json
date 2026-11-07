@@ -18,8 +18,9 @@
     "build-storybook": "turbo run build --filter=@elide/storybook",
     "chromatic": "chromatic",
     "changeset": "changeset",
-    "release": "changeset publish",
-    "doctor": "npx react-doctor@latest"
+    "release": "turbo run build --filter=@elide/brand --filter=@elide/tokens --filter=@elide/ui && bun scripts/publish.ts && changeset tag",
+    "doctor": "npx react-doctor@latest",
+    "release:dry": "turbo run build --filter=@elide/brand --filter=@elide/tokens --filter=@elide/ui && bun scripts/publish.ts --dry-run"
   },
   "devDependencies": {
     "@changesets/cli": "^3.0.3",
