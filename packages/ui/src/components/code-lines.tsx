@@ -133,6 +133,8 @@ export interface CodeLinesProps {
   folds?: readonly CodeFold[];
   /** Numbered badges linking each annotated line to its note. */
   annotations?: readonly CodeAnnotationBadge[];
+  /** Line whose note the reader is pointing at (highlighted with a transition). */
+  activeLine?: number;
   /** Localized accessible names per decoration kind (a decoration's own `label` wins). */
   decorationLabels?: Partial<Record<LineDecorationKind, string>>;
   /** Accessible name for an exit status dot. */
@@ -216,6 +218,7 @@ function CodeRow({ line, index, number, hottest, props }: RowProps) {
       data-tone={applied?.find((decoration) => decoration.tone)?.tone}
       data-sr={rowLabels(line, applied, insight, props)}
       data-coverage={insight.coverage}
+      data-annotation-active={props.activeLine === number || undefined}
       data-heat={insight.heat}
     >
       {lineNumbers && lineLinks ? (

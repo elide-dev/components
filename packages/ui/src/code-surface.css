@@ -82,7 +82,9 @@
   }
 
   .eld-lines[data-numbers] {
-    --eld-number-size: calc(var(--eld-code-digits, 2) * 1ch + 1.75rem);
+    /* Right-aligned and offset: at least two digits wide, with more room on
+     * the right (1rem) than the left (0.5rem), so numbers never sit centered. */
+    --eld-number-size: calc(max(var(--eld-code-digits, 2), 2) * 1ch + 1.5rem);
   }
 
   .eld-content {
@@ -114,7 +116,7 @@
     grid-column: number;
     position: sticky;
     inset-inline-start: var(--eld-marks-size, 0px);
-    padding-inline-end: 0.875rem;
+    padding-inline-end: 1rem;
     border-inline-end: 1px solid var(--code-border);
     text-align: end;
     color: var(--code-syntax-line-number);
@@ -252,8 +254,9 @@
     --eld-row-bg: color-mix(in oklab, var(--code-prompt) 8%, transparent);
   }
 
-  .eld-lines:has([data-decor~="focus"]) .eld-line:not([data-decor~="focus"]) {
-    filter: grayscale(1);
+  /* Only plain rows recede: diff, errors, breakpoints and the like keep their meaning. */
+  .eld-lines:has([data-decor~="focus"]) .eld-line:not([data-decor]) {
+    filter: saturate(0.15);
   }
 
   .eld-code-body:is(:hover, :focus-within) .eld-line {
@@ -426,7 +429,7 @@
     grid-column: number;
     position: sticky;
     inset-inline-start: var(--eld-marks-size, 0px);
-    padding-inline-end: 0.875rem;
+    padding-inline-end: 1rem;
     border-inline-end: 1px solid var(--code-border);
     text-align: end;
     color: var(--code-syntax-line-number);
@@ -555,6 +558,37 @@
     font-weight: 700;
   }
 
+  .eld-annotations > li {
+    margin-inline: -0.5rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--eld-radius-md);
+  }
+
+  .eld-annotations > li[data-active] {
+    background: var(--code-control-hover);
+  }
+
+  /* The note under the pointer lights up its line (and badge). */
+  .eld-line[data-annotation-active] {
+    --eld-row-bg: var(--code-line-highlight);
+    box-shadow: inset 2px 0 0 var(--code-prompt);
+  }
+
+  .eld-line[data-annotation-active] .eld-annotation-badge {
+    scale: 1.15;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .eld-lines:has(.eld-annotation-badge) .eld-line {
+      transition: background-color var(--eld-motion-settle) var(--eld-motion-ease-out), box-shadow var(--eld-motion-settle) var(--eld-motion-ease-out);
+    }
+
+    .eld-annotation-badge,
+    .eld-annotations > li {
+      transition: scale var(--eld-motion-settle) var(--eld-motion-ease-out), background-color var(--eld-motion-settle) var(--eld-motion-ease-out);
+    }
+  }
+
   .eld-annotations > li:target {
     outline: 1px solid var(--code-prompt);
     outline-offset: 0.25rem;
@@ -602,6 +636,7 @@
 
   .eld-file-tab {
     padding: 0.25rem 0.625rem;
+    border: 1px solid transparent;
     border-radius: var(--eld-radius-md);
     color: var(--code-title-foreground);
     font: inherit;
@@ -611,9 +646,9 @@
   }
 
   .eld-file-tab[aria-selected="true"] {
-    background: var(--code-control-hover);
+    border-color: var(--code-border);
+    background: var(--code-background);
     color: var(--code-syntax-default);
-    box-shadow: inset 0 -2px 0 var(--code-prompt);
   }
 
   @media (hover: hover) and (pointer: fine) {

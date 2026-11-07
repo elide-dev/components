@@ -35,7 +35,6 @@ const messages: Messages = {
     "copy": "Kopieren",
     "copied": "Kopiert",
     "terminal": "Terminal",
-    "normal": "NORMAL",
     "text": "Text",
     "lines": "Zeilen: {count}",
     "wrap": "Zeilen umbrechen",

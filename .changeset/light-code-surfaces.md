@@ -22,3 +22,10 @@ Light code surfaces, assistant icons, leaner grammars, and a scene engine.
 - `CodeBlock` takes `insights` (coverage/profile overlays) and a controlled
   `activeFile`; a single file renders as a titled block, not a one-tab bar.
 - Focus outlines on code surfaces are 1px.
+- Review fixes: selected file tabs use a plain border; hovering or focusing an
+  annotation note highlights its line (animated); focus rings across Tabs,
+  Accordion, Switch, Select, ScrollArea, NavigationMenu and Button are a
+  single 1px ring; line numbers sit right-aligned with extra right padding;
+  the status bar drops the vim `NORMAL` badge and reads `Lines: 9`; the
+  focus notation keeps diff and status rows in color; breakpoint and
+  current-line colors follow the light surface.

@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, within } from "storybook/test";
+import { releaseFocus } from "./fixtures/focus";
 import { CodeBlock } from "../components/code-block";
 import { CodeGroup } from "../components/code-group";
 import { Terminal } from "../components/terminal";
@@ -36,6 +37,8 @@ export const SyncedPackageManagers: Story = {
     for (const tab of canvas.getAllByRole("tab", { name: "pnpm" })) await expect(tab).toHaveAttribute("aria-selected", "true");
     // Leave the default selected so the snapshot is stable.
     await userEvent.click(canvas.getAllByRole("tab", { name: "bun" })[0]);
+    // Snapshot the resting state, not a focused control.
+    releaseFocus();
   },
 };
 

@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, within } from "storybook/test";
+import { releaseFocus } from "./fixtures/focus";
 import { CodeScene } from "../components/code-scene";
 import { coverageScene, hotspotScene, insightHooksScene, polyglotDebugScene } from "./fixtures/scenes";
 
@@ -31,6 +32,8 @@ export const PolyglotDebugging: Story = {
     await expect(canvas.getByRole("region", { name: "Call stack" })).toHaveTextContent("TypeScript");
     await userEvent.click(next);
     await expect(canvas.getByRole("tab", { name: "format.py" })).toHaveAttribute("aria-selected", "true");
+    // Snapshot the resting state, not a focused control.
+    releaseFocus();
   },
 };
 

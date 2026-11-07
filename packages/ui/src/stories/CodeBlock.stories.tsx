@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, within } from "storybook/test";
+import { releaseFocus } from "./fixtures/focus";
 import { CodeBlock } from "../components/code-block";
 import { twoslashSample } from "./fixtures/twoslash";
 
@@ -82,6 +83,8 @@ export const LongLines: Story = {
     const toggle = canvas.getByRole("button", { name: "Wrap lines" });
     await userEvent.click(toggle);
     await expect(toggle).toHaveAttribute("aria-pressed", "true");
+    // Snapshot the resting state, not a focused control.
+    releaseFocus();
   },
 };
 
@@ -169,6 +172,8 @@ export const Files: Story = {
     const canvas = within(canvasElement);
     await userEvent.click(canvas.getByRole("tab", { name: "greet.py" }));
     await expect(canvas.getByRole("tab", { name: "greet.py" })).toHaveAttribute("aria-selected", "true");
+    // Snapshot the resting state, not a focused control.
+    releaseFocus();
   },
 };
 

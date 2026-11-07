@@ -18,7 +18,7 @@ export const buttonVariants = cva(
     "transition-[scale] duration-[var(--eld-motion-settle)] ease-[var(--eld-motion-ease-out)] motion-safe:active:scale-[0.98] active:duration-[var(--eld-motion-press)] motion-reduce:transition-none",
     "before:pointer-events-none before:absolute before:-inset-px before:-z-10 before:rounded-[inherit] before:border before:border-transparent before:opacity-0 before:content-['']",
     "before:transition-opacity before:duration-[var(--eld-motion-hover)] before:ease-[var(--eld-motion-ease-out)] hover:before:opacity-100 active:before:opacity-100 active:before:duration-[var(--eld-motion-press)] motion-reduce:before:transition-none",
-    "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+    "focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
     "disabled:pointer-events-none disabled:opacity-45 disabled:shadow-none disabled:before:opacity-0",
     "[&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   ],

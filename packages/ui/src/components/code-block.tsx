@@ -182,6 +182,8 @@ function CodeBody({ file, id, lineNumbers, startLine, wrapped, lineLinks, maxLin
   const lines = useHighlightedLines(file.code, file.lang, file.lines);
   const [expandedFolds, setExpandedFolds] = React.useState<ReadonlySet<string>>(() => new Set());
   const [expanded, setExpanded] = React.useState(false);
+  /** Line of the note under the pointer or focus. */
+  const [activeLine, setActiveLine] = React.useState<number>();
 
   const foldRanges = file.decorations.filter((d) => d.kind === "fold");
   const decorations = foldRanges.length ? file.decorations.filter((d) => d.kind !== "fold") : file.decorations;
@@ -256,6 +258,7 @@ function CodeBody({ file, id, lineNumbers, startLine, wrapped, lineLinks, maxLin
             lineLabel={(n) => formatMessage(m.line, { n })}
             folds={folds}
             annotations={badges}
+            activeLine={activeLine}
             wrap={wrapped}
           />
         )}
@@ -284,7 +287,17 @@ function CodeBody({ file, id, lineNumbers, startLine, wrapped, lineLinks, maxLin
       {annotations?.length ? (
         <ol className="eld-annotations">
           {keyed(annotations, (annotation) => `line-${annotation.line}`).map(({ item, key }, i) => (
-            <li key={key} id={`${id}-note-${i + 1}`} data-n={i + 1}>
+            // Pointing at a note (or focusing something inside it) highlights its line.
+            <li
+              key={key}
+              id={`${id}-note-${i + 1}`}
+              data-n={i + 1}
+              data-active={activeLine === item.line || undefined}
+              onPointerEnter={() => setActiveLine(item.line)}
+              onPointerLeave={() => setActiveLine(undefined)}
+              onFocusCapture={() => setActiveLine(item.line)}
+              onBlurCapture={() => setActiveLine(undefined)}
+            >
               {item.content}
             </li>
           ))}
@@ -427,14 +440,11 @@ function FileTabs({ files, active, id, label, onSelect }: { files: PreparedFile[
   );
 }
 
-/** The vim-style status bar: mode, file, encoding, language and line count. */
+/** Status bar: file, encoding, language and line count. */
 function StatusBar({ file }: { file: PreparedFile }) {
   const m = useMessages().codeBlock;
   return (
     <div data-slot="code-block-status" className="flex min-h-[1.875rem] flex-wrap items-center border-t font-mono text-[0.6875rem] font-semibold" style={codeSurfaceElevStyle}>
-      <span className="inline-flex min-h-[1.875rem] items-center whitespace-nowrap px-3 tracking-normal" style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}>
-        {m.normal}
-      </span>
       {file.name ? (
         <span className="whitespace-nowrap px-3 py-1 tracking-wide text-[var(--code-syntax-line-number)]">
           <bdi dir="ltr">{file.name}</bdi>
@@ -442,7 +452,7 @@ function StatusBar({ file }: { file: PreparedFile }) {
       ) : null}
       <span className="flex-1" />
       <span className="whitespace-nowrap px-3.5 py-1 tracking-wide text-[var(--code-syntax-line-number)]">
-        utf-8 · {file.lang ?? m.text} · {formatMessage(m.lines, { count: file.code.split("\n").length })}
+        {`utf-8 · ${file.lang ?? m.text} · ${formatMessage(m.lines, { count: file.code.split("\n").length })}`}
       </span>
     </div>
   );

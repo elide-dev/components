@@ -35,7 +35,6 @@ const messages: Messages = {
     "copy": "복사",
     "copied": "복사됨",
     "terminal": "터미널",
-    "normal": "일반 모드",
     "text": "텍스트",
     "lines": "줄 수: {count}",
     "wrap": "줄 바꿈",
