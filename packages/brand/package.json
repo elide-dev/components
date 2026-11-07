@@ -39,7 +39,5 @@
     "url": "git+https://github.com/elide-dev/components.git",
     "directory": "packages/brand"
   },
-  "publishConfig": {
-    "access": "public"
-  }
+  "private": true
 }

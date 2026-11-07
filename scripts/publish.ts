@@ -17,5 +17,5 @@ for (const dir of order) {
     continue;
   }
   console.log(`${dryRun ? "dry run" : "publish"} ${name}@${version}`);
-  await $`bun publish --access public ${dryRun ? ["--dry-run"] : []}`.cwd(dir);
+  await $`bun publish --access restricted ${dryRun ? ["--dry-run"] : []}`.cwd(dir);
 }
