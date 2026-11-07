@@ -200,50 +200,68 @@ interface RowProps {
   props: CodeLinesProps;
 }
 
-/** One grid row: `[marks] [number] [prompt] [content]`, plus optional badges and action. */
-function CodeRow({ line, index, number, hottest, props }: RowProps) {
-  const { lineLinks, lineNumbers, links = true } = props;
+/** The row's data attributes: drive gutter glyphs, overlays and accessible names from CSS. */
+function rowAttributes(line: CodeLine, number: number, hottest: number, props: CodeLinesProps): Record<string, string | number | boolean | undefined> {
   const applied = props.decorations?.filter((decoration) => decorationCovers(decoration, number));
-  const kinds = applied?.length ? [...new Set(applied.map((decoration) => decoration.kind))].join(" ") : undefined;
-  const badges = props.annotations?.filter((annotation) => annotation.line === number) ?? [];
-  const exit = line.exitCode === undefined ? undefined : line.exitCode === 0 ? "ok" : "fail";
   const insight = rowInsight(number, props.insights, hottest);
+  return {
+    "data-n": props.lineNumbers && !props.lineLinks ? number : undefined,
+    "data-kind": line.kind,
+    "data-exit": line.exitCode === undefined ? undefined : line.exitCode === 0 ? "ok" : "fail",
+    "data-decor": applied?.length ? [...new Set(applied.map((decoration) => decoration.kind))].join(" ") : undefined,
+    "data-tone": applied?.find((decoration) => decoration.tone)?.tone,
+    "data-sr": rowLabels(line, applied, insight, props),
+    "data-coverage": insight.coverage,
+    "data-heat": insight.heat,
+    "data-share": insight.share,
+    "data-annotation-active": props.activeLine === number || undefined,
+  };
+}
+
+/** Empty permalink: CSS draws the number, so it is never copied. */
+function LineNumberLink({ prefix, number, label }: { prefix: string; number: number; label: string }) {
+  return <a className="eld-line-number" id={`${prefix}L${number}`} href={`#${prefix}L${number}`} aria-label={label} data-n={number} />;
+}
+
+/** Numbered links from a line to its notes. */
+function RowBadges({ badges }: { badges: readonly CodeAnnotationBadge[] }) {
   return (
-    <span
-      className="eld-line"
-      data-n={lineNumbers && !lineLinks ? number : undefined}
-      data-kind={line.kind}
-      data-exit={exit}
-      data-decor={kinds}
-      data-tone={applied?.find((decoration) => decoration.tone)?.tone}
-      data-sr={rowLabels(line, applied, insight, props)}
-      data-coverage={insight.coverage}
-      data-annotation-active={props.activeLine === number || undefined}
-      data-heat={insight.heat}
-    >
-      {lineNumbers && lineLinks ? (
-        // Empty link: CSS draws the number, so it is never copied.
-        <a className="eld-line-number" id={`${lineLinks}L${number}`} href={`#${lineLinks}L${number}`} aria-label={props.lineLabel?.(number) ?? String(number)} data-n={number} />
-      ) : null}
+    <span className="eld-annotation-badges">
+      {badges.map((badge) => (
+        <a key={badge.index} className="eld-annotation-badge" href={badge.href} aria-label={badge.label} data-n={badge.index} />
+      ))}
+    </span>
+  );
+}
+
+interface RowProps {
+  line: CodeLine;
+  index: number;
+  number: number;
+  /** Samples on the hottest line of the file (scales the heat tint). */
+  hottest: number;
+  props: CodeLinesProps;
+}
+
+/** One grid row: `[marks] [number] [prompt] [content]`, plus optional overlays and action. */
+function CodeRow({ line, index, number, hottest, props }: RowProps) {
+  const { "data-share": share, ...attributes } = rowAttributes(line, number, hottest, props);
+  const badges = props.annotations?.filter((annotation) => annotation.line === number) ?? [];
+  const lineInline = props.inline?.filter((decoration) => decoration.line === number) ?? [];
+  return (
+    <span className="eld-line" {...attributes}>
+      {props.lineNumbers && props.lineLinks ? <LineNumberLink prefix={props.lineLinks} number={number} label={props.lineLabel?.(number) ?? String(number)} /> : null}
       {line.prompt !== undefined ? (
         // Empty and hidden from AT: its pseudo-elements draw the cwd and glyph.
         <span className="eld-prompt" aria-hidden data-prompt={line.prompt} data-cwd={line.cwd} />
       ) : null}
       <span className="eld-content" key={props.remountChangedRows ? rowKey(line) : undefined}>
-        <LineTokens tokens={line.tokens} inline={props.inline?.filter((decoration) => decoration.line === number) ?? []} links={links} hoverId={props.hoverId} />
+        <LineTokens tokens={line.tokens} inline={lineInline} links={props.links ?? true} hoverId={props.hoverId} />
         {"\n"}
       </span>
-      {insight.share ? (
-        // Empty and hidden: CSS draws the share, so it is never copied (the row's name carries it).
-        <span className="eld-heat" aria-hidden data-share={insight.share} />
-      ) : null}
-      {badges.length ? (
-        <span className="eld-annotation-badges">
-          {badges.map((badge) => (
-            <a key={badge.index} className="eld-annotation-badge" href={badge.href} aria-label={badge.label} data-n={badge.index} />
-          ))}
-        </span>
-      ) : null}
+      {/* Empty and hidden: CSS draws the share (the row's name carries it), so it is never copied. */}
+      {share ? <span className="eld-heat" aria-hidden data-share={share} /> : null}
+      {badges.length ? <RowBadges badges={badges} /> : null}
       {props.rowAction?.(line, index)}
     </span>
   );
