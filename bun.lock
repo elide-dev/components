@@ -9,6 +9,7 @@
       },
       "devDependencies": {
         "@changesets/cli": "^3.0.3",
+        "@typescript/typescript6": "^6.0.2",
         "turbo": "^2.11.10",
         "typescript": "^7.0.2",
       },

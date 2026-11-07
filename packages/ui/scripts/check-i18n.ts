@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import assert from "node:assert/strict";
-import ts from "typescript";
+import ts from "@typescript/typescript6";
 import { supportedLocales } from "../src/i18n/locales";
 import en from "../src/i18n/locales/en.json";
 
