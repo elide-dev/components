@@ -13,16 +13,22 @@ export interface CodeSurfaceProps extends React.HTMLAttributes<HTMLDivElement> {
   /** Drop shadow used by the editor block; terminals sit flatter by default. */
   raised?: boolean;
   chrome?: CodeChrome;
+  /**
+   * `adaptive` (editor blocks) follows the theme: soft warm white in light, the
+   * dark panel in dark. `dark` (terminals) is always dark.
+   */
+  tone?: "adaptive" | "dark";
 }
 
-export function CodeSurface({ raised = false, chrome = "auto", className, style, ...props }: CodeSurfaceProps) {
+export function CodeSurface({ raised = false, chrome = "auto", tone = "dark", className, style, ...props }: CodeSurfaceProps) {
   return (
     <div
       {...props}
       data-chrome={chrome}
+      data-code-tone={tone === "adaptive" ? "adaptive" : undefined}
       className={cn(
         "overflow-clip rounded-xl border",
-        raised && "shadow-[0_20px_44px_-26px_rgba(0,0,0,0.65)]",
+        raised && "shadow-[var(--code-shadow)]",
         className,
       )}
       style={{ ...codeSurfaceStyle, ...style }}
@@ -115,7 +121,7 @@ export function CodeSurfaceTitleBar({ title, actions, chrome = "auto", className
 /** Small monospace label for the language/shell in a title bar. */
 export function CodeSurfaceBadge({ children }: { children: React.ReactNode }) {
   return (
-    <span className="font-mono text-[0.65625rem] font-semibold tracking-normal text-[var(--eld-syntax-line-number)]">
+    <span className="font-mono text-[0.65625rem] font-semibold tracking-normal text-[var(--code-syntax-line-number)]">
       {children}
     </span>
   );

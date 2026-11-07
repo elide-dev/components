@@ -140,6 +140,25 @@
   --eld-ansi-bright-cyan: #8ee3ef;
   --eld-ansi-bright-white: #fafafa;
 
+  /* ---- Primitive · Code surfaces (eld/code) — the dark panel used by
+   * terminals (always) and editor blocks in dark theme, and the soft warm
+   * white editor blocks use in light theme. Light syntax colors clear WCAG AA
+   * on both light surfaces (guarded by test/contrast.test.ts). ---- */
+  --eld-code-dark-background: #0d0d10;
+  --eld-code-dark-elev: #141418;
+  --eld-code-light-background: #f7f6f2;
+  --eld-code-light-elev: #f1f0ea;
+  --eld-syntax-light-default: #2b2a27;
+  --eld-syntax-light-comment: #67665f;
+  --eld-syntax-light-keyword: #6d28d9;
+  --eld-syntax-light-string: #0f6b44;
+  --eld-syntax-light-number: #9a4700;
+  --eld-syntax-light-function: #1d4ed8;
+  --eld-syntax-light-type: #0b6b84;
+  --eld-syntax-light-param: #9d174d;
+  --eld-syntax-light-line-number: #6b6a63;
+  --eld-syntax-light-muted: #6b6a63;
+
   /* =========================================================================
    * Semantic tokens · LIGHT (default)
    * ====================================================================== */
@@ -192,10 +211,26 @@
   /* Navigation surface (blurred bar) */
   --nav-background: color-mix(in oklab, var(--eld-neutral-50) 75%, transparent);
 
-  /* Code surface — intentionally dark in BOTH themes (matches Figma Code Block) */
-  --code-background: #0d0d10;
-  --code-background-elev: #141418;
+  /* Code surface — dark by default; editor blocks marked
+   * data-code-tone="adaptive" switch to the light palette in light theme. */
+  --code-background: var(--eld-code-dark-background);
+  --code-background-elev: var(--eld-code-dark-elev);
   --code-border: color-mix(in oklab, var(--eld-neutral-50) 9%, transparent);
+  --code-shadow: 0 20px 44px -26px rgb(0 0 0 / 0.65);
+  --code-syntax-default: var(--eld-syntax-default);
+  --code-syntax-comment: var(--eld-syntax-comment);
+  --code-syntax-keyword: var(--eld-syntax-keyword);
+  --code-syntax-string: var(--eld-syntax-string);
+  --code-syntax-number: var(--eld-syntax-number);
+  --code-syntax-function: var(--eld-syntax-function);
+  --code-syntax-type: var(--eld-syntax-type);
+  --code-syntax-param: var(--eld-syntax-param);
+  --code-syntax-line-number: var(--eld-syntax-line-number);
+  --code-syntax-muted: var(--eld-ansi-bright-black);
+  --code-mark-ok: var(--eld-ansi-green);
+  --code-mark-fail: var(--eld-ansi-red);
+  --code-mark-warn: var(--eld-ansi-yellow);
+  --code-mark-insight: var(--eld-ansi-magenta);
 
   /* Code surface chrome, rhythm and line decorations (theme-independent, like
    * the surface). Every code body shares one line height so rows, gutters and
@@ -214,8 +249,8 @@
   --code-line-remove: color-mix(in oklab, var(--eld-danger-strong) 14%, transparent);
   --code-line-warning: color-mix(in oklab, var(--eld-warning-strong) 12%, transparent);
   --code-line-error: color-mix(in oklab, var(--eld-danger-strong) 18%, transparent);
-  --code-breakpoint: var(--eld-ansi-red);
-  --code-current-line: var(--eld-ansi-yellow);
+  --code-breakpoint: var(--code-mark-fail);
+  --code-current-line: var(--code-mark-warn);
 
   --radius: var(--eld-radius-lg);
 }
@@ -274,9 +309,80 @@
   --nav-background: color-mix(in oklab, var(--eld-neutral-950) 62%, transparent);
 
   /* code surface is already dark; keep identical */
-  --code-background: #0d0d10;
-  --code-background-elev: #141418;
+  --code-background: var(--eld-code-dark-background);
+  --code-background-elev: var(--eld-code-dark-elev);
   --code-border: color-mix(in oklab, var(--eld-neutral-50) 9%, transparent);
+}
+
+/* ===========================================================================
+ * Code surfaces · adaptive tone
+ * Editor blocks (data-code-tone="adaptive") use a soft warm white in light
+ * theme and the dark panel in dark theme. Terminals stay dark: a dark panel is
+ * what says "this is a shell". Components read only the --code-* tokens.
+ * ======================================================================== */
+[data-code-tone="adaptive"] {
+  color-scheme: light;
+  --code-background: var(--eld-code-light-background);
+  --code-background-elev: var(--eld-code-light-elev);
+  --code-border: color-mix(in oklab, var(--eld-neutral-950) 10%, transparent);
+  --code-shadow: 0 12px 32px -22px rgb(20 18 12 / 0.22);
+  --code-syntax-default: var(--eld-syntax-light-default);
+  --code-syntax-comment: var(--eld-syntax-light-comment);
+  --code-syntax-keyword: var(--eld-syntax-light-keyword);
+  --code-syntax-string: var(--eld-syntax-light-string);
+  --code-syntax-number: var(--eld-syntax-light-number);
+  --code-syntax-function: var(--eld-syntax-light-function);
+  --code-syntax-type: var(--eld-syntax-light-type);
+  --code-syntax-param: var(--eld-syntax-light-param);
+  --code-syntax-line-number: var(--eld-syntax-light-line-number);
+  --code-syntax-muted: var(--eld-syntax-light-muted);
+  --code-mark-ok: var(--eld-success-deep);
+  --code-mark-fail: var(--eld-danger-deep);
+  --code-mark-warn: var(--eld-warning-deep);
+  --code-mark-insight: var(--eld-magenta-750);
+  --code-prompt: var(--eld-purple-700);
+  --code-cursor: var(--eld-syntax-light-default);
+  --code-title-foreground: var(--eld-syntax-light-comment);
+  --code-control-foreground: var(--eld-syntax-light-comment);
+  --code-control-hover: color-mix(in oklab, var(--eld-neutral-950) 6%, transparent);
+  --code-line-highlight: color-mix(in oklab, var(--eld-purple-600) 10%, transparent);
+  --code-line-add: color-mix(in oklab, var(--eld-success) 14%, transparent);
+  --code-line-remove: color-mix(in oklab, var(--eld-danger) 11%, transparent);
+  --code-line-warning: color-mix(in oklab, var(--eld-warning) 16%, transparent);
+  --code-line-error: color-mix(in oklab, var(--eld-danger) 14%, transparent);
+}
+
+:is(.dark, [data-theme="dark"]) [data-code-tone="adaptive"],
+[data-code-tone="adaptive"]:is(.dark, [data-theme="dark"]) {
+  color-scheme: dark;
+  --code-background: var(--eld-code-dark-background);
+  --code-background-elev: var(--eld-code-dark-elev);
+  --code-border: color-mix(in oklab, var(--eld-neutral-50) 9%, transparent);
+  --code-shadow: 0 20px 44px -26px rgb(0 0 0 / 0.65);
+  --code-syntax-default: var(--eld-syntax-default);
+  --code-syntax-comment: var(--eld-syntax-comment);
+  --code-syntax-keyword: var(--eld-syntax-keyword);
+  --code-syntax-string: var(--eld-syntax-string);
+  --code-syntax-number: var(--eld-syntax-number);
+  --code-syntax-function: var(--eld-syntax-function);
+  --code-syntax-type: var(--eld-syntax-type);
+  --code-syntax-param: var(--eld-syntax-param);
+  --code-syntax-line-number: var(--eld-syntax-line-number);
+  --code-syntax-muted: var(--eld-ansi-bright-black);
+  --code-mark-ok: var(--eld-ansi-green);
+  --code-mark-fail: var(--eld-ansi-red);
+  --code-mark-warn: var(--eld-ansi-yellow);
+  --code-mark-insight: var(--eld-ansi-magenta);
+  --code-prompt: var(--eld-purple-300);
+  --code-cursor: var(--eld-syntax-default);
+  --code-title-foreground: #b7b7bb;
+  --code-control-foreground: #a8a8ac;
+  --code-control-hover: color-mix(in oklab, var(--eld-neutral-50) 6%, transparent);
+  --code-line-highlight: color-mix(in oklab, var(--eld-purple-400) 16%, transparent);
+  --code-line-add: color-mix(in oklab, var(--eld-success-strong) 14%, transparent);
+  --code-line-remove: color-mix(in oklab, var(--eld-danger-strong) 14%, transparent);
+  --code-line-warning: color-mix(in oklab, var(--eld-warning-strong) 12%, transparent);
+  --code-line-error: color-mix(in oklab, var(--eld-danger-strong) 18%, transparent);
 }
 
 /* Perceptual gradients keep the purple-to-rose transition smooth. OKLCH is

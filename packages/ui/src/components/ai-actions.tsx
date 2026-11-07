@@ -2,6 +2,7 @@ import * as React from "react";
 import { Check, Copy, ExternalLink, Sparkles } from "lucide-react";
 import { cn } from "../lib/utils";
 import { useMessages } from "../i18n/context";
+import { ClaudeIcon, OpenAIIcon } from "./ai-icons";
 
 /**
  * AiActions — the "Use with AI" panel in the docs right rail: copy the page as
@@ -11,6 +12,9 @@ import { useMessages } from "../i18n/context";
 export interface AiActionItem {
   label: string;
   href?: string;
+  /** Show the assistant's mark before the label. */
+  assistant?: "claude" | "chatgpt";
+  /** Trailing icon (replaces the external-link glyph). */
   icon?: React.ReactNode;
   /** Opens `href` in a new tab and shows an external-link glyph. */
   external?: boolean;
@@ -69,8 +73,12 @@ export function AiActions({
       ) : null}
 
       {actions.map((action) => {
+        const Mark = action.assistant === "claude" ? ClaudeIcon : action.assistant === "chatgpt" ? OpenAIIcon : undefined;
         const content = (
           <>
+            {Mark ? (
+              <Mark data-assistant={action.assistant} className="h-3.5 w-3.5 shrink-0 text-foreground" />
+            ) : null}
             <span className="flex-1">{action.label}</span>
             {action.icon ??
               (action.external ? (

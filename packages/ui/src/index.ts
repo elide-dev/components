@@ -109,6 +109,7 @@ export {
 export { CardGrid, FeatureCard, type CardGridProps, type FeatureCardProps } from "./components/card-grid";
 export { StatStrip, type Stat, type StatStripProps } from "./components/stat-strip";
 export { AiActions, type AiActionsProps, type AiActionItem } from "./components/ai-actions";
+export { ClaudeIcon, OpenAIIcon, type AssistantIconProps } from "./components/ai-icons";
 export { CopyCommand, type CopyCommandProps } from "./components/copy-command";
 export { StatusBadge, type ApiStatus, type StatusBadgeProps } from "./components/status-badge";
 export { ApiMethod, ParamRow, type ApiMethodProps, type ParamRowProps } from "./components/api-method";

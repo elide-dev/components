@@ -105,6 +105,28 @@ export const ansi = {
   brightWhite: "#fafafa",
 } as const;
 
+/** Editor code surfaces in light theme (soft warm white) and the dark panel. */
+export const code = {
+  darkBackground: "#0d0d10",
+  darkElev: "#141418",
+  lightBackground: "#f7f6f2",
+  lightElev: "#f1f0ea",
+} as const;
+
+/** Syntax colors for light editor surfaces (AA on both light code backgrounds). */
+export const syntaxLight = {
+  default: "#2b2a27",
+  comment: "#67665f",
+  keyword: "#6d28d9",
+  string: "#0f6b44",
+  number: "#9a4700",
+  function: "#1d4ed8",
+  type: "#0b6b84",
+  param: "#9d174d",
+  lineNumber: "#6b6a63",
+  muted: "#6b6a63",
+} as const;
+
 export const radius = {
   xs: 2,
   sm: 4,
@@ -168,5 +190,5 @@ export const cssVar = {
   codeCurrentLine: "--code-current-line",
 } as const;
 
-export const tokens = { purple, magenta, neutral, brand, status, syntax, ansi, radius, font, motion, cssVar } as const;
+export const tokens = { purple, magenta, neutral, brand, status, syntax, syntaxLight, code, ansi, radius, font, motion, cssVar } as const;
 export default tokens;

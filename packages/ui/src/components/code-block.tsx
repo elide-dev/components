@@ -416,12 +416,12 @@ function StatusBar({ file }: { file: PreparedFile }) {
         {m.normal}
       </span>
       {file.name ? (
-        <span className="whitespace-nowrap px-3 py-1 tracking-wide text-[var(--eld-syntax-line-number)]">
+        <span className="whitespace-nowrap px-3 py-1 tracking-wide text-[var(--code-syntax-line-number)]">
           <bdi dir="ltr">{file.name}</bdi>
         </span>
       ) : null}
       <span className="flex-1" />
-      <span className="whitespace-nowrap px-3.5 py-1 tracking-wide text-[var(--eld-syntax-line-number)]">
+      <span className="whitespace-nowrap px-3.5 py-1 tracking-wide text-[var(--code-syntax-line-number)]">
         utf-8 · {file.lang ?? m.text} · {formatMessage(m.lines, { count: file.code.split("\n").length })}
       </span>
     </div>
@@ -470,7 +470,7 @@ export function CodeBlock({
   );
 
   const surface = (
-    <CodeSurface raised chrome={chrome} data-slot="code-block" className={caption ? undefined : className}>
+    <CodeSurface raised chrome={chrome} tone={legacyTerminal ? "dark" : "adaptive"} data-slot="code-block" className={caption ? undefined : className}>
       <CodeSurfaceTitleBar
         chrome={chrome}
         title={title}

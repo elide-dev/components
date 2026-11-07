@@ -259,7 +259,7 @@ function Scrubber({ cast, markers, time, label, valueText, onSeek }: { cast?: Ca
             <span
               key={`${marker.time}:${marker.label}`}
               aria-hidden
-              className="pointer-events-none absolute top-1/2 h-2.5 w-0.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[var(--eld-syntax-line-number)]"
+              className="pointer-events-none absolute top-1/2 h-2.5 w-0.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[var(--code-syntax-line-number)]"
               style={{ left: `${(marker.time / duration) * 100}%` }}
             />
           ))
@@ -297,13 +297,13 @@ function RecordingControls({ state, cast, markers, failed, messages: m, locale, 
       </button>
       {markers.length ? <MarkerButtons markers={markers} time={state.time} label={m.jumpTo} onSeek={onSeek} /> : null}
       {failed ? (
-        <span role="status" className="flex-1 px-1 font-mono text-[0.6875rem] text-[var(--eld-syntax-line-number)]">
+        <span role="status" className="flex-1 px-1 font-mono text-[0.6875rem] text-[var(--code-syntax-line-number)]">
           {m.unavailable}
         </span>
       ) : (
         <Scrubber cast={cast} markers={markers} time={state.time} label={m.seek} valueText={formatMessage(m.position, { elapsed, total })} onSeek={onSeek} />
       )}
-      <span aria-hidden className="shrink-0 font-mono text-[0.6875rem] tabular-nums text-[var(--eld-syntax-line-number)]">
+      <span aria-hidden className="shrink-0 font-mono text-[0.6875rem] tabular-nums text-[var(--code-syntax-line-number)]">
         {`${elapsed} / ${total}`}
       </span>
       <button
@@ -342,7 +342,7 @@ function RecordingScreen({ lines, gridStyle, reserve, fallback }: { lines?: Code
 function PosterPlayButton({ onClick }: { onClick: () => void }) {
   return (
     <button type="button" tabIndex={-1} aria-hidden onClick={onClick} className="absolute inset-0 flex touch-manipulation items-center justify-center">
-      <span className="flex size-12 items-center justify-center rounded-full bg-[var(--code-background-elev)] text-[var(--eld-syntax-default)] shadow-lg ring-1 ring-[var(--code-border)] transition-transform duration-[var(--eld-motion-press)] ease-[var(--eld-motion-ease-out)] active:scale-95 motion-reduce:transition-none">
+      <span className="flex size-12 items-center justify-center rounded-full bg-[var(--code-background-elev)] text-[var(--code-syntax-default)] shadow-lg ring-1 ring-[var(--code-border)] transition-transform duration-[var(--eld-motion-press)] ease-[var(--eld-motion-ease-out)] active:scale-95 motion-reduce:transition-none">
         <Play aria-hidden className="size-5 translate-x-px fill-current" />
       </span>
     </button>
