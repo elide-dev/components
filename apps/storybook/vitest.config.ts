@@ -15,6 +15,7 @@ import { storybookTest } from "@storybook/addon-vitest/vitest-plugin";
 // packages/ui/vitest.config.ts matches here too. Codecov merges this suite's
 // `ui-browser` flag with `ui-unit`.
 export default defineConfig({
+  resolve: { dedupe: ["react", "react-dom"] },
   plugins: [storybookTest({ configDir: ".storybook" })],
   test: {
     name: "storybook",

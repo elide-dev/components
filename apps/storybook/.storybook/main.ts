@@ -1,4 +1,17 @@
 import type { StorybookConfig } from "@storybook/react-vite";
+import { createRequire, registerHooks } from "node:module";
+
+// Docgen needs the JavaScript compiler API, which native TypeScript 7 no
+// longer ships. Route its imports through Microsoft's compatibility package.
+const require = createRequire(import.meta.url);
+registerHooks({
+  resolve(specifier, context, nextResolve) {
+    const target = specifier === "typescript" || specifier.startsWith("typescript/")
+      ? require.resolve(specifier.replace(/^typescript/, "@typescript/typescript6"))
+      : specifier;
+    return nextResolve(target, context);
+  },
+});
 
 /**
  * Storybook 10 + React + Vite. Tailwind v4 is added through the Vite plugin in
@@ -25,6 +38,10 @@ const config: StorybookConfig = {
   staticDirs: [{ from: "../../../packages/brand/assets", to: "/brand" }],
   core: { disableTelemetry: true },
   async viteFinal(cfg) {
+    cfg.resolve = {
+      ...cfg.resolve,
+      dedupe: [...new Set([...(cfg.resolve?.dedupe ?? []), "react", "react-dom"])],
+    };
     const { default: tailwindcss } = await import("@tailwindcss/vite");
     cfg.plugins = cfg.plugins ?? [];
     cfg.plugins.push(tailwindcss());

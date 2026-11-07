@@ -34,5 +34,8 @@
   },
   "dependencies": {
     "chromatic": "^18.14.2"
+  },
+  "patchedDependencies": {
+    "tsup@9.0.0": "patches/tsup@9.0.0.patch"
   }
 }

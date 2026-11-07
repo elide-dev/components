@@ -87,11 +87,12 @@
     "react-dom": "^19.3.1",
     "storybook": "^10.6.6",
     "tsup": "^9.0.0",
-    "typescript": "^6.0.3",
+    "typescript": "^7.0.2",
     "typescript-eslint": "^8.72.1",
     "vitest": "^5.1.0",
     "tailwindcss": "^4.3.5",
-    "shadcn": "4.23.0"
+    "shadcn": "4.23.0",
+    "@typescript/typescript6": "^6.0.2"
   },
   "peerDependenciesMeta": {
     "tailwindcss": {

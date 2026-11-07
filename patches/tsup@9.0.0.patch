@@ -1,0 +1,26 @@
+diff --git a/dist/index.js b/dist/index.js
+index 74f7a60c31cfc2f90ad90ab3137751b31a342b46..c336c12daba5fc3cdb118ae35ffff7e6b6e2ddab 100644
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -1022,7 +1022,7 @@ var terserPlugin = ({
+ // src/tsc.ts
+ 
+ 
+-var _typescript = require('typescript'); var _typescript2 = _interopRequireDefault(_typescript);
++var _typescript = require('@typescript/typescript6'); var _typescript2 = _interopRequireDefault(_typescript);
+ var logger = _chunk6IOGQ2V3js.createLogger.call(void 0, );
+ var AliasPool = (_class = class {constructor() { _class.prototype.__init.call(this); }
+   __init() {this.seen = /* @__PURE__ */ new Set()}
+diff --git a/dist/rollup.js b/dist/rollup.js
+index 114ded6aee9ebcb36fa569ab2bc40e265a2ed658..10bc215c4c253ffd053d4d96c5ace98c80a5cf64 100644
+--- a/dist/rollup.js
++++ b/dist/rollup.js
+@@ -9669,7 +9669,7 @@ declare const ${defaultExport}: {`,
+ // src/rollup.ts
+ var _worker_threads = require('worker_threads');
+ var _path = require('path'); var _path2 = _interopRequireDefault(_path);
+-var _typescript = require('typescript'); var _typescript2 = _interopRequireDefault(_typescript);
++var _typescript = require('@typescript/typescript6'); var _typescript2 = _interopRequireDefault(_typescript);
+ 
+ // node_modules/.pnpm/@rollup+pluginutils@5.4.0_rollup@4.64.6/node_modules/@rollup/pluginutils/dist/es/index.js
+ 
