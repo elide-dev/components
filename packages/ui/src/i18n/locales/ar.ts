@@ -44,7 +44,13 @@ const messages: Messages = {
     "breakpoint": "نقطة توقف",
     "currentLine": "السطر الحالي",
     "warning": "تحذير",
-    "error": "خطأ"
+    "error": "خطأ",
+    "showMore": "عرض {count} أسطر إضافية",
+    "showLess": "عرض أسطر أقل",
+    "line": "السطر {n}",
+    "note": "ملاحظة {n}",
+    "folded": "{count} أسطر مخفية",
+    "files": "الملفات"
   },
   "terminal": {
     "copyCommands": "نسخ الأوامر",

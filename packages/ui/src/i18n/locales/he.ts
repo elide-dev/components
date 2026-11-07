@@ -44,7 +44,13 @@ const messages: Messages = {
     "breakpoint": "נקודת עצירה",
     "currentLine": "השורה הנוכחית",
     "warning": "אזהרה",
-    "error": "שגיאה"
+    "error": "שגיאה",
+    "showMore": "הצגת {count} שורות נוספות",
+    "showLess": "הצגת פחות שורות",
+    "line": "שורה {n}",
+    "note": "הערה {n}",
+    "folded": "{count} שורות מוסתרות",
+    "files": "קבצים"
   },
   "terminal": {
     "copyCommands": "העתקת פקודות",

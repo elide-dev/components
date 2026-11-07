@@ -4,6 +4,7 @@ import type { Preview, Decorator } from "@storybook/react-vite";
 // Pulls in Tailwind + @elide/tokens (theme.css + fonts). One import themes the
 // whole catalog.
 import "./catalog.css";
+import { preloadHighlighter } from "../../../packages/ui/src/components/shiki";
 
 /** Global theme toggle in the toolbar. */
 export const globalTypes = {
@@ -51,6 +52,12 @@ const withTheme: Decorator = (Story, context) => {
 
 const preview: Preview = {
   decorators: [withTheme],
+  // Warm Shiki (as a docs site would) so code blocks highlight before first
+  // paint: deterministic snapshots, no flash of plain text.
+  loaders: [async () => {
+    await preloadHighlighter(["typescript", "tsx", "javascript", "json", "python", "kotlin", "java", "pkl"]);
+    return {};
+  }],
   parameters: {
     layout: "fullscreen",
     controls: { matchers: { color: /(background|color)$/i, date: /Date$/ } },

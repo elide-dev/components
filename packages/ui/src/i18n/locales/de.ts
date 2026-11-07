@@ -44,7 +44,13 @@ const messages: Messages = {
     "breakpoint": "Haltepunkt",
     "currentLine": "Aktuelle Zeile",
     "warning": "Warnung",
-    "error": "Fehler"
+    "error": "Fehler",
+    "showMore": "{count} weitere Zeilen anzeigen",
+    "showLess": "Weniger Zeilen anzeigen",
+    "line": "Zeile {n}",
+    "note": "Hinweis {n}",
+    "folded": "{count} Zeilen ausgeblendet",
+    "files": "Dateien"
   },
   "terminal": {
     "copyCommands": "Befehle kopieren",

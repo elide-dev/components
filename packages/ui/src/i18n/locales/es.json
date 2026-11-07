@@ -42,7 +42,13 @@
     "breakpoint": "Punto de interrupción",
     "currentLine": "Línea actual",
     "warning": "Advertencia",
-    "error": "Error"
+    "error": "Error",
+    "showMore": "Mostrar {count} líneas más",
+    "showLess": "Mostrar menos líneas",
+    "line": "Línea {n}",
+    "note": "Nota {n}",
+    "folded": "{count} líneas ocultas",
+    "files": "Archivos"
   },
   "terminal": {
     "copyCommands": "Copiar comandos",

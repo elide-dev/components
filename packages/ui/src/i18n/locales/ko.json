@@ -42,7 +42,13 @@
     "breakpoint": "중단점",
     "currentLine": "현재 줄",
     "warning": "경고",
-    "error": "오류"
+    "error": "오류",
+    "showMore": "{count}줄 더 보기",
+    "showLess": "줄 접기",
+    "line": "{n}번째 줄",
+    "note": "참고 {n}",
+    "folded": "{count}줄 숨김",
+    "files": "파일"
   },
   "terminal": {
     "copyCommands": "명령 복사",

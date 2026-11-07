@@ -42,7 +42,13 @@
     "breakpoint": "ブレークポイント",
     "currentLine": "現在の行",
     "warning": "警告",
-    "error": "エラー"
+    "error": "エラー",
+    "showMore": "さらに {count} 行を表示",
+    "showLess": "表示を減らす",
+    "line": "{n} 行目",
+    "note": "注記 {n}",
+    "folded": "{count} 行を非表示",
+    "files": "ファイル"
   },
   "terminal": {
     "copyCommands": "コマンドをコピー",

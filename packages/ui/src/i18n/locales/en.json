@@ -42,7 +42,13 @@
     "breakpoint": "Breakpoint",
     "currentLine": "Current line",
     "warning": "Warning",
-    "error": "Error"
+    "error": "Error",
+    "showMore": "Show {count} more lines",
+    "showLess": "Show fewer lines",
+    "line": "Line {n}",
+    "note": "Note {n}",
+    "folded": "{count} lines hidden",
+    "files": "Files"
   },
   "terminal": {
     "copyCommands": "Copy commands",

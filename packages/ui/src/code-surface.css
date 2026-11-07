@@ -216,13 +216,19 @@
     color: var(--code-breakpoint);
   }
 
-  /* Focus: everything else recedes until the reader points at the block. */
+  /* Focus: focused lines are emphasized and the rest lose their color until
+   * the reader points at the block. Desaturating (not fading) keeps every
+   * line's luminance, so de-emphasized text still meets AA contrast. */
+  .eld-line[data-decor~="focus"] {
+    --eld-row-bg: color-mix(in oklab, var(--code-prompt) 8%, transparent);
+  }
+
   .eld-lines:has([data-decor~="focus"]) .eld-line:not([data-decor~="focus"]) {
-    opacity: 0.4;
+    filter: grayscale(1);
   }
 
   .eld-code-body:is(:hover, :focus-within) .eld-line {
-    opacity: 1;
+    filter: none;
   }
 
   /* Flash: a pulse for "this line just ran" (e.g. an Insight hook firing).
@@ -243,7 +249,7 @@
     }
 
     .eld-lines:has([data-decor~="focus"]) .eld-line {
-      transition: opacity var(--eld-motion-settle) var(--eld-motion-ease-out);
+      transition: filter var(--eld-motion-settle) var(--eld-motion-ease-out);
     }
   }
 
@@ -296,14 +302,307 @@
     border-radius: 2px;
   }
 
-  .eld-lines .token:is(.comment, .prolog, .doctype, .cdata) { color: var(--eld-syntax-comment); font-style: italic; }
-  .eld-lines .token:is(.keyword, .control-flow, .at-rule, .rule, .important, .tag, .selector) { color: var(--eld-syntax-keyword); }
-  .eld-lines .token:is(.string, .char, .attr-value, .template-string, .url, .regex) { color: var(--eld-syntax-string); }
-  .eld-lines .token:is(.number, .boolean, .constant, .symbol, .inserted, .unit) { color: var(--eld-syntax-number); }
-  .eld-lines .token:is(.function, .function-variable, .method, .deleted) { color: var(--eld-syntax-function); }
-  .eld-lines .token:is(.class-name, .maybe-class-name, .builtin, .namespace, .type-annotation) { color: var(--eld-syntax-type); }
-  .eld-lines .token:is(.parameter, .property, .property-access, .variable, .attr-name, .entity) { color: var(--eld-syntax-param); }
-  .eld-lines .token:is(.operator, .punctuation) { color: var(--eld-syntax-default); }
+  /* Shiki tokens (theme colors map to classes, see components/shiki.ts). */
+  .eld-lines .tk-comment { color: var(--eld-syntax-comment); font-style: italic; }
+  .eld-lines .tk-keyword { color: var(--eld-syntax-keyword); }
+  .eld-lines .tk-string { color: var(--eld-syntax-string); }
+  .eld-lines .tk-number { color: var(--eld-syntax-number); }
+  .eld-lines .tk-function { color: var(--eld-syntax-function); }
+  .eld-lines .tk-type { color: var(--eld-syntax-type); }
+  .eld-lines .tk-param { color: var(--eld-syntax-param); }
+  .eld-lines .tk-italic { font-style: italic; }
+  .eld-lines .tk-bold { font-weight: 700; }
+  .eld-lines .tk-underline { text-decoration-line: underline; }
+
+  /* ---- Inline decorations ---------------------------------------------- */
+  .eld-mark {
+    color: inherit;
+    background: color-mix(in oklab, var(--code-prompt) 22%, transparent);
+    border-radius: 2px;
+    box-shadow: 0 0 0 1px color-mix(in oklab, var(--code-prompt) 40%, transparent);
+  }
+
+  /* Type hovers (Twoslash): a dotted underline; the tooltip is drawn from
+   * data-hover by CSS, so it is never part of a selection. */
+  .eld-hover {
+    position: relative;
+    text-decoration-line: underline;
+    text-decoration-style: dotted;
+    text-decoration-color: color-mix(in oklab, currentColor 50%, transparent);
+    text-underline-offset: 0.25em;
+    cursor: help;
+    anchor-name: --eld-hover;
+    anchor-scope: --eld-hover;
+  }
+
+  .eld-hover[data-tone="danger"] {
+    text-decoration-style: wavy;
+    text-decoration-color: var(--eld-ansi-red);
+  }
+
+  .eld-hover:focus-visible {
+    outline: max(2px, 0.08em) solid var(--code-prompt);
+    outline-offset: 1px;
+    border-radius: 2px;
+  }
+
+  .eld-hover::after {
+    content: none;
+  }
+
+  .eld-hover:focus-visible::after,
+  .eld-hover:hover::after {
+    content: attr(data-hover);
+    content: attr(data-hover) / "";
+    position: absolute;
+    inset-block-start: calc(100% + 0.25rem);
+    inset-inline-start: 0;
+    z-index: 10;
+    inline-size: max-content;
+    max-inline-size: min(36rem, 80vw);
+    padding: 0.375rem 0.625rem;
+    border: 1px solid var(--code-border);
+    border-radius: var(--eld-radius-md);
+    background: var(--code-background-elev);
+    color: var(--eld-syntax-default);
+    font-style: normal;
+    font-weight: 400;
+    white-space: pre-wrap;
+    box-shadow: 0 10px 30px -12px rgb(0 0 0 / 0.6);
+    pointer-events: none;
+  }
+
+  /* Anchor positioning escapes the scrolling code body's clip and flips when
+   * there is no room below. */
+  @supports (anchor-name: --a) and (position-try-fallbacks: flip-block) {
+    .eld-hover:focus-visible::after,
+    .eld-hover:hover::after {
+      position: fixed;
+      position-anchor: --eld-hover;
+      inset: auto;
+      position-area: block-end span-inline-end;
+      position-try-fallbacks: flip-block, flip-inline;
+      margin-block-start: 0.25rem;
+    }
+  }
+
+  /* ---- Line permalinks ------------------------------------------------- */
+  .eld-line-number {
+    grid-row: 1;
+    grid-column: number;
+    position: sticky;
+    inset-inline-start: var(--eld-marks-size, 0px);
+    padding-inline-end: 0.875rem;
+    border-inline-end: 1px solid var(--code-border);
+    text-align: end;
+    color: var(--eld-syntax-line-number);
+    font-variant-numeric: tabular-nums;
+    text-decoration: none;
+    background: linear-gradient(var(--eld-row-bg), var(--eld-row-bg)), var(--code-background);
+    scroll-margin-block: 4rem;
+  }
+
+  .eld-line-number::before {
+    content: attr(data-n);
+    content: attr(data-n) / "";
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .eld-line-number:hover {
+      color: var(--eld-syntax-default);
+    }
+  }
+
+  .eld-line-number:focus-visible {
+    outline: max(2px, 0.08em) solid var(--code-prompt);
+    outline-offset: -2px;
+  }
+
+  .eld-line:has(> .eld-line-number:target) {
+    --eld-row-bg: var(--code-line-highlight);
+    box-shadow: inset 2px 0 0 var(--code-prompt);
+  }
+
+  /* ---- Folds, annotations, collapse ------------------------------------ */
+  /* Keep the gutter rule continuous across a folded region. */
+  .eld-lines[data-numbers] > .eld-fold-row::before {
+    content: "";
+    grid-row: 1;
+    grid-column: number;
+    border-inline-end: 1px solid var(--code-border);
+  }
+
+  .eld-fold-row > .eld-fold {
+    grid-row: 1;
+    grid-column: content;
+    justify-self: start;
+    margin-inline-start: 1rem;
+    padding-inline: 0.5rem;
+    border-radius: var(--eld-radius-sm);
+    background: var(--code-control-hover);
+    color: var(--eld-syntax-line-number);
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .eld-fold-row > .eld-fold::before {
+    content: "⋯ " attr(data-label);
+    content: "⋯ " attr(data-label) / "";
+  }
+
+  .eld-fold-row > .eld-fold:focus-visible {
+    outline: max(2px, 0.08em) solid var(--code-prompt);
+  }
+
+  .eld-annotation-badges {
+    grid-row: 1;
+    grid-column: content;
+    justify-self: end;
+    display: flex;
+    gap: 0.25rem;
+    padding-inline-end: 0.75rem;
+    position: sticky;
+    inset-inline-end: 0;
+  }
+
+  .eld-annotation-badge {
+    display: inline-grid;
+    place-items: center;
+    min-inline-size: 1.5em;
+    block-size: 1.5em;
+    margin-block: auto;
+    border-radius: 9999px;
+    background: var(--code-prompt);
+    color: var(--code-background);
+    font-size: 0.75em;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .eld-annotation-badge::before {
+    content: attr(data-n);
+    content: attr(data-n) / "";
+  }
+
+  .eld-annotation-badge:focus-visible {
+    outline: max(2px, 0.08em) solid var(--eld-syntax-default);
+    outline-offset: 2px;
+  }
+
+  .eld-annotations {
+    margin: 0;
+    padding: 0.75rem 1rem 1rem;
+    list-style: none;
+    border-block-start: 1px solid var(--code-border);
+    background: var(--code-background-elev);
+    color: var(--eld-syntax-default);
+    font-size: 0.875rem;
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .eld-annotations > li {
+    display: grid;
+    grid-template-columns: 1.5rem minmax(0, 1fr);
+    gap: 0.5rem;
+    scroll-margin-block: 4rem;
+  }
+
+  .eld-annotations > li::before {
+    content: attr(data-n);
+    display: inline-grid;
+    place-items: center;
+    inline-size: 1.25rem;
+    block-size: 1.25rem;
+    border-radius: 9999px;
+    background: var(--code-prompt);
+    color: var(--code-background);
+    font-size: 0.6875rem;
+    font-weight: 700;
+  }
+
+  .eld-annotations > li:target {
+    outline: 1px solid var(--code-prompt);
+    outline-offset: 0.25rem;
+    border-radius: var(--eld-radius-sm);
+  }
+
+  .eld-code-body.eld-collapsed {
+    max-block-size: calc(var(--eld-visible-lines) * var(--code-line-height) * 1em + 1rem);
+    overflow-y: clip;
+    mask-image: linear-gradient(to bottom, #000 calc(100% - 3rem), transparent);
+  }
+
+  .eld-code-expand {
+    display: block;
+    inline-size: 100%;
+    padding: 0.5rem 1rem;
+    border-block-start: 1px solid var(--code-border);
+    background: var(--code-background-elev);
+    color: var(--code-control-foreground);
+    font: 500 0.75rem/1.4 var(--eld-font-sans);
+    text-align: center;
+    cursor: pointer;
+    transition: color var(--eld-motion-hover) var(--eld-motion-ease-out);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .eld-code-expand:hover {
+      color: var(--eld-syntax-default);
+    }
+  }
+
+  .eld-code-expand:focus-visible {
+    outline: max(2px, 0.08em) solid var(--code-prompt);
+    outline-offset: -2px;
+  }
+
+  /* ---- File tabs, captions ---------------------------------------------- */
+  .eld-file-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 0.25rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .eld-file-tab {
+    padding: 0.25rem 0.625rem;
+    border-radius: var(--eld-radius-md);
+    color: var(--code-title-foreground);
+    font: inherit;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: color var(--eld-motion-hover) var(--eld-motion-ease-out), background-color var(--eld-motion-hover) var(--eld-motion-ease-out);
+  }
+
+  .eld-file-tab[aria-selected="true"] {
+    background: var(--code-control-hover);
+    color: var(--eld-syntax-default);
+    box-shadow: inset 0 -2px 0 var(--code-prompt);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .eld-file-tab:hover {
+      color: var(--eld-syntax-default);
+    }
+  }
+
+  .eld-file-tab:focus-visible {
+    outline: max(2px, 0.08em) solid var(--code-prompt);
+    outline-offset: -2px;
+  }
+
+  .eld-code-figure {
+    margin: 0;
+  }
+
+  .eld-code-caption {
+    margin-block-start: 0.5rem;
+    color: var(--muted-foreground);
+    font-size: 0.875rem;
+    text-align: center;
+  }
 
   /* Shell (zsh-syntax-highlighting semantics): the command stands out; pipes
    * and redirects recede so each pipeline segment reads on its own. */

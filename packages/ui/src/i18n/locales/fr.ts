@@ -44,7 +44,13 @@ const messages: Messages = {
     "breakpoint": "Point d’arrêt",
     "currentLine": "Ligne actuelle",
     "warning": "Avertissement",
-    "error": "Erreur"
+    "error": "Erreur",
+    "showMore": "Afficher {count} lignes de plus",
+    "showLess": "Afficher moins de lignes",
+    "line": "Ligne {n}",
+    "note": "Note {n}",
+    "folded": "{count} lignes masquées",
+    "files": "Fichiers"
   },
   "terminal": {
     "copyCommands": "Copier les commandes",
