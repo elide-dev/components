@@ -2,22 +2,49 @@ import * as React from "react";
 import type { CodeInsights, CodeLine, CodeToken, InlineDecoration, LineDecoration, LineDecorationKind } from "../lib/code-model";
 import { decorationCovers } from "../lib/code-model";
 import { segmentLine, withColumns } from "../lib/segments";
+import { DRAWN, glyphClass } from "../lib/terminal-glyphs";
 import { tokenStyleToCss } from "../lib/token-style";
 
-function Token({ token, links }: { token: CodeToken; links: boolean }) {
+/** Token text; on a terminal, box-drawing and block characters become drawn cells. */
+function TokenText({ text, draw }: { text: string; draw: boolean }) {
+  if (!draw || !DRAWN.test(text)) return <>{text}</>;
+  const parts: React.ReactNode[] = [];
+  let run = "";
+  for (const ch of text) {
+    const className = glyphClass(ch);
+    if (!className) {
+      run += ch;
+      continue;
+    }
+    if (run) parts.push(run);
+    run = "";
+    parts.push(
+      <span key={parts.length} className={className}>
+        {ch}
+      </span>,
+    );
+  }
+  if (run) parts.push(run);
+  return <>{parts}</>;
+}
+
+function Token({ token, links, draw }: { token: CodeToken; links: boolean; draw: boolean }) {
   const style = tokenStyleToCss(token.style);
-  const className = token.cursor ? "eld-terminal-cursor" : token.style?.className;
+  // A terminal cell's background fills the whole row, as the grid does, not just the glyph box.
+  const own = token.cursor ? "eld-terminal-cursor" : token.style?.className;
+  const className = draw && token.style?.background && !token.cursor ? (own ? `${own} eld-cell-bg` : "eld-cell-bg") : own;
+  const text = <TokenText text={token.text} draw={draw} />;
   if (token.href && links) {
     return (
       <a href={token.href} className={className ? `eld-code-link ${className}` : "eld-code-link"} style={style} rel="noreferrer">
-        {token.text}
+        {text}
       </a>
     );
   }
-  if (!style && !className) return <>{token.text}</>;
+  if (!style && !className) return text;
   return (
     <span className={className} style={style}>
-      {token.text}
+      {text}
     </span>
   );
 }
@@ -50,18 +77,20 @@ function LineTokens({
   tokens,
   inline,
   links,
+  draw,
   hoverId,
 }: {
   tokens: readonly CodeToken[];
   inline: readonly InlineDecoration[];
   links: boolean;
+  draw: boolean;
   hoverId?: (decoration: InlineDecoration) => string;
 }) {
   if (!inline.length) {
     return (
       <>
         {withColumns(tokens).map(({ token, column }) => (
-          <Token key={column} token={token} links={links} />
+          <Token key={column} token={token} links={links} draw={draw} />
         ))}
       </>
     );
@@ -69,7 +98,7 @@ function LineTokens({
   return (
     <>
       {segmentLine(tokens, inline).map(({ column, pieces, decoration }) => {
-        const children = pieces.map((piece) => <Token key={piece.column} token={piece.token} links={links && !decoration} />);
+        const children = pieces.map((piece) => <Token key={piece.column} token={piece.token} links={links && !decoration} draw={draw} />);
         if (!decoration) return <React.Fragment key={column}>{children}</React.Fragment>;
         return (
           <InlineWrapper key={column} decoration={decoration} id={decoration.kind === "hover" ? hoverId?.(decoration) : undefined}>
@@ -256,7 +285,7 @@ function CodeRow({ line, index, number, hottest, props }: RowProps) {
         <span className="eld-prompt" aria-hidden data-prompt={line.prompt} data-cwd={line.cwd} />
       ) : null}
       <span className="eld-content" key={props.remountChangedRows ? rowKey(line) : undefined}>
-        <LineTokens tokens={line.tokens} inline={lineInline} links={props.links ?? true} hoverId={props.hoverId} />
+        <LineTokens tokens={line.tokens} inline={lineInline} links={props.links ?? true} draw={props.variant === "terminal"} hoverId={props.hoverId} />
         {"\n"}
       </span>
       {/* Empty and hidden: CSS draws the share (the row's name carries it), so it is never copied. */}
