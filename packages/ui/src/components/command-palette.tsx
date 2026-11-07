@@ -132,8 +132,18 @@ export function CommandPalette({
       return indexed;
     });
   }, [filtered]);
-  const [active, setActive] = React.useState(0);
-  React.useEffect(() => setActive(0), [query, open]);
+  // The active row belongs to one query and open state: a new query or a reopen
+  // starts from the first row, derived during render rather than reset by an effect.
+  const [activeState, setActiveState] = React.useState({ index: 0, query, open });
+  const active = activeState.query === query && activeState.open === open ? activeState.index : 0;
+  const setActive = React.useCallback(
+    (next: number | ((index: number) => number)) =>
+      setActiveState((state) => {
+        const current = state.query === query && state.open === open ? state.index : 0;
+        return { index: typeof next === "function" ? next(current) : next, query, open };
+      }),
+    [query, open],
+  );
 
   const select = React.useCallback((item: CommandItem | undefined) => {
     if (!item) return;

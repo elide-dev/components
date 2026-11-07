@@ -1,5 +1,6 @@
 import React from "react";
 import { Button } from "@elide/ui/components/button";
+import { buttonVariants } from "@elide/ui/components/button-variants";
 import { Badge } from "@elide/ui/components/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@elide/ui/components/tabs";
 import { Switch } from "@elide/ui/components/switch";
@@ -18,7 +19,7 @@ export function App() {
       <p className="eyebrow">Elide components</p>
       <h1>Make room for<br />what matters.</h1>
       <p className="intro">Focused controls, thoughtful color, and motion that follows your lead. Built for the web.</p>
-      <div className="actions"><Dialog><DialogTrigger render={<Button size="lg" />}>Explore the details</DialogTrigger><DialogContent><DialogTitle>Designed to work together</DialogTitle><DialogDescription>Use Tab to move through controls and Escape to close this dialog. Your focus returns to the trigger.</DialogDescription></DialogContent></Dialog><Button variant="outline" size="lg" render={<a href="#components" />}>Browse components</Button></div>
+      <div className="actions"><Dialog><DialogTrigger render={<Button size="lg" />}>Explore the details</DialogTrigger><DialogContent><DialogTitle>Designed to work together</DialogTitle><DialogDescription>Use Tab to move through controls and Escape to close this dialog. Your focus returns to the trigger.</DialogDescription></DialogContent></Dialog><a href="#components" className={buttonVariants({ variant: "outline", size: "lg" })}>Browse components</a></div>
       <section id="components" aria-labelledby="components-heading"><h2 id="components-heading">A consistent foundation</h2>
         <Tabs defaultValue="overview"><TabsList aria-label="Component examples"><TabsTrigger value="overview">Overview</TabsTrigger><TabsTrigger value="install">Installation</TabsTrigger></TabsList><TabsContent value="overview"><CardGrid><FeatureCard title="Purposeful motion" description="Quick responses, gentle settling, and respect for reduced motion." /><FeatureCard title="Accessible by design" description="Keyboard navigation, clear focus, and semantic controls." badge={<Badge>Native</Badge>} /><FeatureCard title="Color with depth" description="Royal purple and muted rose, with progressive color enhancement." /></CardGrid></TabsContent><TabsContent value="install"><CopyCommand command="bun add @elide/ui @elide/tokens" /></TabsContent></Tabs>
       </section>

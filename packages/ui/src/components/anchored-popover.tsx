@@ -60,20 +60,25 @@ export function AnchoredPopover({
   const triggerRef = React.useRef<HTMLButtonElement>(null);
   const [nativeEnabled, setNativeEnabled] = React.useState(supported);
   const preserveHydratedRenderer = React.useRef(isOpen);
-
-  // Hydration starts with the server's floating path. Replacing its primitive
-  // while focused or open would discard the trigger, focus and content state.
-  // Such instances retain the floating path for their lifetime. This also avoids
-  // racing Base UI's asynchronous focus restoration when the panel later closes.
+  const openRef = React.useRef(isOpen);
   React.useEffect(() => {
-    if (!supported || nativeEnabled || preserveHydratedRenderer.current) return;
+    openRef.current = isOpen;
+  });
+
+  // Hydration starts with the server's floating path; the native path becomes
+  // available once anchor support is known on the client. Replacing the
+  // primitive while focused or open would discard the trigger, focus and
+  // content state, so such instances retain the floating path for their
+  // lifetime. This also avoids racing Base UI's asynchronous focus restoration.
+  React.useEffect(() => {
+    if (!supported || preserveHydratedRenderer.current) return;
     const triggerElement = triggerRef.current;
-    if (isOpen || triggerElement?.contains(triggerElement.ownerDocument.activeElement)) {
+    if (openRef.current || triggerElement?.contains(triggerElement.ownerDocument.activeElement)) {
       preserveHydratedRenderer.current = true;
       return;
     }
     setNativeEnabled(true);
-  }, [isOpen, nativeEnabled, supported]);
+  }, [supported]);
 
   const changeOpen = (next: boolean) => {
     if (open === undefined) setInternalOpen(next);
