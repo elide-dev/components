@@ -113,7 +113,5 @@
     "url": "git+https://github.com/elide-dev/components.git",
     "directory": "packages/ui"
   },
-  "publishConfig": {
-    "access": "public"
-  }
+  "private": true
 }
