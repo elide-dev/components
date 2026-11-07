@@ -50,7 +50,11 @@ const messages: Messages = {
     "line": "Рядок {n}",
     "note": "Примітка {n}",
     "folded": "Приховано рядків: {count}",
-    "files": "Файли"
+    "files": "Файли",
+    "covered": "Покрито",
+    "notCovered": "Не покрито",
+    "partiallyCovered": "Частково покрито",
+    "samples": "{percent} вибірок"
   },
   "terminal": {
     "copyCommands": "Копіювати команди",
@@ -71,6 +75,17 @@ const messages: Messages = {
     "code": "Код",
     "output": "Вивід",
     "panel": "Панель {n}"
+  },
+  "codeScene": {
+    "label": "Огляд коду",
+    "previous": "Попередній крок",
+    "next": "Наступний крок",
+    "play": "Відтворити огляд",
+    "pause": "Призупинити огляд",
+    "step": "Крок {current} з {total}",
+    "locals": "Локальні змінні",
+    "callStack": "Стек викликів",
+    "coverage": "Покриття рядків {percent}"
   },
   "copyCommand": {
     "copy": "Копіювати",

@@ -50,7 +50,11 @@ const messages: Messages = {
     "line": "Ligne {n}",
     "note": "Note {n}",
     "folded": "{count} lignes masquées",
-    "files": "Fichiers"
+    "files": "Fichiers",
+    "covered": "Couverte",
+    "notCovered": "Non couverte",
+    "partiallyCovered": "Partiellement couverte",
+    "samples": "{percent} des échantillons"
   },
   "terminal": {
     "copyCommands": "Copier les commandes",
@@ -71,6 +75,17 @@ const messages: Messages = {
     "code": "Code",
     "output": "Sortie",
     "panel": "Panneau {n}"
+  },
+  "codeScene": {
+    "label": "Visite du code",
+    "previous": "Étape précédente",
+    "next": "Étape suivante",
+    "play": "Lire la visite",
+    "pause": "Mettre la visite en pause",
+    "step": "Étape {current} sur {total}",
+    "locals": "Variables locales",
+    "callStack": "Pile d’appels",
+    "coverage": "Couverture des lignes {percent}"
   },
   "copyCommand": {
     "copy": "Copier",

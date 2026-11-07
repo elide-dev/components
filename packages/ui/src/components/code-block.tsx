@@ -1,5 +1,5 @@
 import * as React from "react";
-import type { CodeLine, InlineDecoration, LineDecoration, LineRange } from "../lib/code-model";
+import type { CodeInsights, CodeLine, InlineDecoration, LineDecoration, LineRange } from "../lib/code-model";
 import { parseLineRanges, parseNotations } from "../lib/notations";
 import { cn, keyed } from "../lib/utils";
 import { formatMessage } from "../i18n/format";
@@ -31,6 +31,8 @@ export interface CodeFile {
   decorations?: LineDecoration[];
   inline?: InlineDecoration[];
   highlight?: string | number[];
+  /** Coverage and profile overlays. */
+  insights?: CodeInsights;
 }
 
 /**
@@ -61,6 +63,10 @@ export interface CodeBlockProps {
   lines?: CodeLine[];
   /** Column-range decorations: word marks, Twoslash type hovers, links. */
   inline?: InlineDecoration[];
+  /** Coverage (edge strip) and profile (heat + sample share) overlays, by line. */
+  insights?: CodeInsights;
+  /** With `files`: the shown file, controlled (e.g. by a scene following execution). */
+  activeFile?: string;
   /** Pre-rendered markup override (no line numbers or decorations). */
   children?: React.ReactNode;
   lineNumbers?: boolean;
@@ -140,6 +146,7 @@ interface PreparedFile {
   lines?: CodeLine[];
   decorations: LineDecoration[];
   inline: InlineDecoration[];
+  insights?: CodeInsights;
 }
 
 function prepare(file: CodeFile | (Omit<CodeFile, "name"> & { name?: string }), notations: boolean, extra?: LineDecoration[]): PreparedFile {
@@ -153,6 +160,7 @@ function prepare(file: CodeFile | (Omit<CodeFile, "name"> & { name?: string }), 
     lines: file.lines,
     decorations: [...parsed.decorations, ...highlighted, ...(file.decorations ?? []), ...(extra ?? [])],
     inline: [...parsed.inline, ...(file.inline ?? [])],
+    insights: file.insights,
   };
 }
 
@@ -196,6 +204,15 @@ function CodeBody({ file, id, lineNumbers, startLine, wrapped, lineLinks, maxLin
     }),
     [m],
   );
+  const insightLabels = React.useMemo(
+    () => ({
+      covered: m.covered,
+      notCovered: m.notCovered,
+      partiallyCovered: m.partiallyCovered,
+      samples: (percent: string) => formatMessage(m.samples, { percent }),
+    }),
+    [m],
+  );
   const hovers = file.inline.filter((d) => d.kind === "hover");
   const hoverId = React.useCallback((d: InlineDecoration) => `${id}-hover-${d.line}-${d.start}`, [id]);
   const badges: CodeAnnotationBadge[] | undefined = annotations?.map((annotation, i) => ({
@@ -232,6 +249,8 @@ function CodeBody({ file, id, lineNumbers, startLine, wrapped, lineLinks, maxLin
             decorations={decorations}
             decorationLabels={decorationLabels}
             inline={file.inline}
+            insights={file.insights}
+            insightLabels={insightLabels}
             hoverId={hoverId}
             lineLinks={lineLinks}
             lineLabel={(n) => formatMessage(m.line, { n })}
@@ -276,6 +295,7 @@ function CodeBody({ file, id, lineNumbers, startLine, wrapped, lineLinks, maxLin
 }
 
 interface FilesInput {
+  insights?: CodeInsights;
   files?: CodeFile[];
   notations: boolean;
   filename?: string;
@@ -288,13 +308,13 @@ interface FilesInput {
 }
 
 /** The block's files (or its single source) with notations parsed and decorations merged. */
-function usePreparedFiles({ files, notations, filename, lang, code, lines, inline, highlight, decorations }: FilesInput): PreparedFile[] {
+function usePreparedFiles({ files, notations, filename, lang, code, lines, inline, highlight, decorations, insights }: FilesInput): PreparedFile[] {
   return React.useMemo(
     () =>
       files?.length
         ? files.map((file) => prepare(file, notations))
-        : [prepare({ name: filename, lang, code, lines, inline, highlight }, notations, decorations)],
-    [files, notations, filename, lang, code, lines, inline, highlight, decorations],
+        : [prepare({ name: filename, lang, code, lines, inline, highlight, insights }, notations, decorations)],
+    [files, notations, filename, lang, code, lines, inline, highlight, decorations, insights],
   );
 }
 
@@ -436,6 +456,8 @@ export function CodeBlock({
   files,
   lines: linesProp,
   inline,
+  insights,
+  activeFile,
   children,
   lineNumbers: lineNumbersProp,
   startLine = 1,
@@ -457,16 +479,20 @@ export function CodeBlock({
   const { legacyTerminal, lineNumbers, statusBar, grammar } = variantDefaults(variant, lineNumbersProp, statusBarProp, lang);
   const [wrapped, setWrapped] = React.useState(wrap === true);
 
-  const prepared = usePreparedFiles({ files, notations, filename, lang: grammar, code, lines: linesProp, inline, highlight, decorations });
-  const [active, setActive] = React.useState(0);
+  const prepared = usePreparedFiles({ files, notations, filename, lang: grammar, code, lines: linesProp, inline, highlight, decorations, insights });
+  const [chosen, setActive] = React.useState(0);
+  const controlled = activeFile === undefined ? -1 : prepared.findIndex((file) => file.name === activeFile);
+  const active = controlled >= 0 ? controlled : chosen;
   const current = prepared[Math.min(active, prepared.length - 1)];
   const id = blockId(lineLinks, filename, reactId);
   const linkPrefix = lineLinks ? `${id}-` : undefined;
 
-  const title = files?.length ? (
+  // A single file is just a titled block; tabs start at two.
+  const multiFile = (files?.length ?? 0) > 1;
+  const title = multiFile ? (
     <FileTabs files={prepared} active={active} id={id} label={m.codeBlock.files} onSelect={setActive} />
   ) : (
-    filename ?? (legacyTerminal ? m.codeBlock.terminal : undefined)
+    (files?.[0]?.name ?? filename) ?? (legacyTerminal ? m.codeBlock.terminal : undefined)
   );
 
   const surface = (
@@ -488,7 +514,7 @@ export function CodeBlock({
 
       <CodeBodies
         files={prepared}
-        multiFile={!!files?.length}
+        multiFile={multiFile}
         active={active}
         id={id}
         linkPrefix={linkPrefix}

@@ -21,7 +21,7 @@
   }
 
   .eld-code-body:focus-visible {
-    outline: max(2px, 0.08em) solid var(--code-prompt);
+    outline: 1px solid var(--code-prompt);
     outline-offset: -2px;
   }
 
@@ -45,7 +45,36 @@
       [number] var(--eld-number-size, 0px)
       [prompt] auto
       [content] minmax(0, 1fr);
-    background: var(--eld-row-bg);
+    /* Layers: coverage edge strip, profile heat tint, decoration background. */
+    background:
+      linear-gradient(to right, var(--eld-coverage, transparent) 3px, transparent 3px),
+      linear-gradient(var(--eld-heat-tint, transparent), var(--eld-heat-tint, transparent)),
+      var(--eld-row-bg);
+  }
+
+  .eld-line[data-coverage="hit"] { --eld-coverage: var(--code-mark-ok); }
+  .eld-line[data-coverage="miss"] { --eld-coverage: var(--code-mark-fail); }
+  .eld-line[data-coverage="partial"] { --eld-coverage: var(--code-mark-warn); }
+  .eld-line[data-heat="1"] { --eld-heat-tint: color-mix(in oklab, var(--code-mark-insight) 5%, transparent); }
+  .eld-line[data-heat="2"] { --eld-heat-tint: color-mix(in oklab, var(--code-mark-insight) 9%, transparent); }
+  .eld-line[data-heat="3"] { --eld-heat-tint: color-mix(in oklab, var(--code-mark-insight) 13%, transparent); }
+  .eld-line[data-heat="4"] { --eld-heat-tint: color-mix(in oklab, var(--code-mark-insight) 17%, transparent); }
+
+  .eld-heat {
+    grid-row: 1;
+    grid-column: content;
+    justify-self: end;
+    position: sticky;
+    inset-inline-end: 0;
+    padding-inline: 0.75rem;
+    color: var(--code-mark-insight);
+    font-variant-numeric: tabular-nums;
+    font-size: 0.85em;
+  }
+
+  .eld-heat::before {
+    content: attr(data-share);
+    content: attr(data-share) / "";
   }
 
   .eld-lines[data-marks] {
@@ -297,7 +326,7 @@
   }
 
   .eld-code-link:focus-visible {
-    outline: max(2px, 0.08em) solid var(--code-prompt);
+    outline: 1px solid var(--code-prompt);
     outline-offset: 1px;
     border-radius: 2px;
   }
@@ -346,7 +375,7 @@
   }
 
   .eld-hover:focus-visible {
-    outline: max(2px, 0.08em) solid var(--code-prompt);
+    outline: 1px solid var(--code-prompt);
     outline-offset: 1px;
     border-radius: 2px;
   }
@@ -419,7 +448,7 @@
   }
 
   .eld-line-number:focus-visible {
-    outline: max(2px, 0.08em) solid var(--code-prompt);
+    outline: 1px solid var(--code-prompt);
     outline-offset: -2px;
   }
 
@@ -456,7 +485,7 @@
   }
 
   .eld-fold-row > .eld-fold:focus-visible {
-    outline: max(2px, 0.08em) solid var(--code-prompt);
+    outline: 1px solid var(--code-prompt);
   }
 
   .eld-annotation-badges {
@@ -490,7 +519,7 @@
   }
 
   .eld-annotation-badge:focus-visible {
-    outline: max(2px, 0.08em) solid var(--code-syntax-default);
+    outline: 1px solid var(--code-syntax-default);
     outline-offset: 2px;
   }
 
@@ -558,7 +587,7 @@
   }
 
   .eld-code-expand:focus-visible {
-    outline: max(2px, 0.08em) solid var(--code-prompt);
+    outline: 1px solid var(--code-prompt);
     outline-offset: -2px;
   }
 
@@ -594,7 +623,7 @@
   }
 
   .eld-file-tab:focus-visible {
-    outline: max(2px, 0.08em) solid var(--code-prompt);
+    outline: 1px solid var(--code-prompt);
     outline-offset: -2px;
   }
 
@@ -678,6 +707,135 @@
   :is([data-chrome="windows"], :root[data-os="windows"] [data-chrome="auto"]) .eld-chrome-windows,
   :is([data-chrome="linux"], :root[data-os="linux"] [data-chrome="auto"]) .eld-chrome-linux {
     display: flex;
+  }
+
+  /* ---- CodeScene ---------------------------------------------------- */
+  .eld-code-scene {
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .eld-code-scene:focus-visible {
+    outline: 1px solid var(--code-prompt);
+    outline-offset: 4px;
+    border-radius: var(--eld-radius-3xl);
+  }
+
+  .eld-scene-controls,
+  .eld-scene-debug {
+    border: 1px solid var(--code-border);
+    border-radius: var(--eld-radius-xl);
+    background: var(--code-background-elev);
+    color: var(--code-syntax-default);
+  }
+
+  .eld-scene-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.5rem;
+  }
+
+  .eld-scene-caption {
+    display: flex;
+    flex: 1;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.5rem;
+    min-inline-size: 0;
+    margin: 0;
+    padding-inline: 0.5rem;
+    font-size: 0.8125rem;
+    text-wrap: pretty;
+  }
+
+  .eld-scene-count,
+  .eld-scene-coverage {
+    color: var(--code-syntax-line-number);
+    font-family: var(--eld-font-mono);
+    font-size: 0.6875rem;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .eld-scene-coverage {
+    padding-inline-end: 0.5rem;
+  }
+
+  .eld-scene-debug {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+    gap: 0.75rem 1.5rem;
+    padding: 0.75rem 1rem;
+    font-family: var(--eld-font-mono);
+    font-size: 0.75rem;
+  }
+
+  .eld-scene-heading {
+    margin: 0 0 0.375rem;
+    color: var(--code-syntax-line-number);
+    font: 600 0.6875rem/1.4 var(--eld-font-sans);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .eld-scene-locals {
+    display: grid;
+    gap: 0.125rem;
+    margin: 0;
+  }
+
+  .eld-scene-locals > div {
+    display: flex;
+    gap: 0.5rem;
+    min-inline-size: 0;
+  }
+
+  .eld-scene-locals dt {
+    color: var(--code-syntax-param);
+  }
+
+  .eld-scene-locals dd {
+    margin: 0;
+    color: var(--code-syntax-string);
+    overflow-wrap: anywhere;
+  }
+
+  .eld-scene-stack {
+    display: grid;
+    gap: 0.125rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .eld-scene-stack > li {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding-inline-start: 0.75rem;
+    border-inline-start: 2px solid transparent;
+  }
+
+  .eld-scene-stack > li[data-current] {
+    border-inline-start-color: var(--code-current-line);
+  }
+
+  .eld-scene-frame {
+    color: var(--code-syntax-function);
+  }
+
+  .eld-scene-location {
+    color: var(--code-syntax-line-number);
+  }
+
+  .eld-scene-lang {
+    margin-inline-start: 0.375rem;
+    padding: 0 0.3rem;
+    border-radius: var(--eld-radius-sm);
+    background: var(--code-control-hover);
+    color: var(--code-syntax-default);
   }
 
   /* ---- CodeSample layout --------------------------------------------- */

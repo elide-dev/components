@@ -50,7 +50,11 @@ const messages: Messages = {
     "line": "Строка {n}",
     "note": "Примечание {n}",
     "folded": "Скрыто строк: {count}",
-    "files": "Файлы"
+    "files": "Файлы",
+    "covered": "Покрыта",
+    "notCovered": "Не покрыта",
+    "partiallyCovered": "Частично покрыта",
+    "samples": "{percent} выборок"
   },
   "terminal": {
     "copyCommands": "Копировать команды",
@@ -71,6 +75,17 @@ const messages: Messages = {
     "code": "Код",
     "output": "Вывод",
     "panel": "Панель {n}"
+  },
+  "codeScene": {
+    "label": "Обзор кода",
+    "previous": "Предыдущий шаг",
+    "next": "Следующий шаг",
+    "play": "Запустить обзор",
+    "pause": "Приостановить обзор",
+    "step": "Шаг {current} из {total}",
+    "locals": "Локальные переменные",
+    "callStack": "Стек вызовов",
+    "coverage": "Покрытие строк {percent}"
   },
   "copyCommand": {
     "copy": "Копировать",

@@ -49,7 +49,11 @@ const messages = {
     "line": "Line {n}",
     "note": "Note {n}",
     "folded": "{count} lines hidden",
-    "files": "Files"
+    "files": "Files",
+    "covered": "Covered",
+    "notCovered": "Not covered",
+    "partiallyCovered": "Partially covered",
+    "samples": "{percent} of samples"
   },
   "terminal": {
     "copyCommands": "Copy commands",
@@ -70,6 +74,17 @@ const messages = {
     "code": "Code",
     "output": "Output",
     "panel": "Panel {n}"
+  },
+  "codeScene": {
+    "label": "Code walkthrough",
+    "previous": "Previous step",
+    "next": "Next step",
+    "play": "Play walkthrough",
+    "pause": "Pause walkthrough",
+    "step": "Step {current} of {total}",
+    "locals": "Locals",
+    "callStack": "Call stack",
+    "coverage": "Line coverage {percent}"
   },
   "copyCommand": {
     "copy": "Copy",

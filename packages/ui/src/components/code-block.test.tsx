@@ -185,6 +185,12 @@ describe("CodeBlock — editor features", () => {
     expect(await navigator.clipboard.readText()).toBe("a = 1");
   });
 
+  it("shows a single file as a titled block, not a one-tab tab bar", () => {
+    render(<CodeBlock files={[{ name: "only.ts", lang: "ts", code: "x" }]} />);
+    expect(screen.queryByRole("tablist")).toBeNull();
+    expect(screen.getAllByText("only.ts").length).toBeGreaterThan(0);
+  });
+
   it("wraps in a figure with a caption and renders extra actions", () => {
     const { container } = render(<CodeBlock code={"x"} caption="Figure 1" actions={<a href="/play">Open</a>} />);
     expect(container.querySelector("figure > figcaption")).toHaveTextContent("Figure 1");

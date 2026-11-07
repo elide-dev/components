@@ -50,7 +50,11 @@ const messages: Messages = {
     "line": "第 {n} 行",
     "note": "注释 {n}",
     "folded": "已隐藏 {count} 行",
-    "files": "文件"
+    "files": "文件",
+    "covered": "已覆盖",
+    "notCovered": "未覆盖",
+    "partiallyCovered": "部分覆盖",
+    "samples": "占样本的 {percent}"
   },
   "terminal": {
     "copyCommands": "复制命令",
@@ -71,6 +75,17 @@ const messages: Messages = {
     "code": "代码",
     "output": "输出",
     "panel": "面板 {n}"
+  },
+  "codeScene": {
+    "label": "代码演练",
+    "previous": "上一步",
+    "next": "下一步",
+    "play": "播放演练",
+    "pause": "暂停演练",
+    "step": "第 {current} 步，共 {total} 步",
+    "locals": "局部变量",
+    "callStack": "调用栈",
+    "coverage": "行覆盖率 {percent}"
   },
   "copyCommand": {
     "copy": "复制",
