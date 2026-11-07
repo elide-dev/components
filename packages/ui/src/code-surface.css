@@ -325,6 +325,11 @@
   /* Type hovers (Twoslash): a dotted underline; the tooltip is drawn from
    * data-hover by CSS, so it is never part of a selection. */
   .eld-hover {
+    /* A <button> that reads as text. */
+    all: unset;
+    font: inherit;
+    color: inherit;
+    white-space: inherit;
     position: relative;
     text-decoration-line: underline;
     text-decoration-style: dotted;

@@ -1,5 +1,4 @@
 import * as React from "react";
-import { WrapText } from "lucide-react";
 import { linkify, type CodeLine } from "../lib/code-model";
 import { tokenizeShell, type ShellTokenizeOptions } from "../lib/shell-tokens";
 import {
@@ -14,13 +13,9 @@ import { renderAnsi } from "../lib/vt";
 import { formatMessage } from "../i18n/format";
 import { useMessages } from "../i18n/context";
 import { CodeLines } from "./code-lines";
-import {
-  CodeSurface,
-  CodeSurfaceBadge,
-  CodeSurfaceTitleBar,
-  codeControlClassName,
-  type CodeChrome,
-} from "./code-surface";
+import { CodeSurface, CodeSurfaceTitleBar } from "./code-surface";
+import { CodeSurfaceActions } from "./code-surface-actions";
+import type { CodeChrome } from "./code-surface-styles";
 import { CopyButton } from "./copy-button";
 import { TerminalRecording, type TerminalRecordingSource } from "./terminal-recording";
 
@@ -147,6 +142,77 @@ function commandsByRow(transcript: readonly TerminalLine[]): Map<number, string>
   return commands;
 }
 
+interface SessionOptions {
+  code: string;
+  lines?: TerminalLine[];
+  parse: TranscriptMode;
+  symbol: string;
+  cwd?: string;
+  copy: TerminalProps["copy"];
+  commandHref?: ShellTokenizeOptions["commandHref"];
+  subcommands?: ShellTokenizeOptions["subcommands"];
+}
+
+/** Transcript, rendered rows, per-command copy targets and the copy-all value. */
+function useTerminalSession({ code, lines, parse, symbol, cwd, copy, commandHref, subcommands }: SessionOptions) {
+  const transcript = React.useMemo(
+    () => lines ?? parseTranscript(code, { mode: parse, prompts: symbol === "$" ? undefined : [symbol, "$", "❯", "%"] }),
+    [lines, code, parse, symbol],
+  );
+  const rows = React.useMemo(
+    () => toCodeLines(transcript, { symbol, cwd }, { commandHref, subcommands }),
+    [transcript, symbol, cwd, commandHref, subcommands],
+  );
+  const perCommand = React.useMemo(() => {
+    const commands = commandsByRow(transcript);
+    return copy !== false && commands.size > 1 ? commands : undefined;
+  }, [transcript, copy]);
+  const copyValue = copy === "transcript" ? transcriptText(transcript, symbol) : commandText(transcript);
+  return { transcript, rows, perCommand, copyValue };
+}
+
+/** `chrome`, honoring the deprecated `windowControls={false}`. */
+function resolveChrome(chrome: CodeChrome | undefined, windowControls: boolean | undefined): CodeChrome {
+  return chrome ?? (windowControls === false ? "none" : "auto");
+}
+
+/** The prompt as ANSI, so synthesized recordings show the same cwd and glyph. */
+function ansiPrompt({ symbol, cwd }: TerminalPrompt & { symbol: string }): string {
+  return `${cwd ? `${CWD_SGR}${cwd}\x1b[0m ` : ""}${PROMPT_SGR}${symbol}\x1b[0m `;
+}
+
+/** The static transcript (a scroll group when unwrapped), or a recording that falls back to it. */
+function TerminalBody({
+  recording,
+  transcript,
+  prompt,
+  label,
+  scrollable,
+  custom,
+  children,
+}: {
+  recording?: TerminalRecordingSource;
+  transcript: readonly TerminalLine[];
+  prompt: TerminalPrompt & { symbol: string };
+  label: string;
+  scrollable: boolean;
+  custom: boolean;
+  children: React.ReactNode;
+}) {
+  if (recording) return <TerminalRecording source={recording} script={transcript} prompt={ansiPrompt(prompt)} fallback={children} />;
+  return (
+    <pre
+      dir="ltr"
+      className={cn("eld-code-body", custom && "px-4")}
+      tabIndex={scrollable ? 0 : undefined}
+      role={scrollable ? "group" : undefined}
+      aria-label={scrollable ? label : undefined}
+    >
+      {children}
+    </pre>
+  );
+}
+
 /**
  * Terminal — a realistic shell session on the dark code surface: prompts,
  * zsh-style command highlighting, ANSI-colored output, wrapping like a real
@@ -173,24 +239,11 @@ export function Terminal({
   ...props
 }: TerminalProps) {
   const m = useMessages();
-  const chrome = chromeProp ?? (windowControls === false ? "none" : "auto");
+  const chrome = resolveChrome(chromeProp, windowControls);
   const prompt = promptParts(promptProp);
   const { symbol, cwd } = prompt;
   const [wrapped, setWrapped] = React.useState(wrap !== false);
-  const transcript = React.useMemo(
-    () => lines ?? parseTranscript(code, { mode: parse, prompts: symbol === "$" ? undefined : [symbol, "$", "❯", "%"] }),
-    [lines, code, parse, symbol],
-  );
-  const rows = React.useMemo(
-    () => toCodeLines(transcript, { symbol, cwd }, { commandHref, subcommands }),
-    [transcript, symbol, cwd, commandHref, subcommands],
-  );
-  const perCommand = React.useMemo(() => {
-    const commands = commandsByRow(transcript);
-    return copy !== false && commands.size > 1 ? commands : undefined;
-  }, [transcript, copy]);
-
-  const copyValue = copy === "transcript" ? transcriptText(transcript, symbol) : commandText(transcript);
+  const { transcript, rows, perCommand, copyValue } = useTerminalSession({ code, lines, parse, symbol, cwd, copy, commandHref, subcommands });
   const exitLabel = React.useCallback((status: number) => formatMessage(m.terminal.exitCode, { code: status }), [m.terminal.exitCode]);
   const rowAction = React.useCallback(
     (_line: CodeLine, index: number) => {
@@ -211,9 +264,7 @@ export function Terminal({
       rowAction={perCommand ? rowAction : undefined}
     />
   );
-  const ansiPrompt = `${cwd ? `${CWD_SGR}${cwd}\x1b[0m ` : ""}${PROMPT_SGR}${symbol}\x1b[0m `;
   const label = title ?? titleFor(prompt) ?? m.codeBlock.terminal;
-  const scrollable = !wrapped;
 
   return (
     <CodeSurface chrome={chrome} data-slot="terminal" className={className} {...props}>
@@ -221,43 +272,18 @@ export function Terminal({
         chrome={chrome}
         title={label}
         actions={
-          <>
-            {lang ? <CodeSurfaceBadge>{lang}</CodeSurfaceBadge> : null}
-            {wrap === "toggle" ? (
-              <button
-                type="button"
-                className={codeControlClassName}
-                aria-label={m.codeBlock.wrap}
-                aria-pressed={wrapped}
-                onClick={() => setWrapped((value) => !value)}
-              >
-                <WrapText aria-hidden />
-              </button>
-            ) : null}
-            {copy !== false && copyValue ? (
-              <CopyButton
-                value={copyValue}
-                label=""
-                copyLabel={copy === "commands" ? m.terminal.copyCommands : m.codeBlock.copy}
-                className="px-1.5 py-1.5"
-              />
-            ) : null}
-          </>
+          <CodeSurfaceActions
+            lang={lang}
+            wrapped={wrap === "toggle" ? wrapped : undefined}
+            onWrapChange={setWrapped}
+            copyValue={copy === false ? undefined : copyValue}
+            copyLabel={copy === "commands" ? m.terminal.copyCommands : undefined}
+          />
         }
       />
-      {recording ? (
-        <TerminalRecording source={recording} script={transcript} prompt={ansiPrompt} fallback={body} />
-      ) : (
-        <pre
-          dir="ltr"
-          className={cn("eld-code-body", children ? "px-4" : undefined)}
-          tabIndex={scrollable ? 0 : undefined}
-          role={scrollable ? "group" : undefined}
-          aria-label={scrollable ? label : undefined}
-        >
-          {body}
-        </pre>
-      )}
+      <TerminalBody recording={recording} transcript={transcript} prompt={prompt} label={label} scrollable={!wrapped} custom={!!children}>
+        {body}
+      </TerminalBody>
     </CodeSurface>
   );
 }

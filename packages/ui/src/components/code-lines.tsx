@@ -1,21 +1,8 @@
 import * as React from "react";
-import type { CodeLine, CodeToken, InlineDecoration, LineDecoration, LineDecorationKind, TokenStyle } from "../lib/code-model";
+import type { CodeLine, CodeToken, InlineDecoration, LineDecoration, LineDecorationKind } from "../lib/code-model";
 import { decorationCovers } from "../lib/code-model";
-
-/** Inline CSS for a model token style (ANSI attributes; classes cover highlighter tokens). */
-export function tokenStyleToCss(style: TokenStyle | undefined): React.CSSProperties | undefined {
-  if (!style) return undefined;
-  const css: React.CSSProperties = {};
-  if (style.color) css.color = style.color;
-  if (style.background) css.backgroundColor = style.background;
-  if (style.bold) css.fontWeight = 700;
-  if (style.italic) css.fontStyle = "italic";
-  if (style.dim) css.opacity = 0.6;
-  const decorations = [style.underline && "underline", style.strike && "line-through"].filter(Boolean);
-  if (decorations.length) css.textDecorationLine = decorations.join(" ");
-  if (style.hidden) css.color = "transparent";
-  return Object.keys(css).length ? css : undefined;
-}
+import { segmentLine, withColumns } from "../lib/segments";
+import { tokenStyleToCss } from "../lib/token-style";
 
 function Token({ token, links }: { token: CodeToken; links: boolean }) {
   const style = tokenStyleToCss(token.style);
@@ -35,18 +22,18 @@ function Token({ token, links }: { token: CodeToken; links: boolean }) {
   );
 }
 
-/** Wrap a run of tokens covered by one inline decoration. */
+/** Wrap a segment covered by one inline decoration. */
 function InlineWrapper({ decoration, id, children }: { decoration: InlineDecoration; id?: string; children: React.ReactNode }) {
   switch (decoration.kind) {
     case "mark":
       return <mark className="eld-mark">{children}</mark>;
     case "hover":
-      // The tooltip text lives in a data attribute (drawn by CSS) and a hidden
-      // description outside the code, so it is never selected or copied.
+      // A tooltip trigger: the text is drawn by CSS from data-hover and the
+      // accessible description lives outside the code, so neither is copied.
       return (
-        <span className="eld-hover" data-tone={decoration.tone} data-hover={String(decoration.payload ?? "")} tabIndex={0} aria-describedby={id}>
+        <button type="button" className="eld-hover" data-tone={decoration.tone} data-hover={String(decoration.payload ?? "")} aria-describedby={id}>
           {children}
-        </span>
+        </button>
       );
     case "link":
       return (
@@ -59,7 +46,6 @@ function InlineWrapper({ decoration, id, children }: { decoration: InlineDecorat
   }
 }
 
-/** Tokens of one line, split at inline decoration boundaries and grouped into wrappers. */
 function LineTokens({
   tokens,
   inline,
@@ -71,42 +57,28 @@ function LineTokens({
   links: boolean;
   hoverId?: (decoration: InlineDecoration) => string;
 }) {
-  if (!inline.length) return <>{tokens.map((token, i) => <Token key={i} token={token} links={links} />)}</>;
-  // Non-overlapping, in column order.
-  const ranges = [...inline].sort((a, b) => a.start - b.start).filter((d, i, all) => i === 0 || d.start >= all[i - 1].end);
-  const cuts = new Set(ranges.flatMap((d) => [d.start, d.end]));
-  const pieces: { token: CodeToken; range?: number }[] = [];
-  let column = 0;
-  for (const token of tokens) {
-    let start = 0;
-    for (let i = 1; i <= token.text.length; i++) {
-      if (i === token.text.length || cuts.has(column + i)) {
-        const at = column + start;
-        const range = ranges.findIndex((d) => at >= d.start && at < d.end);
-        pieces.push({ token: { ...token, text: token.text.slice(start, i) }, range: range === -1 ? undefined : range });
-        start = i;
-      }
-    }
-    column += token.text.length;
+  if (!inline.length) {
+    return (
+      <>
+        {withColumns(tokens).map(({ token, column }) => (
+          <Token key={column} token={token} links={links} />
+        ))}
+      </>
+    );
   }
-  const out: React.ReactNode[] = [];
-  for (let i = 0; i < pieces.length; ) {
-    const range = pieces[i].range;
-    let j = i;
-    while (j < pieces.length && pieces[j].range === range) j++;
-    const children = pieces.slice(i, j).map((piece, k) => <Token key={k} token={piece.token} links={links && range === undefined} />);
-    if (range === undefined) out.push(...children.map((child, k) => <React.Fragment key={`${i}:${k}`}>{child}</React.Fragment>));
-    else {
-      const decoration = ranges[range];
-      out.push(
-        <InlineWrapper key={i} decoration={decoration} id={decoration.kind === "hover" ? hoverId?.(decoration) : undefined}>
-          {children}
-        </InlineWrapper>,
-      );
-    }
-    i = j;
-  }
-  return <>{out}</>;
+  return (
+    <>
+      {segmentLine(tokens, inline).map(({ column, pieces, decoration }) => {
+        const children = pieces.map((piece) => <Token key={piece.column} token={piece.token} links={links && !decoration} />);
+        if (!decoration) return <React.Fragment key={column}>{children}</React.Fragment>;
+        return (
+          <InlineWrapper key={column} decoration={decoration} id={decoration.kind === "hover" ? hoverId?.(decoration) : undefined}>
+            {children}
+          </InlineWrapper>
+        );
+      })}
+    </>
+  );
 }
 
 /** Decorations that draw a glyph in the marks column. */
@@ -176,32 +148,69 @@ function rowKey(line: CodeLine): string {
   return key;
 }
 
+/** Accessible names for a row's decorations (and exit status). */
+function rowLabels(line: CodeLine, applied: readonly LineDecoration[] | undefined, props: CodeLinesProps): string | undefined {
+  const labels = (applied ?? []).map((decoration) => decoration.label ?? props.decorationLabels?.[decoration.kind]).filter(Boolean);
+  if (line.exitCode !== undefined && props.exitLabel) labels.push(props.exitLabel(line.exitCode));
+  return labels.length ? labels.join(", ") : undefined;
+}
+
+interface RowProps {
+  line: CodeLine;
+  index: number;
+  number: number;
+  props: CodeLinesProps;
+}
+
+/** One grid row: `[marks] [number] [prompt] [content]`, plus optional badges and action. */
+function CodeRow({ line, index, number, props }: RowProps) {
+  const { lineLinks, lineNumbers, links = true } = props;
+  const applied = props.decorations?.filter((decoration) => decorationCovers(decoration, number));
+  const kinds = applied?.length ? [...new Set(applied.map((decoration) => decoration.kind))].join(" ") : undefined;
+  const badges = props.annotations?.filter((annotation) => annotation.line === number) ?? [];
+  const exit = line.exitCode === undefined ? undefined : line.exitCode === 0 ? "ok" : "fail";
+  return (
+    <span
+      className="eld-line"
+      data-n={lineNumbers && !lineLinks ? number : undefined}
+      data-kind={line.kind}
+      data-exit={exit}
+      data-decor={kinds}
+      data-tone={applied?.find((decoration) => decoration.tone)?.tone}
+      data-sr={rowLabels(line, applied, props)}
+    >
+      {lineNumbers && lineLinks ? (
+        // Empty link: CSS draws the number, so it is never copied.
+        <a className="eld-line-number" id={`${lineLinks}L${number}`} href={`#${lineLinks}L${number}`} aria-label={props.lineLabel?.(number) ?? String(number)} data-n={number} />
+      ) : null}
+      {line.prompt !== undefined ? (
+        // Empty and hidden from AT: its pseudo-elements draw the cwd and glyph.
+        <span className="eld-prompt" aria-hidden data-prompt={line.prompt} data-cwd={line.cwd} />
+      ) : null}
+      <span className="eld-content" key={props.remountChangedRows ? rowKey(line) : undefined}>
+        <LineTokens tokens={line.tokens} inline={props.inline?.filter((decoration) => decoration.line === number) ?? []} links={links} hoverId={props.hoverId} />
+        {"\n"}
+      </span>
+      {badges.length ? (
+        <span className="eld-annotation-badges">
+          {badges.map((badge) => (
+            <a key={badge.index} className="eld-annotation-badge" href={badge.href} aria-label={badge.label} data-n={badge.index} />
+          ))}
+        </span>
+      ) : null}
+      {props.rowAction?.(line, index)}
+    </span>
+  );
+}
+
 /**
  * One CSS-grid row per line: `[marks] [number] [prompt] [content]`. Gutter
  * glyphs, numbers and prompts are pseudo-elements, so they are never selected
  * or copied and wrapped content keeps a hanging indent. Each row ends with a
  * newline so `textContent` reads as the original text.
  */
-export const CodeLines = React.memo(function CodeLines({
-  lines,
-  lang,
-  variant = "editor",
-  lineNumbers = false,
-  startLine = 1,
-  decorations,
-  decorationLabels,
-  exitLabel,
-  wrap = false,
-  links = true,
-  rowAction,
-  remountChangedRows = false,
-  inline,
-  hoverId,
-  lineLinks,
-  lineLabel,
-  folds,
-  annotations,
-}: CodeLinesProps) {
+export const CodeLines = React.memo(function CodeLines(props: CodeLinesProps) {
+  const { lines, lang, variant = "editor", lineNumbers = false, startLine = 1, decorations, wrap = false, folds } = props;
   const last = startLine + lines.length - 1;
   const marks = lines.some((line) => line.exitCode !== undefined) || !!decorations?.some((d) => MARKED.has(d.kind));
   return (
@@ -214,62 +223,15 @@ export const CodeLines = React.memo(function CodeLines({
       style={lineNumbers ? ({ "--eld-code-digits": String(last).length } as React.CSSProperties) : undefined}
     >
       {lines.map((line, index) => {
+        // Rows are keyed by line number: positional identity (a source line, a screen row).
         const number = line.number ?? startLine + index;
         const fold = folds?.find((candidate) => number >= candidate.start && number <= candidate.end);
-        if (fold) {
-          if (number !== fold.start) return null;
-          return (
-            <span key={index} className="eld-line eld-fold-row">
-              <button type="button" className="eld-fold" aria-expanded={false} aria-label={fold.label} data-label={fold.label} onClick={fold.onExpand} />
-              {"\n"}
-            </span>
-          );
-        }
-        const lineInline = inline?.filter((decoration) => decoration.line === number) ?? [];
-        const badges = annotations?.filter((annotation) => annotation.line === number) ?? [];
-        const applied = decorations?.filter((decoration) => decorationCovers(decoration, number));
-        const kinds = applied?.length ? [...new Set(applied.map((decoration) => decoration.kind))] : undefined;
-        const labels = applied?.map((decoration) => decoration.label ?? decorationLabels?.[decoration.kind]).filter(Boolean) ?? [];
-        if (line.exitCode !== undefined && exitLabel) labels.push(exitLabel(line.exitCode));
-        const tone = applied?.find((decoration) => decoration.tone)?.tone;
+        if (!fold) return <CodeRow key={number} line={line} index={index} number={number} props={props} />;
+        if (number !== fold.start) return null;
         return (
-          // Rows are positional (source line, screen row): the index is their identity.
-          <span
-            key={index}
-            className="eld-line"
-            data-n={lineNumbers && !lineLinks ? number : undefined}
-            data-kind={line.kind}
-            data-exit={line.exitCode === undefined ? undefined : line.exitCode === 0 ? "ok" : "fail"}
-            data-decor={kinds?.join(" ")}
-            data-tone={tone}
-            data-sr={labels.length ? labels.join(", ") : undefined}
-          >
-            {lineNumbers && lineLinks ? (
-              // Empty link: CSS draws the number, so it is never copied.
-              <a
-                className="eld-line-number"
-                id={`${lineLinks}L${number}`}
-                href={`#${lineLinks}L${number}`}
-                aria-label={lineLabel?.(number) ?? String(number)}
-                data-n={number}
-              />
-            ) : null}
-            {line.prompt !== undefined ? (
-              // Empty and hidden from AT: its pseudo-elements draw the cwd and glyph.
-              <span className="eld-prompt" aria-hidden data-prompt={line.prompt} data-cwd={line.cwd} />
-            ) : null}
-            <span className="eld-content" key={remountChangedRows ? rowKey(line) : undefined}>
-              <LineTokens tokens={line.tokens} inline={lineInline} links={links} hoverId={hoverId} />
-              {"\n"}
-            </span>
-            {badges.length ? (
-              <span className="eld-annotation-badges">
-                {badges.map((badge) => (
-                  <a key={badge.index} className="eld-annotation-badge" href={badge.href} aria-label={badge.label} data-n={badge.index} />
-                ))}
-              </span>
-            ) : null}
-            {rowAction?.(line, index)}
+          <span key={number} className="eld-line eld-fold-row">
+            <button type="button" className="eld-fold" aria-expanded={false} aria-label={fold.label} data-label={fold.label} onClick={fold.onExpand} />
+            {"\n"}
           </span>
         );
       })}

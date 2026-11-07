@@ -15,17 +15,16 @@ export interface UsePlaybackOptions {
  * changes are pushed into it. Playback pauses while the document is hidden.
  */
 export function usePlayback(options: UsePlaybackOptions): [PlaybackState, Playback] {
-  const ref = React.useRef<Playback | null>(null);
-  if (ref.current === null) {
-    ref.current = createPlayback({
+  // Created once, lazily; later option changes are pushed in by the effects below.
+  const [playback] = React.useState(() =>
+    createPlayback({
       duration: options.duration,
       cues: options.cues,
       loop: options.loop,
       speed: options.speed,
       time: options.time,
-    });
-  }
-  const playback = ref.current;
+    }),
+  );
   const [state, setState] = React.useState(() => playback.getState());
 
   React.useEffect(() => {

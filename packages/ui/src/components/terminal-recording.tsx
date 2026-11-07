@@ -10,14 +10,16 @@ import {
   type SynthesizeOptions,
 } from "../lib/asciicast";
 import { lineText, type CodeLine } from "../lib/code-model";
-import { cueIndexAt } from "../lib/playback";
+import { cueIndexAt, type Playback, type PlaybackState } from "../lib/playback";
+import { resolveRecording } from "../lib/recording-source";
 import type { TerminalLine } from "../lib/terminal-transcript";
 import { cn } from "../lib/utils";
 import { formatMessage } from "../i18n/format";
 import { useMessages } from "../i18n/context";
 import { useLocale } from "../i18n/locale-context";
+import type { Messages } from "../i18n/messages";
 import { CodeLines } from "./code-lines";
-import { codeControlClassName, codeSurfaceElevStyle } from "./code-surface";
+import { codeControlClassName, codeSurfaceElevStyle } from "./code-surface-styles";
 import { prefersReducedMotion, usePlayback } from "./use-playback";
 
 export interface TerminalRecordingOptions {
@@ -50,10 +52,6 @@ export interface TerminalRecordingOptions {
 
 /** A URL string, or full options. */
 export type TerminalRecordingSource = string | URL | TerminalRecordingOptions;
-
-export function resolveRecording(source: TerminalRecordingSource): TerminalRecordingOptions {
-  return typeof source === "string" || source instanceof URL ? { src: source } : source;
-}
 
 export interface TerminalRecordingProps {
   source: TerminalRecordingSource;
@@ -90,21 +88,39 @@ function measure(cast: Cast): { rows: number; transcript: string } {
   return { rows: Math.min(rows, cast.rows), transcript };
 }
 
+/** Where the player is relative to the viewport (prefetch margin, half-visible, onscreen). */
+function useViewport(ref: React.RefObject<HTMLDivElement | null>) {
+  const [state, setState] = React.useState({ near: false, visible: false, onscreen: true });
+  React.useEffect(() => {
+    const element = ref.current;
+    if (!element || typeof IntersectionObserver !== "function") {
+      setState({ near: true, visible: true, onscreen: true });
+      return;
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[entries.length - 1];
+        setState((previous) => ({
+          // Prefetch a little before the player is on screen; once near, stay loaded.
+          near: previous.near || entry.isIntersecting,
+          visible: entry.intersectionRatio >= 0.5,
+          onscreen: entry.isIntersecting,
+        }));
+      },
+      { rootMargin: "200px 0px", threshold: [0, 0.5] },
+    );
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [ref]);
+  return state;
+}
+
 type Remote = { status: "idle" | "loading" } | { status: "ready"; cast: Cast } | { status: "error" };
 
-/**
- * Plays an asciicast inside a `Terminal` through the lite VT. Renders a poster
- * frame on the server, fetches remote recordings lazily, scales the terminal
- * grid to its container (no measurement), and pauses while offscreen.
- */
-export function TerminalRecording({ source, script, prompt, fallback }: TerminalRecordingProps) {
-  const m = useMessages().terminal;
-  const { locale } = useLocale();
-  const options = resolveRecording(source);
-  const { src, cast: inlineCast, synthesize, poster = "last", autoplay = false, loop = false, controls = true } = options;
+/** Resolve the recording (inline, synthesized or fetched) into a normalized cast. */
+function useCast(options: TerminalRecordingOptions, script: readonly TerminalLine[], prompt: string | undefined, load: boolean) {
+  const { src, cast: inlineCast, synthesize, idleTimeLimit } = options;
   const synthesizeKey = typeof synthesize === "object" ? JSON.stringify(synthesize) : String(synthesize ?? "");
-
-  // ---- source → cast ----------------------------------------------------------
   const local = React.useMemo((): { cast?: Cast; error?: boolean } => {
     try {
       if (inlineCast !== undefined) return { cast: isCast(inlineCast) ? inlineCast : parseAsciicast(inlineCast as string | object) };
@@ -118,36 +134,10 @@ export function TerminalRecording({ source, script, prompt, fallback }: Terminal
     return {};
   }, [inlineCast, synthesizeKey, script, prompt]);
 
-  const rootRef = React.useRef<HTMLDivElement>(null);
-  const [wantLoad, setWantLoad] = React.useState(false);
-  const [visible, setVisible] = React.useState(false);
-  const [onscreen, setOnscreen] = React.useState(true);
   const [remote, setRemote] = React.useState<Remote>({ status: "idle" });
   const srcKey = src ? String(src) : "";
-
   React.useEffect(() => {
-    const element = rootRef.current;
-    if (!element || typeof IntersectionObserver !== "function") {
-      setWantLoad(true);
-      setVisible(true);
-      return;
-    }
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const entry = entries[entries.length - 1];
-        // Prefetch a little before the player is on screen.
-        if (entry.isIntersecting) setWantLoad(true);
-        setOnscreen(entry.isIntersecting);
-        setVisible(entry.intersectionRatio >= 0.5);
-      },
-      { rootMargin: "200px 0px", threshold: [0, 0.5] },
-    );
-    observer.observe(element);
-    return () => observer.disconnect();
-  }, []);
-
-  React.useEffect(() => {
-    if (!srcKey || local.cast || !wantLoad) return;
+    if (!srcKey || local.cast || !load) return;
     const controller = new AbortController();
     setRemote({ status: "loading" });
     fetch(srcKey, { signal: controller.signal })
@@ -160,33 +150,233 @@ export function TerminalRecording({ source, script, prompt, fallback }: Terminal
         if (!controller.signal.aborted) setRemote({ status: "error" });
       });
     return () => controller.abort();
-  }, [srcKey, local.cast, wantLoad]);
+  }, [srcKey, local.cast, load]);
 
   const raw = local.cast ?? (remote.status === "ready" ? remote.cast : undefined);
-  const failed = local.error || remote.status === "error";
-  const idleTimeLimit = options.idleTimeLimit;
   const cast = React.useMemo(
     () => raw && normalizeCast(raw, { idleTimeLimit: idleTimeLimit ?? raw.idleTimeLimit ?? 2 }),
     [raw, idleTimeLimit],
   );
+  return { cast, failed: !!local.error || remote.status === "error", loading: remote.status === "loading" };
+}
+
+/**
+ * Notify `onTimeUpdate` / `onMarker` from the playback clock itself (a
+ * subscription), so consumers hear about every tick without effects that
+ * forward render state to the parent.
+ */
+function usePlaybackCallbacks(playback: Playback, markers: readonly CastMarker[], options: TerminalRecordingOptions) {
+  const callbacks = React.useRef(options);
+  React.useEffect(() => {
+    callbacks.current = options;
+  });
+  React.useEffect(() => {
+    const cues = markers.map((marker) => marker.time);
+    let last = cueIndexAt(cues, playback.getState().time);
+    return playback.subscribe((state) => {
+      callbacks.current.onTimeUpdate?.(state.time);
+      const index = cueIndexAt(cues, state.time);
+      if (index !== last && index >= 0 && state.playing) callbacks.current.onMarker?.(markers[index]);
+      last = index;
+    });
+  }, [playback, markers]);
+}
+
+/** The marker before (or at the start of the current one, when past it) and after `time`. */
+function adjacentMarkers(markers: readonly CastMarker[], time: number): { previous?: CastMarker; next?: CastMarker } {
+  const index = cueIndexAt(markers.map((marker) => marker.time), time);
+  if (index < 0) return { next: markers[0] };
+  // As media players do: "previous" first returns to the current marker's start.
+  const previous = time - markers[index].time > 1 || index === 0 ? markers[index] : markers[index - 1];
+  return { previous, next: markers[index + 1] };
+}
+
+/** Frame shown before playback. */
+function posterTimeFor(cast: Cast | undefined, poster: TerminalRecordingOptions["poster"] = "last"): number {
+  if (!cast) return 0;
+  if (poster === "first") return 0;
+  if (poster === "last") return cast.duration;
+  return Math.min(Math.max(0, poster), cast.duration);
+}
+
+/** `m:ss` with locale digits. */
+function useTimeFormat(locale: string) {
+  return React.useMemo(() => {
+    const numbers = new Intl.NumberFormat(locale);
+    const twoDigits = new Intl.NumberFormat(locale, { minimumIntegerDigits: 2 });
+    return {
+      number: (value: number) => numbers.format(value),
+      time: (seconds: number) => {
+        const whole = Math.max(0, Math.floor(seconds));
+        return `${numbers.format(Math.floor(whole / 60))}:${twoDigits.format(whole % 60)}`;
+      },
+    };
+  }, [locale]);
+}
+
+/** Previous/next marker buttons; a button without a target is `invisible` (keeps its space). */
+function MarkerButtons({ markers, time, label, onSeek }: { markers: readonly CastMarker[]; time: number; label: string; onSeek: (time: number) => void }) {
+  const { previous, next } = adjacentMarkers(markers, time);
+  const button = (marker: CastMarker | undefined, fallback: CastMarker, icon: React.ReactNode) => (
+    <button
+      type="button"
+      className={cn(codeControlClassName, !marker && "invisible")}
+      aria-label={formatMessage(label, { label: (marker ?? fallback).label })}
+      onClick={() => marker && onSeek(marker.time)}
+    >
+      {icon}
+    </button>
+  );
+  return (
+    <>
+      {button(previous, markers[0], <SkipBack aria-hidden />)}
+      {button(next, markers[markers.length - 1], <SkipForward aria-hidden />)}
+    </>
+  );
+}
+
+/** Scrubber with decorative marker ticks. */
+function Scrubber({ cast, markers, time, label, valueText, onSeek }: { cast?: Cast; markers: readonly CastMarker[]; time: number; label: string; valueText: string; onSeek: (time: number) => void }) {
+  const duration = cast?.duration ?? 0;
+  return (
+    <div dir="ltr" className="relative mx-1 flex h-7 min-w-0 flex-1 items-center">
+      <input
+        type="range"
+        min={0}
+        max={duration}
+        step={0.01}
+        value={time}
+        disabled={!cast}
+        aria-label={label}
+        aria-valuetext={valueText}
+        onChange={(event) => onSeek(Number(event.currentTarget.value))}
+        className="h-1 w-full cursor-pointer accent-[var(--code-prompt)] disabled:cursor-default"
+      />
+      {duration > 0
+        ? markers.map((marker) => (
+            // Decorative: the marker buttons are the targets (ticks on a track
+            // cannot meet the 24px target size without overlapping it).
+            <span
+              key={`${marker.time}:${marker.label}`}
+              aria-hidden
+              className="pointer-events-none absolute top-1/2 h-2.5 w-0.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[var(--eld-syntax-line-number)]"
+              style={{ left: `${(marker.time / duration) * 100}%` }}
+            />
+          ))
+        : null}
+    </div>
+  );
+}
+
+interface ControlsProps {
+  state: PlaybackState;
+  cast: Cast | undefined;
+  markers: readonly CastMarker[];
+  failed: boolean;
+  messages: Messages["terminal"];
+  locale: string;
+  onToggle: () => void;
+  onRestart: () => void;
+  onSeek: (time: number) => void;
+  onSpeed: () => void;
+}
+
+/** Play/pause, restart, marker navigation, scrubber, time and speed. */
+function RecordingControls({ state, cast, markers, failed, messages: m, locale, onToggle, onRestart, onSeek, onSpeed }: ControlsProps) {
+  const format = useTimeFormat(locale);
+  const elapsed = format.time(state.time);
+  const total = format.time(cast?.duration ?? 0);
+  const speedLabel = `${format.number(state.speed)}×`;
+  return (
+    <div data-slot="terminal-controls" className="flex items-center gap-1 border-t px-2 py-1" style={codeSurfaceElevStyle}>
+      <button type="button" className={codeControlClassName} aria-label={state.playing ? m.pause : m.play} onClick={onToggle} disabled={failed}>
+        {state.playing ? <Pause aria-hidden className="fill-current" /> : <Play aria-hidden className="fill-current" />}
+      </button>
+      <button type="button" className={codeControlClassName} aria-label={m.restart} onClick={onRestart} disabled={!cast}>
+        <RotateCcw aria-hidden />
+      </button>
+      {markers.length ? <MarkerButtons markers={markers} time={state.time} label={m.jumpTo} onSeek={onSeek} /> : null}
+      {failed ? (
+        <span role="status" className="flex-1 px-1 font-mono text-[0.6875rem] text-[var(--eld-syntax-line-number)]">
+          {m.unavailable}
+        </span>
+      ) : (
+        <Scrubber cast={cast} markers={markers} time={state.time} label={m.seek} valueText={formatMessage(m.position, { elapsed, total })} onSeek={onSeek} />
+      )}
+      <span aria-hidden className="shrink-0 font-mono text-[0.6875rem] tabular-nums text-[var(--eld-syntax-line-number)]">
+        {`${elapsed} / ${total}`}
+      </span>
+      <button
+        type="button"
+        className={cn(codeControlClassName, "min-w-9 font-mono text-[0.6875rem] tabular-nums")}
+        aria-label={formatMessage(m.speed, { speed: speedLabel })}
+        onClick={onSpeed}
+        disabled={!cast}
+      >
+        {speedLabel}
+      </button>
+    </div>
+  );
+}
+
+/**
+ * The terminal grid (hidden from AT; the transcript speaks for it), or the
+ * static fallback until a recording loads. `reserve` keeps the grid's height.
+ */
+function RecordingScreen({ lines, gridStyle, reserve, fallback }: { lines?: CodeLine[]; gridStyle: React.CSSProperties; reserve: boolean; fallback: React.ReactNode }) {
+  if (lines) {
+    return (
+      <pre dir="ltr" aria-hidden className="eld-code-body eld-terminal-screen" style={gridStyle}>
+        <CodeLines lines={lines} variant="terminal" links={false} remountChangedRows />
+      </pre>
+    );
+  }
+  return (
+    <pre dir="ltr" className={cn("eld-code-body", reserve && "eld-terminal-screen")} style={reserve ? gridStyle : undefined}>
+      {fallback}
+    </pre>
+  );
+}
+
+/** Pointer affordance over the poster (keyboard and AT users have the controls bar). No scrim. */
+function PosterPlayButton({ onClick }: { onClick: () => void }) {
+  return (
+    <button type="button" tabIndex={-1} aria-hidden onClick={onClick} className="absolute inset-0 flex touch-manipulation items-center justify-center">
+      <span className="flex size-12 items-center justify-center rounded-full bg-[var(--code-background-elev)] text-[var(--eld-syntax-default)] shadow-lg ring-1 ring-[var(--code-border)] transition-transform duration-[var(--eld-motion-press)] ease-[var(--eld-motion-ease-out)] active:scale-95 motion-reduce:transition-none">
+        <Play aria-hidden className="size-5 translate-x-px fill-current" />
+      </span>
+    </button>
+  );
+}
+
+/**
+ * Plays an asciicast inside a `Terminal` through the lite VT. Renders a poster
+ * frame on the server, fetches remote recordings lazily, scales the terminal
+ * grid to its container (no measurement), and pauses while offscreen.
+ */
+export function TerminalRecording({ source, script, prompt, fallback }: TerminalRecordingProps) {
+  const m = useMessages().terminal;
+  const { locale } = useLocale();
+  const options = resolveRecording<TerminalRecordingOptions>(source);
+  const { poster, autoplay = false, loop = false, controls = true } = options;
+
+  const rootRef = React.useRef<HTMLDivElement>(null);
+  const viewport = useViewport(rootRef);
+  const [requested, setRequested] = React.useState(false);
+  const { cast, failed, loading } = useCast(options, script, prompt, viewport.near || requested);
   const renderer = React.useMemo(() => cast && new CastRenderer(cast), [cast]);
   const measured = React.useMemo(() => cast && measure(cast), [cast]);
-  const posterTime = cast ? (poster === "first" ? 0 : poster === "last" ? cast.duration : Math.min(Math.max(0, poster), cast.duration)) : 0;
+  const posterTime = posterTimeFor(cast, poster);
   const markers = React.useMemo(() => cast?.markers ?? [], [cast]);
   const cues = React.useMemo(() => markers.map((marker) => marker.time), [markers]);
 
-  // ---- playback -------------------------------------------------------------------
-  const [state, playback] = usePlayback({
-    duration: cast?.duration ?? 0,
-    cues,
-    loop,
-    speed: options.speed,
-    time: posterTime,
-  });
+  const [state, playback] = usePlayback({ duration: cast?.duration ?? 0, cues, loop, speed: options.speed, time: posterTime });
+  usePlaybackCallbacks(playback, markers, options);
   const pendingPlay = React.useRef(false);
   const autoplayed = React.useRef(false);
   const pausedOffscreen = React.useRef(false);
-  const [started, setStarted] = React.useState(false);
+  /** The reader has used the player (hides the poster's play overlay). */
+  const [interacted, setInteracted] = React.useState(false);
 
   React.useEffect(() => {
     if (!cast) return;
@@ -200,103 +390,74 @@ export function TerminalRecording({ source, script, prompt, fallback }: Terminal
 
   React.useEffect(() => {
     if (!cast || autoplayed.current || !autoplay) return;
-    if (autoplay === "visible" && !visible) return;
+    if (autoplay === "visible" && !viewport.visible) return;
     autoplayed.current = true;
-    if (prefersReducedMotion()) return;
-    setStarted(true);
-    playback.play();
-  }, [cast, autoplay, visible, playback]);
+    if (!prefersReducedMotion()) playback.play();
+  }, [cast, autoplay, viewport.visible, playback]);
 
   // Spend no frames on a player nobody can see; resume where it left off.
   React.useEffect(() => {
-    if (!onscreen && playback.getState().playing) {
+    if (!viewport.onscreen && playback.getState().playing) {
       pausedOffscreen.current = true;
       playback.pause();
-    } else if (onscreen && pausedOffscreen.current) {
+    } else if (viewport.onscreen && pausedOffscreen.current) {
       pausedOffscreen.current = false;
       playback.play();
     }
-  }, [onscreen, playback]);
-
-  const { onTimeUpdate, onMarker } = options;
-  React.useEffect(() => {
-    onTimeUpdate?.(state.time);
-  }, [state.time, onTimeUpdate]);
-  const markerIndex = cueIndexAt(cues, state.time);
-  const lastMarker = React.useRef(markerIndex);
-  React.useEffect(() => {
-    if (markerIndex !== lastMarker.current && markerIndex >= 0 && state.playing) onMarker?.(markers[markerIndex]);
-    lastMarker.current = markerIndex;
-  }, [markerIndex, markers, onMarker, state.playing]);
+  }, [viewport.onscreen, playback]);
 
   function toggle() {
-    setStarted(true);
+    setInteracted(true);
     pausedOffscreen.current = false;
     if (!cast) {
       pendingPlay.current = true;
-      setWantLoad(true);
+      setRequested(true);
       return;
     }
     playback.toggle();
   }
 
   function restart() {
-    setStarted(true);
+    setInteracted(true);
     playback.seek(0);
     playback.play();
   }
 
-  function jump(marker: CastMarker) {
-    setStarted(true);
-    playback.seek(marker.time);
+  function seek(time: number) {
+    setInteracted(true);
+    playback.seek(time);
   }
-
-  // Previous: the current marker's start when past it (as media players do), else the one before.
-  const previousMarker = markerIndex < 0
-    ? undefined
-    : state.time - markers[markerIndex].time > 1 || markerIndex === 0
-      ? markers[markerIndex]
-      : markers[markerIndex - 1];
-  const nextMarker = markers[markerIndex + 1];
 
   function cycleSpeed() {
     const index = SPEEDS.indexOf(state.speed as (typeof SPEEDS)[number]);
     playback.setSpeed(SPEEDS[(index + 1) % SPEEDS.length]);
   }
 
+  function stepMarker(direction: 1 | -1) {
+    const resume = playback.getState().playing;
+    playback.step(direction);
+    if (resume) playback.play();
+  }
+
+  const shortcuts: Record<string, () => void> = {
+    " ": toggle,
+    k: toggle,
+    ArrowLeft: () => playback.seekBy(-5),
+    ArrowRight: () => playback.seekBy(5),
+    Home: () => playback.seek(0),
+    End: () => playback.seek(cast?.duration ?? 0),
+    m: () => stepMarker(1),
+    M: () => stepMarker(-1),
+  };
+
   function onKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
     // Controls handle their own keys; only the focused screen maps shortcuts.
-    if (event.target !== event.currentTarget || !cast) return;
-    const resume = state.playing;
-    switch (event.key) {
-      case " ":
-      case "k":
-        toggle();
-        break;
-      case "ArrowLeft":
-        playback.seekBy(-5);
-        break;
-      case "ArrowRight":
-        playback.seekBy(5);
-        break;
-      case "Home":
-        playback.seek(0);
-        break;
-      case "End":
-        playback.seek(cast.duration);
-        break;
-      case "m":
-      case "M":
-        playback.step(event.key === "m" ? 1 : -1);
-        if (resume) playback.play();
-        break;
-      default:
-        return;
-    }
+    const action = shortcuts[event.key];
+    if (event.target !== event.currentTarget || !cast || !action) return;
+    action();
     event.preventDefault();
   }
 
-  // ---- render -----------------------------------------------------------------------
   const rows = options.rows ?? measured?.rows ?? 0;
   // Same object while no event applies, so the screen skips re-rendering between output events.
   const screen = renderer?.screen(state.time);
@@ -304,21 +465,8 @@ export function TerminalRecording({ source, script, prompt, fallback }: Terminal
     () => (screen ? Array.from({ length: rows }, (_, row) => screen.lines[row] ?? { tokens: [] }) : []),
     [screen, rows],
   );
-  const numbers = React.useMemo(() => new Intl.NumberFormat(locale), [locale]);
-  const twoDigits = React.useMemo(() => new Intl.NumberFormat(locale, { minimumIntegerDigits: 2 }), [locale]);
-  const formatTime = (seconds: number) => {
-    const whole = Math.max(0, Math.floor(seconds));
-    return `${numbers.format(Math.floor(whole / 60))}:${twoDigits.format(whole % 60)}`;
-  };
-  const speedLabel = `${numbers.format(state.speed)}×`;
-  const elapsed = formatTime(state.time);
-  const total = formatTime(cast?.duration ?? 0);
-  const position = formatMessage(m.position, { elapsed, total });
-  const showOverlay = !!cast && !started && !state.playing;
-  const gridStyle = {
-    "--eld-cols": cast?.cols ?? 80,
-    "--eld-rows": rows,
-  } as React.CSSProperties;
+  const showOverlay = !!cast && !interacted && !state.playing && state.time === posterTime;
+  const gridStyle = { "--eld-cols": cast?.cols ?? 80, "--eld-rows": rows } as React.CSSProperties;
 
   return (
     <div ref={rootRef} data-slot="terminal-recording" data-playing={state.playing || undefined} className="eld-terminal-player">
@@ -329,120 +477,28 @@ export function TerminalRecording({ source, script, prompt, fallback }: Terminal
         onKeyDown={onKeyDown}
         className="relative focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--code-prompt)]"
       >
-        {screen ? (
-          <pre dir="ltr" aria-hidden className="eld-code-body eld-terminal-screen" style={gridStyle}>
-            <CodeLines lines={lines} variant="terminal" links={false} remountChangedRows />
-          </pre>
-        ) : (
-          <pre
-            dir="ltr"
-            className={cn("eld-code-body", options.rows && "eld-terminal-screen")}
-            style={options.rows ? gridStyle : undefined}
-          >
-            {fallback}
-          </pre>
-        )}
+        <RecordingScreen lines={screen ? lines : undefined} gridStyle={gridStyle} reserve={!!options.rows} fallback={fallback} />
         {measured ? <pre className="sr-only whitespace-pre">{measured.transcript}</pre> : null}
-        {showOverlay ? (
-          // Pointer affordance only (keyboard and AT users have the controls bar).
-          // No scrim: the finished output is what the reader came for.
-          <button
-            type="button"
-            tabIndex={-1}
-            aria-hidden
-            onClick={toggle}
-            className="absolute inset-0 flex touch-manipulation items-center justify-center"
-          >
-            <span className="flex size-12 items-center justify-center rounded-full bg-[var(--code-background-elev)] text-[var(--eld-syntax-default)] shadow-lg ring-1 ring-[var(--code-border)] transition-transform duration-[var(--eld-motion-press)] ease-[var(--eld-motion-ease-out)] active:scale-95 motion-reduce:transition-none">
-              <Play aria-hidden className="size-5 translate-x-px fill-current" />
-            </span>
-          </button>
-        ) : null}
-        {remote.status === "loading" ? (
+        {showOverlay ? <PosterPlayButton onClick={toggle} /> : null}
+        {loading ? (
           <span role="status" className="sr-only">
             {m.loading}
           </span>
         ) : null}
       </div>
-
       {controls ? (
-        <div data-slot="terminal-controls" className="flex items-center gap-1 border-t px-2 py-1" style={codeSurfaceElevStyle}>
-          <button type="button" className={codeControlClassName} aria-label={state.playing ? m.pause : m.play} onClick={toggle} disabled={failed}>
-            {state.playing ? <Pause aria-hidden className="fill-current" /> : <Play aria-hidden className="fill-current" />}
-          </button>
-          <button type="button" className={codeControlClassName} aria-label={m.restart} onClick={restart} disabled={!cast}>
-            <RotateCcw aria-hidden />
-          </button>
-          {markers.length ? (
-            <>
-              {/* Without a target a button is `invisible`: out of focus order and the
-                  accessibility tree, but still holding its space so nothing shifts. */}
-              <button
-                type="button"
-                className={cn(codeControlClassName, !previousMarker && "invisible")}
-                aria-label={formatMessage(m.jumpTo, { label: (previousMarker ?? markers[0]).label })}
-                onClick={() => previousMarker && jump(previousMarker)}
-              >
-                <SkipBack aria-hidden />
-              </button>
-              <button
-                type="button"
-                className={cn(codeControlClassName, !nextMarker && "invisible")}
-                aria-label={formatMessage(m.jumpTo, { label: (nextMarker ?? markers[markers.length - 1]).label })}
-                onClick={() => nextMarker && jump(nextMarker)}
-              >
-                <SkipForward aria-hidden />
-              </button>
-            </>
-          ) : null}
-          {failed ? (
-            <span role="status" className="flex-1 px-1 font-mono text-[0.6875rem] text-[var(--eld-syntax-line-number)]">
-              {m.unavailable}
-            </span>
-          ) : (
-            <div dir="ltr" className="relative mx-1 flex h-7 min-w-0 flex-1 items-center">
-              <input
-                type="range"
-                min={0}
-                max={cast?.duration ?? 0}
-                step={0.01}
-                value={state.time}
-                disabled={!cast}
-                aria-label={m.seek}
-                aria-valuetext={position}
-                onChange={(event) => {
-                  setStarted(true);
-                  playback.seek(Number(event.currentTarget.value));
-                }}
-                className="h-1 w-full cursor-pointer accent-[var(--code-prompt)] disabled:cursor-default"
-              />
-              {cast && cast.duration > 0
-                ? markers.map((marker) => (
-                    // Decorative: the marker buttons beside the track are the targets
-                    // (ticks on a track cannot meet the 24px target size without overlapping it).
-                    <span
-                      key={`${marker.time}:${marker.label}`}
-                      aria-hidden
-                      className="pointer-events-none absolute top-1/2 h-2.5 w-0.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[var(--eld-syntax-line-number)]"
-                      style={{ left: `${(marker.time / cast.duration) * 100}%` }}
-                    />
-                  ))
-                : null}
-            </div>
-          )}
-          <span aria-hidden className="shrink-0 font-mono text-[0.6875rem] tabular-nums text-[var(--eld-syntax-line-number)]">
-            {`${elapsed} / ${total}`}
-          </span>
-          <button
-            type="button"
-            className={cn(codeControlClassName, "min-w-9 font-mono text-[0.6875rem] tabular-nums")}
-            aria-label={formatMessage(m.speed, { speed: speedLabel })}
-            onClick={cycleSpeed}
-            disabled={!cast}
-          >
-            {speedLabel}
-          </button>
-        </div>
+        <RecordingControls
+          state={state}
+          cast={cast}
+          markers={markers}
+          failed={failed}
+          messages={m}
+          locale={locale}
+          onToggle={toggle}
+          onRestart={restart}
+          onSeek={seek}
+          onSpeed={cycleSpeed}
+        />
       ) : null}
     </div>
   );

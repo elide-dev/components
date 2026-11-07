@@ -1,24 +1,18 @@
 import * as React from "react";
-import { WrapText } from "lucide-react";
 import type { CodeLine, InlineDecoration, LineDecoration, LineRange } from "../lib/code-model";
 import { parseLineRanges, parseNotations } from "../lib/notations";
-import { cn } from "../lib/utils";
+import { cn, keyed } from "../lib/utils";
 import { formatMessage } from "../i18n/format";
 import { useMessages } from "../i18n/context";
 import { CodeLines, type CodeAnnotationBadge, type CodeFold } from "./code-lines";
-import {
-  CodeSurface,
-  CodeSurfaceBadge,
-  CodeSurfaceTitleBar,
-  codeControlClassName,
-  codeSurfaceElevStyle,
-  type CodeChrome,
-} from "./code-surface";
+import { CodeSurface, CodeSurfaceTitleBar } from "./code-surface";
+import { CodeSurfaceActions } from "./code-surface-actions";
+import { codeSurfaceElevStyle, type CodeChrome } from "./code-surface-styles";
 import { isShellLang, syncLines } from "./highlight";
 import { getSyncHighlighter } from "./highlight-registry";
+import { scheduleIdle } from "../lib/schedule";
 
 export { CopyButton } from "./copy-button";
-import { CopyButton } from "./copy-button";
 
 export interface CodeAnnotation {
   /** 1-based line (relative to `startLine`). */
@@ -125,11 +119,10 @@ function useHighlightedLines(code: string, lang: string | undefined, provided: C
         .catch(() => {
           // Highlighting is an enhancement; plain text stays.
         });
-    const idle = typeof requestIdleCallback === "function" ? requestIdleCallback(run, { timeout: 2000 }) : setTimeout(run, 1);
+    const cancel = scheduleIdle(run);
     return () => {
       live = false;
-      if (typeof cancelIdleCallback === "function" && typeof requestIdleCallback === "function") cancelIdleCallback(idle as number);
-      else clearTimeout(idle as ReturnType<typeof setTimeout>);
+      cancel();
     };
   }, [code, lang, provided]);
   return upgraded && upgraded.code === code && upgraded.lang === lang ? upgraded.lines : initial;
@@ -271,14 +264,167 @@ function CodeBody({ file, id, lineNumbers, startLine, wrapped, lineLinks, maxLin
       ) : null}
       {annotations?.length ? (
         <ol className="eld-annotations">
-          {annotations.map((annotation, i) => (
-            <li key={i} id={`${id}-note-${i + 1}`} data-n={i + 1}>
-              {annotation.content}
+          {keyed(annotations, (annotation) => `line-${annotation.line}`).map(({ item, key }, i) => (
+            <li key={key} id={`${id}-note-${i + 1}`} data-n={i + 1}>
+              {item.content}
             </li>
           ))}
         </ol>
       ) : null}
     </>
+  );
+}
+
+interface FilesInput {
+  files?: CodeFile[];
+  notations: boolean;
+  filename?: string;
+  lang?: string;
+  code: string;
+  lines?: CodeLine[];
+  inline?: InlineDecoration[];
+  highlight?: string | number[];
+  decorations?: LineDecoration[];
+}
+
+/** The block's files (or its single source) with notations parsed and decorations merged. */
+function usePreparedFiles({ files, notations, filename, lang, code, lines, inline, highlight, decorations }: FilesInput): PreparedFile[] {
+  return React.useMemo(
+    () =>
+      files?.length
+        ? files.map((file) => prepare(file, notations))
+        : [prepare({ name: filename, lang, code, lines, inline, highlight }, notations, decorations)],
+    [files, notations, filename, lang, code, lines, inline, highlight, decorations],
+  );
+}
+
+type BodyDisplay = Pick<BodyProps, "lineNumbers" | "startLine" | "wrapped" | "maxLines" | "annotations">;
+
+/** One body, or a tab panel per file (all in the DOM, readable without script; inactive ones hidden). */
+function CodeBodies({
+  files,
+  multiFile,
+  active,
+  id,
+  linkPrefix,
+  bodyProps,
+  label,
+  children,
+}: {
+  files: PreparedFile[];
+  multiFile: boolean;
+  active: number;
+  id: string;
+  linkPrefix?: string;
+  bodyProps: BodyDisplay;
+  label: string;
+  children?: React.ReactNode;
+}) {
+  if (!multiFile) {
+    return (
+      <CodeBody {...bodyProps} file={files[0]} id={id} lineLinks={linkPrefix} label={label}>
+        {children}
+      </CodeBody>
+    );
+  }
+  return (
+    <>
+      {keyed(files, (file) => file.name ?? "file").map(({ item: file, key }, index) => (
+        <div key={key} role="tabpanel" id={`${id}-panel-${index}`} aria-labelledby={`${id}-tab-${index}`} hidden={index !== active}>
+          <CodeBody
+            {...bodyProps}
+            file={file}
+            id={`${id}-${slug(key)}`}
+            lineLinks={linkPrefix && `${linkPrefix}${slug(key)}-`}
+            annotations={index === active ? bodyProps.annotations : undefined}
+            label={file.name ?? label}
+          />
+        </div>
+      ))}
+    </>
+  );
+}
+
+/** Defaults that depend on the (deprecated) terminal variant. */
+function variantDefaults(variant: CodeBlockProps["variant"], lineNumbers: boolean | undefined, statusBar: boolean | undefined, lang: string | undefined) {
+  const legacyTerminal = variant === "terminal";
+  return {
+    legacyTerminal,
+    lineNumbers: lineNumbers ?? !legacyTerminal,
+    statusBar: statusBar ?? !legacyTerminal,
+    // The legacy terminal variant highlights the whole sample as shell.
+    grammar: legacyTerminal ? (lang ?? "bash") : lang,
+  };
+}
+
+/** Id prefix for permalinks, notes and tab panels: explicit, else the filename, else a React id. */
+function blockId(lineLinks: CodeBlockProps["lineLinks"], filename: string | undefined, fallback: string): string {
+  return slug(typeof lineLinks === "string" ? lineLinks : (filename ?? fallback)) || "code";
+}
+
+/** Wrap in a `<figure>` with a caption when one is given. */
+function CodeFigure({ caption, className, children }: { caption?: React.ReactNode; className?: string; children: React.ReactElement }) {
+  if (!caption) return children;
+  return (
+    <figure className={cn("eld-code-figure", className)}>
+      {children}
+      <figcaption className="eld-code-caption">{caption}</figcaption>
+    </figure>
+  );
+}
+
+/** File names as tabs in the title bar (roving focus; arrow keys, Home, End). */
+function FileTabs({ files, active, id, label, onSelect }: { files: PreparedFile[]; active: number; id: string; label: string; onSelect: (index: number) => void }) {
+  const ref = React.useRef<HTMLDivElement>(null);
+  function onKeyDown(event: React.KeyboardEvent<HTMLButtonElement>, index: number) {
+    const last = files.length - 1;
+    const moves: Record<string, number> = { ArrowRight: index === last ? 0 : index + 1, ArrowLeft: index === 0 ? last : index - 1, Home: 0, End: last };
+    const next = moves[event.key];
+    if (next === undefined) return;
+    event.preventDefault();
+    onSelect(next);
+    ref.current?.querySelectorAll<HTMLButtonElement>('[role="tab"]')[next]?.focus();
+  }
+  return (
+    <div ref={ref} role="tablist" aria-label={label} className="eld-file-tabs">
+      {keyed(files, (file) => file.name ?? "file").map(({ item: file, key }, index) => (
+        <button
+          key={key}
+          type="button"
+          role="tab"
+          id={`${id}-tab-${index}`}
+          aria-selected={index === active}
+          aria-controls={`${id}-panel-${index}`}
+          tabIndex={index === active ? 0 : -1}
+          onClick={() => onSelect(index)}
+          onKeyDown={(event) => onKeyDown(event, index)}
+          className="eld-file-tab"
+        >
+          <bdi dir="ltr">{file.name}</bdi>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/** The vim-style status bar: mode, file, encoding, language and line count. */
+function StatusBar({ file }: { file: PreparedFile }) {
+  const m = useMessages().codeBlock;
+  return (
+    <div data-slot="code-block-status" className="flex min-h-[1.875rem] flex-wrap items-center border-t font-mono text-[0.6875rem] font-semibold" style={codeSurfaceElevStyle}>
+      <span className="inline-flex min-h-[1.875rem] items-center whitespace-nowrap px-3 tracking-normal" style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}>
+        {m.normal}
+      </span>
+      {file.name ? (
+        <span className="whitespace-nowrap px-3 py-1 tracking-wide text-[var(--eld-syntax-line-number)]">
+          <bdi dir="ltr">{file.name}</bdi>
+        </span>
+      ) : null}
+      <span className="flex-1" />
+      <span className="whitespace-nowrap px-3.5 py-1 tracking-wide text-[var(--eld-syntax-line-number)]">
+        utf-8 · {file.lang ?? m.text} · {formatMessage(m.lines, { count: file.code.split("\n").length })}
+      </span>
+    </div>
   );
 }
 
@@ -308,70 +454,20 @@ export function CodeBlock({
 }: CodeBlockProps) {
   const m = useMessages();
   const reactId = React.useId();
-  const legacyTerminal = variant === "terminal";
-  const lineNumbers = lineNumbersProp ?? !legacyTerminal;
-  const statusBar = statusBarProp ?? !legacyTerminal;
+  const { legacyTerminal, lineNumbers, statusBar, grammar } = variantDefaults(variant, lineNumbersProp, statusBarProp, lang);
   const [wrapped, setWrapped] = React.useState(wrap === true);
-  // The legacy terminal variant highlights the whole sample as shell.
-  const grammar = legacyTerminal ? (lang ?? "bash") : lang;
 
-  const prepared = React.useMemo(
-    () =>
-      files?.length
-        ? files.map((file) => prepare(file, notations))
-        : [prepare({ name: filename, lang: grammar, code, lines: linesProp, inline, highlight }, notations, decorations)],
-    [files, notations, filename, grammar, code, linesProp, inline, highlight, decorations],
-  );
+  const prepared = usePreparedFiles({ files, notations, filename, lang: grammar, code, lines: linesProp, inline, highlight, decorations });
   const [active, setActive] = React.useState(0);
   const current = prepared[Math.min(active, prepared.length - 1)];
-  const id = slug(typeof lineLinks === "string" ? lineLinks : filename ?? reactId) || "code";
+  const id = blockId(lineLinks, filename, reactId);
   const linkPrefix = lineLinks ? `${id}-` : undefined;
-  const tabsRef = React.useRef<HTMLDivElement>(null);
-
-  function onTabKey(event: React.KeyboardEvent<HTMLButtonElement>, index: number) {
-    const last = prepared.length - 1;
-    const next =
-      event.key === "ArrowRight" ? (index === last ? 0 : index + 1)
-      : event.key === "ArrowLeft" ? (index === 0 ? last : index - 1)
-      : event.key === "Home" ? 0
-      : event.key === "End" ? last
-      : undefined;
-    if (next === undefined) return;
-    event.preventDefault();
-    setActive(next);
-    tabsRef.current?.querySelectorAll<HTMLButtonElement>('[role="tab"]')[next]?.focus();
-  }
 
   const title = files?.length ? (
-    <div ref={tabsRef} role="tablist" aria-label={m.codeBlock.files} className="eld-file-tabs">
-      {prepared.map((file, index) => (
-        <button
-          key={file.name ?? index}
-          type="button"
-          role="tab"
-          id={`${id}-tab-${index}`}
-          aria-selected={index === active}
-          aria-controls={`${id}-panel-${index}`}
-          tabIndex={index === active ? 0 : -1}
-          onClick={() => setActive(index)}
-          onKeyDown={(event) => onTabKey(event, index)}
-          className="eld-file-tab"
-        >
-          <bdi dir="ltr">{file.name}</bdi>
-        </button>
-      ))}
-    </div>
+    <FileTabs files={prepared} active={active} id={id} label={m.codeBlock.files} onSelect={setActive} />
   ) : (
     filename ?? (legacyTerminal ? m.codeBlock.terminal : undefined)
   );
-
-  const bodyProps = {
-    lineNumbers,
-    startLine,
-    wrapped,
-    maxLines,
-    annotations,
-  };
 
   const surface = (
     <CodeSurface raised chrome={chrome} data-slot="code-block" className={caption ? undefined : className}>
@@ -379,77 +475,32 @@ export function CodeBlock({
         chrome={chrome}
         title={title}
         actions={
-          <>
-            {current.lang ? <CodeSurfaceBadge>{current.lang}</CodeSurfaceBadge> : null}
+          <CodeSurfaceActions
+            lang={current.lang}
+            wrapped={wrap === "toggle" ? wrapped : undefined}
+            onWrapChange={setWrapped}
+            copyValue={current.code}
+          >
             {actions}
-            {wrap === "toggle" ? (
-              <button
-                type="button"
-                className={codeControlClassName}
-                aria-label={m.codeBlock.wrap}
-                aria-pressed={wrapped}
-                onClick={() => setWrapped((value) => !value)}
-              >
-                <WrapText aria-hidden />
-              </button>
-            ) : null}
-            <CopyButton value={current.code} label="" className="px-1.5 py-1.5" />
-          </>
+          </CodeSurfaceActions>
         }
       />
 
-      {files?.length ? (
-        prepared.map((file, index) => (
-          // Every file stays in the DOM (readable without script); inactive panels are hidden.
-          <div
-            key={file.name ?? index}
-            role="tabpanel"
-            id={`${id}-panel-${index}`}
-            aria-labelledby={`${id}-tab-${index}`}
-            hidden={index !== active}
-          >
-            <CodeBody
-              {...bodyProps}
-              file={file}
-              id={`${id}-${slug(file.name ?? String(index))}`}
-              lineLinks={linkPrefix ? `${linkPrefix}${slug(file.name ?? String(index))}-` : undefined}
-              annotations={index === active ? annotations : undefined}
-              label={file.name ?? m.codeSample.code}
-            />
-          </div>
-        ))
-      ) : (
-        <CodeBody {...bodyProps} file={current} id={id} lineLinks={linkPrefix} label={filename ?? m.codeSample.code}>
-          {children}
-        </CodeBody>
-      )}
+      <CodeBodies
+        files={prepared}
+        multiFile={!!files?.length}
+        active={active}
+        id={id}
+        linkPrefix={linkPrefix}
+        bodyProps={{ lineNumbers, startLine, wrapped, maxLines, annotations }}
+        label={filename ?? m.codeSample.code}
+      >
+        {children}
+      </CodeBodies>
 
-      {/* vim status bar */}
-      {statusBar ? (
-        <div data-slot="code-block-status" className="flex min-h-[1.875rem] flex-wrap items-center border-t font-mono text-[0.6875rem] font-semibold" style={codeSurfaceElevStyle}>
-          <span
-            className="inline-flex min-h-[1.875rem] items-center whitespace-nowrap px-3 tracking-normal"
-            style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}
-          >
-            {m.codeBlock.normal}
-          </span>
-          {current.name ? (
-            <span className="whitespace-nowrap px-3 py-1 tracking-wide text-[var(--eld-syntax-line-number)]"><bdi dir="ltr">{current.name}</bdi></span>
-          ) : null}
-          <span className="flex-1" />
-          <span className="whitespace-nowrap px-3.5 py-1 tracking-wide text-[var(--eld-syntax-line-number)]">
-            utf-8 · {current.lang ?? m.codeBlock.text} · {formatMessage(m.codeBlock.lines, { count: current.code.split("\n").length })}
-          </span>
-        </div>
-      ) : null}
+      {statusBar ? <StatusBar file={current} /> : null}
     </CodeSurface>
   );
 
-  if (!caption) return surface;
-  return (
-    <figure className={cn("eld-code-figure", className)}>
-      {surface}
-      <figcaption className="eld-code-caption">{caption}</figcaption>
-    </figure>
-  );
+  return <CodeFigure caption={caption} className={className}>{surface}</CodeFigure>;
 }

@@ -22,7 +22,9 @@ describe("shiki", () => {
     const classes = result.lines[0].tokens.map((token) => token.style?.className);
     expect(classes).toContain("tk-keyword");
     expect(classes).toContain("tk-string");
-    expect(JSON.parse(JSON.stringify(result))).toEqual(result);
+    // Serializable, so a build step can hand it to the client as data.
+    const serialized = JSON.stringify(result);
+    expect(JSON.parse(serialized)).toEqual(result);
   });
 
   it("registers a synchronous highlighter once languages are preloaded", async () => {
