@@ -44,7 +44,13 @@ const messages: Messages = {
     "breakpoint": "断点",
     "currentLine": "当前行",
     "warning": "警告",
-    "error": "错误"
+    "error": "错误",
+    "showMore": "再显示 {count} 行",
+    "showLess": "收起",
+    "line": "第 {n} 行",
+    "note": "注释 {n}",
+    "folded": "已隐藏 {count} 行",
+    "files": "文件"
   },
   "terminal": {
     "copyCommands": "复制命令",

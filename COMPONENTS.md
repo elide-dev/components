@@ -40,7 +40,8 @@ radii, type. See the package README.
 | Component | Status | Composition / props | Source |
 | --- | --- | --- | --- |
 | `Callout` | **done** | tone: note·tip·important·warning·caution; `title` | guide admonitions |
-| `CodeBlock` | **done** | `filename`, `lang`, `lineNumbers`, `startLine`, `decorations` (highlight · add · remove · breakpoint · breakpoint-hit · cursor · warning · error · focus · flash), `wrap` (bool · toggle), `statusBar` (vim NORMAL), `chrome`; slot: `CopyButton`. `variant="terminal"` is deprecated → `Terminal` | SQLite editor, snippet blocks |
+| `CodeBlock` | **done** | `code`+`lang` or build-time `lines`/`inline` from `highlightCode()`, `files` (tabs), `[!code …]` notations, `highlight` ranges, `decorations` (highlight · add · remove · breakpoint · cursor · warning · error · focus · flash · fold), `annotations` (code tour), `lineLinks`, `maxLines`, `wrap`, `caption`, `actions`, `statusBar`, `chrome`. `variant="terminal"` is deprecated → `Terminal` | SQLite editor, snippet blocks |
+| `CodeGroup` | **done** | tabs over code surfaces; `syncKey` syncs and remembers the choice page-wide; `labels`, `defaultValue` | bun · npm · pnpm, TS · Python · Kotlin |
 | `Terminal` | **done** | `code`/`lines` (commands · ANSI output · comments · `exitCode`), `prompt` (glyph or user/host/cwd), zsh-style command highlighting with `commandHref`/`subcommands`, `wrap` (default on · toggle), `copy` (commands · transcript; per-command buttons), `chrome`, `recording` (asciicast `src`/`cast` or `synthesize`; poster, autoplay, speed, markers, `rows`) | terminal samples, recorded runs |
 | `CodeSample` | **done** | `layout`: below · beside (container query ≥ 48rem) · tabs; `labels` | code + its run |
 | `CopyButton` | **done** | `value`, `size` | code block + copy-command |
@@ -73,8 +74,17 @@ site is on the catalog.
 
 ## Notes
 
-- **CodeBlock** currently uses `prism-react-renderer`; import `CopyButton` from
-  its own leaf entry point when highlighting is unnecessary.
+- **Highlighting** is Shiki (JS regex engine, fine-grained grammars, a theme of
+  `--eld-syntax-*` variables emitted as `tk-*` classes). Preferred: call
+  `highlightCode(code, lang, { twoslash })` from `@elide/ui/components/shiki`
+  at build time and spread the result into `<CodeBlock>`; the client then never
+  loads Shiki. Otherwise `CodeBlock` renders plain text (SSR-identical, no
+  hydration mismatch) and upgrades with a lazily imported, idle-scheduled
+  Shiki chunk; `preloadHighlighter()` makes cached grammars apply before paint.
+  Shell languages use the built-in shell tokenizer. Twoslash is an optional
+  build-time peer and never enters browser bundles. C++ and Ruby grammars are
+  left out (each ~900 KB). Regenerate story fixtures with
+  `bun scripts/generate-code-fixtures.ts` in `packages/ui`.
 - **Code rows** are CSS grids (`[marks] [number] [prompt] [content]`) rendered
   by `CodeLines` for both surfaces. Numbers, prompts and gutter glyphs are
   pseudo-elements, so selection and copy return only the code; wrapped lines
@@ -92,11 +102,13 @@ site is on the catalog.
   (no measurement), changed rows remount so playback causes no layout shift,
   and playback pauses offscreen. Full-screen TUIs are out of scope for the
   lite VT. Budgets (gzip, React external) are enforced by
-  `apps/benchmark/bundle-check.ts`: Terminal ≤ 30 KB (no Prism), CodeBlock ≤
-  48 KB (no terminal runtime; Prism is ~30 KB of it until build-time Shiki).
+  `apps/benchmark/bundle-check.ts`, measured with code splitting: CodeBlock ≤
+  24 KB (Shiki and the terminal runtime load lazily or not at all), Terminal ≤
+  30 KB, CodeSample/CodeGroup ≤ 25 KB, the lazy Shiki runtime ≤ 64 KB (never
+  the TypeScript compiler).
   `apps/benchmark/code.html` is the Lighthouse and `code-check.mjs` target.
-  Roadmap: Shiki, then scripted scenes (stepping, coverage, hotspots), then
-  editable `onRun`.
+  Roadmap: scripted scenes (stepping, coverage, hotspots), then editable
+  `onRun`.
 - **Recording fixtures** (`src/stories/fixtures/casts.ts`) are real Elide runs:
   a bash script prints a prompt, types the command with small sleeps, then
   `eval`s it; capture with `asciinema rec --headless --window-size 72x12

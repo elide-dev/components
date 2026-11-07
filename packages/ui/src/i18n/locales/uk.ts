@@ -44,7 +44,13 @@ const messages: Messages = {
     "breakpoint": "Точка зупинки",
     "currentLine": "Поточний рядок",
     "warning": "Попередження",
-    "error": "Помилка"
+    "error": "Помилка",
+    "showMore": "Показати ще рядків: {count}",
+    "showLess": "Показати менше рядків",
+    "line": "Рядок {n}",
+    "note": "Примітка {n}",
+    "folded": "Приховано рядків: {count}",
+    "files": "Файли"
   },
   "terminal": {
     "copyCommands": "Копіювати команди",

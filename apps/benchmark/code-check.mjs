@@ -34,6 +34,10 @@ try {
       await page.goto(url);
       await page.evaluate(() => document.fonts.ready);
 
+      // Shiki loads lazily and upgrades the plain server-rendered source in place.
+      await page.locator("code.language-ts .tk-keyword").first().waitFor();
+      assert.equal(await page.evaluate(() => window.__cls), 0, "Highlighting must not shift layout");
+
       // The inline platform script picked a chrome variant; CSS alone shows it.
       const os = await page.evaluate(() => document.documentElement.dataset.os);
       assert.ok(["mac", "windows", "linux"].includes(os), `data-os is set: ${os}`);

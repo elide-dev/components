@@ -1,6 +1,6 @@
 /**
  * The annotated code model: one framework-neutral shape that every code and
- * terminal surface renders through. Producers (Prism/Shiki highlighting, the
+ * terminal surface renders through. Producers (Shiki, the shell tokenizer, the
  * ANSI/VT interpreter in `vt.ts`) emit `CodeLine`s; decorations and insights
  * layer on top without knowing which producer made the tokens.
  *
@@ -25,7 +25,7 @@ export interface TokenStyle {
   strike?: boolean;
   /** Rendered as transparent text that still occupies its cells (SGR 8). */
   hidden?: boolean;
-  /** Extra class names (e.g. Prism `token keyword`) for consumers that style by class. */
+  /** Extra class names (e.g. Shiki `tk-keyword`) for consumers that style by class. */
   className?: string;
 }
 

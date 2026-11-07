@@ -2,10 +2,11 @@ import React from "react";
 import { CodeBlock } from "@elide/ui/components/code-block";
 import { CodeSample } from "@elide/ui/components/code-sample";
 import { Terminal } from "@elide/ui/components/terminal";
+import type { HighlightedCode } from "@elide/ui/components/shiki";
 
 const ESC = "\x1b";
 
-const source = `import { Database } from "elide:sqlite";
+export const source = `import { Database } from "elide:sqlite";
 
 const db = new Database(":memory:");
 db.exec("CREATE TABLE users (id INTEGER PRIMARY KEY, name TEXT)");
@@ -16,7 +17,11 @@ console.log(\`Hello from \${user.name}!\`);`;
 
 const run = `$ elide run app.ts\n${ESC}[32m✓${ESC}[0m Hello from ${ESC}[1;35mElide${ESC}[0m!`;
 
-export function CodeApp() {
+/**
+ * `highlighted` comes from `highlightCode()` at build time (see vite.config.ts)
+ * and is serialized into the page for hydration, so the client never loads Shiki.
+ */
+export function CodeApp({ highlighted }: { highlighted?: HighlightedCode }) {
   return <>
     <a className="skip" href="#main">Skip to content</a>
     <header><a href="/" className="wordmark">Elide</a></header>
@@ -27,7 +32,7 @@ export function CodeApp() {
       <section aria-labelledby="sample-heading">
         <h2 id="sample-heading">Query SQLite from TypeScript</h2>
         <CodeSample layout="beside">
-          <CodeBlock filename="app.ts" lang="ts" code={source} statusBar={false}
+          <CodeBlock filename="app.ts" lang="ts" code={highlighted?.code ?? source} lines={highlighted?.lines} statusBar={false}
             decorations={[{ line: 1, kind: "highlight" }, { line: 7, kind: "breakpoint" }, { line: 8, kind: "cursor" }]} />
           <Terminal code={run} recording={{ synthesize: { seed: 2 }, autoplay: "visible" }} data-testid="code-recording" />
         </CodeSample>

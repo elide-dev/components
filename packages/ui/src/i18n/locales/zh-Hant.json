@@ -42,7 +42,13 @@
     "breakpoint": "中斷點",
     "currentLine": "目前行",
     "warning": "警告",
-    "error": "錯誤"
+    "error": "錯誤",
+    "showMore": "再顯示 {count} 行",
+    "showLess": "收合",
+    "line": "第 {n} 行",
+    "note": "註解 {n}",
+    "folded": "已隱藏 {count} 行",
+    "files": "檔案"
   },
   "terminal": {
     "copyCommands": "複製指令",

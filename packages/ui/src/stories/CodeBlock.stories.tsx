@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, within } from "storybook/test";
 import { CodeBlock } from "../components/code-block";
+import { twoslashSample } from "./fixtures/twoslash";
 
 const meta = {
   title: "Docs/CodeBlock",
@@ -21,8 +22,8 @@ const user = db.prepare<{ id: number; name: string }>(
 ).get(1);
 console.log(\`Hello from \${user.name}!\`);`;
 
-// Code is syntax-highlighted by the component from `lang` (Prism, themed via the
-// --eld-syntax-* tokens) — stories just pass raw source.
+// Code is highlighted from `lang` by a lazily loaded Shiki chunk (preloaded by
+// the Storybook loader, as a docs site would), themed via --eld-syntax-*.
 export const Editor: Story = {
   args: {
     variant: "editor",
@@ -113,6 +114,115 @@ export const Chrome: Story = {
       <CodeBlock {...args} chrome="windows" />
       <CodeBlock {...args} chrome="linux" />
       <CodeBlock {...args} chrome="none" />
+    </div>
+  ),
+};
+
+/** Build-time Shiki + Twoslash output: hover or focus an identifier to see its real type. */
+export const TypeHovers: Story = {
+  args: { ...twoslashSample, filename: "app.ts", statusBar: false },
+  render: (args) => (
+    <div style={{ maxWidth: 680 }}>
+      <CodeBlock {...args} />
+    </div>
+  ),
+};
+
+/** `[!code …]` notation comments: diff, highlight, focus and word marks, stripped from the text and from copy. */
+export const Notations: Story = {
+  args: {
+    filename: "server.ts",
+    lang: "ts",
+    statusBar: false,
+    code: `import { serve } from "elide:http";
+// [!code word:handler]
+const handler = (request: Request) => {
+  return new Response("Hello"); // [!code --]
+  return Response.json({ hello: "elide" }); // [!code ++]
+};
+
+serve({ port: 3000, handler }); // [!code focus]`,
+  },
+  render: (args) => (
+    <div style={{ maxWidth: 640 }}>
+      <CodeBlock {...args} />
+    </div>
+  ),
+};
+
+/** Several files behind tabs in the title bar (arrow keys move between them). */
+export const Files: Story = {
+  args: {
+    statusBar: true,
+    files: [
+      { name: "app.ts", lang: "ts", code: `import { greet } from "./greet.py";\n\nconsole.log(greet("Elide"));` },
+      { name: "greet.py", lang: "py", code: `def greet(name: str) -> str:\n    return f"Hello, {name}!"` },
+      { name: "elide.pkl", lang: "pkl", code: `amends "elide:project.pkl"\n\nname = "polyglot-demo"` },
+    ],
+  },
+  render: (args) => (
+    <div style={{ maxWidth: 640 }}>
+      <CodeBlock {...args} />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(canvas.getByRole("tab", { name: "greet.py" }));
+    await expect(canvas.getByRole("tab", { name: "greet.py" })).toHaveAttribute("aria-selected", "true");
+  },
+};
+
+/** A code tour: numbered badges link lines to notes; line numbers are permalinks. */
+export const Annotated: Story = {
+  args: {
+    filename: "app.ts",
+    lang: "ts",
+    code: tsSource,
+    statusBar: false,
+    lineLinks: true,
+    annotations: [
+      { line: 1, content: "Elide ships SQLite as a built-in module; no native addon to install." },
+      { line: 3, content: "An in-memory database: perfect for tests and samples." },
+      { line: 6, content: "Statements are typed through the generic parameter." },
+    ],
+  },
+  render: (args) => (
+    <div style={{ maxWidth: 640 }}>
+      <CodeBlock {...args} />
+    </div>
+  ),
+};
+
+/** Long samples collapse to `maxLines`; `fold` ranges hide boilerplate behind a button. */
+export const Collapsed: Story = {
+  args: {
+    filename: "app.ts",
+    lang: "ts",
+    statusBar: false,
+    maxLines: 6,
+    decorations: [{ line: { start: 2, end: 5 }, kind: "fold" }],
+    code: `${tsSource}\n\nfor (const row of db.prepare("SELECT * FROM users").all()) {\n  console.log(row);\n}\n\ndb.close();`,
+  },
+  render: (args) => (
+    <div style={{ maxWidth: 640 }}>
+      <CodeBlock {...args} />
+    </div>
+  ),
+};
+
+/** A captioned figure with an extra title-bar action. */
+export const Captioned: Story = {
+  args: {
+    filename: "app.ts",
+    lang: "ts",
+    code: 'console.log("Hello from Elide!");',
+    statusBar: false,
+    highlight: "1",
+    caption: "Run it with elide run app.ts — no build step.",
+  },
+  render: (args) => (
+    <div style={{ maxWidth: 640 }}>
+      <CodeBlock {...args} />
     </div>
   ),
 };

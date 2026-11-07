@@ -3,7 +3,8 @@ export { buttonVariants } from "./components/button-variants";
 export { Badge, type BadgeProps } from "./components/badge";
 export { badgeVariants } from "./components/badge-variants";
 export { Callout, type CalloutProps } from "./components/callout";
-export { CodeBlock, type CodeBlockProps } from "./components/code-block";
+export { CodeBlock, type CodeBlockProps, type CodeAnnotation, type CodeFile } from "./components/code-block";
+export { CodeGroup, type CodeGroupProps } from "./components/code-group";
 export {
   Terminal,
   type TerminalProps, type TerminalPrompt, type TerminalLine, type TranscriptMode,
@@ -14,8 +15,11 @@ export {
   CodeSurface, CodeSurfaceTitleBar, CodeSurfaceBadge, codeChromeScript,
   type CodeChrome, type CodeSurfaceProps, type CodeSurfaceTitleBarProps,
 } from "./components/code-surface";
-export { CodeLines, tokenStyleToCss, type CodeLinesProps } from "./components/code-lines";
-export { highlightLines } from "./components/highlight";
+export { CodeLines, tokenStyleToCss, type CodeLinesProps, type CodeFold, type CodeAnnotationBadge } from "./components/code-lines";
+export { syncLines, shellLines, plainLines, isShellLang } from "./components/highlight";
+// Shiki lives in its own entry, `@elide/ui/components/shiki`, so root imports never load it.
+export type { HighlightedCode, HighlightOptions, TwoslashOptions } from "./components/shiki";
+export { parseNotations, parseLineRanges, type ParsedNotations } from "./lib/notations";
 export { tokenizeShell, DEFAULT_SUBCOMMANDS, type ShellTokenKind, type ShellTokenizeOptions } from "./lib/shell-tokens";
 export { usePlayback, prefersReducedMotion, type UsePlaybackOptions } from "./components/use-playback";
 export { createPlayback, cueIndexAt, type Playback, type PlaybackState, type PlaybackOptions } from "./lib/playback";

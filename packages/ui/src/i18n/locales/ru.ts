@@ -44,7 +44,13 @@ const messages: Messages = {
     "breakpoint": "Точка останова",
     "currentLine": "Текущая строка",
     "warning": "Предупреждение",
-    "error": "Ошибка"
+    "error": "Ошибка",
+    "showMore": "Показать ещё строк: {count}",
+    "showLess": "Показать меньше строк",
+    "line": "Строка {n}",
+    "note": "Примечание {n}",
+    "folded": "Скрыто строк: {count}",
+    "files": "Файлы"
   },
   "terminal": {
     "copyCommands": "Копировать команды",

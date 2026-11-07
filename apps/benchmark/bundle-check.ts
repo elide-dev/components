@@ -11,30 +11,44 @@ for (const [name, exported] of [["button", "Button"], ["copy-command", "CopyComm
   const source = await result.outputs[0].text();
   const gzipBytes = gzipSync(source).byteLength;
   if (gzipBytes > 14_000) throw new Error(`${exported} exceeds the 14 KB gzip budget: ${gzipBytes}`);
-  if (/Prism|prism-react-renderer/.test(source)) throw new Error(`${exported} unexpectedly bundles Prism`);
+  if (/codeToTokensBase/.test(source)) throw new Error(`${exported} unexpectedly bundles Shiki`);
   console.log(`${exported}: ${source.length} bytes minified, ${gzipBytes} bytes gzip (React external).`);
 }
 
-// Code surfaces. Terminal carries the VT, shell tokenizer and recording player
-// (tailwind-merge, shared by every component, is ~8.7 KB of it) but never Prism;
-// CodeBlock never carries the terminal/recording runtime. Markers are strings
-// that survive minification (Prism grammars' `lookbehind` key, asciicast errors).
-for (const [name, exported, budget, forbidden, label] of [
-  ["terminal", "Terminal", 30_000, /\blookbehind\b/, "Prism"],
-  ["code-block", "CodeBlock", 48_000, /Unsupported asciicast version|eld-terminal-screen/, "the terminal recording runtime"],
-  ["code-sample", "CodeSample", 25_000, /\blookbehind\b|Unsupported asciicast version/, "a code surface it does not render"],
-] as const) {
-  const result = await Bun.build({
-    entrypoints: [`./node_modules/@elide/ui/dist/components/${name}.js`],
-    target: "browser", minify: true, external: ["react", "react/jsx-runtime", "react-dom"],
-  });
-  if (!result.success) throw new AggregateError(result.logs, `Failed to build ${exported}`);
-  const source = await result.outputs[0].text();
-  const gzipBytes = gzipSync(source).byteLength;
-  if (gzipBytes > budget) throw new Error(`${exported} exceeds its ${budget / 1000} KB gzip budget: ${gzipBytes}`);
-  if (forbidden.test(source)) throw new Error(`${exported} unexpectedly bundles ${label}`);
-  console.log(`${exported}: ${gzipBytes} bytes gzip (React external); excludes ${label}.`);
-}
+// Code surfaces, built with code splitting as a consumer's bundler would, so
+// lazy imports stay lazy. Budgets cover each entry chunk (gzip, React external).
+// Markers survive minification: Shiki's `codeToTokensBase`, asciicast errors,
+// the TypeScript compiler's path.
+import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+const splitDir = mkdtempSync(join(tmpdir(), "elide-bundle-"));
+try {
+  for (const [name, exported, budget, forbidden, label] of [
+    ["code-block", "CodeBlock", 24_000, /codeToTokensBase|Unsupported asciicast version/, "Shiki or the terminal runtime (Shiki loads lazily)"],
+    ["terminal", "Terminal", 30_000, /codeToTokensBase/, "Shiki"],
+    ["code-sample", "CodeSample", 25_000, /codeToTokensBase|Unsupported asciicast version/, "a code surface it does not render"],
+    ["code-group", "CodeGroup", 25_000, /codeToTokensBase|Unsupported asciicast version/, "a code surface it does not render"],
+    ["shiki", "Shiki runtime (lazy)", 64_000, /typescript\/lib/, "the TypeScript compiler (Twoslash stays a build-time peer)"],
+  ] as const) {
+    const outdir = join(splitDir, name);
+    const result = await Bun.build({
+      entrypoints: [`./node_modules/@elide/ui/dist/components/${name}.js`],
+      target: "browser", minify: true, splitting: true, outdir,
+      external: ["react", "react/jsx-runtime", "react-dom"],
+    });
+    if (!result.success) throw new AggregateError(result.logs, `Failed to build ${exported}`);
+    const entry = result.outputs.find(output => output.kind === "entry-point")!;
+    const source = readFileSync(entry.path, "utf8");
+    // The entry plus the chunks it imports statically (not lazily).
+    const statics = [...source.matchAll(/(?:^|[;}])\s*import\s*(?:[^"';]*from\s*)?"(\.\/chunk-[\w-]+\.js)"/g)].map(match => readFileSync(join(outdir, match[1]), "utf8"));
+    const eager = [source, ...statics].join("\n");
+    const gzipBytes = gzipSync(eager).byteLength;
+    if (gzipBytes > budget) throw new Error(`${exported} exceeds its ${budget / 1000} KB gzip budget: ${gzipBytes}`);
+    if (forbidden.test(eager)) throw new Error(`${exported} unexpectedly bundles ${label}`);
+    console.log(`${exported}: ${gzipBytes} bytes gzip eager (React external); excludes ${label}.`);
+  }
+} finally { rmSync(splitDir, { recursive: true, force: true }); }
 
 // Catalogs are data-only ESM. A single locale must never pull React, other
 // languages, or a runtime message compiler into a consumer's bundle.
