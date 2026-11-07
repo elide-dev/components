@@ -1,6 +1,6 @@
 {
   "name": "@elide/tokens",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Framework-agnostic design tokens for Elide \u2014 CSS custom properties, a Tailwind v4 theme, and a typed JS/TS object. No framework dependency; safe to consume from any repo.",
   "license": "UNLICENSED",
   "type": "module",
