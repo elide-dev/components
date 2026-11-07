@@ -760,7 +760,7 @@
   .eld-glyph.eld-gx-d { --eld-gx-d: linear-gradient(currentColor, currentColor); }
   .eld-glyph.eld-gx-l { --eld-gx-l: linear-gradient(currentColor, currentColor); }
   .eld-glyph.eld-gx-r { --eld-gx-r: linear-gradient(currentColor, currentColor); }
-  .eld-glyph.eld-gx-heavy { --eld-gx-width: 2px; }
+  .eld-glyph.eld-gx-h { --eld-gx-width: 2px; }
 
   /* Cells have fractional sizes: a line cell overlaps its neighbours by a hair so segments
    * join instead of anti-aliasing into dashes. Blocks keep exact edges (below). */

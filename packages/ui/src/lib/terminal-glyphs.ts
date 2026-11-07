@@ -4,64 +4,50 @@
  * the DOM for copy; `code-surface.css` paints it.
  */
 
-/** Arms (up, down, left, right), heavy, rounded and double box-drawing glyphs. */
-const BOX: Record<string, string> = {
-  "─": "eld-gx-l eld-gx-r",
-  "━": "eld-gx-l eld-gx-r eld-gx-heavy",
-  "│": "eld-gx-u eld-gx-d",
-  "┃": "eld-gx-u eld-gx-d eld-gx-heavy",
-  "┌": "eld-gx-d eld-gx-r",
-  "┐": "eld-gx-d eld-gx-l",
-  "└": "eld-gx-u eld-gx-r",
-  "┘": "eld-gx-u eld-gx-l",
-  "├": "eld-gx-u eld-gx-d eld-gx-r",
-  "┤": "eld-gx-u eld-gx-d eld-gx-l",
-  "┬": "eld-gx-d eld-gx-l eld-gx-r",
-  "┴": "eld-gx-u eld-gx-l eld-gx-r",
-  "┼": "eld-gx-u eld-gx-d eld-gx-l eld-gx-r",
-  "╭": "eld-gx-arc eld-gx-arc-dr",
-  "╮": "eld-gx-arc eld-gx-arc-dl",
-  "╯": "eld-gx-arc eld-gx-arc-ul",
-  "╰": "eld-gx-arc eld-gx-arc-ur",
-  "═": "eld-gx-double eld-gx-double-lr",
-  "║": "eld-gx-double eld-gx-double-ud",
-  "╔": "eld-gx-double eld-gx-double-dr",
-  "╗": "eld-gx-double eld-gx-double-dl",
-  "╚": "eld-gx-double eld-gx-double-ur",
-  "╝": "eld-gx-double eld-gx-double-ul",
+/** Box drawing by arm (up, down, left, right; `h` heavy), and the rounded and double corners. */
+const ARMS: Record<string, string> = {
+  "─": "lr", "━": "lrh", "│": "ud", "┃": "udh",
+  "┌": "dr", "┐": "dl", "└": "ur", "┘": "ul",
+  "├": "udr", "┤": "udl", "┬": "dlr", "┴": "ulr", "┼": "udlr",
 };
+const ARC = "╭dr╮dl╯ul╰ur";
+const DOUBLE = "═lr║ud╔dr╗dl╚ur╝ul";
 
-/** Block elements: left bars, lower bars, halves and shades. */
-const BLOCK: Record<string, string> = {
-  "█": "eld-gb-full",
-  "▉": "eld-gb-left eld-gb-7",
-  "▊": "eld-gb-left eld-gb-6",
-  "▋": "eld-gb-left eld-gb-5",
-  "▌": "eld-gb-left eld-gb-4",
-  "▍": "eld-gb-left eld-gb-3",
-  "▎": "eld-gb-left eld-gb-2",
-  "▏": "eld-gb-left eld-gb-1",
-  "▐": "eld-gb-right eld-gb-4",
-  "▕": "eld-gb-right eld-gb-1",
-  "▁": "eld-gb-lower eld-gb-1",
-  "▂": "eld-gb-lower eld-gb-2",
-  "▃": "eld-gb-lower eld-gb-3",
-  "▄": "eld-gb-lower eld-gb-4",
-  "▅": "eld-gb-lower eld-gb-5",
-  "▆": "eld-gb-lower eld-gb-6",
-  "▇": "eld-gb-lower eld-gb-7",
-  "▀": "eld-gb-upper eld-gb-4",
-  "▔": "eld-gb-upper eld-gb-1",
-  "░": "eld-gb-shade eld-gb-shade-1",
-  "▒": "eld-gb-shade eld-gb-shade-2",
-  "▓": "eld-gb-shade eld-gb-shade-3",
-};
+/** Block elements: each string lists a bar's eighths in order (1/8 first). */
+const BARS: [string, string][] = [
+  ["left", "▏▎▍▌▋▊▉"],
+  ["lower", "▁▂▃▄▅▆▇"],
+];
 
 /** Characters a terminal draws itself rather than taking from the font. */
 export const DRAWN = /[─-▟]/;
 
+const pair = (table: string, ch: string) => {
+  const at = table.indexOf(ch);
+  return at < 0 ? undefined : table.slice(at + 1, at + 3);
+};
+
+function drawn(ch: string): string | undefined {
+  if (!DRAWN.test(ch)) return undefined;
+  if (ch === "█") return "eld-gb-full";
+  const arms = ARMS[ch];
+  if (arms) return [...arms].map((arm) => `eld-gx-${arm}`).join(" ");
+  const arc = pair(ARC, ch);
+  if (arc) return `eld-gx-arc eld-gx-arc-${arc}`;
+  const double = pair(DOUBLE, ch);
+  if (double) return `eld-gx-double eld-gx-double-${double}`;
+  for (const [side, eighths] of BARS) {
+    const at = eighths.indexOf(ch);
+    if (at >= 0) return `eld-gb-${side} eld-gb-${at + 1}`;
+  }
+  const edge = { "▀": "upper 4", "▔": "upper 1", "▐": "right 4", "▕": "right 1" }[ch];
+  if (edge) return `eld-gb-${edge.replace(" ", " eld-gb-")}`;
+  const shade = "░▒▓".indexOf(ch);
+  return shade < 0 ? undefined : `eld-gb-shade eld-gb-shade-${shade + 1}`;
+}
+
 /** Classes that draw `ch`, or `undefined` for a character the font sets. */
 export function glyphClass(ch: string): string | undefined {
-  const drawn = BOX[ch] ?? BLOCK[ch];
-  return drawn ? `eld-glyph ${drawn}` : undefined;
+  const classes = drawn(ch);
+  return classes && `eld-glyph ${classes}`;
 }
