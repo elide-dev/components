@@ -1,8 +1,8 @@
 import * as React from "react";
-import { Check, Copy, ExternalLink, Sparkles } from "lucide-react";
+import { Check, ExternalLink, Sparkles } from "lucide-react";
 import { cn } from "../lib/utils";
 import { useMessages } from "../i18n/context";
-import { ClaudeIcon, OpenAIIcon } from "./ai-icons";
+import { ClaudeIcon, MarkdownIcon, OpenAIIcon } from "./ai-icons";
 
 /**
  * AiActions — the "Use with AI" panel in the docs right rail: copy the page as
@@ -14,6 +14,8 @@ export interface AiActionItem {
   href?: string;
   /** Show the assistant's mark before the label. */
   assistant?: "claude" | "chatgpt";
+  /** Leading mark for other actions (e.g. `MarkdownIcon`); takes precedence over `assistant`'s. */
+  mark?: React.ReactNode;
   /** Trailing icon (replaces the external-link glyph). */
   icon?: React.ReactNode;
   /** Opens `href` in a new tab and shows an external-link glyph. */
@@ -66,7 +68,7 @@ export function AiActions({
           {copied ? (
             <Check aria-hidden className="h-3.5 w-3.5 shrink-0" />
           ) : (
-            <Copy aria-hidden className="h-3.5 w-3.5 shrink-0" />
+            <MarkdownIcon className="h-3.5 w-3.5 shrink-0" />
           )}
           {copied ? m.aiActions.copied : m.aiActions.copyAsMarkdown}
         </button>
@@ -76,9 +78,10 @@ export function AiActions({
         const Mark = action.assistant === "claude" ? ClaudeIcon : action.assistant === "chatgpt" ? OpenAIIcon : undefined;
         const content = (
           <>
-            {Mark ? (
-              <Mark data-assistant={action.assistant} className="h-3.5 w-3.5 shrink-0 text-foreground" />
-            ) : null}
+            {action.mark ??
+              (Mark ? (
+                <Mark data-assistant={action.assistant} className="h-3.5 w-3.5 shrink-0 text-foreground" />
+              ) : null)}
             <span className="flex-1">{action.label}</span>
             {action.icon ??
               (action.external ? (

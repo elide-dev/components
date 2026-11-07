@@ -71,4 +71,18 @@ describe("AiActions", () => {
     expect(chatgpt.querySelector("path")!.getAttribute("d")!.length).toBeGreaterThan(100);
     expect(screen.getByRole("link", { name: "Open in Claude" }).firstElementChild).toBe(claude);
   });
+
+  it("leads Copy as Markdown, and any action given a mark, with that mark", () => {
+    const { container } = render(
+      <AiActions
+        markdown="# Page"
+        actions={[{ label: "Copy page", mark: <svg data-testid="own-mark" aria-hidden />, onClick: () => {} }]}
+      />,
+    );
+    const copy = screen.getByRole("button", { name: /Copy as Markdown/ });
+    expect(copy.firstElementChild?.querySelector("path")?.getAttribute("d")).toMatch(/^M22\.27/);
+    expect(screen.getByRole("button", { name: "Copy page" }).firstElementChild).toBe(
+      container.querySelector('[data-testid="own-mark"]'),
+    );
+  });
 });

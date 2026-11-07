@@ -723,6 +723,298 @@
     contain: layout paint;
   }
 
+  /* ---- Terminal glyphs (`lib/terminal-glyphs.ts`) ------------------------ */
+  /* Box drawing and blocks are drawn, as a terminal draws them: one cell wide and the full row
+   * tall, so block art (the `elide help` logo) meets across rows and box lines join. The
+   * character stays for copy; colour comes from the run's `currentColor`. The scope is in
+   * `:where()` so each glyph's own rule below outranks these defaults. */
+  :where(.eld-lines[data-variant="terminal"]) .eld-glyph {
+    --eld-gx-width: 1px;
+    --eld-gx-u: none;
+    --eld-gx-d: none;
+    --eld-gx-l: none;
+    --eld-gx-r: none;
+    display: inline-block;
+    position: relative;
+    inline-size: 0.6em;
+    block-size: calc(var(--code-line-height) * 1em);
+    vertical-align: top;
+    -webkit-text-fill-color: transparent;
+    background-image: var(--eld-gx-u), var(--eld-gx-d), var(--eld-gx-l), var(--eld-gx-r);
+    background-position: 50% 0, 50% 100%, 0 50%, 100% 50%;
+    background-repeat: no-repeat;
+    background-size:
+      var(--eld-gx-width) calc(50% + var(--eld-gx-width) / 2),
+      var(--eld-gx-width) calc(50% + var(--eld-gx-width) / 2),
+      calc(50% + var(--eld-gx-width) / 2) var(--eld-gx-width),
+      calc(50% + var(--eld-gx-width) / 2) var(--eld-gx-width);
+  }
+
+  .eld-lines[data-variant="terminal"] .eld-cell-bg {
+    display: inline-block;
+    block-size: calc(var(--code-line-height) * 1em);
+    vertical-align: top;
+  }
+
+  .eld-glyph[data-glyph="│"],
+  .eld-glyph[data-glyph="┃"],
+  .eld-glyph[data-glyph="└"],
+  .eld-glyph[data-glyph="┘"],
+  .eld-glyph[data-glyph="├"],
+  .eld-glyph[data-glyph="┤"],
+  .eld-glyph[data-glyph="┴"],
+  .eld-glyph[data-glyph="┼"] {
+    --eld-gx-u: linear-gradient(currentColor, currentColor);
+  }
+
+  .eld-glyph[data-glyph="│"],
+  .eld-glyph[data-glyph="┃"],
+  .eld-glyph[data-glyph="┌"],
+  .eld-glyph[data-glyph="┐"],
+  .eld-glyph[data-glyph="├"],
+  .eld-glyph[data-glyph="┤"],
+  .eld-glyph[data-glyph="┬"],
+  .eld-glyph[data-glyph="┼"] {
+    --eld-gx-d: linear-gradient(currentColor, currentColor);
+  }
+
+  .eld-glyph[data-glyph="─"],
+  .eld-glyph[data-glyph="━"],
+  .eld-glyph[data-glyph="┐"],
+  .eld-glyph[data-glyph="┘"],
+  .eld-glyph[data-glyph="┤"],
+  .eld-glyph[data-glyph="┬"],
+  .eld-glyph[data-glyph="┴"],
+  .eld-glyph[data-glyph="┼"] {
+    --eld-gx-l: linear-gradient(currentColor, currentColor);
+  }
+
+  .eld-glyph[data-glyph="─"],
+  .eld-glyph[data-glyph="━"],
+  .eld-glyph[data-glyph="┌"],
+  .eld-glyph[data-glyph="└"],
+  .eld-glyph[data-glyph="├"],
+  .eld-glyph[data-glyph="┬"],
+  .eld-glyph[data-glyph="┴"],
+  .eld-glyph[data-glyph="┼"] {
+    --eld-gx-r: linear-gradient(currentColor, currentColor);
+  }
+
+  .eld-glyph[data-glyph="━"],
+  .eld-glyph[data-glyph="┃"] {
+    --eld-gx-width: 2px;
+  }
+
+  /* Cells have fractional sizes: a line cell overlaps its neighbours by a hair so segments
+   * join instead of anti-aliasing into dashes. Blocks keep exact edges (below). */
+  :where(.eld-lines[data-variant="terminal"]) .eld-glyph[data-glyph="─"],
+  :where(.eld-lines[data-variant="terminal"]) .eld-glyph[data-glyph="━"],
+  :where(.eld-lines[data-variant="terminal"]) .eld-glyph[data-glyph="│"],
+  :where(.eld-lines[data-variant="terminal"]) .eld-glyph[data-glyph="┃"],
+  :where(.eld-lines[data-variant="terminal"]) .eld-glyph[data-glyph="┌"],
+  :where(.eld-lines[data-variant="terminal"]) .eld-glyph[data-glyph="┐"],
+  :where(.eld-lines[data-variant="terminal"]) .eld-glyph[data-glyph="└"],
+  :where(.eld-lines[data-variant="terminal"]) .eld-glyph[data-glyph="┘"],
+  :where(.eld-lines[data-variant="terminal"]) .eld-glyph[data-glyph="├"],
+  :where(.eld-lines[data-variant="terminal"]) .eld-glyph[data-glyph="┤"],
+  :where(.eld-lines[data-variant="terminal"]) .eld-glyph[data-glyph="┬"],
+  :where(.eld-lines[data-variant="terminal"]) .eld-glyph[data-glyph="┴"],
+  :where(.eld-lines[data-variant="terminal"]) .eld-glyph[data-glyph="┼"],
+  :where(.eld-lines[data-variant="terminal"]) .eld-glyph[data-glyph="╭"],
+  :where(.eld-lines[data-variant="terminal"]) .eld-glyph[data-glyph="╮"],
+  :where(.eld-lines[data-variant="terminal"]) .eld-glyph[data-glyph="╯"],
+  :where(.eld-lines[data-variant="terminal"]) .eld-glyph[data-glyph="╰"],
+  :where(.eld-lines[data-variant="terminal"]) .eld-glyph[data-glyph="═"],
+  :where(.eld-lines[data-variant="terminal"]) .eld-glyph[data-glyph="║"],
+  :where(.eld-lines[data-variant="terminal"]) .eld-glyph[data-glyph="╔"],
+  :where(.eld-lines[data-variant="terminal"]) .eld-glyph[data-glyph="╗"],
+  :where(.eld-lines[data-variant="terminal"]) .eld-glyph[data-glyph="╚"],
+  :where(.eld-lines[data-variant="terminal"]) .eld-glyph[data-glyph="╝"] {
+    inline-size: calc(0.6em + 0.5px);
+    block-size: calc(var(--code-line-height) * 1em + 1px);
+    margin-block: -0.5px;
+    margin-inline: -0.25px;
+  }
+
+  .eld-glyph[data-glyph="╭"]::before,
+  .eld-glyph[data-glyph="╮"]::before,
+  .eld-glyph[data-glyph="╯"]::before,
+  .eld-glyph[data-glyph="╰"]::before {
+    content: "";
+    position: absolute;
+    box-sizing: border-box;
+    inline-size: calc(50% + var(--eld-gx-width) / 2);
+    block-size: calc(50% + var(--eld-gx-width) / 2);
+    border: 0 solid currentColor;
+  }
+
+  .eld-glyph[data-glyph="╭"]::before {
+    left: calc(50% - var(--eld-gx-width) / 2);
+    top: calc(50% - var(--eld-gx-width) / 2);
+    border-top-width: var(--eld-gx-width);
+    border-left-width: var(--eld-gx-width);
+    border-top-left-radius: 0.3em;
+  }
+
+  .eld-glyph[data-glyph="╮"]::before {
+    right: calc(50% - var(--eld-gx-width) / 2);
+    top: calc(50% - var(--eld-gx-width) / 2);
+    border-top-width: var(--eld-gx-width);
+    border-right-width: var(--eld-gx-width);
+    border-top-right-radius: 0.3em;
+  }
+
+  .eld-glyph[data-glyph="╯"]::before {
+    right: calc(50% - var(--eld-gx-width) / 2);
+    bottom: calc(50% - var(--eld-gx-width) / 2);
+    border-bottom-width: var(--eld-gx-width);
+    border-right-width: var(--eld-gx-width);
+    border-bottom-right-radius: 0.3em;
+  }
+
+  .eld-glyph[data-glyph="╰"]::before {
+    left: calc(50% - var(--eld-gx-width) / 2);
+    bottom: calc(50% - var(--eld-gx-width) / 2);
+    border-bottom-width: var(--eld-gx-width);
+    border-left-width: var(--eld-gx-width);
+    border-bottom-left-radius: 0.3em;
+  }
+
+  /* Double lines: two strokes 3px apart, with outer and inner corners. */
+  .eld-glyph[data-glyph="═"],
+  .eld-glyph[data-glyph="║"],
+  .eld-glyph[data-glyph="╔"],
+  .eld-glyph[data-glyph="╗"],
+  .eld-glyph[data-glyph="╚"],
+  .eld-glyph[data-glyph="╝"] {
+    --eld-gx-gap: 1.5px;
+    --eld-gx-c: linear-gradient(currentColor, currentColor);
+  }
+
+  .eld-glyph[data-glyph="═"] {
+    background:
+      var(--eld-gx-c) 0 calc(50% - var(--eld-gx-gap)) / 100% 1px no-repeat,
+      var(--eld-gx-c) 0 calc(50% + var(--eld-gx-gap)) / 100% 1px no-repeat;
+  }
+
+  .eld-glyph[data-glyph="║"] {
+    background:
+      var(--eld-gx-c) calc(50% - var(--eld-gx-gap)) 0 / 1px 100% no-repeat,
+      var(--eld-gx-c) calc(50% + var(--eld-gx-gap)) 0 / 1px 100% no-repeat;
+  }
+
+  .eld-glyph[data-glyph="╔"] {
+    background:
+      var(--eld-gx-c) right 0 top calc(50% - var(--eld-gx-gap)) / calc(50% + var(--eld-gx-gap) + 0.5px) 1px no-repeat,
+      var(--eld-gx-c) left calc(50% - var(--eld-gx-gap)) bottom 0 / 1px calc(50% + var(--eld-gx-gap) + 0.5px) no-repeat,
+      var(--eld-gx-c) right 0 top calc(50% + var(--eld-gx-gap)) / calc(50% - var(--eld-gx-gap) + 0.5px) 1px no-repeat,
+      var(--eld-gx-c) left calc(50% + var(--eld-gx-gap)) bottom 0 / 1px calc(50% - var(--eld-gx-gap) + 0.5px) no-repeat;
+  }
+
+  .eld-glyph[data-glyph="╗"] {
+    background:
+      var(--eld-gx-c) left 0 top calc(50% - var(--eld-gx-gap)) / calc(50% + var(--eld-gx-gap) + 0.5px) 1px no-repeat,
+      var(--eld-gx-c) left calc(50% + var(--eld-gx-gap)) bottom 0 / 1px calc(50% + var(--eld-gx-gap) + 0.5px) no-repeat,
+      var(--eld-gx-c) left 0 top calc(50% + var(--eld-gx-gap)) / calc(50% - var(--eld-gx-gap) + 0.5px) 1px no-repeat,
+      var(--eld-gx-c) left calc(50% - var(--eld-gx-gap)) bottom 0 / 1px calc(50% - var(--eld-gx-gap) + 0.5px) no-repeat;
+  }
+
+  .eld-glyph[data-glyph="╚"] {
+    background:
+      var(--eld-gx-c) right 0 top calc(50% + var(--eld-gx-gap)) / calc(50% + var(--eld-gx-gap) + 0.5px) 1px no-repeat,
+      var(--eld-gx-c) left calc(50% - var(--eld-gx-gap)) top 0 / 1px calc(50% + var(--eld-gx-gap) + 0.5px) no-repeat,
+      var(--eld-gx-c) right 0 top calc(50% - var(--eld-gx-gap)) / calc(50% - var(--eld-gx-gap) + 0.5px) 1px no-repeat,
+      var(--eld-gx-c) left calc(50% + var(--eld-gx-gap)) top 0 / 1px calc(50% - var(--eld-gx-gap) + 0.5px) no-repeat;
+  }
+
+  .eld-glyph[data-glyph="╝"] {
+    background:
+      var(--eld-gx-c) left 0 top calc(50% + var(--eld-gx-gap)) / calc(50% + var(--eld-gx-gap) + 0.5px) 1px no-repeat,
+      var(--eld-gx-c) left calc(50% + var(--eld-gx-gap)) top 0 / 1px calc(50% + var(--eld-gx-gap) + 0.5px) no-repeat,
+      var(--eld-gx-c) left 0 top calc(50% - var(--eld-gx-gap)) / calc(50% - var(--eld-gx-gap) + 0.5px) 1px no-repeat,
+      var(--eld-gx-c) left calc(50% - var(--eld-gx-gap)) top 0 / 1px calc(50% - var(--eld-gx-gap) + 0.5px) no-repeat;
+  }
+
+  /* Blocks fill exact fractions of the cell; a cell background is snapped to device pixels, so
+   * neighbours share their edges. A full block adds a half-pixel ring of its own colour, which
+   * covers the anti-aliased seam at fractional zoom without moving layout. */
+  .eld-glyph[data-glyph="█"] {
+    background: currentColor;
+    box-shadow: 0 0 0 0.5px currentColor;
+  }
+
+  .eld-glyph[data-glyph="▏"],
+  .eld-glyph[data-glyph="▎"],
+  .eld-glyph[data-glyph="▍"],
+  .eld-glyph[data-glyph="▌"],
+  .eld-glyph[data-glyph="▋"],
+  .eld-glyph[data-glyph="▊"],
+  .eld-glyph[data-glyph="▉"] {
+    background: linear-gradient(currentColor, currentColor) 0 0 / var(--eld-gb) 100% no-repeat;
+  }
+
+  .eld-glyph[data-glyph="▁"],
+  .eld-glyph[data-glyph="▂"],
+  .eld-glyph[data-glyph="▃"],
+  .eld-glyph[data-glyph="▄"],
+  .eld-glyph[data-glyph="▅"],
+  .eld-glyph[data-glyph="▆"],
+  .eld-glyph[data-glyph="▇"] {
+    background: linear-gradient(currentColor, currentColor) 0 100% / 100% var(--eld-gb) no-repeat;
+  }
+
+  .eld-glyph[data-glyph="▀"],
+  .eld-glyph[data-glyph="▔"] {
+    background: linear-gradient(currentColor, currentColor) 0 0 / 100% var(--eld-gb) no-repeat;
+  }
+
+  .eld-glyph[data-glyph="▐"],
+  .eld-glyph[data-glyph="▕"] {
+    background: linear-gradient(currentColor, currentColor) 100% 0 / var(--eld-gb) 100% no-repeat;
+  }
+
+  .eld-glyph[data-glyph="▏"] { --eld-gb: 12.5%; }
+
+  .eld-glyph[data-glyph="▎"] { --eld-gb: 25%; }
+
+  .eld-glyph[data-glyph="▍"] { --eld-gb: 37.5%; }
+
+  .eld-glyph[data-glyph="▌"] { --eld-gb: 50%; }
+
+  .eld-glyph[data-glyph="▋"] { --eld-gb: 62.5%; }
+
+  .eld-glyph[data-glyph="▊"] { --eld-gb: 75%; }
+
+  .eld-glyph[data-glyph="▉"] { --eld-gb: 87.5%; }
+
+  .eld-glyph[data-glyph="▁"] { --eld-gb: 12.5%; }
+
+  .eld-glyph[data-glyph="▂"] { --eld-gb: 25%; }
+
+  .eld-glyph[data-glyph="▃"] { --eld-gb: 37.5%; }
+
+  .eld-glyph[data-glyph="▄"] { --eld-gb: 50%; }
+
+  .eld-glyph[data-glyph="▅"] { --eld-gb: 62.5%; }
+
+  .eld-glyph[data-glyph="▆"] { --eld-gb: 75%; }
+
+  .eld-glyph[data-glyph="▇"] { --eld-gb: 87.5%; }
+
+  .eld-glyph[data-glyph="▀"] { --eld-gb: 50%; }
+
+  .eld-glyph[data-glyph="▔"] { --eld-gb: 12.5%; }
+
+  .eld-glyph[data-glyph="▐"] { --eld-gb: 50%; }
+
+  .eld-glyph[data-glyph="▕"] { --eld-gb: 12.5%; }
+
+  .eld-glyph[data-glyph="░"] { background: color-mix(in oklab, currentColor 25%, transparent); }
+
+  .eld-glyph[data-glyph="▒"] { background: color-mix(in oklab, currentColor 50%, transparent); }
+
+  .eld-glyph[data-glyph="▓"] { background: color-mix(in oklab, currentColor 75%, transparent); }
+
   /* ---- Window chrome: CSS picks the variant, so SSR and hydration agree --- */
   /* Display lives here, never in utilities, which would outrank these rules. */
   .eld-chrome-mac {
