@@ -1,5 +1,5 @@
 import * as React from "react";
-import { cn } from "../lib/utils";
+import { cn, keyed } from "../lib/utils";
 import { formatMessage } from "../i18n/format";
 import { useMessages } from "../i18n/context";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./tabs";
@@ -33,20 +33,24 @@ export function CodeSample({ layout = "below", labels, children, className, ...p
   const items = React.Children.toArray(children).filter(React.isValidElement);
 
   if (layout === "tabs") {
+    const tabs = keyed(
+      items.map((child, i) => ({ child, label: labels?.[i] ?? childLabel(child, i, m) })),
+      (tab) => tab.label,
+    );
     return (
       <div data-slot="code-sample" data-layout="tabs" className={className} {...props}>
-        <Tabs defaultValue="0">
+        <Tabs defaultValue={tabs[0]?.key}>
           <TabsList variant="line">
-            {items.map((child, i) => (
-              <TabsTrigger key={i} value={String(i)}>
-                {labels?.[i] ?? childLabel(child, i, m)}
+            {tabs.map(({ item, key }) => (
+              <TabsTrigger key={key} value={key}>
+                {item.label}
               </TabsTrigger>
             ))}
           </TabsList>
-          {items.map((child, i) => (
+          {tabs.map(({ item, key }) => (
             // Keep panels mounted so a recording keeps its position across tab switches.
-            <TabsContent key={i} value={String(i)} keepMounted>
-              {child}
+            <TabsContent key={key} value={key} keepMounted>
+              {item.child}
             </TabsContent>
           ))}
         </Tabs>

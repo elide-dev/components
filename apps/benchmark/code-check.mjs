@@ -26,17 +26,26 @@ try {
       const errors = [];
       page.on("pageerror", error => errors.push(error.message));
       page.on("console", message => { if (["error", "warning"].includes(message.type())) errors.push(message.text()); });
-      await page.addInitScript(() => {
-        window.__cls = 0;
-        new PerformanceObserver(list => { for (const entry of list.getEntries()) if (!entry.hadRecentInput) window.__cls += entry.value; })
-          .observe({ type: "layout-shift", buffered: true });
-      });
       await page.goto(url);
+      // Web fonts swapping in is the page's concern (and Lighthouse's CLS); measure
+      // the components from here on, recording what moved so failures are actionable.
       await page.evaluate(() => document.fonts.ready);
+      await page.evaluate(() => {
+        window.__cls = 0;
+        window.__shifts = [];
+        new PerformanceObserver(list => {
+          for (const entry of list.getEntries()) {
+            if (entry.hadRecentInput) continue;
+            window.__cls += entry.value;
+            window.__shifts.push(...entry.sources.map(source => source.node?.parentElement?.className ?? source.node?.nodeName));
+          }
+        }).observe({ type: "layout-shift" });
+      });
+      const shifted = () => page.evaluate(() => `${window.__cls} from ${JSON.stringify(window.__shifts)}`);
 
       // Shiki loads lazily and upgrades the plain server-rendered source in place.
       await page.locator("code.language-ts .tk-keyword").first().waitFor();
-      assert.equal(await page.evaluate(() => window.__cls), 0, "Highlighting must not shift layout");
+      assert.equal(await page.evaluate(() => window.__cls), 0, `Highlighting must not shift layout: ${await shifted()}`);
 
       // The inline platform script picked a chrome variant; CSS alone shows it.
       const os = await page.evaluate(() => document.documentElement.dataset.os);
@@ -50,7 +59,7 @@ try {
       await recordingRoot.getByRole("button", { name: "Pause", exact: true }).waitFor();
       await recordingRoot.getByRole("button", { name: "Play", exact: true }).waitFor({ timeout: 15_000 });
       assert.match(await recordingRoot.locator('pre[aria-hidden="true"]').textContent(), /Hello from Elide!/);
-      assert.equal(await page.evaluate(() => window.__cls), 0, "Recording playback must not shift layout");
+      assert.equal(await page.evaluate(() => window.__cls), 0, `Recording playback must not shift layout: ${await shifted()}`);
 
       // Copying a session yields commands and output, never prompts or gutter glyphs.
       const selected = await page.getByTestId("code-session").locator("pre").evaluate(pre => {

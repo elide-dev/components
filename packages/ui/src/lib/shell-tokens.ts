@@ -73,7 +73,9 @@ function classifyArgument(word: string): ShellTokenKind {
 
 /** Tokenize one command line (without its prompt). */
 export function tokenizeShell(line: string, options: ShellTokenizeOptions = {}): CodeToken[] {
-  const subcommands = options.subcommands ?? DEFAULT_SUBCOMMANDS;
+  const subcommands = new Map(
+    Object.entries(options.subcommands ?? DEFAULT_SUBCOMMANDS).map(([name, list]) => [name, new Set(list)]),
+  );
   const tokens: CodeToken[] = [];
   let expectCommand = !options.continuation;
   let afterPrecommand = false;
@@ -303,7 +305,7 @@ export function tokenizeShell(line: string, options: ShellTokenizeOptions = {}):
         } else push(word, "flag");
         continue;
       }
-      if (positional === 0 && command && subcommands[command]?.includes(word)) {
+      if (positional === 0 && command && subcommands.get(command)?.has(word)) {
         push(word, "subcommand");
         positional++;
         continue;

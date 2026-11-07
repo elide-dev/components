@@ -12,10 +12,12 @@ export {
 } from "./components/terminal";
 export { CodeSample, type CodeSampleProps } from "./components/code-sample";
 export {
-  CodeSurface, CodeSurfaceTitleBar, CodeSurfaceBadge, codeChromeScript,
-  type CodeChrome, type CodeSurfaceProps, type CodeSurfaceTitleBarProps,
+  CodeSurface, CodeSurfaceTitleBar, CodeSurfaceBadge,
+  type CodeSurfaceProps, type CodeSurfaceTitleBarProps,
 } from "./components/code-surface";
-export { CodeLines, tokenStyleToCss, type CodeLinesProps, type CodeFold, type CodeAnnotationBadge } from "./components/code-lines";
+export { codeChromeScript, type CodeChrome } from "./components/code-surface-styles";
+export { CodeLines, type CodeLinesProps, type CodeFold, type CodeAnnotationBadge } from "./components/code-lines";
+export { tokenStyleToCss } from "./lib/token-style";
 export { syncLines, shellLines, plainLines, isShellLang } from "./components/highlight";
 // Shiki lives in its own entry, `@elide/ui/components/shiki`, so root imports never load it.
 export type { HighlightedCode, HighlightOptions, TwoslashOptions } from "./components/shiki";

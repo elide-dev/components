@@ -8,7 +8,7 @@ import { PlatformApp } from "./src/PlatformApp.tsx";
 import { PerformanceApp } from "./src/PerformanceApp.tsx";
 import { CodeApp, source as codeSource } from "./src/CodeApp.tsx";
 import { highlightCode } from "@elide/ui/components/shiki";
-import { codeChromeScript } from "@elide/ui/components/code-surface";
+import { codeChromeScript } from "@elide/ui/components/code-surface-styles";
 
 import { I18nApp } from "./src/I18nApp.tsx";
 

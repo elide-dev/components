@@ -158,9 +158,8 @@ describe("CodeBlock — editor features", () => {
     const { container } = render(
       <CodeBlock filename="a.ts" code={"const db = 1;"} inline={[{ line: 1, start: 6, end: 8, kind: "hover", payload: "const db: 1" }]} />,
     );
-    const hover = container.querySelector<HTMLElement>(".eld-hover")!;
-    expect(hover).toHaveTextContent("db");
-    expect(hover).toHaveAttribute("tabindex", "0");
+    const hover = screen.getByRole("button", { name: "db" });
+    expect(hover).toHaveClass("eld-hover");
     expect(hover).toHaveAccessibleDescription("const db: 1");
     expect(container.querySelector("pre")!.textContent).toBe("const db = 1;\n");
   });
