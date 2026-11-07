@@ -68,7 +68,9 @@ for (const locale of supportedLocales) {
   if (!result.success) throw new AggregateError(result.logs, `Failed to bundle ${locale}`);
   const source = await result.outputs[0].text();
   const bytes = gzipSync(source).byteLength;
-  if (bytes > 1600) throw new Error(`${locale} catalog exceeds 1.6 KB gzip: ${bytes}`);
+  // 2 KB: catalogs now carry the code surfaces' strings (terminal, recordings,
+  // scenes, decorations); Cyrillic compresses least (ru ≈ 1.7 KB).
+  if (bytes > 2000) throw new Error(`${locale} catalog exceeds 2 KB gzip: ${bytes}`);
   if (/createContext|react|createElement/.test(source)) throw new Error(`${locale} imports UI runtime code`);
   console.log(`Locale ${locale}: ${bytes} bytes gzip, no runtime dependencies.`);
 }

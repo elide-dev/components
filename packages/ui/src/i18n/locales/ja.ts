@@ -50,7 +50,11 @@ const messages: Messages = {
     "line": "{n} 行目",
     "note": "注記 {n}",
     "folded": "{count} 行を非表示",
-    "files": "ファイル"
+    "files": "ファイル",
+    "covered": "カバー済み",
+    "notCovered": "未カバー",
+    "partiallyCovered": "一部カバー",
+    "samples": "サンプルの {percent}"
   },
   "terminal": {
     "copyCommands": "コマンドをコピー",
@@ -71,6 +75,17 @@ const messages: Messages = {
     "code": "コード",
     "output": "出力",
     "panel": "パネル {n}"
+  },
+  "codeScene": {
+    "label": "コードウォークスルー",
+    "previous": "前のステップ",
+    "next": "次のステップ",
+    "play": "ウォークスルーを再生",
+    "pause": "ウォークスルーを一時停止",
+    "step": "ステップ {current} / {total}",
+    "locals": "ローカル変数",
+    "callStack": "コールスタック",
+    "coverage": "行カバレッジ {percent}"
   },
   "copyCommand": {
     "copy": "コピー",

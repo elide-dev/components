@@ -475,7 +475,7 @@ export function TerminalRecording({ source, script, prompt, fallback }: Terminal
         aria-label={m.recording}
         tabIndex={0}
         onKeyDown={onKeyDown}
-        className="relative focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--code-prompt)]"
+        className="relative focus-visible:outline-1 focus-visible:-outline-offset-2 focus-visible:outline-[var(--code-prompt)]"
       >
         <RecordingScreen lines={screen ? lines : undefined} gridStyle={gridStyle} reserve={!!options.rows} fallback={fallback} />
         {measured ? <pre className="sr-only whitespace-pre">{measured.transcript}</pre> : null}

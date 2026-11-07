@@ -50,7 +50,11 @@ const messages: Messages = {
     "line": "{n}번째 줄",
     "note": "참고 {n}",
     "folded": "{count}줄 숨김",
-    "files": "파일"
+    "files": "파일",
+    "covered": "커버됨",
+    "notCovered": "커버되지 않음",
+    "partiallyCovered": "부분 커버됨",
+    "samples": "샘플의 {percent}"
   },
   "terminal": {
     "copyCommands": "명령 복사",
@@ -71,6 +75,17 @@ const messages: Messages = {
     "code": "코드",
     "output": "출력",
     "panel": "패널 {n}"
+  },
+  "codeScene": {
+    "label": "코드 둘러보기",
+    "previous": "이전 단계",
+    "next": "다음 단계",
+    "play": "둘러보기 재생",
+    "pause": "둘러보기 일시 정지",
+    "step": "{total}단계 중 {current}단계",
+    "locals": "지역 변수",
+    "callStack": "호출 스택",
+    "coverage": "줄 커버리지 {percent}"
   },
   "copyCommand": {
     "copy": "복사",

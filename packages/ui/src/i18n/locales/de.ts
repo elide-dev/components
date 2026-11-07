@@ -50,7 +50,11 @@ const messages: Messages = {
     "line": "Zeile {n}",
     "note": "Hinweis {n}",
     "folded": "{count} Zeilen ausgeblendet",
-    "files": "Dateien"
+    "files": "Dateien",
+    "covered": "Abgedeckt",
+    "notCovered": "Nicht abgedeckt",
+    "partiallyCovered": "Teilweise abgedeckt",
+    "samples": "{percent} der Stichproben"
   },
   "terminal": {
     "copyCommands": "Befehle kopieren",
@@ -71,6 +75,17 @@ const messages: Messages = {
     "code": "Code",
     "output": "Ausgabe",
     "panel": "Bereich {n}"
+  },
+  "codeScene": {
+    "label": "Code-Rundgang",
+    "previous": "Vorheriger Schritt",
+    "next": "Nächster Schritt",
+    "play": "Rundgang abspielen",
+    "pause": "Rundgang pausieren",
+    "step": "Schritt {current} von {total}",
+    "locals": "Lokale Variablen",
+    "callStack": "Aufrufstapel",
+    "coverage": "Zeilenabdeckung {percent}"
   },
   "copyCommand": {
     "copy": "Kopieren",

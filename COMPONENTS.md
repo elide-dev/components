@@ -42,6 +42,7 @@ radii, type. See the package README.
 | `Callout` | **done** | tone: note·tip·important·warning·caution; `title` | guide admonitions |
 | `CodeBlock` | **done** | `code`+`lang` or build-time `lines`/`inline` from `highlightCode()`, `files` (tabs), `[!code …]` notations, `highlight` ranges, `decorations` (highlight · add · remove · breakpoint · cursor · warning · error · focus · flash · fold), `annotations` (code tour), `lineLinks`, `maxLines`, `wrap`, `caption`, `actions`, `statusBar`, `chrome`. `variant="terminal"` is deprecated → `Terminal` | SQLite editor, snippet blocks |
 | `CodeGroup` | **done** | tabs over code surfaces; `syncKey` syncs and remembers the choice page-wide; `labels`, `defaultValue` | bun · npm · pnpm, TS · Python · Kotlin |
+| `CodeScene` | **done** | scripted walkthroughs (`scene` from `sceneStateAt` steps: focus · flash · breakpoint · frame · coverage · profile · select · terminal); step/play controls (pause on breakpoint), ←/→/F10, live step captions, locals + call stack, coverage strip, profile heat, paired terminal (`terminalCommand`) | polyglot debugging, hooks, coverage, hotspots |
 | `Terminal` | **done** | `code`/`lines` (commands · ANSI output · comments · `exitCode`), `prompt` (glyph or user/host/cwd), zsh-style command highlighting with `commandHref`/`subcommands`, `wrap` (default on · toggle), `copy` (commands · transcript; per-command buttons), `chrome`, `recording` (asciicast `src`/`cast` or `synthesize`; poster, autoplay, speed, markers, `rows`) | terminal samples, recorded runs |
 | `CodeSample` | **done** | `layout`: below · beside (container query ≥ 48rem) · tabs; `labels` | code + its run |
 | `CopyButton` | **done** | `value`, `size` | code block + copy-command |
@@ -90,6 +91,9 @@ site is on the catalog.
   pseudo-elements, so selection and copy return only the code; wrapped lines
   hang under their content; numbers stay sticky while unwrapped code scrolls.
   All rows share `--code-line-height`.
+- **Tones**: editor surfaces (`CodeBlock`, `CodeScene` panels) are
+  `data-code-tone="adaptive"`: soft warm white in light theme, dark in dark;
+  terminals are always dark. Components read semantic `--code-*` tokens only.
 - **Window chrome**: `chrome="auto"` (default) shows macOS controls unless the
   page inlines `codeChromeScript` in `<head>`, which sets `data-os` on `<html>`;
   CSS then shows Windows or GNOME controls. Markup never depends on script, so
@@ -107,8 +111,8 @@ site is on the catalog.
   31 KB, CodeSample/CodeGroup ≤ 25 KB, the lazy Shiki runtime ≤ 64 KB (never
   the TypeScript compiler).
   `apps/benchmark/code.html` is the Lighthouse and `code-check.mjs` target.
-  Roadmap: scripted scenes (stepping, coverage, hotspots), then editable
-  `onRun`.
+  Roadmap: data adapters for scenes (lcov, `.cpuprofile`, Elide-native),
+  scene/recording clock sharing in `CodeSample`, then editable `onRun`.
 - **Recording fixtures** (`src/stories/fixtures/casts.ts`) are real Elide runs:
   a bash script prints a prompt, types the command with small sleeps, then
   `eval`s it; capture with `asciinema rec --headless --window-size 72x12

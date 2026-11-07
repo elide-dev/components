@@ -1,5 +1,5 @@
 import * as React from "react";
-import type { CodeLine, CodeToken, InlineDecoration, LineDecoration, LineDecorationKind } from "../lib/code-model";
+import type { CodeInsights, CodeLine, CodeToken, InlineDecoration, LineDecoration, LineDecorationKind } from "../lib/code-model";
 import { decorationCovers } from "../lib/code-model";
 import { segmentLine, withColumns } from "../lib/segments";
 import { tokenStyleToCss } from "../lib/token-style";
@@ -100,8 +100,19 @@ export interface CodeAnnotationBadge {
   label: string;
 }
 
+/** Localized names for coverage and profile overlays. */
+export interface InsightLabels {
+  covered: string;
+  notCovered: string;
+  partiallyCovered: string;
+  samples: (percent: string) => string;
+}
+
 export interface CodeLinesProps {
   lines: readonly CodeLine[];
+  /** Coverage (edge strip) and profile (heat tint + share) overlays, by line number. */
+  insights?: CodeInsights;
+  insightLabels?: InsightLabels;
   /** Grammar name, exposed as `language-*` for tools and agents reading the DOM. */
   lang?: string;
   /** Terminal rows draw prompts; editor rows draw line numbers. */
@@ -148,10 +159,33 @@ function rowKey(line: CodeLine): string {
   return key;
 }
 
-/** Accessible names for a row's decorations (and exit status). */
-function rowLabels(line: CodeLine, applied: readonly LineDecoration[] | undefined, props: CodeLinesProps): string | undefined {
+interface RowInsight {
+  coverage?: "hit" | "miss" | "partial";
+  /** 1–4, relative to the hottest line. */
+  heat?: number;
+  /** Share of all samples, formatted. */
+  share?: string;
+}
+
+/** Coverage state and profile heat for one line. */
+function rowInsight(number: number, insights: CodeInsights | undefined, hottest: number): RowInsight {
+  const coverage = insights?.coverage?.[number];
+  const profile = insights?.profile;
+  const self = profile?.lines[number]?.self ?? 0;
+  return {
+    coverage: !coverage ? undefined : coverage.hits === 0 ? "miss" : coverage.branches && coverage.branches.covered < coverage.branches.total ? "partial" : "hit",
+    heat: self && hottest ? Math.max(1, Math.ceil((self / hottest) * 4)) : undefined,
+    share: self && profile?.total ? `${Math.round((self / profile.total) * 100)}%` : undefined,
+  };
+}
+
+/** Accessible names for a row's decorations, exit status and insights. */
+function rowLabels(line: CodeLine, applied: readonly LineDecoration[] | undefined, insight: RowInsight, props: CodeLinesProps): string | undefined {
   const labels = (applied ?? []).map((decoration) => decoration.label ?? props.decorationLabels?.[decoration.kind]).filter(Boolean);
   if (line.exitCode !== undefined && props.exitLabel) labels.push(props.exitLabel(line.exitCode));
+  const names = props.insightLabels;
+  if (insight.coverage && names) labels.push(insight.coverage === "hit" ? names.covered : insight.coverage === "miss" ? names.notCovered : names.partiallyCovered);
+  if (insight.share && names) labels.push(names.samples(insight.share));
   return labels.length ? labels.join(", ") : undefined;
 }
 
@@ -159,16 +193,19 @@ interface RowProps {
   line: CodeLine;
   index: number;
   number: number;
+  /** Samples on the hottest line of the file (scales the heat tint). */
+  hottest: number;
   props: CodeLinesProps;
 }
 
 /** One grid row: `[marks] [number] [prompt] [content]`, plus optional badges and action. */
-function CodeRow({ line, index, number, props }: RowProps) {
+function CodeRow({ line, index, number, hottest, props }: RowProps) {
   const { lineLinks, lineNumbers, links = true } = props;
   const applied = props.decorations?.filter((decoration) => decorationCovers(decoration, number));
   const kinds = applied?.length ? [...new Set(applied.map((decoration) => decoration.kind))].join(" ") : undefined;
   const badges = props.annotations?.filter((annotation) => annotation.line === number) ?? [];
   const exit = line.exitCode === undefined ? undefined : line.exitCode === 0 ? "ok" : "fail";
+  const insight = rowInsight(number, props.insights, hottest);
   return (
     <span
       className="eld-line"
@@ -177,7 +214,9 @@ function CodeRow({ line, index, number, props }: RowProps) {
       data-exit={exit}
       data-decor={kinds}
       data-tone={applied?.find((decoration) => decoration.tone)?.tone}
-      data-sr={rowLabels(line, applied, props)}
+      data-sr={rowLabels(line, applied, insight, props)}
+      data-coverage={insight.coverage}
+      data-heat={insight.heat}
     >
       {lineNumbers && lineLinks ? (
         // Empty link: CSS draws the number, so it is never copied.
@@ -191,6 +230,10 @@ function CodeRow({ line, index, number, props }: RowProps) {
         <LineTokens tokens={line.tokens} inline={props.inline?.filter((decoration) => decoration.line === number) ?? []} links={links} hoverId={props.hoverId} />
         {"\n"}
       </span>
+      {insight.share ? (
+        // Empty and hidden: CSS draws the share, so it is never copied (the row's name carries it).
+        <span className="eld-heat" aria-hidden data-share={insight.share} />
+      ) : null}
       {badges.length ? (
         <span className="eld-annotation-badges">
           {badges.map((badge) => (
@@ -213,6 +256,7 @@ export const CodeLines = React.memo(function CodeLines(props: CodeLinesProps) {
   const { lines, lang, variant = "editor", lineNumbers = false, startLine = 1, decorations, wrap = false, folds } = props;
   const last = startLine + lines.length - 1;
   const marks = lines.some((line) => line.exitCode !== undefined) || !!decorations?.some((d) => MARKED.has(d.kind));
+  const hottest = Math.max(0, ...Object.values(props.insights?.profile?.lines ?? {}).map((line) => line.self));
   return (
     <code
       className={lang ? `eld-lines language-${lang}` : "eld-lines"}
@@ -226,7 +270,7 @@ export const CodeLines = React.memo(function CodeLines(props: CodeLinesProps) {
         // Rows are keyed by line number: positional identity (a source line, a screen row).
         const number = line.number ?? startLine + index;
         const fold = folds?.find((candidate) => number >= candidate.start && number <= candidate.end);
-        if (!fold) return <CodeRow key={number} line={line} index={index} number={number} props={props} />;
+        if (!fold) return <CodeRow key={number} line={line} index={index} number={number} hottest={hottest} props={props} />;
         if (number !== fold.start) return null;
         return (
           <span key={number} className="eld-line eld-fold-row">

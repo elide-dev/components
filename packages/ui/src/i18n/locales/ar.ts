@@ -50,7 +50,11 @@ const messages: Messages = {
     "line": "السطر {n}",
     "note": "ملاحظة {n}",
     "folded": "{count} أسطر مخفية",
-    "files": "الملفات"
+    "files": "الملفات",
+    "covered": "مغطى",
+    "notCovered": "غير مغطى",
+    "partiallyCovered": "مغطى جزئيًا",
+    "samples": "{percent} من العينات"
   },
   "terminal": {
     "copyCommands": "نسخ الأوامر",
@@ -71,6 +75,17 @@ const messages: Messages = {
     "code": "الشيفرة",
     "output": "المخرجات",
     "panel": "اللوحة {n}"
+  },
+  "codeScene": {
+    "label": "جولة في الشيفرة",
+    "previous": "الخطوة السابقة",
+    "next": "الخطوة التالية",
+    "play": "تشغيل الجولة",
+    "pause": "إيقاف الجولة مؤقتًا",
+    "step": "الخطوة {current} من {total}",
+    "locals": "المتغيرات المحلية",
+    "callStack": "مكدس الاستدعاءات",
+    "coverage": "تغطية الأسطر {percent}"
   },
   "copyCommand": {
     "copy": "نسخ",

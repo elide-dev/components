@@ -5,6 +5,8 @@ export { badgeVariants } from "./components/badge-variants";
 export { Callout, type CalloutProps } from "./components/callout";
 export { CodeBlock, type CodeBlockProps, type CodeAnnotation, type CodeFile } from "./components/code-block";
 export { CodeGroup, type CodeGroupProps } from "./components/code-group";
+export { CodeScene, type CodeSceneProps } from "./components/code-scene";
+export { sceneStateAt, sceneTimeline, coveragePercent, type CodeScene as CodeSceneScript, type SceneAction, type SceneStep, type SceneFile, type SceneState, type SceneFrame } from "./lib/scene";
 export {
   Terminal,
   type TerminalProps, type TerminalPrompt, type TerminalLine, type TranscriptMode,

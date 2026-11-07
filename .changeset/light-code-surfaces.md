@@ -14,6 +14,11 @@ Light code surfaces, assistant icons, leaner grammars, and a scene engine.
 - Built-in Shiki grammars are limited to the languages Elide needs; JavaScript
   and JSX reuse the TypeScript grammars (lazy grammar weight 168 → 105 KB gzip).
   `registerLanguage()` adds others without loading Shiki eagerly.
-- `sceneStateAt()` / `sceneTimeline()` reduce scripted code walkthroughs
-  (focus, flash, breakpoints, frames, coverage, profile samples, terminal
-  output) to a deterministic state per step.
+- `CodeScene` plays scripted code walkthroughs: step a debugger across files
+  and languages (locals, call stack, breakpoints that pause playback), flash
+  lines as hooks fire, fill in coverage (edge strip, line %), and heat up
+  profile hotspots (tint + share of samples), with output in a paired dark
+  terminal. `sceneStateAt()` reduces steps to state deterministically.
+- `CodeBlock` takes `insights` (coverage/profile overlays) and a controlled
+  `activeFile`; a single file renders as a titled block, not a one-tab bar.
+- Focus outlines on code surfaces are 1px.

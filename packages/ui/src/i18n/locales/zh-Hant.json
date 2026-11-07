@@ -48,7 +48,11 @@
     "line": "第 {n} 行",
     "note": "註解 {n}",
     "folded": "已隱藏 {count} 行",
-    "files": "檔案"
+    "files": "檔案",
+    "covered": "已涵蓋",
+    "notCovered": "未涵蓋",
+    "partiallyCovered": "部分涵蓋",
+    "samples": "佔樣本的 {percent}"
   },
   "terminal": {
     "copyCommands": "複製指令",
@@ -69,6 +73,17 @@
     "code": "程式碼",
     "output": "輸出",
     "panel": "面板 {n}"
+  },
+  "codeScene": {
+    "label": "程式碼導覽",
+    "previous": "上一步",
+    "next": "下一步",
+    "play": "播放導覽",
+    "pause": "暫停導覽",
+    "step": "第 {current} 步，共 {total} 步",
+    "locals": "區域變數",
+    "callStack": "呼叫堆疊",
+    "coverage": "行涵蓋率 {percent}"
   },
   "copyCommand": {
     "copy": "複製",

@@ -50,7 +50,11 @@ const messages: Messages = {
     "line": "שורה {n}",
     "note": "הערה {n}",
     "folded": "{count} שורות מוסתרות",
-    "files": "קבצים"
+    "files": "קבצים",
+    "covered": "מכוסה",
+    "notCovered": "לא מכוסה",
+    "partiallyCovered": "מכוסה חלקית",
+    "samples": "{percent} מהדגימות"
   },
   "terminal": {
     "copyCommands": "העתקת פקודות",
@@ -71,6 +75,17 @@ const messages: Messages = {
     "code": "קוד",
     "output": "פלט",
     "panel": "חלונית {n}"
+  },
+  "codeScene": {
+    "label": "סיור בקוד",
+    "previous": "השלב הקודם",
+    "next": "השלב הבא",
+    "play": "הפעלת הסיור",
+    "pause": "השהיית הסיור",
+    "step": "שלב {current} מתוך {total}",
+    "locals": "משתנים מקומיים",
+    "callStack": "מחסנית קריאות",
+    "coverage": "כיסוי שורות {percent}"
   },
   "copyCommand": {
     "copy": "העתקה",
