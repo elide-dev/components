@@ -40,7 +40,9 @@ radii, type. See the package README.
 | Component | Status | Composition / props | Source |
 | --- | --- | --- | --- |
 | `Callout` | **done** | tone: note·tip·important·warning·caution; `title` | guide admonitions |
-| `CodeBlock` | **done** | variant: editor·terminal; `filename`, `lang`, `lineNumbers`, `statusBar` (vim NORMAL), `highlight`; slot: `CopyButton` | SQLite editor, terminal, snippet blocks |
+| `CodeBlock` | **done** | `filename`, `lang`, `lineNumbers`, `startLine`, `decorations` (highlight · add · remove · breakpoint · breakpoint-hit · cursor · warning · error · focus · flash), `wrap` (bool · toggle), `statusBar` (vim NORMAL), `chrome`; slot: `CopyButton`. `variant="terminal"` is deprecated → `Terminal` | SQLite editor, snippet blocks |
+| `Terminal` | **done** | `code`/`lines` (commands · ANSI output · comments · `exitCode`), `prompt` (glyph or user/host/cwd), zsh-style command highlighting with `commandHref`/`subcommands`, `wrap` (default on · toggle), `copy` (commands · transcript; per-command buttons), `chrome`, `recording` (asciicast `src`/`cast` or `synthesize`; poster, autoplay, speed, markers, `rows`) | terminal samples, recorded runs |
+| `CodeSample` | **done** | `layout`: below · beside (container query ≥ 48rem) · tabs; `labels` | code + its run |
 | `CopyButton` | **done** | `value`, `size` | code block + copy-command |
 | `CopyCommand` | **done** | `command`, prompt glyph | install one-liner |
 | `AppNav` | **done** | brand · `NavLinks` · `SearchTrigger` · `ThemeToggle` · `LocaleSwitcher` · `ChangelogButton` · `InstallButton` | top nav (all pages) |
@@ -73,6 +75,33 @@ site is on the catalog.
 
 - **CodeBlock** currently uses `prism-react-renderer`; import `CopyButton` from
   its own leaf entry point when highlighting is unnecessary.
+- **Code rows** are CSS grids (`[marks] [number] [prompt] [content]`) rendered
+  by `CodeLines` for both surfaces. Numbers, prompts and gutter glyphs are
+  pseudo-elements, so selection and copy return only the code; wrapped lines
+  hang under their content; numbers stay sticky while unwrapped code scrolls.
+  All rows share `--code-line-height`.
+- **Window chrome**: `chrome="auto"` (default) shows macOS controls unless the
+  page inlines `codeChromeScript` in `<head>`, which sets `data-os` on `<html>`;
+  CSS then shows Windows or GNOME controls. Markup never depends on script, so
+  SSR and hydration agree and visual snapshots stay deterministic.
+- **Terminal** renders output through a built-in lite VT (`lib/vt.ts`: SGR incl.
+  256/truecolor, cursor movement, erase, scroll regions, alt screen, DEC line
+  drawing, OSC 8 links) and commands through a positional shell tokenizer
+  (`lib/shell-tokens.ts`). Recordings are asciicast v1–v3 on a shared clock
+  (`lib/playback.ts`) with an SSR poster; the grid scales to its container
+  (no measurement), changed rows remount so playback causes no layout shift,
+  and playback pauses offscreen. Full-screen TUIs are out of scope for the
+  lite VT. Budgets (gzip, React external) are enforced by
+  `apps/benchmark/bundle-check.ts`: Terminal ≤ 30 KB (no Prism), CodeBlock ≤
+  48 KB (no terminal runtime; Prism is ~30 KB of it until build-time Shiki).
+  `apps/benchmark/code.html` is the Lighthouse and `code-check.mjs` target.
+  Roadmap: Shiki, then scripted scenes (stepping, coverage, hotspots), then
+  editable `onRun`.
+- **Recording fixtures** (`src/stories/fixtures/casts.ts`) are real Elide runs:
+  a bash script prints a prompt, types the command with small sleeps, then
+  `eval`s it; capture with `asciinema rec --headless --window-size 72x12
+  --idle-time-limit 1.5 -c ./session.sh out.cast`, drop `timestamp`/`env`
+  from the header, and add an `"m"` marker event before each typed command.
 - Icons: **Lucide** via `lucide-react`; `@elide/icons` is planned.
 - Anything interactive on the Astro docs site is a **React island**; the prose
   shell stays static HTML + token CSS to keep JS minimal.

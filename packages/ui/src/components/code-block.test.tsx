@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { describe, it, expect } from "vitest";
 import { Prism } from "prism-react-renderer";
 import { CodeBlock } from "./code-block";
@@ -14,10 +15,10 @@ describe("CodeBlock — editor variant", () => {
     // Filename shows in the title bar and again in the status bar.
     expect(screen.getAllByText("app.ts").length).toBeGreaterThanOrEqual(1);
 
-    // The gutter is the aria-hidden div listing one number per code line.
-    const gutter = container.querySelector("div[aria-hidden]");
-    expect(gutter).not.toBeNull();
-    expect(gutter!.textContent!.split("\n")).toEqual(["1", "2", "3"]);
+    // Each row carries its number for the CSS gutter (never part of the text).
+    const rows = [...container.querySelectorAll<HTMLElement>(".eld-line")];
+    expect(rows.map((row) => row.dataset.n)).toEqual(["1", "2", "3"]);
+    expect(container.querySelector("pre")!.textContent).toBe(`${code}\n`);
 
     // Vim status bar.
     expect(screen.getByText("NORMAL")).toBeInTheDocument();
@@ -31,31 +32,24 @@ describe("CodeBlock — editor variant", () => {
     const { container } = render(
       <CodeBlock variant="editor" filename="app.ts" lang="ts" code={"a\nb"} lineNumbers={false} statusBar={false} />,
     );
-    expect(container.querySelector("div[aria-hidden]")).toBeNull();
+    expect(container.querySelector("[data-n]")).toBeNull();
     expect(screen.queryByText("NORMAL")).not.toBeInTheDocument();
   });
 
   it("renders traffic lights", () => {
     const { container } = render(<CodeBlock code={"x"} filename="a.ts" />);
-    expect(container.querySelector('[class*="ff5f56"]')).not.toBeNull();
+    expect(container.querySelector(".eld-chrome-mac")).not.toBeNull();
   });
 });
 
-describe("CodeBlock — terminal variant", () => {
-  it("renders the lang as the title row and no traffic lights", () => {
-    const { container } = render(<CodeBlock variant="terminal" lang="bash" code={"echo hi"} />);
-    expect(screen.getByText("bash")).toBeInTheDocument();
-    expect(container.querySelector('[class*="ff5f56"]')).toBeNull();
-  });
-
-  it("renders a copy button, same as the editor variant", () => {
-    render(<CodeBlock variant="terminal" lang="bash" code={"elide build"} />);
-    expect(screen.getByRole("button", { name: "Copy" })).toBeInTheDocument();
-  });
-
-  it("falls back to the localized TERMINAL title when no lang is given", () => {
-    render(<CodeBlock variant="terminal" code={"echo hi"} />);
+describe("CodeBlock — deprecated terminal variant", () => {
+  it("keeps the legacy rendering: terminal title, lang badge, shell highlighting, no gutter", () => {
+    const { container } = render(<CodeBlock variant="terminal" lang="bash" code={"elide build"} />);
     expect(screen.getByText("Terminal")).toBeInTheDocument();
+    expect(screen.getByText("bash")).toBeInTheDocument();
+    expect(container.querySelector("[data-n]")).toBeNull();
+    expect(screen.queryByText("NORMAL")).not.toBeInTheDocument();
+    expect(container.querySelector(".sh-command")).toHaveTextContent("elide");
   });
 });
 
@@ -73,7 +67,7 @@ describe("CodeBlock — body", () => {
     const { container } = render(<CodeBlock code={"dup\ndup\ndup"} />);
     // Each highlighted line is a `span.block`; keyed() keeps the React keys
     // unique across the duplicate content, so all three render.
-    expect(container.querySelectorAll("span.block")).toHaveLength(3);
+    expect(container.querySelectorAll(".eld-line")).toHaveLength(3);
   });
 });
 
@@ -107,10 +101,62 @@ describe("CodeBlock — registered grammars", () => {
     expect(text(".token.string")).toContain('"app"');
   });
 
-  it("highlights bash commands in the terminal variant", () => {
+  it("highlights bash commands in the terminal variant (no prompt: every line is a command)", () => {
     const { container } = render(<CodeBlock variant="terminal" code={"elide build"} />);
     expect(
-      [...container.querySelectorAll(".token.function")].map((el) => el.textContent),
+      [...container.querySelectorAll(".sh-command")].map((el) => el.textContent),
     ).toContain("elide");
+  });
+});
+
+describe("CodeBlock — rows, decorations, wrapping and chrome", () => {
+  it("marks decorated rows with kinds and localized names, and enables the marks column", () => {
+    const { container } = render(
+      <CodeBlock
+        code={"a\nb\nc\nd"}
+        startLine={10}
+        decorations={[
+          { line: 10, kind: "highlight" },
+          { line: { start: 11, end: 12 }, kind: "add" },
+          { line: 13, kind: "breakpoint", label: "Pause here" },
+        ]}
+      />,
+    );
+    const rows = [...container.querySelectorAll<HTMLElement>(".eld-line")];
+    expect(rows.map((row) => row.dataset.n)).toEqual(["10", "11", "12", "13"]);
+    expect(rows.map((row) => row.dataset.decor)).toEqual(["highlight", "add", "add", "breakpoint"]);
+    expect(rows[1].dataset.sr).toBe("Added");
+    expect(rows[3].dataset.sr).toBe("Pause here");
+    expect(container.querySelector(".eld-lines")).toHaveAttribute("data-marks");
+  });
+
+  it("scrolls unwrapped code as a named, focusable group, and wraps on request", async () => {
+    const user = userEvent.setup();
+    const { container } = render(<CodeBlock filename="app.ts" code={"x"} wrap="toggle" />);
+    const pre = container.querySelector("pre")!;
+    expect(pre).toHaveAttribute("tabindex", "0");
+    expect(pre).toHaveAccessibleName("app.ts");
+    const toggle = screen.getByRole("button", { name: "Wrap lines" });
+    expect(toggle).toHaveAttribute("aria-pressed", "false");
+    await user.click(toggle);
+    expect(toggle).toHaveAttribute("aria-pressed", "true");
+    expect(container.querySelector(".eld-lines")).toHaveAttribute("data-wrap");
+    expect(pre).not.toHaveAttribute("tabindex");
+  });
+
+  it("exposes the language for tools and renders only the requested chrome", () => {
+    const { container } = render(<CodeBlock code={"x"} lang="ts" chrome="windows" />);
+    expect(container.querySelector("code.language-ts")).not.toBeNull();
+    expect(container.querySelector(".eld-chrome-windows")).not.toBeNull();
+    expect(container.querySelector(".eld-chrome-mac")).toBeNull();
+    const auto = render(<CodeBlock code={"x"} />).container;
+    expect(auto.querySelector('[data-chrome="auto"] .eld-chrome-mac')).not.toBeNull();
+    expect(auto.querySelector(".eld-chrome-windows")).not.toBeNull();
+  });
+
+  it("highlights shell code with the shell tokenizer", () => {
+    const { container } = render(<CodeBlock lang="bash" code={"elide run --watch app.ts"} />);
+    expect(container.querySelector(".sh-command")).toHaveTextContent("elide");
+    expect(container.querySelector(".sh-flag")).toHaveTextContent("--watch");
   });
 });

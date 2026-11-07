@@ -6,7 +6,7 @@
  */
 import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
-import { purple, magenta, neutral, status, syntax } from "../src/tokens";
+import { purple, magenta, neutral, status, syntax, ansi } from "../src/tokens";
 
 type RGBA = [number, number, number, number];
 
@@ -79,6 +79,8 @@ const BASES = ["--background", "--card", "--popover"];
 const NEUTRAL_TEXT = ["--foreground", "--muted-foreground", "--subtle-foreground", "--primary-emphasis"];
 const STATUS = ["info", "success", "warning", "danger"];
 const SYNTAX = [...css.matchAll(/(--eld-syntax-[\w-]+)\s*:/g)].map(([, k]) => k);
+/** ANSI black is a background hue; every other palette entry is used as text. */
+const ANSI = [...css.matchAll(/(--eld-ansi-[\w-]+)\s*:/g)].map(([, k]) => k).filter((k) => k !== "--eld-ansi-black");
 
 type Case = [text: string, surface: string, base: string];
 const on = (text: string, tints: string[]): Case[] => [
@@ -96,7 +98,7 @@ const cases: Case[] = [
   // Fallback gradient stops must support white button labels.
   ...["start", "middle", "end"].map((stop): Case => ["--primary-foreground", `--eld-gradient-${stop}`, `--eld-gradient-${stop}`]),
   ["--destructive-foreground", "--destructive", "--destructive"],
-  ...SYNTAX.flatMap((t) => ["--code-background", "--code-background-elev"].map((s): Case => [t, s, s])),
+  ...[...SYNTAX, ...ANSI, "--code-prompt", "--code-title-foreground", "--code-control-foreground"].flatMap((t) => ["--code-background", "--code-background-elev"].map((s): Case => [t, s, s])),
 ];
 
 if (process.env.CONTRAST_REPORT) {
@@ -138,6 +140,7 @@ describe("tokens.ts mirrors tokens.css primitives", () => {
     ["magenta", magenta],
     ["neutral", neutral],
     ["syntax", syntax],
+    ["ansi", ansi],
     ["status", status],
   ];
   test.each(scales)("%s", (name, scale) => {
@@ -148,4 +151,14 @@ describe("tokens.ts mirrors tokens.css primitives", () => {
     );
     expect(Object.fromEntries(Object.entries(scale).map(([k, v]) => [String(k), v]))).toEqual(fromCss);
   });
+});
+
+// Recorded and synthesized casts carry the prompt as truecolor SGR
+// (38;2;196;181;253) because ANSI cannot reference CSS variables. Keep that
+// literal in sync with --code-prompt (purple-300): see packages/ui
+// components/terminal.tsx, lib/asciicast.ts and stories/fixtures/casts.ts.
+test("--code-prompt matches the SGR prompt color baked into casts", () => {
+  expect(light.get("--code-prompt")).toBe("var(--eld-purple-300)");
+  expect(purple[300]).toBe("#c4b5fd");
+  expect([0xc4, 0xb5, 0xfd]).toEqual([196, 181, 253]);
 });

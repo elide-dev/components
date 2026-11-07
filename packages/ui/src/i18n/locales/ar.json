@@ -35,7 +35,34 @@
     "terminal": "الطرفية",
     "normal": "عادي",
     "text": "نص",
-    "lines": "الأسطر: {count}"
+    "lines": "الأسطر: {count}",
+    "wrap": "التفاف الأسطر",
+    "added": "مُضاف",
+    "removed": "محذوف",
+    "breakpoint": "نقطة توقف",
+    "currentLine": "السطر الحالي",
+    "warning": "تحذير",
+    "error": "خطأ"
+  },
+  "terminal": {
+    "copyCommands": "نسخ الأوامر",
+    "recording": "تسجيل الطرفية",
+    "play": "تشغيل",
+    "pause": "إيقاف مؤقت",
+    "restart": "إعادة التشغيل",
+    "speed": "سرعة التشغيل: {speed}",
+    "seek": "موضع التشغيل",
+    "position": "{elapsed} من {total}",
+    "loading": "جارٍ تحميل التسجيل…",
+    "unavailable": "التسجيل غير متاح",
+    "copyCommand": "نسخ الأمر",
+    "exitCode": "رمز الخروج {code}",
+    "jumpTo": "الانتقال إلى {label}"
+  },
+  "codeSample": {
+    "code": "الشيفرة",
+    "output": "المخرجات",
+    "panel": "اللوحة {n}"
   },
   "copyCommand": {
     "copy": "نسخ",

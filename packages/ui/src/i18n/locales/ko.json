@@ -35,7 +35,34 @@
     "terminal": "터미널",
     "normal": "일반 모드",
     "text": "텍스트",
-    "lines": "줄 수: {count}"
+    "lines": "줄 수: {count}",
+    "wrap": "줄 바꿈",
+    "added": "추가됨",
+    "removed": "삭제됨",
+    "breakpoint": "중단점",
+    "currentLine": "현재 줄",
+    "warning": "경고",
+    "error": "오류"
+  },
+  "terminal": {
+    "copyCommands": "명령 복사",
+    "recording": "터미널 녹화",
+    "play": "재생",
+    "pause": "일시 정지",
+    "restart": "처음부터 재생",
+    "speed": "재생 속도: {speed}",
+    "seek": "재생 위치",
+    "position": "{elapsed} / {total}",
+    "loading": "녹화 불러오는 중…",
+    "unavailable": "녹화를 사용할 수 없음",
+    "copyCommand": "명령 복사",
+    "exitCode": "종료 코드 {code}",
+    "jumpTo": "{label}(으)로 이동"
+  },
+  "codeSample": {
+    "code": "코드",
+    "output": "출력",
+    "panel": "패널 {n}"
   },
   "copyCommand": {
     "copy": "복사",

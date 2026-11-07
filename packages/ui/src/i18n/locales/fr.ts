@@ -37,7 +37,34 @@ const messages: Messages = {
     "terminal": "Terminal",
     "normal": "NORMAL",
     "text": "texte",
-    "lines": "Lignes : {count}"
+    "lines": "Lignes : {count}",
+    "wrap": "Retour à la ligne",
+    "added": "Ajoutée",
+    "removed": "Supprimée",
+    "breakpoint": "Point d’arrêt",
+    "currentLine": "Ligne actuelle",
+    "warning": "Avertissement",
+    "error": "Erreur"
+  },
+  "terminal": {
+    "copyCommands": "Copier les commandes",
+    "recording": "Enregistrement du terminal",
+    "play": "Lire",
+    "pause": "Pause",
+    "restart": "Recommencer",
+    "speed": "Vitesse de lecture : {speed}",
+    "seek": "Position de lecture",
+    "position": "{elapsed} sur {total}",
+    "loading": "Chargement de l’enregistrement…",
+    "unavailable": "Enregistrement indisponible",
+    "copyCommand": "Copier la commande",
+    "exitCode": "Code de sortie {code}",
+    "jumpTo": "Aller à {label}"
+  },
+  "codeSample": {
+    "code": "Code",
+    "output": "Sortie",
+    "panel": "Panneau {n}"
   },
   "copyCommand": {
     "copy": "Copier",

@@ -35,7 +35,34 @@
     "terminal": "Terminal",
     "normal": "NORMAL",
     "text": "Text",
-    "lines": "Zeilen: {count}"
+    "lines": "Zeilen: {count}",
+    "wrap": "Zeilen umbrechen",
+    "added": "Hinzugefügt",
+    "removed": "Entfernt",
+    "breakpoint": "Haltepunkt",
+    "currentLine": "Aktuelle Zeile",
+    "warning": "Warnung",
+    "error": "Fehler"
+  },
+  "terminal": {
+    "copyCommands": "Befehle kopieren",
+    "recording": "Terminalaufzeichnung",
+    "play": "Abspielen",
+    "pause": "Pausieren",
+    "restart": "Neu starten",
+    "speed": "Wiedergabegeschwindigkeit: {speed}",
+    "seek": "Wiedergabeposition",
+    "position": "{elapsed} von {total}",
+    "loading": "Aufzeichnung wird geladen…",
+    "unavailable": "Aufzeichnung nicht verfügbar",
+    "copyCommand": "Befehl kopieren",
+    "exitCode": "Exit-Code {code}",
+    "jumpTo": "Springe zu {label}"
+  },
+  "codeSample": {
+    "code": "Code",
+    "output": "Ausgabe",
+    "panel": "Bereich {n}"
   },
   "copyCommand": {
     "copy": "Kopieren",

@@ -1,0 +1,399 @@
+/* Code surfaces: CodeBlock, Terminal, recordings and CodeSample.
+ * Rows are CSS grids ([marks] [number] [prompt] [content]); gutter glyphs,
+ * numbers and prompts are pseudo-elements so they never enter a selection or
+ * the clipboard. Layout never depends on script: no measurement, no reflow. */
+@layer components {
+  /* ---- Body ------------------------------------------------------------- */
+  .eld-code-body {
+    margin: 0;
+    padding-block: 1rem;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    font-family: var(--eld-font-mono);
+    font-size: 0.8125rem;
+    line-height: var(--code-line-height);
+    color: var(--eld-syntax-default);
+    /* `=>` and `!=` stay two characters, as readers will type them. */
+    font-variant-ligatures: none;
+    tab-size: 4;
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in oklab, var(--eld-syntax-line-number) 55%, transparent) transparent;
+  }
+
+  .eld-code-body:focus-visible {
+    outline: max(2px, 0.08em) solid var(--code-prompt);
+    outline-offset: -2px;
+  }
+
+  .eld-lines {
+    display: block;
+    /* Unwrapped rows share the longest row's width, so row backgrounds span the scroll width. */
+    min-inline-size: 100%;
+    inline-size: max-content;
+  }
+
+  .eld-lines[data-wrap] {
+    inline-size: auto;
+  }
+
+  /* ---- Rows ------------------------------------------------------------- */
+  .eld-line {
+    --eld-row-bg: transparent;
+    display: grid;
+    grid-template-columns:
+      [marks] var(--eld-marks-size, 0px)
+      [number] var(--eld-number-size, 0px)
+      [prompt] auto
+      [content] minmax(0, 1fr);
+    background: var(--eld-row-bg);
+  }
+
+  .eld-lines[data-marks] {
+    --eld-marks-size: 1.5rem;
+  }
+
+  .eld-lines[data-numbers] {
+    --eld-number-size: calc(var(--eld-code-digits, 2) * 1ch + 1.75rem);
+  }
+
+  .eld-content {
+    grid-row: 1;
+    grid-column: content;
+    padding-inline: 1rem 1.25rem;
+    white-space: pre;
+  }
+
+  .eld-lines[data-wrap] .eld-content {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  /* Terminal rows have no number column; the prompt carries the inset. */
+  .eld-lines[data-variant="terminal"] .eld-line {
+    padding-inline-start: max(0.25rem, 1rem - var(--eld-marks-size, 0px));
+  }
+
+  .eld-lines[data-variant="terminal"] .eld-content {
+    padding-inline-start: 0;
+  }
+
+  /* Line numbers: sticky while unwrapped code scrolls sideways. */
+  .eld-line[data-n]::before {
+    content: attr(data-n);
+    content: attr(data-n) / "";
+    grid-row: 1;
+    grid-column: number;
+    position: sticky;
+    inset-inline-start: var(--eld-marks-size, 0px);
+    padding-inline-end: 0.875rem;
+    border-inline-end: 1px solid var(--code-border);
+    text-align: end;
+    color: var(--eld-syntax-line-number);
+    font-variant-numeric: tabular-nums;
+    background: linear-gradient(var(--eld-row-bg), var(--eld-row-bg)), var(--code-background);
+  }
+
+  /* Prompt: an empty, aria-hidden element whose pseudo-elements draw the cwd
+   * and glyph; wrapped command text hangs under the command, not the prompt. */
+  .eld-prompt {
+    grid-row: 1;
+    grid-column: prompt;
+    white-space: pre;
+  }
+
+  .eld-prompt[data-cwd]::before {
+    content: attr(data-cwd) " ";
+    color: var(--eld-ansi-cyan);
+  }
+
+  .eld-prompt::after {
+    content: attr(data-prompt) " ";
+    color: var(--code-prompt);
+  }
+
+  .eld-line[data-kind="comment"] .eld-content {
+    color: var(--eld-syntax-comment);
+    font-style: italic;
+  }
+
+  /* ---- Gutter marks and decorations -------------------------------------- */
+  .eld-line[data-decor]::after,
+  .eld-line[data-exit]::after {
+    grid-row: 1;
+    grid-column: marks;
+    position: sticky;
+    inset-inline-start: 0;
+    text-align: center;
+    background: linear-gradient(var(--eld-row-bg), var(--eld-row-bg)), var(--code-background);
+  }
+
+  .eld-line[data-exit="ok"]::after {
+    content: "●";
+    content: "●" / attr(data-sr);
+    color: var(--eld-ansi-green);
+    font-size: 0.6em;
+    /* Keep the full row height so the smaller glyph stays vertically centered. */
+    line-height: calc(var(--code-line-height) / 0.6);
+  }
+
+  .eld-line[data-exit="fail"]::after {
+    content: "●";
+    content: "●" / attr(data-sr);
+    color: var(--eld-ansi-red);
+    font-size: 0.6em;
+    /* Keep the full row height so the smaller glyph stays vertically centered. */
+    line-height: calc(var(--code-line-height) / 0.6);
+  }
+
+  .eld-line[data-decor~="highlight"] {
+    --eld-row-bg: var(--code-line-highlight);
+    box-shadow: inset 2px 0 0 var(--code-prompt);
+  }
+
+  .eld-line[data-decor~="add"] {
+    --eld-row-bg: var(--code-line-add);
+  }
+
+  .eld-line[data-decor~="add"]::after {
+    content: "+";
+    content: "+" / attr(data-sr);
+    color: var(--eld-ansi-green);
+  }
+
+  .eld-line[data-decor~="remove"] {
+    --eld-row-bg: var(--code-line-remove);
+  }
+
+  .eld-line[data-decor~="remove"]::after {
+    content: "−";
+    content: "−" / attr(data-sr);
+    color: var(--eld-ansi-red);
+  }
+
+  .eld-line[data-decor~="warning"] {
+    --eld-row-bg: var(--code-line-warning);
+  }
+
+  .eld-line[data-decor~="warning"]::after {
+    content: "▲";
+    content: "▲" / attr(data-sr);
+    color: var(--eld-ansi-yellow);
+    font-size: 0.75em;
+    /* Keep the full row height so the smaller glyph stays vertically centered. */
+    line-height: calc(var(--code-line-height) / 0.75);
+  }
+
+  .eld-line[data-decor~="error"] {
+    --eld-row-bg: var(--code-line-error);
+  }
+
+  .eld-line[data-decor~="error"]::after {
+    content: "✕";
+    content: "✕" / attr(data-sr);
+    color: var(--eld-ansi-red);
+  }
+
+  .eld-line[data-decor~="breakpoint"]::after {
+    content: "●";
+    content: "●" / attr(data-sr);
+    color: var(--code-breakpoint);
+  }
+
+  .eld-line:is([data-decor~="cursor"], [data-decor~="breakpoint-hit"]) {
+    --eld-row-bg: color-mix(in oklab, var(--code-current-line) 14%, transparent);
+    box-shadow: inset 2px 0 0 var(--code-current-line);
+  }
+
+  .eld-line[data-decor~="cursor"]::after {
+    content: "➜";
+    content: "➜" / attr(data-sr);
+    color: var(--code-current-line);
+  }
+
+  .eld-line[data-decor~="breakpoint-hit"]::after {
+    content: "◉";
+    content: "◉" / attr(data-sr);
+    color: var(--code-breakpoint);
+  }
+
+  /* Focus: everything else recedes until the reader points at the block. */
+  .eld-lines:has([data-decor~="focus"]) .eld-line:not([data-decor~="focus"]) {
+    opacity: 0.4;
+  }
+
+  .eld-code-body:is(:hover, :focus-within) .eld-line {
+    opacity: 1;
+  }
+
+  /* Flash: a pulse for "this line just ran" (e.g. an Insight hook firing).
+   * Reduced motion keeps a steady highlight instead. */
+  .eld-line[data-decor~="flash"] {
+    --eld-flash: var(--code-line-highlight);
+    --eld-row-bg: var(--eld-flash);
+  }
+
+  .eld-line[data-decor~="flash"][data-tone="success"] { --eld-flash: var(--code-line-add); }
+  .eld-line[data-decor~="flash"][data-tone="danger"] { --eld-flash: var(--code-line-error); }
+  .eld-line[data-decor~="flash"][data-tone="warning"] { --eld-flash: var(--code-line-warning); }
+  .eld-line[data-decor~="flash"][data-tone="insight"] { --eld-flash: color-mix(in oklab, var(--eld-ansi-magenta) 18%, transparent); }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .eld-line[data-decor~="flash"] {
+      animation: eld-code-flash 900ms var(--eld-motion-ease-out) 2;
+    }
+
+    .eld-lines:has([data-decor~="focus"]) .eld-line {
+      transition: opacity var(--eld-motion-settle) var(--eld-motion-ease-out);
+    }
+  }
+
+  @keyframes eld-code-flash {
+    40% {
+      background-color: color-mix(in oklab, var(--eld-flash), var(--code-prompt) 30%);
+      box-shadow: inset 3px 0 0 var(--code-prompt);
+    }
+  }
+
+  /* Per-row action (copy command): overlaid at the row's end, shown on hover or focus. */
+  .eld-row-action {
+    grid-row: 1;
+    grid-column: content;
+    justify-self: end;
+    align-self: start;
+    position: sticky;
+    inset-inline-end: 0.5rem;
+    opacity: 0;
+    background: var(--code-background-elev);
+  }
+
+  .eld-row-action:focus-visible {
+    opacity: 1;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .eld-line:hover > .eld-row-action {
+      opacity: 1;
+    }
+  }
+
+  /* ---- Tokens ----------------------------------------------------------- */
+  .eld-code-link {
+    color: inherit;
+    text-decoration-line: underline;
+    text-decoration-color: color-mix(in oklab, currentColor 40%, transparent);
+    text-underline-offset: 0.2em;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .eld-code-link:hover {
+      text-decoration-color: currentColor;
+    }
+  }
+
+  .eld-code-link:focus-visible {
+    outline: max(2px, 0.08em) solid var(--code-prompt);
+    outline-offset: 1px;
+    border-radius: 2px;
+  }
+
+  .eld-lines .token:is(.comment, .prolog, .doctype, .cdata) { color: var(--eld-syntax-comment); font-style: italic; }
+  .eld-lines .token:is(.keyword, .control-flow, .at-rule, .rule, .important, .tag, .selector) { color: var(--eld-syntax-keyword); }
+  .eld-lines .token:is(.string, .char, .attr-value, .template-string, .url, .regex) { color: var(--eld-syntax-string); }
+  .eld-lines .token:is(.number, .boolean, .constant, .symbol, .inserted, .unit) { color: var(--eld-syntax-number); }
+  .eld-lines .token:is(.function, .function-variable, .method, .deleted) { color: var(--eld-syntax-function); }
+  .eld-lines .token:is(.class-name, .maybe-class-name, .builtin, .namespace, .type-annotation) { color: var(--eld-syntax-type); }
+  .eld-lines .token:is(.parameter, .property, .property-access, .variable, .attr-name, .entity) { color: var(--eld-syntax-param); }
+  .eld-lines .token:is(.operator, .punctuation) { color: var(--eld-syntax-default); }
+
+  /* Shell (zsh-syntax-highlighting semantics): the command stands out; pipes
+   * and redirects recede so each pipeline segment reads on its own. */
+  .eld-lines .sh-command { color: var(--eld-syntax-function); font-weight: 600; }
+  .eld-lines :is(.sh-precommand, .sh-builtin, .sh-keyword) { color: var(--eld-syntax-keyword); }
+  .eld-lines .sh-subcommand { color: var(--eld-syntax-function); }
+  .eld-lines .sh-flag { color: var(--eld-syntax-param); }
+  .eld-lines .sh-string { color: var(--eld-syntax-string); }
+  .eld-lines :is(.sh-variable, .sh-assignment) { color: var(--eld-syntax-type); }
+  .eld-lines :is(.sh-path, .sh-glob) {
+    text-decoration-line: underline;
+    text-decoration-style: dotted;
+    text-decoration-color: color-mix(in oklab, currentColor 45%, transparent);
+    text-underline-offset: 0.2em;
+  }
+  .eld-lines :is(.sh-redirect, .sh-operator, .sh-substitution, .sh-continuation) { color: var(--eld-ansi-bright-black); }
+  .eld-lines .sh-comment { color: var(--eld-syntax-comment); font-style: italic; }
+
+  /* ---- Terminal cursor ------------------------------------------------- */
+  .eld-terminal-cursor {
+    background: var(--code-cursor);
+    color: var(--code-background);
+  }
+
+  /* Blink only while a recording plays, so paused posters (and visual
+   * snapshots) are stable. Reduced motion keeps a steady block. */
+  @media (prefers-reduced-motion: no-preference) {
+    [data-slot="terminal-recording"][data-playing] .eld-terminal-cursor {
+      animation: eld-terminal-cursor-blink 1.06s steps(1, end) infinite;
+    }
+  }
+
+  @keyframes eld-terminal-cursor-blink {
+    50% {
+      background: transparent;
+      color: inherit;
+    }
+  }
+
+  /* ---- Recording screen: the VT grid scales to fit its container ---------- */
+  .eld-terminal-player {
+    container-type: inline-size;
+  }
+
+  .eld-terminal-screen {
+    /* 0.6 ≈ the monospace advance per em, so `cols` cells fill the width. */
+    font-size: clamp(0.5rem, (100cqi - 2rem) / (var(--eld-cols, 80) * 0.6), 0.8125rem);
+    block-size: calc(var(--eld-rows, 0) * var(--code-line-height) * 1em + 2rem);
+    contain: layout paint;
+  }
+
+  /* ---- Window chrome: CSS picks the variant, so SSR and hydration agree --- */
+  /* Display lives here, never in utilities, which would outrank these rules. */
+  .eld-chrome-mac {
+    display: flex;
+  }
+
+  .eld-chrome-windows,
+  .eld-chrome-linux {
+    display: none;
+  }
+
+  :is([data-chrome="windows"], :root[data-os="windows"] [data-chrome="auto"]) .eld-chrome-mac,
+  :is([data-chrome="linux"], :root[data-os="linux"] [data-chrome="auto"]) .eld-chrome-mac {
+    display: none;
+  }
+
+  :is([data-chrome="windows"], :root[data-os="windows"] [data-chrome="auto"]) .eld-chrome-windows,
+  :is([data-chrome="linux"], :root[data-os="linux"] [data-chrome="auto"]) .eld-chrome-linux {
+    display: flex;
+  }
+
+  /* ---- CodeSample layout --------------------------------------------- */
+  .eld-code-sample {
+    container: elide-code-sample / inline-size;
+  }
+
+  .eld-code-sample-grid {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .eld-code-sample-grid > * {
+    min-inline-size: 0;
+  }
+
+  @container elide-code-sample (width >= 48rem) {
+    .eld-code-sample[data-layout="beside"] > .eld-code-sample-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      align-items: start;
+    }
+  }
+}

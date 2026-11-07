@@ -35,7 +35,34 @@
     "terminal": "终端",
     "normal": "普通模式",
     "text": "文本",
-    "lines": "行数：{count}"
+    "lines": "行数：{count}",
+    "wrap": "自动换行",
+    "added": "已添加",
+    "removed": "已删除",
+    "breakpoint": "断点",
+    "currentLine": "当前行",
+    "warning": "警告",
+    "error": "错误"
+  },
+  "terminal": {
+    "copyCommands": "复制命令",
+    "recording": "终端录制",
+    "play": "播放",
+    "pause": "暂停",
+    "restart": "重新开始",
+    "speed": "播放速度：{speed}",
+    "seek": "播放位置",
+    "position": "{elapsed} / {total}",
+    "loading": "正在加载录制…",
+    "unavailable": "录制不可用",
+    "copyCommand": "复制命令",
+    "exitCode": "退出码 {code}",
+    "jumpTo": "跳转到 {label}"
+  },
+  "codeSample": {
+    "code": "代码",
+    "output": "输出",
+    "panel": "面板 {n}"
   },
   "copyCommand": {
     "copy": "复制",

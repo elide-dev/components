@@ -35,7 +35,34 @@
     "terminal": "Terminal",
     "normal": "NORMAL",
     "text": "text",
-    "lines": "{count}L"
+    "lines": "{count}L",
+    "wrap": "Wrap lines",
+    "added": "Added",
+    "removed": "Removed",
+    "breakpoint": "Breakpoint",
+    "currentLine": "Current line",
+    "warning": "Warning",
+    "error": "Error"
+  },
+  "terminal": {
+    "copyCommands": "Copy commands",
+    "recording": "Terminal recording",
+    "play": "Play",
+    "pause": "Pause",
+    "restart": "Restart",
+    "speed": "Playback speed: {speed}",
+    "seek": "Playback position",
+    "position": "{elapsed} of {total}",
+    "loading": "Loading recording…",
+    "unavailable": "Recording unavailable",
+    "copyCommand": "Copy command",
+    "exitCode": "Exit code {code}",
+    "jumpTo": "Jump to {label}"
+  },
+  "codeSample": {
+    "code": "Code",
+    "output": "Output",
+    "panel": "Panel {n}"
   },
   "copyCommand": {
     "copy": "Copy",

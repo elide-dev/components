@@ -37,7 +37,34 @@ const messages: Messages = {
     "terminal": "Терминал",
     "normal": "ОБЫЧНЫЙ",
     "text": "текст",
-    "lines": "Строки: {count}"
+    "lines": "Строки: {count}",
+    "wrap": "Перенос строк",
+    "added": "Добавлено",
+    "removed": "Удалено",
+    "breakpoint": "Точка останова",
+    "currentLine": "Текущая строка",
+    "warning": "Предупреждение",
+    "error": "Ошибка"
+  },
+  "terminal": {
+    "copyCommands": "Копировать команды",
+    "recording": "Запись терминала",
+    "play": "Воспроизвести",
+    "pause": "Пауза",
+    "restart": "Начать заново",
+    "speed": "Скорость воспроизведения: {speed}",
+    "seek": "Позиция воспроизведения",
+    "position": "{elapsed} из {total}",
+    "loading": "Загрузка записи…",
+    "unavailable": "Запись недоступна",
+    "copyCommand": "Копировать команду",
+    "exitCode": "Код выхода {code}",
+    "jumpTo": "Перейти к {label}"
+  },
+  "codeSample": {
+    "code": "Код",
+    "output": "Вывод",
+    "panel": "Панель {n}"
   },
   "copyCommand": {
     "copy": "Копировать",

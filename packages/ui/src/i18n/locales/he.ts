@@ -37,7 +37,34 @@ const messages: Messages = {
     "terminal": "מסוף",
     "normal": "רגיל",
     "text": "טקסט",
-    "lines": "שורות: {count}"
+    "lines": "שורות: {count}",
+    "wrap": "גלישת שורות",
+    "added": "נוסף",
+    "removed": "הוסר",
+    "breakpoint": "נקודת עצירה",
+    "currentLine": "השורה הנוכחית",
+    "warning": "אזהרה",
+    "error": "שגיאה"
+  },
+  "terminal": {
+    "copyCommands": "העתקת פקודות",
+    "recording": "הקלטת מסוף",
+    "play": "הפעלה",
+    "pause": "השהיה",
+    "restart": "הפעלה מחדש",
+    "speed": "מהירות הפעלה: {speed}",
+    "seek": "מיקום ההפעלה",
+    "position": "{elapsed} מתוך {total}",
+    "loading": "טוען הקלטה…",
+    "unavailable": "ההקלטה אינה זמינה",
+    "copyCommand": "העתקת פקודה",
+    "exitCode": "קוד יציאה {code}",
+    "jumpTo": "מעבר אל {label}"
+  },
+  "codeSample": {
+    "code": "קוד",
+    "output": "פלט",
+    "panel": "חלונית {n}"
   },
   "copyCommand": {
     "copy": "העתקה",

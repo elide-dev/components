@@ -35,7 +35,34 @@
     "terminal": "ターミナル",
     "normal": "ノーマル",
     "text": "テキスト",
-    "lines": "行数：{count}"
+    "lines": "行数：{count}",
+    "wrap": "行を折り返す",
+    "added": "追加",
+    "removed": "削除",
+    "breakpoint": "ブレークポイント",
+    "currentLine": "現在の行",
+    "warning": "警告",
+    "error": "エラー"
+  },
+  "terminal": {
+    "copyCommands": "コマンドをコピー",
+    "recording": "ターミナルの録画",
+    "play": "再生",
+    "pause": "一時停止",
+    "restart": "最初から再生",
+    "speed": "再生速度: {speed}",
+    "seek": "再生位置",
+    "position": "{elapsed} / {total}",
+    "loading": "録画を読み込み中…",
+    "unavailable": "録画を利用できません",
+    "copyCommand": "コマンドをコピー",
+    "exitCode": "終了コード {code}",
+    "jumpTo": "{label} へ移動"
+  },
+  "codeSample": {
+    "code": "コード",
+    "output": "出力",
+    "panel": "パネル {n}"
   },
   "copyCommand": {
     "copy": "コピー",
