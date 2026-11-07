@@ -4,6 +4,7 @@ import { Breadcrumbs } from "@elide/ui/components/breadcrumbs";
 import { Dialog, DialogTrigger, DialogContent, DialogTitle } from "@elide/ui/components/dialog";
 import { useRef, useState } from "preact/hooks";
 import { Button } from "@elide/ui/components/button";
+import { buttonVariants } from "@elide/ui/components/button-variants";
 import { Switch } from "@elide/ui/components/switch";
 import { Terminal } from "@elide/ui/components/terminal";
 import { App } from "../../benchmark/src/App";
@@ -17,12 +18,12 @@ export function Consumer({ platform }: { platform: boolean }) {
   const ref = useRef<HTMLButtonElement>(null);
   return <>
     {platform ? <PlatformApp /> : <App />}
-    <section aria-label="Preact integration">
+    <section id="preact-integration" aria-label="Preact integration">
       <Switch aria-label="Preact state" checked={checked} onCheckedChange={next => setChecked(next)} />
       <Button ref={ref} onClick={event => { event.currentTarget.focus(); ref.current?.setAttribute("data-ref-checked", "true"); }}>
         {checked ? "Preact enabled" : "Preact disabled"}
       </Button>
-      <Button render={<a href="#main" />}>Back to content</Button>
+      <a href="#preact-integration" className={buttonVariants()}>Back to content</a>
     </section>
     <Terminal
       code={"$ elide run app.ts\nHello from Elide!"}

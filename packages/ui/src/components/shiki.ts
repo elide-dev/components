@@ -22,43 +22,35 @@ import { createJavaScriptRegexEngine } from "shiki/engine/javascript";
 import type { CodeLine, CodeToken, InlineDecoration, LineDecoration } from "../lib/code-model";
 import { parseNotations } from "../lib/notations";
 import { isShellLang, shellLines } from "./highlight";
-import { setSyncHighlighter } from "./highlight-registry";
+import { registeredLanguages, setSyncHighlighter } from "./highlight-registry";
 
 type Loader = () => Promise<{ default: LanguageRegistration[] }>;
 
 /**
- * Grammars that can be loaded, by Shiki id. Static imports let bundlers split
- * each one. C++ and Ruby are omitted: their grammars (with embedded languages)
- * are ~800-900 KB and trip bundler size warnings for every consumer, even
- * though they would only ever load lazily.
+ * Built-in grammars: the languages Elide runs and documents, plus the config
+ * and data formats around them. Each is a static import, so bundlers emit one
+ * lazy chunk per grammar and nothing else. Shell (bash, sh, zsh, …) needs no
+ * grammar: the positional shell tokenizer handles it. Add others with
+ * `registerLanguage()` from `./highlight-registry`.
  */
 const GRAMMARS: Record<string, Loader> = {
   typescript: () => import("shiki/langs/typescript.mjs"),
   tsx: () => import("shiki/langs/tsx.mjs"),
   javascript: () => import("shiki/langs/javascript.mjs"),
   jsx: () => import("shiki/langs/jsx.mjs"),
-  json: () => import("shiki/langs/json.mjs"),
-  jsonc: () => import("shiki/langs/jsonc.mjs"),
-  css: () => import("shiki/langs/css.mjs"),
-  html: () => import("shiki/langs/html.mjs"),
-  xml: () => import("shiki/langs/xml.mjs"),
-  markdown: () => import("shiki/langs/markdown.mjs"),
   python: () => import("shiki/langs/python.mjs"),
   kotlin: () => import("shiki/langs/kotlin.mjs"),
   java: () => import("shiki/langs/java.mjs"),
   pkl: () => import("shiki/langs/pkl.mjs"),
+  json: () => import("shiki/langs/json.mjs"),
+  jsonc: () => import("shiki/langs/jsonc.mjs"),
   yaml: () => import("shiki/langs/yaml.mjs"),
   toml: () => import("shiki/langs/toml.mjs"),
   sql: () => import("shiki/langs/sql.mjs"),
-  go: () => import("shiki/langs/go.mjs"),
-  rust: () => import("shiki/langs/rust.mjs"),
-  swift: () => import("shiki/langs/swift.mjs"),
-  c: () => import("shiki/langs/c.mjs"),
-  csharp: () => import("shiki/langs/csharp.mjs"),
+  html: () => import("shiki/langs/html.mjs"),
+  css: () => import("shiki/langs/css.mjs"),
+  xml: () => import("shiki/langs/xml.mjs"),
   diff: () => import("shiki/langs/diff.mjs"),
-  docker: () => import("shiki/langs/docker.mjs"),
-  graphql: () => import("shiki/langs/graphql.mjs"),
-  ini: () => import("shiki/langs/ini.mjs"),
 };
 
 const ALIASES: Record<string, string> = {
@@ -72,24 +64,28 @@ const ALIASES: Record<string, string> = {
   kt: "kotlin",
   kts: "kotlin",
   yml: "yaml",
-  md: "markdown",
-  rs: "rust",
-  cs: "csharp",
-  dockerfile: "docker",
-  gql: "graphql",
-  svg: "xml",
   htm: "html",
+  svg: "xml",
+  pom: "xml",
+  patch: "diff",
 };
 
-/** Supported grammar ids (shell languages use the built-in shell tokenizer). */
-export const supportedLanguages: readonly string[] = Object.keys(GRAMMARS);
+/** Grammar loader for a Shiki id: built in, or registered by the consumer. */
+function grammarFor(id: string): Loader | undefined {
+  return GRAMMARS[id] ?? (registeredLanguages().grammars.get(id) as Loader | undefined);
+}
 
-/** Resolve a friendly `lang` to a Shiki grammar id, or undefined if unsupported. */
+/** Supported grammar ids (shell languages use the built-in shell tokenizer). */
+export function supportedLanguages(): string[] {
+  return [...Object.keys(GRAMMARS), ...registeredLanguages().grammars.keys()];
+}
+
+/** Resolve a friendly `lang` to a grammar id, or undefined if unsupported. */
 export function resolveLanguage(lang: string | undefined): string | undefined {
   if (!lang) return undefined;
   const id = lang.toLowerCase();
-  const resolved = ALIASES[id] ?? id;
-  return resolved in GRAMMARS ? resolved : undefined;
+  const resolved = ALIASES[id] ?? registeredLanguages().aliases.get(id) ?? id;
+  return grammarFor(resolved) ? resolved : undefined;
 }
 
 const v = (name: string) => `var(--eld-syntax-${name})`;
@@ -153,6 +149,15 @@ export function tokensToLines(tokens: ThemedToken[][]): CodeLine[] {
   }));
 }
 
+/**
+ * Per-line tokenize budget (vscode-textmate stops a line when it runs out and
+ * leaves the rest unstyled). The first line also pays for compiling the
+ * grammar's regexes, so slow machines can exceed Shiki's 500 ms default.
+ * Runtime keeps a generous guard against pathological lines; build time
+ * passes 0 (no limit) so output never depends on machine speed.
+ */
+export const RUNTIME_TOKENIZE_LIMIT = 2000;
+
 let core: Promise<HighlighterCore> | undefined;
 const loaded = new Set<string>();
 
@@ -164,7 +169,7 @@ function getCore(): Promise<HighlighterCore> {
           if (isShellLang(lang)) return shellLines(code);
           const id = resolveLanguage(lang);
           if (!id || !loaded.has(id)) return undefined;
-          return tokensToLines(highlighter.codeToTokensBase(code, { lang: id, theme: "elide" }));
+          return tokensToLines(highlighter.codeToTokensBase(code, { lang: id, theme: "elide", tokenizeTimeLimit: RUNTIME_TOKENIZE_LIMIT }));
         },
       });
       return highlighter;
@@ -175,7 +180,7 @@ function getCore(): Promise<HighlighterCore> {
 
 async function ensureLanguage(highlighter: HighlighterCore, id: string): Promise<void> {
   if (loaded.has(id)) return;
-  const grammar = await GRAMMARS[id]();
+  const grammar = await grammarFor(id)!();
   await highlighter.loadLanguage(...grammar.default);
   loaded.add(id);
 }
@@ -186,14 +191,17 @@ export async function preloadHighlighter(langs: readonly string[] = ["typescript
   await Promise.all(langs.map(resolveLanguage).filter((id): id is string => !!id).map((id) => ensureLanguage(highlighter, id)));
 }
 
-/** Highlight to model lines (plain lines for unsupported languages). */
-export async function highlightToLines(code: string, lang: string | undefined): Promise<CodeLine[]> {
+/**
+ * Highlight to model lines (plain lines for unsupported languages).
+ * `timeLimit` is the per-line tokenize budget in ms (0: none).
+ */
+export async function highlightToLines(code: string, lang: string | undefined, timeLimit = RUNTIME_TOKENIZE_LIMIT): Promise<CodeLine[]> {
   if (lang && isShellLang(lang)) return shellLines(code);
   const id = resolveLanguage(lang);
   if (!id) return code.split("\n").map((text) => ({ tokens: text ? [{ text }] : [] }));
   const highlighter = await getCore();
   await ensureLanguage(highlighter, id);
-  return tokensToLines(highlighter.codeToTokensBase(code, { lang: id, theme: "elide" }));
+  return tokensToLines(highlighter.codeToTokensBase(code, { lang: id, theme: "elide", tokenizeTimeLimit: timeLimit }));
 }
 
 export interface TwoslashOptions {
@@ -339,6 +347,7 @@ export async function highlightCode(code: string, lang?: string, options: Highli
     inline.splice(0, inline.length, ...remapped, ...parsed.inline);
     decorations.splice(0, decorations.length, ...remappedLines, ...parsed.decorations);
   }
-  const lines = await highlightToLines(source, lang);
+  // Build-time output must be complete and deterministic: no tokenize time limit.
+  const lines = await highlightToLines(source, lang, 0);
   return { code: source, lang, lines, decorations, inline };
 }

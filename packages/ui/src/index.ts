@@ -19,6 +19,7 @@ export { codeChromeScript, type CodeChrome } from "./components/code-surface-sty
 export { CodeLines, type CodeLinesProps, type CodeFold, type CodeAnnotationBadge } from "./components/code-lines";
 export { tokenStyleToCss } from "./lib/token-style";
 export { syncLines, shellLines, plainLines, isShellLang } from "./components/highlight";
+export { registerLanguage, type GrammarLoader } from "./components/highlight-registry";
 // Shiki lives in its own entry, `@elide/ui/components/shiki`, so root imports never load it.
 export type { HighlightedCode, HighlightOptions, TwoslashOptions } from "./components/shiki";
 export { parseNotations, parseLineRanges, type ParsedNotations } from "./lib/notations";

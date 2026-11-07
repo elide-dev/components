@@ -1,12 +1,23 @@
 import { describe, expect, it } from "vitest";
-import { getSyncHighlighter } from "./highlight-registry";
-import { highlightCode, preloadHighlighter, resolveLanguage, tokensToLines } from "./shiki";
+import { getSyncHighlighter, registerLanguage } from "./highlight-registry";
+import { highlightCode, preloadHighlighter, resolveLanguage, supportedLanguages, tokensToLines } from "./shiki";
 
 describe("shiki", () => {
   it("resolves aliases and rejects unsupported languages", () => {
     expect(resolveLanguage("ts")).toBe("typescript");
     expect(resolveLanguage("KT")).toBe("kotlin");
     expect(resolveLanguage("cobol")).toBeUndefined();
+  });
+
+  it("ships only the languages Elide needs, and accepts registered ones", async () => {
+    expect(supportedLanguages()).toEqual(
+      expect.arrayContaining(["typescript", "python", "kotlin", "java", "pkl", "json", "yaml", "toml", "sql", "xml"]),
+    );
+    expect(resolveLanguage("go")).toBeUndefined();
+    registerLanguage("go", () => import("shiki/langs/go.mjs"), ["golang"]);
+    expect(resolveLanguage("golang")).toBe("go");
+    const result = await highlightCode("package main", "golang");
+    expect(result.lines[0].tokens[0]).toEqual({ text: "package", style: { className: "tk-keyword" } });
   });
 
   it("maps theme colors and font styles to classes", () => {

@@ -33,7 +33,7 @@ async function load(page, platform, mode) {
   const button = page.getByRole("button", { name: "Preact enabled", exact: true });
   await button.click();
   assert.equal(await button.getAttribute("data-ref-checked"), "true", "Preact ref reaches the native button");
-  assert.equal(await page.getByRole("link", { name: "Back to content" }).getAttribute("href"), "#main");
+  assert.equal(await page.getByRole("link", { name: "Back to content" }).getAttribute("href"), "#preact-integration");
   assert.equal(await button.evaluate(el => getComputedStyle(el).userSelect), "none");
   assert.equal(await page.getByTestId("preact-i18n").getAttribute("dir"), "rtl");
   await page.getByRole("navigation", { name: "נתיב ניווט" }).waitFor();
