@@ -9,10 +9,8 @@ describe("CodeLines terminal glyphs", () => {
     const { container } = render(<CodeLines lines={logo} variant="terminal" />);
     const cells = [...container.querySelectorAll(".eld-glyph")];
     expect(cells.map((cell) => cell.textContent)).toEqual(["█", "█", "╗", "─", "┐", "▀"]);
-    expect(cells[0]).toHaveClass("eld-gb-full");
-    expect(cells[2]).toHaveClass("eld-gx-double", "eld-gx-double-dl");
-    expect(cells[4]).toHaveClass("eld-gx-d", "eld-gx-l");
-    expect(cells[5]).toHaveClass("eld-gb-upper", "eld-gb-4");
+    // The stylesheet paints each cell by its character.
+    expect(cells.map((cell) => cell.getAttribute("data-glyph")).join("")).toBe("██╗─┐▀");
     expect(cells[0]?.parentElement?.textContent).toBe("██╗ dull");
     // Coloured runs keep their colour; drawn cells inherit it.
     expect(cells[0]?.parentElement?.getAttribute("style")).toContain("color");
@@ -32,15 +30,9 @@ describe("CodeLines terminal glyphs", () => {
     expect(editor.container.querySelector(".eld-cell-bg")).toBeNull();
   });
 
-  it("maps every drawn family to its cell", async () => {
-    const { glyphClass } = await import("../lib/terminal-glyphs");
-    expect(glyphClass("━")).toBe("eld-glyph eld-gx-l eld-gx-r eld-gx-h");
-    expect(glyphClass("╰")).toBe("eld-glyph eld-gx-arc eld-gx-arc-ur");
-    expect(glyphClass("╝")).toBe("eld-glyph eld-gx-double eld-gx-double-ul");
-    expect(glyphClass("▍")).toBe("eld-glyph eld-gb-left eld-gb-3");
-    expect(glyphClass("▆")).toBe("eld-glyph eld-gb-lower eld-gb-6");
-    expect(glyphClass("▐")).toBe("eld-glyph eld-gb-right eld-gb-4");
-    expect(glyphClass("▒")).toBe("eld-glyph eld-gb-shade eld-gb-shade-2");
-    for (const ch of ["d", "r", "l", "u", "h", "a", "╳"]) expect(glyphClass(ch)).toBeUndefined();
+  it("draws only the characters the stylesheet paints", async () => {
+    const { DRAWN } = await import("../lib/terminal-glyphs");
+    for (const ch of "━╰╝▍▆▐▒") expect(DRAWN.test(ch)).toBe(true);
+    for (const ch of ["d", "a", "╳", "▖", "❯"]) expect(DRAWN.test(ch)).toBe(false);
   });
 });

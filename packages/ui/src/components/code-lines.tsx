@@ -2,7 +2,7 @@ import * as React from "react";
 import type { CodeInsights, CodeLine, CodeToken, InlineDecoration, LineDecoration, LineDecorationKind } from "../lib/code-model";
 import { decorationCovers } from "../lib/code-model";
 import { segmentLine, withColumns } from "../lib/segments";
-import { DRAWN, glyphClass } from "../lib/terminal-glyphs";
+import { DRAWN } from "../lib/terminal-glyphs";
 import { tokenStyleToCss } from "../lib/token-style";
 
 /** Token text; on a terminal, box-drawing and block characters become drawn cells. */
@@ -11,15 +11,14 @@ function TokenText({ text, draw }: { text: string; draw: boolean }) {
   const parts: React.ReactNode[] = [];
   let run = "";
   for (const ch of text) {
-    const className = glyphClass(ch);
-    if (!className) {
+    if (!DRAWN.test(ch)) {
       run += ch;
       continue;
     }
     if (run) parts.push(run);
     run = "";
     parts.push(
-      <span key={parts.length} className={className}>
+      <span key={parts.length} className="eld-glyph" data-glyph={ch}>
         {ch}
       </span>,
     );

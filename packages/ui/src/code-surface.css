@@ -756,22 +756,90 @@
     vertical-align: top;
   }
 
-  .eld-glyph.eld-gx-u { --eld-gx-u: linear-gradient(currentColor, currentColor); }
-  .eld-glyph.eld-gx-d { --eld-gx-d: linear-gradient(currentColor, currentColor); }
-  .eld-glyph.eld-gx-l { --eld-gx-l: linear-gradient(currentColor, currentColor); }
-  .eld-glyph.eld-gx-r { --eld-gx-r: linear-gradient(currentColor, currentColor); }
-  .eld-glyph.eld-gx-h { --eld-gx-width: 2px; }
+  .eld-glyph[data-glyph="│"],
+  .eld-glyph[data-glyph="┃"],
+  .eld-glyph[data-glyph="└"],
+  .eld-glyph[data-glyph="┘"],
+  .eld-glyph[data-glyph="├"],
+  .eld-glyph[data-glyph="┤"],
+  .eld-glyph[data-glyph="┴"],
+  .eld-glyph[data-glyph="┼"] {
+    --eld-gx-u: linear-gradient(currentColor, currentColor);
+  }
+
+  .eld-glyph[data-glyph="│"],
+  .eld-glyph[data-glyph="┃"],
+  .eld-glyph[data-glyph="┌"],
+  .eld-glyph[data-glyph="┐"],
+  .eld-glyph[data-glyph="├"],
+  .eld-glyph[data-glyph="┤"],
+  .eld-glyph[data-glyph="┬"],
+  .eld-glyph[data-glyph="┼"] {
+    --eld-gx-d: linear-gradient(currentColor, currentColor);
+  }
+
+  .eld-glyph[data-glyph="─"],
+  .eld-glyph[data-glyph="━"],
+  .eld-glyph[data-glyph="┐"],
+  .eld-glyph[data-glyph="┘"],
+  .eld-glyph[data-glyph="┤"],
+  .eld-glyph[data-glyph="┬"],
+  .eld-glyph[data-glyph="┴"],
+  .eld-glyph[data-glyph="┼"] {
+    --eld-gx-l: linear-gradient(currentColor, currentColor);
+  }
+
+  .eld-glyph[data-glyph="─"],
+  .eld-glyph[data-glyph="━"],
+  .eld-glyph[data-glyph="┌"],
+  .eld-glyph[data-glyph="└"],
+  .eld-glyph[data-glyph="├"],
+  .eld-glyph[data-glyph="┬"],
+  .eld-glyph[data-glyph="┴"],
+  .eld-glyph[data-glyph="┼"] {
+    --eld-gx-r: linear-gradient(currentColor, currentColor);
+  }
+
+  .eld-glyph[data-glyph="━"],
+  .eld-glyph[data-glyph="┃"] {
+    --eld-gx-width: 2px;
+  }
 
   /* Cells have fractional sizes: a line cell overlaps its neighbours by a hair so segments
    * join instead of anti-aliasing into dashes. Blocks keep exact edges (below). */
-  :where(.eld-lines[data-variant="terminal"]) .eld-glyph[class*="eld-gx-"] {
+  :where(.eld-lines[data-variant="terminal"]) .eld-glyph[data-glyph="─"],
+  :where(.eld-lines[data-variant="terminal"]) .eld-glyph[data-glyph="━"],
+  :where(.eld-lines[data-variant="terminal"]) .eld-glyph[data-glyph="│"],
+  :where(.eld-lines[data-variant="terminal"]) .eld-glyph[data-glyph="┃"],
+  :where(.eld-lines[data-variant="terminal"]) .eld-glyph[data-glyph="┌"],
+  :where(.eld-lines[data-variant="terminal"]) .eld-glyph[data-glyph="┐"],
+  :where(.eld-lines[data-variant="terminal"]) .eld-glyph[data-glyph="└"],
+  :where(.eld-lines[data-variant="terminal"]) .eld-glyph[data-glyph="┘"],
+  :where(.eld-lines[data-variant="terminal"]) .eld-glyph[data-glyph="├"],
+  :where(.eld-lines[data-variant="terminal"]) .eld-glyph[data-glyph="┤"],
+  :where(.eld-lines[data-variant="terminal"]) .eld-glyph[data-glyph="┬"],
+  :where(.eld-lines[data-variant="terminal"]) .eld-glyph[data-glyph="┴"],
+  :where(.eld-lines[data-variant="terminal"]) .eld-glyph[data-glyph="┼"],
+  :where(.eld-lines[data-variant="terminal"]) .eld-glyph[data-glyph="╭"],
+  :where(.eld-lines[data-variant="terminal"]) .eld-glyph[data-glyph="╮"],
+  :where(.eld-lines[data-variant="terminal"]) .eld-glyph[data-glyph="╯"],
+  :where(.eld-lines[data-variant="terminal"]) .eld-glyph[data-glyph="╰"],
+  :where(.eld-lines[data-variant="terminal"]) .eld-glyph[data-glyph="═"],
+  :where(.eld-lines[data-variant="terminal"]) .eld-glyph[data-glyph="║"],
+  :where(.eld-lines[data-variant="terminal"]) .eld-glyph[data-glyph="╔"],
+  :where(.eld-lines[data-variant="terminal"]) .eld-glyph[data-glyph="╗"],
+  :where(.eld-lines[data-variant="terminal"]) .eld-glyph[data-glyph="╚"],
+  :where(.eld-lines[data-variant="terminal"]) .eld-glyph[data-glyph="╝"] {
     inline-size: calc(0.6em + 0.5px);
     block-size: calc(var(--code-line-height) * 1em + 1px);
     margin-block: -0.5px;
     margin-inline: -0.25px;
   }
 
-  .eld-glyph.eld-gx-arc::before {
+  .eld-glyph[data-glyph="╭"]::before,
+  .eld-glyph[data-glyph="╮"]::before,
+  .eld-glyph[data-glyph="╯"]::before,
+  .eld-glyph[data-glyph="╰"]::before {
     content: "";
     position: absolute;
     box-sizing: border-box;
@@ -779,28 +847,32 @@
     block-size: calc(50% + var(--eld-gx-width) / 2);
     border: 0 solid currentColor;
   }
-  .eld-glyph.eld-gx-arc-dr::before {
+
+  .eld-glyph[data-glyph="╭"]::before {
     left: calc(50% - var(--eld-gx-width) / 2);
     top: calc(50% - var(--eld-gx-width) / 2);
     border-top-width: var(--eld-gx-width);
     border-left-width: var(--eld-gx-width);
     border-top-left-radius: 0.3em;
   }
-  .eld-glyph.eld-gx-arc-dl::before {
+
+  .eld-glyph[data-glyph="╮"]::before {
     right: calc(50% - var(--eld-gx-width) / 2);
     top: calc(50% - var(--eld-gx-width) / 2);
     border-top-width: var(--eld-gx-width);
     border-right-width: var(--eld-gx-width);
     border-top-right-radius: 0.3em;
   }
-  .eld-glyph.eld-gx-arc-ul::before {
+
+  .eld-glyph[data-glyph="╯"]::before {
     right: calc(50% - var(--eld-gx-width) / 2);
     bottom: calc(50% - var(--eld-gx-width) / 2);
     border-bottom-width: var(--eld-gx-width);
     border-right-width: var(--eld-gx-width);
     border-bottom-right-radius: 0.3em;
   }
-  .eld-glyph.eld-gx-arc-ur::before {
+
+  .eld-glyph[data-glyph="╰"]::before {
     left: calc(50% - var(--eld-gx-width) / 2);
     bottom: calc(50% - var(--eld-gx-width) / 2);
     border-bottom-width: var(--eld-gx-width);
@@ -809,42 +881,53 @@
   }
 
   /* Double lines: two strokes 3px apart, with outer and inner corners. */
-  .eld-glyph.eld-gx-double {
+  .eld-glyph[data-glyph="═"],
+  .eld-glyph[data-glyph="║"],
+  .eld-glyph[data-glyph="╔"],
+  .eld-glyph[data-glyph="╗"],
+  .eld-glyph[data-glyph="╚"],
+  .eld-glyph[data-glyph="╝"] {
     --eld-gx-gap: 1.5px;
     --eld-gx-c: linear-gradient(currentColor, currentColor);
   }
-  .eld-glyph.eld-gx-double-lr {
+
+  .eld-glyph[data-glyph="═"] {
     background:
       var(--eld-gx-c) 0 calc(50% - var(--eld-gx-gap)) / 100% 1px no-repeat,
       var(--eld-gx-c) 0 calc(50% + var(--eld-gx-gap)) / 100% 1px no-repeat;
   }
-  .eld-glyph.eld-gx-double-ud {
+
+  .eld-glyph[data-glyph="║"] {
     background:
       var(--eld-gx-c) calc(50% - var(--eld-gx-gap)) 0 / 1px 100% no-repeat,
       var(--eld-gx-c) calc(50% + var(--eld-gx-gap)) 0 / 1px 100% no-repeat;
   }
-  .eld-glyph.eld-gx-double-dr {
+
+  .eld-glyph[data-glyph="╔"] {
     background:
       var(--eld-gx-c) right 0 top calc(50% - var(--eld-gx-gap)) / calc(50% + var(--eld-gx-gap) + 0.5px) 1px no-repeat,
       var(--eld-gx-c) left calc(50% - var(--eld-gx-gap)) bottom 0 / 1px calc(50% + var(--eld-gx-gap) + 0.5px) no-repeat,
       var(--eld-gx-c) right 0 top calc(50% + var(--eld-gx-gap)) / calc(50% - var(--eld-gx-gap) + 0.5px) 1px no-repeat,
       var(--eld-gx-c) left calc(50% + var(--eld-gx-gap)) bottom 0 / 1px calc(50% - var(--eld-gx-gap) + 0.5px) no-repeat;
   }
-  .eld-glyph.eld-gx-double-dl {
+
+  .eld-glyph[data-glyph="╗"] {
     background:
       var(--eld-gx-c) left 0 top calc(50% - var(--eld-gx-gap)) / calc(50% + var(--eld-gx-gap) + 0.5px) 1px no-repeat,
       var(--eld-gx-c) left calc(50% + var(--eld-gx-gap)) bottom 0 / 1px calc(50% + var(--eld-gx-gap) + 0.5px) no-repeat,
       var(--eld-gx-c) left 0 top calc(50% + var(--eld-gx-gap)) / calc(50% - var(--eld-gx-gap) + 0.5px) 1px no-repeat,
       var(--eld-gx-c) left calc(50% - var(--eld-gx-gap)) bottom 0 / 1px calc(50% - var(--eld-gx-gap) + 0.5px) no-repeat;
   }
-  .eld-glyph.eld-gx-double-ur {
+
+  .eld-glyph[data-glyph="╚"] {
     background:
       var(--eld-gx-c) right 0 top calc(50% + var(--eld-gx-gap)) / calc(50% + var(--eld-gx-gap) + 0.5px) 1px no-repeat,
       var(--eld-gx-c) left calc(50% - var(--eld-gx-gap)) top 0 / 1px calc(50% + var(--eld-gx-gap) + 0.5px) no-repeat,
       var(--eld-gx-c) right 0 top calc(50% - var(--eld-gx-gap)) / calc(50% - var(--eld-gx-gap) + 0.5px) 1px no-repeat,
       var(--eld-gx-c) left calc(50% + var(--eld-gx-gap)) top 0 / 1px calc(50% - var(--eld-gx-gap) + 0.5px) no-repeat;
   }
-  .eld-glyph.eld-gx-double-ul {
+
+  .eld-glyph[data-glyph="╝"] {
     background:
       var(--eld-gx-c) left 0 top calc(50% + var(--eld-gx-gap)) / calc(50% + var(--eld-gx-gap) + 0.5px) 1px no-repeat,
       var(--eld-gx-c) left calc(50% + var(--eld-gx-gap)) top 0 / 1px calc(50% + var(--eld-gx-gap) + 0.5px) no-repeat,
@@ -855,25 +938,82 @@
   /* Blocks fill exact fractions of the cell; a cell background is snapped to device pixels, so
    * neighbours share their edges. A full block adds a half-pixel ring of its own colour, which
    * covers the anti-aliased seam at fractional zoom without moving layout. */
-  .eld-glyph.eld-gb-full {
+  .eld-glyph[data-glyph="█"] {
     background: currentColor;
     box-shadow: 0 0 0 0.5px currentColor;
   }
-  .eld-glyph.eld-gb-left { background: linear-gradient(currentColor, currentColor) 0 0 / var(--eld-gb) 100% no-repeat; }
-  .eld-glyph.eld-gb-right { background: linear-gradient(currentColor, currentColor) 100% 0 / var(--eld-gb) 100% no-repeat; }
-  .eld-glyph.eld-gb-lower { background: linear-gradient(currentColor, currentColor) 0 100% / 100% var(--eld-gb) no-repeat; }
-  .eld-glyph.eld-gb-upper { background: linear-gradient(currentColor, currentColor) 0 0 / 100% var(--eld-gb) no-repeat; }
-  .eld-glyph.eld-gb-1 { --eld-gb: 12.5%; }
-  .eld-glyph.eld-gb-2 { --eld-gb: 25%; }
-  .eld-glyph.eld-gb-3 { --eld-gb: 37.5%; }
-  .eld-glyph.eld-gb-4 { --eld-gb: 50%; }
-  .eld-glyph.eld-gb-5 { --eld-gb: 62.5%; }
-  .eld-glyph.eld-gb-6 { --eld-gb: 75%; }
-  .eld-glyph.eld-gb-7 { --eld-gb: 87.5%; }
-  .eld-glyph.eld-gb-shade { background: color-mix(in oklab, currentColor var(--eld-gb-shade), transparent); }
-  .eld-glyph.eld-gb-shade-1 { --eld-gb-shade: 25%; }
-  .eld-glyph.eld-gb-shade-2 { --eld-gb-shade: 50%; }
-  .eld-glyph.eld-gb-shade-3 { --eld-gb-shade: 75%; }
+
+  .eld-glyph[data-glyph="▏"],
+  .eld-glyph[data-glyph="▎"],
+  .eld-glyph[data-glyph="▍"],
+  .eld-glyph[data-glyph="▌"],
+  .eld-glyph[data-glyph="▋"],
+  .eld-glyph[data-glyph="▊"],
+  .eld-glyph[data-glyph="▉"] {
+    background: linear-gradient(currentColor, currentColor) 0 0 / var(--eld-gb) 100% no-repeat;
+  }
+
+  .eld-glyph[data-glyph="▁"],
+  .eld-glyph[data-glyph="▂"],
+  .eld-glyph[data-glyph="▃"],
+  .eld-glyph[data-glyph="▄"],
+  .eld-glyph[data-glyph="▅"],
+  .eld-glyph[data-glyph="▆"],
+  .eld-glyph[data-glyph="▇"] {
+    background: linear-gradient(currentColor, currentColor) 0 100% / 100% var(--eld-gb) no-repeat;
+  }
+
+  .eld-glyph[data-glyph="▀"],
+  .eld-glyph[data-glyph="▔"] {
+    background: linear-gradient(currentColor, currentColor) 0 0 / 100% var(--eld-gb) no-repeat;
+  }
+
+  .eld-glyph[data-glyph="▐"],
+  .eld-glyph[data-glyph="▕"] {
+    background: linear-gradient(currentColor, currentColor) 100% 0 / var(--eld-gb) 100% no-repeat;
+  }
+
+  .eld-glyph[data-glyph="▏"] { --eld-gb: 12.5%; }
+
+  .eld-glyph[data-glyph="▎"] { --eld-gb: 25%; }
+
+  .eld-glyph[data-glyph="▍"] { --eld-gb: 37.5%; }
+
+  .eld-glyph[data-glyph="▌"] { --eld-gb: 50%; }
+
+  .eld-glyph[data-glyph="▋"] { --eld-gb: 62.5%; }
+
+  .eld-glyph[data-glyph="▊"] { --eld-gb: 75%; }
+
+  .eld-glyph[data-glyph="▉"] { --eld-gb: 87.5%; }
+
+  .eld-glyph[data-glyph="▁"] { --eld-gb: 12.5%; }
+
+  .eld-glyph[data-glyph="▂"] { --eld-gb: 25%; }
+
+  .eld-glyph[data-glyph="▃"] { --eld-gb: 37.5%; }
+
+  .eld-glyph[data-glyph="▄"] { --eld-gb: 50%; }
+
+  .eld-glyph[data-glyph="▅"] { --eld-gb: 62.5%; }
+
+  .eld-glyph[data-glyph="▆"] { --eld-gb: 75%; }
+
+  .eld-glyph[data-glyph="▇"] { --eld-gb: 87.5%; }
+
+  .eld-glyph[data-glyph="▀"] { --eld-gb: 50%; }
+
+  .eld-glyph[data-glyph="▔"] { --eld-gb: 12.5%; }
+
+  .eld-glyph[data-glyph="▐"] { --eld-gb: 50%; }
+
+  .eld-glyph[data-glyph="▕"] { --eld-gb: 12.5%; }
+
+  .eld-glyph[data-glyph="░"] { background: color-mix(in oklab, currentColor 25%, transparent); }
+
+  .eld-glyph[data-glyph="▒"] { background: color-mix(in oklab, currentColor 50%, transparent); }
+
+  .eld-glyph[data-glyph="▓"] { background: color-mix(in oklab, currentColor 75%, transparent); }
 
   /* ---- Window chrome: CSS picks the variant, so SSR and hydration agree --- */
   /* Display lives here, never in utilities, which would outrank these rules. */
