@@ -9,7 +9,7 @@
  *   before first paint.
  *
  * Uses Shiki's JavaScript regex engine (no WASM) and fine-grained grammars, and
- * a theme whose colors are `--eld-syntax-*` variables, emitted as classes.
+ * a theme whose colors are `--code-syntax-*` variables (light or dark per surface), emitted as classes.
  */
 import {
   createHighlighterCore,
@@ -30,14 +30,14 @@ type Loader = () => Promise<{ default: LanguageRegistration[] }>;
  * Built-in grammars: the languages Elide runs and documents, plus the config
  * and data formats around them. Each is a static import, so bundlers emit one
  * lazy chunk per grammar and nothing else. Shell (bash, sh, zsh, …) needs no
- * grammar: the positional shell tokenizer handles it. Add others with
+ * grammar: the positional shell tokenizer handles it. JavaScript and JSX use
+ * the TypeScript and TSX grammars (supersets; identical tokens), saving two
+ * ~170 KB chunks. Add others with
  * `registerLanguage()` from `./highlight-registry`.
  */
 const GRAMMARS: Record<string, Loader> = {
   typescript: () => import("shiki/langs/typescript.mjs"),
   tsx: () => import("shiki/langs/tsx.mjs"),
-  javascript: () => import("shiki/langs/javascript.mjs"),
-  jsx: () => import("shiki/langs/jsx.mjs"),
   python: () => import("shiki/langs/python.mjs"),
   kotlin: () => import("shiki/langs/kotlin.mjs"),
   java: () => import("shiki/langs/java.mjs"),
@@ -57,9 +57,11 @@ const ALIASES: Record<string, string> = {
   ts: "typescript",
   mts: "typescript",
   cts: "typescript",
-  js: "javascript",
-  mjs: "javascript",
-  cjs: "javascript",
+  javascript: "typescript",
+  js: "typescript",
+  mjs: "typescript",
+  cjs: "typescript",
+  jsx: "tsx",
   py: "python",
   kt: "kotlin",
   kts: "kotlin",
@@ -88,7 +90,7 @@ export function resolveLanguage(lang: string | undefined): string | undefined {
   return grammarFor(resolved) ? resolved : undefined;
 }
 
-const v = (name: string) => `var(--eld-syntax-${name})`;
+const v = (name: string) => `var(--code-syntax-${name})`;
 
 /** TextMate theme whose colors are the design-system syntax tokens. */
 export const elideTheme: ThemeRegistration = {

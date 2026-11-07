@@ -12,12 +12,12 @@
     font-family: var(--eld-font-mono);
     font-size: 0.8125rem;
     line-height: var(--code-line-height);
-    color: var(--eld-syntax-default);
+    color: var(--code-syntax-default);
     /* `=>` and `!=` stay two characters, as readers will type them. */
     font-variant-ligatures: none;
     tab-size: 4;
     scrollbar-width: thin;
-    scrollbar-color: color-mix(in oklab, var(--eld-syntax-line-number) 55%, transparent) transparent;
+    scrollbar-color: color-mix(in oklab, var(--code-syntax-line-number) 55%, transparent) transparent;
   }
 
   .eld-code-body:focus-visible {
@@ -88,7 +88,7 @@
     padding-inline-end: 0.875rem;
     border-inline-end: 1px solid var(--code-border);
     text-align: end;
-    color: var(--eld-syntax-line-number);
+    color: var(--code-syntax-line-number);
     font-variant-numeric: tabular-nums;
     background: linear-gradient(var(--eld-row-bg), var(--eld-row-bg)), var(--code-background);
   }
@@ -112,7 +112,7 @@
   }
 
   .eld-line[data-kind="comment"] .eld-content {
-    color: var(--eld-syntax-comment);
+    color: var(--code-syntax-comment);
     font-style: italic;
   }
 
@@ -130,7 +130,7 @@
   .eld-line[data-exit="ok"]::after {
     content: "●";
     content: "●" / attr(data-sr);
-    color: var(--eld-ansi-green);
+    color: var(--code-mark-ok);
     font-size: 0.6em;
     /* Keep the full row height so the smaller glyph stays vertically centered. */
     line-height: calc(var(--code-line-height) / 0.6);
@@ -139,7 +139,7 @@
   .eld-line[data-exit="fail"]::after {
     content: "●";
     content: "●" / attr(data-sr);
-    color: var(--eld-ansi-red);
+    color: var(--code-mark-fail);
     font-size: 0.6em;
     /* Keep the full row height so the smaller glyph stays vertically centered. */
     line-height: calc(var(--code-line-height) / 0.6);
@@ -157,7 +157,7 @@
   .eld-line[data-decor~="add"]::after {
     content: "+";
     content: "+" / attr(data-sr);
-    color: var(--eld-ansi-green);
+    color: var(--code-mark-ok);
   }
 
   .eld-line[data-decor~="remove"] {
@@ -167,7 +167,7 @@
   .eld-line[data-decor~="remove"]::after {
     content: "−";
     content: "−" / attr(data-sr);
-    color: var(--eld-ansi-red);
+    color: var(--code-mark-fail);
   }
 
   .eld-line[data-decor~="warning"] {
@@ -177,7 +177,7 @@
   .eld-line[data-decor~="warning"]::after {
     content: "▲";
     content: "▲" / attr(data-sr);
-    color: var(--eld-ansi-yellow);
+    color: var(--code-mark-warn);
     font-size: 0.75em;
     /* Keep the full row height so the smaller glyph stays vertically centered. */
     line-height: calc(var(--code-line-height) / 0.75);
@@ -190,7 +190,7 @@
   .eld-line[data-decor~="error"]::after {
     content: "✕";
     content: "✕" / attr(data-sr);
-    color: var(--eld-ansi-red);
+    color: var(--code-mark-fail);
   }
 
   .eld-line[data-decor~="breakpoint"]::after {
@@ -241,7 +241,7 @@
   .eld-line[data-decor~="flash"][data-tone="success"] { --eld-flash: var(--code-line-add); }
   .eld-line[data-decor~="flash"][data-tone="danger"] { --eld-flash: var(--code-line-error); }
   .eld-line[data-decor~="flash"][data-tone="warning"] { --eld-flash: var(--code-line-warning); }
-  .eld-line[data-decor~="flash"][data-tone="insight"] { --eld-flash: color-mix(in oklab, var(--eld-ansi-magenta) 18%, transparent); }
+  .eld-line[data-decor~="flash"][data-tone="insight"] { --eld-flash: color-mix(in oklab, var(--code-mark-insight) 18%, transparent); }
 
   @media (prefers-reduced-motion: no-preference) {
     .eld-line[data-decor~="flash"] {
@@ -303,13 +303,13 @@
   }
 
   /* Shiki tokens (theme colors map to classes, see components/shiki.ts). */
-  .eld-lines .tk-comment { color: var(--eld-syntax-comment); font-style: italic; }
-  .eld-lines .tk-keyword { color: var(--eld-syntax-keyword); }
-  .eld-lines .tk-string { color: var(--eld-syntax-string); }
-  .eld-lines .tk-number { color: var(--eld-syntax-number); }
-  .eld-lines .tk-function { color: var(--eld-syntax-function); }
-  .eld-lines .tk-type { color: var(--eld-syntax-type); }
-  .eld-lines .tk-param { color: var(--eld-syntax-param); }
+  .eld-lines .tk-comment { color: var(--code-syntax-comment); font-style: italic; }
+  .eld-lines .tk-keyword { color: var(--code-syntax-keyword); }
+  .eld-lines .tk-string { color: var(--code-syntax-string); }
+  .eld-lines .tk-number { color: var(--code-syntax-number); }
+  .eld-lines .tk-function { color: var(--code-syntax-function); }
+  .eld-lines .tk-type { color: var(--code-syntax-type); }
+  .eld-lines .tk-param { color: var(--code-syntax-param); }
   .eld-lines .tk-italic { font-style: italic; }
   .eld-lines .tk-bold { font-weight: 700; }
   .eld-lines .tk-underline { text-decoration-line: underline; }
@@ -342,7 +342,7 @@
 
   .eld-hover[data-tone="danger"] {
     text-decoration-style: wavy;
-    text-decoration-color: var(--eld-ansi-red);
+    text-decoration-color: var(--code-mark-fail);
   }
 
   .eld-hover:focus-visible {
@@ -369,7 +369,7 @@
     border: 1px solid var(--code-border);
     border-radius: var(--eld-radius-md);
     background: var(--code-background-elev);
-    color: var(--eld-syntax-default);
+    color: var(--code-syntax-default);
     font-style: normal;
     font-weight: 400;
     white-space: pre-wrap;
@@ -400,7 +400,7 @@
     padding-inline-end: 0.875rem;
     border-inline-end: 1px solid var(--code-border);
     text-align: end;
-    color: var(--eld-syntax-line-number);
+    color: var(--code-syntax-line-number);
     font-variant-numeric: tabular-nums;
     text-decoration: none;
     background: linear-gradient(var(--eld-row-bg), var(--eld-row-bg)), var(--code-background);
@@ -414,7 +414,7 @@
 
   @media (hover: hover) and (pointer: fine) {
     .eld-line-number:hover {
-      color: var(--eld-syntax-default);
+      color: var(--code-syntax-default);
     }
   }
 
@@ -445,7 +445,7 @@
     padding-inline: 0.5rem;
     border-radius: var(--eld-radius-sm);
     background: var(--code-control-hover);
-    color: var(--eld-syntax-line-number);
+    color: var(--code-syntax-line-number);
     font: inherit;
     cursor: pointer;
   }
@@ -490,7 +490,7 @@
   }
 
   .eld-annotation-badge:focus-visible {
-    outline: max(2px, 0.08em) solid var(--eld-syntax-default);
+    outline: max(2px, 0.08em) solid var(--code-syntax-default);
     outline-offset: 2px;
   }
 
@@ -500,7 +500,7 @@
     list-style: none;
     border-block-start: 1px solid var(--code-border);
     background: var(--code-background-elev);
-    color: var(--eld-syntax-default);
+    color: var(--code-syntax-default);
     font-size: 0.875rem;
     display: grid;
     gap: 0.5rem;
@@ -553,7 +553,7 @@
 
   @media (hover: hover) and (pointer: fine) {
     .eld-code-expand:hover {
-      color: var(--eld-syntax-default);
+      color: var(--code-syntax-default);
     }
   }
 
@@ -583,13 +583,13 @@
 
   .eld-file-tab[aria-selected="true"] {
     background: var(--code-control-hover);
-    color: var(--eld-syntax-default);
+    color: var(--code-syntax-default);
     box-shadow: inset 0 -2px 0 var(--code-prompt);
   }
 
   @media (hover: hover) and (pointer: fine) {
     .eld-file-tab:hover {
-      color: var(--eld-syntax-default);
+      color: var(--code-syntax-default);
     }
   }
 
@@ -611,20 +611,20 @@
 
   /* Shell (zsh-syntax-highlighting semantics): the command stands out; pipes
    * and redirects recede so each pipeline segment reads on its own. */
-  .eld-lines .sh-command { color: var(--eld-syntax-function); font-weight: 600; }
-  .eld-lines :is(.sh-precommand, .sh-builtin, .sh-keyword) { color: var(--eld-syntax-keyword); }
-  .eld-lines .sh-subcommand { color: var(--eld-syntax-function); }
-  .eld-lines .sh-flag { color: var(--eld-syntax-param); }
-  .eld-lines .sh-string { color: var(--eld-syntax-string); }
-  .eld-lines :is(.sh-variable, .sh-assignment) { color: var(--eld-syntax-type); }
+  .eld-lines .sh-command { color: var(--code-syntax-function); font-weight: 600; }
+  .eld-lines :is(.sh-precommand, .sh-builtin, .sh-keyword) { color: var(--code-syntax-keyword); }
+  .eld-lines .sh-subcommand { color: var(--code-syntax-function); }
+  .eld-lines .sh-flag { color: var(--code-syntax-param); }
+  .eld-lines .sh-string { color: var(--code-syntax-string); }
+  .eld-lines :is(.sh-variable, .sh-assignment) { color: var(--code-syntax-type); }
   .eld-lines :is(.sh-path, .sh-glob) {
     text-decoration-line: underline;
     text-decoration-style: dotted;
     text-decoration-color: color-mix(in oklab, currentColor 45%, transparent);
     text-underline-offset: 0.2em;
   }
-  .eld-lines :is(.sh-redirect, .sh-operator, .sh-substitution, .sh-continuation) { color: var(--eld-ansi-bright-black); }
-  .eld-lines .sh-comment { color: var(--eld-syntax-comment); font-style: italic; }
+  .eld-lines :is(.sh-redirect, .sh-operator, .sh-substitution, .sh-continuation) { color: var(--code-syntax-muted); }
+  .eld-lines .sh-comment { color: var(--code-syntax-comment); font-style: italic; }
 
   /* ---- Terminal cursor ------------------------------------------------- */
   .eld-terminal-cursor {

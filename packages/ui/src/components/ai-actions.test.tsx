@@ -55,4 +55,20 @@ describe("AiActions", () => {
     await user.click(screen.getByRole("button", { name: "Regenerate" }));
     expect(onClick).toHaveBeenCalledTimes(1);
   });
+
+  it("shows Claude and OpenAI marks before assistant actions, decorative beside the label", () => {
+    const { container } = render(
+      <AiActions
+        actions={[
+          { label: "Open in Claude", assistant: "claude", href: "https://claude.ai/new" },
+          { label: "Open in ChatGPT", assistant: "chatgpt", href: "https://chatgpt.com/" },
+        ]}
+      />,
+    );
+    const claude = container.querySelector('svg[data-assistant="claude"]')!;
+    const chatgpt = container.querySelector('svg[data-assistant="chatgpt"]')!;
+    expect(claude).toHaveAttribute("aria-hidden", "true");
+    expect(chatgpt.querySelector("path")!.getAttribute("d")!.length).toBeGreaterThan(100);
+    expect(screen.getByRole("link", { name: "Open in Claude" }).firstElementChild).toBe(claude);
+  });
 });

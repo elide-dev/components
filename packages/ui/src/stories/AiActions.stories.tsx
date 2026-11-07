@@ -26,8 +26,8 @@ export const Default: Story = {
   args: {
     markdown: pageMarkdown,
     actions: [
-      { label: "Open in Claude", href: "https://claude.ai/new?q=Elide+Overview", external: true },
-      { label: "Open in ChatGPT", href: "https://chatgpt.com/?q=Elide+Overview", external: true },
+      { label: "Open in Claude", assistant: "claude", href: "https://claude.ai/new?q=Elide+Overview", external: true },
+      { label: "Open in ChatGPT", assistant: "chatgpt", href: "https://chatgpt.com/?q=Elide+Overview", external: true },
       { label: "View as text", icon: <FileText aria-hidden className="h-[13px] w-[13px]" />, href: "#raw" },
     ],
   },

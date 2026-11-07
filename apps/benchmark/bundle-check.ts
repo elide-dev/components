@@ -26,7 +26,8 @@ const splitDir = mkdtempSync(join(tmpdir(), "elide-bundle-"));
 try {
   for (const [name, exported, budget, forbidden, label] of [
     ["code-block", "CodeBlock", 24_000, /codeToTokensBase|Unsupported asciicast version/, "Shiki or the terminal runtime (Shiki loads lazily)"],
-    ["terminal", "Terminal", 30_000, /codeToTokensBase/, "Shiki"],
+    // 31 KB: VT, shell tokenizer, recording player (incl. marker controls) and adaptive chrome.
+    ["terminal", "Terminal", 31_000, /codeToTokensBase/, "Shiki"],
     ["code-sample", "CodeSample", 25_000, /codeToTokensBase|Unsupported asciicast version/, "a code surface it does not render"],
     ["code-group", "CodeGroup", 25_000, /codeToTokensBase|Unsupported asciicast version/, "a code surface it does not render"],
     ["shiki", "Shiki runtime (lazy)", 64_000, /typescript\/lib/, "the TypeScript compiler (Twoslash stays a build-time peer)"],
@@ -39,6 +40,12 @@ try {
     });
     if (!result.success) throw new AggregateError(result.logs, `Failed to build ${exported}`);
     const entry = result.outputs.find(output => output.kind === "entry-point")!;
+    if (name === "shiki") {
+      // Every lazy chunk a consumer's bundler emits for the built-in grammars.
+      const lazy = result.outputs.filter(output => output !== entry).reduce((sum, output) => sum + gzipSync(readFileSync(output.path)).byteLength, 0);
+      if (lazy > 130_000) throw new Error(`Built-in Shiki grammars exceed their 130 KB gzip budget: ${lazy}`);
+      console.log(`Shiki grammars (lazy, all built-in): ${lazy} bytes gzip across ${result.outputs.length - 1} chunks.`);
+    }
     const source = readFileSync(entry.path, "utf8");
     // The entry plus the chunks it imports statically (not lazily).
     const statics = [...source.matchAll(/(?:^|[;}])\s*import\s*(?:[^"';]*from\s*)?"(\.\/chunk-[\w-]+\.js)"/g)].map(match => readFileSync(join(outdir, match[1]), "utf8"));

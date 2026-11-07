@@ -7,6 +7,9 @@ describe("shiki", () => {
     expect(resolveLanguage("ts")).toBe("typescript");
     expect(resolveLanguage("KT")).toBe("kotlin");
     expect(resolveLanguage("cobol")).toBeUndefined();
+    // JavaScript rides on the TypeScript grammars (a superset): no extra chunks.
+    expect(resolveLanguage("js")).toBe("typescript");
+    expect(resolveLanguage("jsx")).toBe("tsx");
   });
 
   it("ships only the languages Elide needs, and accepts registered ones", async () => {
@@ -22,7 +25,7 @@ describe("shiki", () => {
 
   it("maps theme colors and font styles to classes", () => {
     expect(
-      tokensToLines([[{ content: "x", offset: 0, color: "var(--eld-syntax-keyword)", fontStyle: 2 }, { content: " ", offset: 1 }]]),
+      tokensToLines([[{ content: "x", offset: 0, color: "var(--code-syntax-keyword)", fontStyle: 2 }, { content: " ", offset: 1 }]]),
     ).toEqual([{ tokens: [{ text: "x", style: { className: "tk-keyword tk-bold" } }, { text: " " }] }]);
   });
 

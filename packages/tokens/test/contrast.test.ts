@@ -6,7 +6,7 @@
  */
 import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
-import { purple, magenta, neutral, status, syntax, ansi } from "../src/tokens";
+import { purple, magenta, neutral, status, syntax, syntaxLight, code, ansi } from "../src/tokens";
 
 type RGBA = [number, number, number, number];
 
@@ -78,7 +78,10 @@ const OPAQUE = ["--background", "--card", "--popover", "--muted"];
 const BASES = ["--background", "--card", "--popover"];
 const NEUTRAL_TEXT = ["--foreground", "--muted-foreground", "--subtle-foreground", "--primary-emphasis"];
 const STATUS = ["info", "success", "warning", "danger"];
-const SYNTAX = [...css.matchAll(/(--eld-syntax-[\w-]+)\s*:/g)].map(([, k]) => k);
+const SYNTAX = [...css.matchAll(/(--eld-syntax-(?!light-)[\w-]+)\s*:/g)].map(([, k]) => k);
+const SYNTAX_LIGHT = [...css.matchAll(/(--eld-syntax-light-[\w-]+)\s*:/g)].map(([, k]) => k);
+/** Gutter marks on light editor surfaces (diff, exit status, warnings, insights). */
+const MARKS_LIGHT = ["--eld-success-deep", "--eld-danger-deep", "--eld-warning-deep", "--eld-magenta-750", "--eld-purple-700"];
 /** ANSI black is a background hue; every other palette entry is used as text. */
 const ANSI = [...css.matchAll(/(--eld-ansi-[\w-]+)\s*:/g)].map(([, k]) => k).filter((k) => k !== "--eld-ansi-black");
 
@@ -98,6 +101,7 @@ const cases: Case[] = [
   // Fallback gradient stops must support white button labels.
   ...["start", "middle", "end"].map((stop): Case => ["--primary-foreground", `--eld-gradient-${stop}`, `--eld-gradient-${stop}`]),
   ["--destructive-foreground", "--destructive", "--destructive"],
+  ...[...SYNTAX_LIGHT, ...MARKS_LIGHT].flatMap((t) => ["--eld-code-light-background", "--eld-code-light-elev"].map((s): Case => [t, s, s])),
   ...[...SYNTAX, ...ANSI, "--code-prompt", "--code-title-foreground", "--code-control-foreground"].flatMap((t) => ["--code-background", "--code-background-elev"].map((s): Case => [t, s, s])),
 ];
 
@@ -140,13 +144,15 @@ describe("tokens.ts mirrors tokens.css primitives", () => {
     ["magenta", magenta],
     ["neutral", neutral],
     ["syntax", syntax],
+    ["syntax-light", syntaxLight],
+    ["code", code],
     ["ansi", ansi],
     ["status", status],
   ];
   test.each(scales)("%s", (name, scale) => {
     const fromCss = Object.fromEntries(
       [...light]
-        .filter(([k]) => (name === "status" ? /^--eld-(info|success|warning|danger)/ : new RegExp(`^--eld-${name}-`)).test(k))
+        .filter(([k]) => (name === "status" ? /^--eld-(info|success|warning|danger)/ : name === "syntax" ? /^--eld-syntax-(?!light-)/ : new RegExp(`^--eld-${name}-`)).test(k))
         .map(([k, v]) => [camel(k.replace(name === "status" ? "--eld-" : `--eld-${name}-`, "")), v]),
     );
     expect(Object.fromEntries(Object.entries(scale).map(([k, v]) => [String(k), v]))).toEqual(fromCss);
