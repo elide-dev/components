@@ -1,6 +1,6 @@
 {
   "name": "@elide/ui",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Elide's React/Preact component catalog, built on shadcn + Base UI and themed entirely from @elide/tokens.",
   "license": "UNLICENSED",
   "type": "module",
@@ -42,7 +42,11 @@
   },
   "files": [
     "dist",
-    "src"
+    "src",
+    "!src/**/*.test.ts",
+    "!src/**/*.test.tsx",
+    "!src/stories",
+    "!src/test-setup.ts"
   ],
   "scripts": {
     "build": "tsup",
