@@ -1,0 +1,161 @@
+{
+  "metadata": {
+    "date": "2026-11-08T19:17:47.989Z",
+    "commit": "daebe6ce5517ce2e53343ebba2921f35c94e06a2",
+    "dirty": true,
+    "browser": "158.0.8127.18",
+    "os": "darwin 25.6.0 arm64",
+    "cpuModel": "Apple M5 Max",
+    "options": {
+      "samples": 5,
+      "counts": [
+        1,
+        100,
+        1000
+      ],
+      "steps": 20,
+      "cycles": 100,
+      "cpu": 4,
+      "trace": false,
+      "viewport": {
+        "width": 900,
+        "height": 900
+      },
+      "staticUI": true
+    },
+    "kinds": [
+      "static",
+      "react",
+      "preact",
+      "lit",
+      "adapter"
+    ],
+    "cache": "New context and disabled HTTP cache per trial; browser process and OS caches may be warm",
+    "network": "Local HTTP without network throttling; compressed sizes are calculated separately per resource",
+    "notes": "Logo microbenchmark, not INP or a playback result. Static update driver is test-injected. CDP heap sampling is a separate instrumented pass. CPU slowdown does not model mobile GPU/memory."
+  },
+  "bundles": {
+    "description": "Independent production builds. JS includes benchmark driver and full runtime; identical minimal CSS is inline in HTML. Compression is per resource, not a network measurement.",
+    "variants": {
+      "react": {
+        "js": [
+          {
+            "file": "entry.js",
+            "raw": 260949,
+            "gzip": 80997,
+            "brotli": 69388
+          }
+        ],
+        "html": {
+          "raw": 591,
+          "gzip": 386,
+          "brotli": 273
+        },
+        "inlineCSS": {
+          "raw": 314,
+          "gzip": 210,
+          "brotli": 161
+        }
+      },
+      "preact": {
+        "js": [
+          {
+            "file": "entry.js",
+            "raw": 57819,
+            "gzip": 20023,
+            "brotli": 17413
+          }
+        ],
+        "html": {
+          "raw": 591,
+          "gzip": 386,
+          "brotli": 273
+        },
+        "inlineCSS": {
+          "raw": 314,
+          "gzip": 210,
+          "brotli": 161
+        }
+      },
+      "lit": {
+        "js": [
+          {
+            "file": "entry.js",
+            "raw": 30284,
+            "gzip": 10738,
+            "brotli": 9318
+          }
+        ],
+        "html": {
+          "raw": 591,
+          "gzip": 386,
+          "brotli": 273
+        },
+        "inlineCSS": {
+          "raw": 314,
+          "gzip": 210,
+          "brotli": 161
+        }
+      },
+      "adapter": {
+        "js": [
+          {
+            "file": "entry.js",
+            "raw": 251733,
+            "gzip": 79454,
+            "brotli": 68056
+          }
+        ],
+        "html": {
+          "raw": 591,
+          "gzip": 386,
+          "brotli": 273
+        },
+        "inlineCSS": {
+          "raw": 314,
+          "gzip": 210,
+          "brotli": 161
+        }
+      },
+      "static": {
+        "js": [],
+        "html": {
+          "1": {
+            "raw": 6928,
+            "gzip": 2348,
+            "brotli": 1981
+          },
+          "100": {
+            "raw": 639133,
+            "gzip": 7174,
+            "brotli": 2448
+          },
+          "1000": {
+            "raw": 6387433,
+            "gzip": 47044,
+            "brotli": 5517
+          }
+        },
+        "inlineCSS": {
+          "raw": 314,
+          "gzip": 210,
+          "brotli": 161
+        }
+      }
+    }
+  },
+  "sourceFilesSHA256": {
+    "perf/browser.mjs": "da0883fac7bf84f441a130191103232321c2c4e9ca1d8f63b32553f20f9d7e6b",
+    "perf/build.mjs": "3679b2886dbdd6a3ab9943a06fa05baaae318b2ba43ed07e086d44ceea54ae0b",
+    "perf/check.mjs": "4a2f146030c067d9b6c96e74d67b5837dff74d5d93741134452ca3a497c74aba",
+    "perf/run.mjs": "a897724612ba93d195d4ac87e29040cc17d8cfee9181da84c41c9802bc353f7b",
+    "perf/summarize.mjs": "fa5535ed4066a4f77100a34c963305bd41729ac8826dee44d32b2a686ba72dc5",
+    "src/perf/adapter.tsx": "257e47464f74d1187f0cb9092beb69aa4b42c3dff413504b0064601167cc362a",
+    "src/perf/driver.ts": "a512ad7b9c57a7a2c2eda848ad8e399ef84e83aa096d9b5958c0384953900202",
+    "src/perf/lit.ts": "e946e04f0152d8f9df48f054d1e6fa723b5437f88f17beaf2075fa35a4502935",
+    "src/perf/preact.tsx": "cadf213e1d2c43f48c947afff6970d062ecb9971e30e6803132036eabbab3d77",
+    "src/perf/react-driver.tsx": "359e5306e2b32851394132868313a7abff803d0bb2bc3a5ffb11f47bf3f6da50",
+    "src/perf/react.tsx": "4db74fcb0948be9dc3bbd5276227b6d39a31b1cf3c87f58a0186f5fbb42e22af"
+  },
+  "exportNote": "All 75 trials exported. staticUI=true: no static DOM update driver, component-update workloads, allocation sampling, or teardown churn. The generic metadata note about these features describes the default mode only."
+}

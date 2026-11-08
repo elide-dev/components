@@ -10,6 +10,40 @@ scoped CSS and thin React adapters. Static content keeps a zero-client-JavaScrip
 path. Success means less shipped code, less work per interaction, bounded memory,
 and unchanged visual and accessibility quality on real websites.
 
+For website delivery, the primary priorities are static rendering, low startup
+and idle overhead, smooth scrolling, layout stability, and native browser
+behavior. Frequent component updates are a secondary workload. A bulk-update
+microbenchmark is not the acceptance criterion for static website components.
+
+## Website delivery policy
+
+1. **Ship HTML, SVG, and CSS by default.** Build/server rendering may use React,
+   Preact, or Lit; do not hydrate a static component just because its authoring
+   implementation has a runtime. Prefer ordinary static markup for simple brand
+   and content components. Declarative shadow DOM is available when style
+   encapsulation is useful, not mandatory for every presentational element.
+2. **Use native behavior where it matches the product.** Links, buttons, forms,
+   and disclosure controls should retain browser semantics. Evaluate native
+   dialog/popover behavior for suitable overlays and CSS sticky positioning,
+   scroll timelines, container queries, and anchor positioning for appropriate
+   layouts. Feature-test enhancements and preserve keyboard/accessibility
+   behavior; do not remove tested Base UI implementations merely to use a newer API.
+3. **Hydrate small, necessary islands.** Preact/compat is a candidate for reusing
+   the React catalog with lower client-runtime overhead; its compatibility must
+   remain tested. Lit is a candidate for portable standalone behavior and scoped
+   styling. Neither choice is required for static HTML, and neither guarantees
+   smoother scrolling than equivalent already-rendered DOM.
+4. **Budget browser work, not just framework work.** Keep DOM/shadow structure
+   lean; avoid layout reads interleaved with writes, large paint effects, and
+   blanket layer promotion. Use CSS/WAAPI for motion where appropriate and honor
+   reduced motion. Consider `content-visibility` with reserved intrinsic size at
+   large section boundaries; it does not eliminate JavaScript initialization.
+5. **Validate the actual page.** Reserve image and component geometry, control
+   font loading/fallback metrics, and test slow assets. Prioritize FCP/LCP, CLS,
+   startup long tasks, idle work, real-device scrolling, and essential-control
+   responsiveness over synthetic bulk rerender throughput. Measure native DOM
+   memory as well as JS heap before making total-memory claims.
+
 Removing virtual DOM reconciliation is a mechanism, not a performance result.
 Lit still evaluates templates and schedules updates. DOM size, style calculation,
 layout, paint, allocation, and application logic remain costs. Promotion requires
@@ -284,7 +318,7 @@ bundle budgets that externalize React are not fair runtime comparisons.
 | Idle and teardown | No active playback timers when idle/hidden/disconnected; listeners and subscriptions return to baseline after repeated reconnects |
 | Local updates | Unchanged rows keep node identity; unrelated components do not render; property writes do not create event loops |
 | Bundle growth | Record gzip and Brotli totals for eager graph, lazy chunks, CSS, and SSR HTML; freeze reviewed per-fixture byte ceilings after first pilot |
-| Runtime benefit | Repeated matched traces demonstrate reduced update CPU/allocation for the selected hot-path pilot, with no material startup, paint, or retained-memory regression |
+| Runtime benefit | Static delivery is judged by shipped bytes, initial rendering, layout stability, idle work, and page responsiveness; update-driven migrations additionally require measured update CPU/allocation benefit |
 
 Run at least five measured samples after warmup on fixed browser versions,
 viewport, hardware, and throttle settings; compare medians and spread. Capture
@@ -294,11 +328,11 @@ after controlled GC in the lab, allocations during the workload, detached nodes,
 DOM counts, layout/style/paint time, and total main-thread time. GC-specific
 memory readings are diagnostics, not portable web API guarantees.
 
-Initial performance targets are a project policy, not measured results: aim for
-at least 20% lower median update CPU in the chosen playback pilot and no retained
-heap regression outside measured noise. If the improvement is smaller, report
-it and reconsider migration value; do not weaken tests or silently change the
-baseline. Establish absolute frame-work and byte budgets from the first fixture
+For an update-driven migration, the initial target is at least 20% lower median
+update CPU and no retained-heap regression outside measured noise. This is a
+project target, not a measured result or a requirement to adopt a static logo.
+Report smaller improvements and reconsider migration value; do not weaken tests
+or silently change the baseline. Establish absolute frame-work and byte budgets from the first fixture
 on representative mobile hardware before broad adoption. Automated CI enforces
 deterministic size/behavior gates; timing and heap gates run on a controlled
 performance runner, with traces retained for review.
@@ -329,10 +363,12 @@ novelty. Keep static HTML/SVG available where the SSR baseline is unavailable.
 3. **Interactive slice.** Port `CopyCommand` with a native button, raw SVG icon,
    clipboard failure handling, polite feedback, explicit messages, and reconnect
    cleanup. Validate slots, events, React/Preact, SSR, and first interaction.
-4. **Performance slice.** Extract only the shared playback/model dependencies and
-   build a bounded terminal playback surface. Reuse the same workload/model for
-   comparisons. Validate update locality and memory gates before a broad terminal
-   or code-component port.
+4. **Static website performance slice.** Compare representative header, hero,
+   cards, navigation, and long-form content pages with static output and minimal
+   interactive islands. Measure first paint, layout stability, slow loading,
+   scroll/paint work, idle overhead, and native browser behavior. Compare Preact
+   and Lit only where a client runtime is actually required. Playback is a later,
+   separate experiment if frequently updating components need migration.
 5. **Selective promotion.** Migrate badges, separators, callouts, or other website
    components when usage and evidence justify it. Replace compatible exports only
    after all gates pass; document breaking DOM/ref changes. Keep rollback through

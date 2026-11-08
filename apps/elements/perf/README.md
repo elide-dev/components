@@ -1,6 +1,6 @@
 # Logo performance benchmark
 
-Compare static SVG, the current React logo, direct Lit, and the React-to-Lit
+Compare static SVG, the current React logo, Preact/compat, direct Lit, and the React-to-Lit
 adapter using isolated production builds. This measures the logo adoption cost;
 it does not establish performance for playback, menus, or the whole catalog.
 
@@ -17,6 +17,10 @@ cd apps/elements
 # Five samples, 1/100/1000 logos, 20 updates per scenario, 4x CPU slowdown.
 # Includes allocation sampling and 100 mount/unmount cycles at 100 instances.
 node perf/run.mjs
+
+# Website-oriented run: initial render, JS heap, idle work, and native wheel input.
+# No component-update or mount/unmount workload; static pages get no DOM driver.
+node perf/run.mjs --static-ui
 
 # Use the output path printed by the runner.
 node perf/summarize.mjs .profiles/<run>/results.json
@@ -54,6 +58,7 @@ also included in the normal elements build/test pipeline.
 | --- | --- | --- |
 | Static | Exact existing React SVG output rendered at build time; zero shipped JS | Test-injected native DOM edits, installed after startup is measured |
 | React | Current production component plus React/React DOM | Local state in each logo cell; updating one does not rerender the list |
+| Preact | Same component and local-state driver through `preact/compat` | Same workload, no React runtime in its graph |
 | Lit | Production element plus Lit | Set properties on selected instances; await `updateComplete` |
 | Adapter | Production React wrapper plus both runtimes | Local React state followed by the Lit update |
 
@@ -67,7 +72,8 @@ DOM/layout costs but is not a scrolling or virtualization benchmark.
 
 Each variant is built in a separate Vite invocation. Module-graph assertions
 reject React in the Lit entry, Lit in the legacy React entry, and SSR code in
-all client entries. `dist/perf/bundles.json` records final raw/gzip/Brotli bytes
+all client entries. The Preact entry additionally requires Preact and excludes
+React and Lit. `dist/perf/bundles.json` records final raw/gzip/Brotli bytes
 per resource, including the benchmark driver and the complete runtime. These
 figures differ from the plain consumer budget, which has a different driver.
 Inline CSS is already included in HTML size; do not add it again. Static HTML
@@ -138,9 +144,18 @@ does not imply a React adapter win: the adapter pays for two runtimes and both
 update systems. At 1,000 instances this is a stress test, not a typical website.
 
 The next representative benchmark should run the same terminal recording through
-both renderers with a shared playback/model implementation. Keep that result
-separate from this logo benchmark; no catalog migration should depend solely on
-these small-component results.
+both renderers only if update throughput becomes a migration priority. For the
+current static website goal, first measure a representative page with static
+content, fonts/images, and minimal interactive islands. No catalog migration
+should depend solely on these small-component results.
+
+`--static-ui` measures initial rendering, mounted JS heap, a 500ms idle window,
+and native wheel input on pages taller than the viewport. It skips component
+updates, allocation sampling, and teardown churn. All five implementations run
+in each sample; static output does not receive the injected update driver.
+Scrolling permits two animation frames between wheel events. Its task duration
+is not FPS, dropped-frame count, or field INP; use `--trace` for timeline review
+and real-device testing for a smoothness claim. Non-scrollable cases report N/A.
 
 ## Initial measurements
 
@@ -194,3 +209,47 @@ The evidence supports direct portable/static delivery for the logo, but does
 not justify replacing React components on update-performance grounds. Investigate
 the Lit bulk-update and CSS costs, then measure a shared playback workload before
 promoting this approach for frequently updating surfaces.
+
+## Static UI and Preact comparison
+
+The website-oriented follow-up adds **Preact 11.2.0 through compat**, using the
+same component/driver and rejecting React in its bundle. The
+[75 trial records](./results/2026-11-08-static-ui.csv) and
+[environment and sources](./results/2026-11-08-static-ui-environment.json) capture
+five samples per implementation at 1/100/1,000 instances, using the same Chromium,
+machine, viewport, and 4x CPU slowdown as above. The static page receives no
+update driver in this mode. These are fresh same-run comparisons; do not combine
+their medians with the earlier update-mode run.
+
+At 100 logos, median [min, max]:
+
+| Implementation | Startup task ms | FCP ms | Native wheel task ms | Mounted JS heap KiB |
+| --- | --- | --- | --- | --- |
+| Static HTML/SVG | 44.3 [32.5–57.4] | 48 [36–64] | 60.5 [51.2–67.7] | 588.7 |
+| React | 102.0 [72.8–136.2] | 108 [80–144] | 60.4 [43.5–74.5] | 1838.6 |
+| Preact/compat | 62.8 [41.0–64.9] | 64 [44–68] | 63.7 [38.6–74.4] | 1473.0 |
+| Direct Lit | 52.3 [36.0–64.6] | 56 [40–68] | 55.5 [40.0–75.7] | 1123.1 |
+| React adapter | 118.1 [76.7–160.6] | 124 [84–172] | 63.9 [42.0–85.3] | 1905.6 |
+
+At 1,000 logos, Preact's median startup task time was 135.9ms versus React's
+186.1ms and Lit's 179.4ms. Preact's advantage is workload-dependent, not a claim
+that its virtual DOM is universally faster. Native wheel timings overlap widely
+at each density and do not identify a smoothness winner. Static HTML paints
+progressively: at 1,000 inline SVGs its median FCP was 56ms, even though total
+startup task time reached 248.8ms while the large document finished parsing.
+
+This run's compressed client JS totals, including drivers, were 80,997 bytes
+gzip for React, 20,023 for Preact, 10,738 for Lit, 79,454 for the adapter, and zero
+for static. Preact retains the existing React component through compat with a
+smaller runtime, but still uses a virtual DOM. It is actively maintained:
+[11.2.0 was released on November 6](https://github.com/preactjs/preact/releases),
+including bundle-size improvements. Its core uses native DOM event listeners;
+compat bridges React API differences. [Preact differences](https://preactjs.com/guide/v11/differences-to-react/)
+
+For static websites, prioritize generated HTML/SVG/CSS and native controls first.
+Equivalent unhydrated HTML does not become smoother because a different library
+generated it on the server. Use Preact for a small existing-React island or Lit
+for a portable standalone element when behavior requires client code, with
+page-level measurements deciding between them. The next acceptance surface is a
+representative static page with fonts/images, slow loading, layout stability,
+native scrolling, and essential interaction—not repeated logo resizing.

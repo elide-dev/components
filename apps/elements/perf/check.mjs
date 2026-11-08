@@ -10,7 +10,7 @@ const server = await preview({ configFile: false, preview: { host: '127.0.0.1', 
 const base = `http://127.0.0.1:${server.httpServer.address().port}`;
 const browser = await chromium.launch();
 try {
-  for (const kind of ['static', 'react', 'lit', 'adapter']) {
+  for (const kind of ['static', 'react', 'preact', 'lit', 'adapter']) {
     const page = await browser.newPage();
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));

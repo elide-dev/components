@@ -10,6 +10,12 @@ describe the established catalog. The first additive slice is now available in
 [`@elide/elements`](./packages/elements/README.md): the Lit logo, explicit SSR,
 and a React/Preact adapter. Other migrations remain planned.
 
+For websites, prioritize static HTML/SVG/CSS, low startup/idle overhead, layout
+stability, smooth scrolling, and native browser capabilities. Hydrate only the
+behavior that needs it. Preact is a tested compatibility option for existing
+React components; Lit is the portable-element option. Bulk update throughput is
+secondary to these delivery goals.
+
 See [Web Components architecture](./docs/web-components-architecture.md) for
 package boundaries, Shadow DOM CSS, rendering and SSR contracts, performance
 acceptance criteria, and the migration sequence. This supersedes the previous

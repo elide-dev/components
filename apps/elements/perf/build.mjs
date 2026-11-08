@@ -15,10 +15,16 @@ svg{display:block}.text-foreground{color:var(--foreground)}`;
 const document = (body, script = '') => `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Logo performance fixture</title><style>${css}</style></head><body><main id="app">${body}</main>${script}</body></html>`;
 await rm('dist/perf', { recursive: true, force: true });
 const report = { description: 'Independent production builds. JS includes benchmark driver and full runtime; identical minimal CSS is inline in HTML. Compression is per resource, not a network measurement.', variants: {} };
-for (const kind of ['react', 'lit', 'adapter']) {
+for (const kind of ['react', 'preact', 'lit', 'adapter']) {
   let code = [];
   await build({
     configFile: false,
+    resolve: kind === 'preact' ? { alias: [
+      { find: /^react-dom\/client$/, replacement: 'preact/compat/client' },
+      { find: /^react-dom$/, replacement: 'preact/compat' },
+      { find: /^react$/, replacement: 'preact/compat' },
+      { find: /^react\/jsx-runtime$/, replacement: 'preact/jsx-runtime' },
+    ], dedupe: ['preact'] } : undefined,
     plugins: [react(), {
       name: 'isolated-performance-entry',
       generateBundle(_options, bundle) {
@@ -26,8 +32,10 @@ for (const kind of ['react', 'lit', 'adapter']) {
         const ids = chunks.flatMap(chunk => Object.keys(chunk.modules));
         const reactPresent = ids.some(id => /node_modules\/(?:\.bun\/)?react(?:@|\/)/.test(id));
         const litPresent = ids.some(id => /node_modules\/(?:\.bun\/)?lit(?:@|\/|-)/.test(id));
-        if (reactPresent !== (kind !== 'lit')) throw new Error(`${kind}: wrong React runtime graph`);
-        if (litPresent !== (kind !== 'react')) throw new Error(`${kind}: wrong Lit runtime graph`);
+        const preactPresent = ids.some(id => /node_modules\/(?:\.bun\/)?preact(?:@|\/)/.test(id));
+        if (reactPresent !== ['react', 'adapter'].includes(kind)) throw new Error(`${kind}: wrong React runtime graph`);
+        if (litPresent !== ['lit', 'adapter'].includes(kind)) throw new Error(`${kind}: wrong Lit runtime graph`);
+        if (preactPresent !== (kind === 'preact')) throw new Error(`${kind}: wrong Preact runtime graph`);
         if (ids.some(id => /@lit-labs\/ssr/.test(id))) throw new Error(`${kind}: SSR code in client graph`);
         code = chunks.map(chunk => ({ file: chunk.fileName, ...sizes(chunk.code) }));
       },
