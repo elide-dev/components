@@ -40,6 +40,20 @@
         "^build"
       ]
     },
+    "@elide/elements#test": {
+      "dependsOn": ["build"],
+      "cache": false
+    },
+    "@elide/elements#lint": {
+      "dependsOn": ["^build"]
+    },
+    "@elide/elements-consumer#test": {
+      "dependsOn": ["build", "lint"],
+      "cache": false
+    },
+    "@elide/elements-consumer#lint": {
+      "dependsOn": ["^build"]
+    },
     "@elide/preact#test": {
       "dependsOn": ["build", "lint"],
       "cache": false

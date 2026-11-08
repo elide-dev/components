@@ -30,6 +30,8 @@ async function load(page, platform, mode) {
   await terminal.getByRole("button", { name: "Pause", exact: true }).waitFor();
   await terminal.getByRole("button", { name: "Pause", exact: true }).click();
   await page.getByRole("switch", { name: "Preact state", exact: true }).click();
+  await page.getByRole("img", { name: "Preact element logo" }).waitFor();
+  await page.waitForFunction(() => document.querySelector('[data-testid="preact-element-logo"]')?.shadowRoot?.querySelector('svg')?.getBoundingClientRect().height === 48);
   const button = page.getByRole("button", { name: "Preact enabled", exact: true });
   await button.click();
   assert.equal(await button.getAttribute("data-ref-checked"), "true", "Preact ref reaches the native button");

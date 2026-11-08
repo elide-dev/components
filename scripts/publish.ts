@@ -5,7 +5,7 @@
 // release can simply be re-run. Usage: bun run release [--dry-run]
 import { $ } from "bun";
 
-const order = ["packages/brand", "packages/tokens", "packages/ui"];
+const order = ["packages/brand", "packages/tokens", "packages/elements", "packages/ui"];
 const dryRun = process.argv.includes("--dry-run");
 
 for (const dir of order) {

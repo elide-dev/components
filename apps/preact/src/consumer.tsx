@@ -7,6 +7,7 @@ import { Button } from "@elide/ui/components/button";
 import { buttonVariants } from "@elide/ui/components/button-variants";
 import { Switch } from "@elide/ui/components/switch";
 import { Terminal } from "@elide/ui/components/terminal";
+import { ElideLogo } from "@elide/ui/elements/logo";
 import { App } from "../../benchmark/src/App";
 import { PlatformApp } from "../../benchmark/src/PlatformApp";
 
@@ -19,6 +20,7 @@ export function Consumer({ platform }: { platform: boolean }) {
   return <>
     {platform ? <PlatformApp /> : <App />}
     <section id="preact-integration" aria-label="Preact integration">
+      <ElideLogo title="Preact element logo" height={checked ? 48 : 24} data-testid="preact-element-logo" />
       <Switch aria-label="Preact state" checked={checked} onCheckedChange={next => setChecked(next)} />
       <Button ref={ref} onClick={event => { event.currentTarget.focus(); ref.current?.setAttribute("data-ref-checked", "true"); }}>
         {checked ? "Preact enabled" : "Preact disabled"}

@@ -18,6 +18,8 @@
 
 :root {
   color-scheme: light;
+  --eld-brand-light-display: block;
+  --eld-brand-dark-display: none;
   /* ---- Primitive · Royal purple (UI accents) ---- */
   --eld-purple-50: #f5f3ff;
   --eld-purple-100: #ede9fe;
@@ -255,12 +257,21 @@
   --radius: var(--eld-radius-lg);
 }
 
+/* Reset brand asset selection inside an explicitly light subtree. These values
+ * inherit into shadow roots; no component needs to observe the document theme. */
+[data-theme="light"] {
+  --eld-brand-light-display: block;
+  --eld-brand-dark-display: none;
+}
+
 /* ===========================================================================
  * Semantic tokens · DARK
  * ======================================================================== */
 .dark,
 [data-theme="dark"] {
   color-scheme: dark;
+  --eld-brand-light-display: none;
+  --eld-brand-dark-display: block;
   --background: var(--eld-neutral-950);
   --foreground: var(--eld-neutral-50);
 
