@@ -1,0 +1,458 @@
+{
+  "metadata": {
+    "baseline": "3262c98f49d3aef44e28b3dd6c31156d1196a2ae",
+    "node": "v24.22.1",
+    "platform": "darwin",
+    "arch": "arm64",
+    "cpu": "Apple M5 Max",
+    "samples": 7,
+    "repetitions": 10,
+    "options": {
+      "cols": 100,
+      "rows": 30
+    },
+    "snapshot": {
+      "scrollback": false,
+      "positioned": true
+    },
+    "sourceHashes": {
+      "before": "3706843eaa8850ecc328b4a5e30ea5fce7d03e8c547b1c70d20711236171c88a",
+      "after": "2aff1761a2c982f82ad0b83b84923ef79763e3dd79ee6bb057877d384af11bc4"
+    },
+    "fixtureHash": "908609629d630fc03739782a345223a664a055558418af3cc68f3024686e7a86"
+  },
+  "parity": {
+    "help": {
+      "frames": 64,
+      "digest": "3252bed6a5b9486454dd78c06e4da5128860d66471397b991eb5dbdfa3428a8f",
+      "reusedRows": {
+        "before": 0,
+        "after": 1630
+      }
+    },
+    "sparse": {
+      "frames": 301,
+      "digest": "767f341470bf8e06af140e91d07cb9a1eaaeba6851b49d8d819b6d9511eae9f7",
+      "reusedRows": {
+        "before": 0,
+        "after": 8700
+      }
+    },
+    "redraw": {
+      "frames": 30,
+      "digest": "4b3ba02806ed5db139f4373b88a01b01e4d63ead0deb30e8c9f94ebb610f7ccb",
+      "reusedRows": {
+        "before": 0,
+        "after": 0
+      }
+    },
+    "scrolling": {
+      "frames": 300,
+      "digest": "9120326660ab588d17e94013abf98b018d297a38e13674cf6e1469f0c9be15a8",
+      "reusedRows": {
+        "before": 0,
+        "after": 784
+      }
+    }
+  },
+  "trials": [
+    {
+      "sample": 0,
+      "case": "help",
+      "revision": "before",
+      "ms": 33.53545799999995
+    },
+    {
+      "sample": 0,
+      "case": "help",
+      "revision": "after",
+      "ms": 8.03591700000004
+    },
+    {
+      "sample": 0,
+      "case": "sparse",
+      "revision": "before",
+      "ms": 114.769542
+    },
+    {
+      "sample": 0,
+      "case": "sparse",
+      "revision": "after",
+      "ms": 9.749916999999982
+    },
+    {
+      "sample": 0,
+      "case": "redraw",
+      "revision": "before",
+      "ms": 50.36800000000005
+    },
+    {
+      "sample": 0,
+      "case": "redraw",
+      "revision": "after",
+      "ms": 51.389625000000024
+    },
+    {
+      "sample": 0,
+      "case": "scrolling",
+      "revision": "before",
+      "ms": 93.4107919999999
+    },
+    {
+      "sample": 0,
+      "case": "scrolling",
+      "revision": "after",
+      "ms": 17.512959000000023
+    },
+    {
+      "sample": 1,
+      "case": "help",
+      "revision": "after",
+      "ms": 9.536958000000027
+    },
+    {
+      "sample": 1,
+      "case": "help",
+      "revision": "before",
+      "ms": 34.276040999999964
+    },
+    {
+      "sample": 1,
+      "case": "sparse",
+      "revision": "after",
+      "ms": 9.629583000000025
+    },
+    {
+      "sample": 1,
+      "case": "sparse",
+      "revision": "before",
+      "ms": 112.23291699999993
+    },
+    {
+      "sample": 1,
+      "case": "redraw",
+      "revision": "after",
+      "ms": 50.686207999999965
+    },
+    {
+      "sample": 1,
+      "case": "redraw",
+      "revision": "before",
+      "ms": 49.59054200000003
+    },
+    {
+      "sample": 1,
+      "case": "scrolling",
+      "revision": "after",
+      "ms": 19.105000000000018
+    },
+    {
+      "sample": 1,
+      "case": "scrolling",
+      "revision": "before",
+      "ms": 99.38270799999987
+    },
+    {
+      "sample": 2,
+      "case": "help",
+      "revision": "before",
+      "ms": 33.49237500000004
+    },
+    {
+      "sample": 2,
+      "case": "help",
+      "revision": "after",
+      "ms": 11.339541999999938
+    },
+    {
+      "sample": 2,
+      "case": "sparse",
+      "revision": "before",
+      "ms": 112.69145800000001
+    },
+    {
+      "sample": 2,
+      "case": "sparse",
+      "revision": "after",
+      "ms": 9.350750000000062
+    },
+    {
+      "sample": 2,
+      "case": "redraw",
+      "revision": "before",
+      "ms": 48.797207999999955
+    },
+    {
+      "sample": 2,
+      "case": "redraw",
+      "revision": "after",
+      "ms": 50.59962499999983
+    },
+    {
+      "sample": 2,
+      "case": "scrolling",
+      "revision": "before",
+      "ms": 92.25691600000005
+    },
+    {
+      "sample": 2,
+      "case": "scrolling",
+      "revision": "after",
+      "ms": 16.946249999999964
+    },
+    {
+      "sample": 3,
+      "case": "help",
+      "revision": "after",
+      "ms": 6.657916999999998
+    },
+    {
+      "sample": 3,
+      "case": "help",
+      "revision": "before",
+      "ms": 34.81858399999987
+    },
+    {
+      "sample": 3,
+      "case": "sparse",
+      "revision": "after",
+      "ms": 7.920791000000008
+    },
+    {
+      "sample": 3,
+      "case": "sparse",
+      "revision": "before",
+      "ms": 112.6092920000001
+    },
+    {
+      "sample": 3,
+      "case": "redraw",
+      "revision": "after",
+      "ms": 50.35287500000004
+    },
+    {
+      "sample": 3,
+      "case": "redraw",
+      "revision": "before",
+      "ms": 48.767709000000195
+    },
+    {
+      "sample": 3,
+      "case": "scrolling",
+      "revision": "after",
+      "ms": 15.414874999999938
+    },
+    {
+      "sample": 3,
+      "case": "scrolling",
+      "revision": "before",
+      "ms": 96.22370799999999
+    },
+    {
+      "sample": 4,
+      "case": "help",
+      "revision": "before",
+      "ms": 32.29991599999994
+    },
+    {
+      "sample": 4,
+      "case": "help",
+      "revision": "after",
+      "ms": 6.430082999999968
+    },
+    {
+      "sample": 4,
+      "case": "sparse",
+      "revision": "before",
+      "ms": 111.76387499999987
+    },
+    {
+      "sample": 4,
+      "case": "sparse",
+      "revision": "after",
+      "ms": 8.0842090000001
+    },
+    {
+      "sample": 4,
+      "case": "redraw",
+      "revision": "before",
+      "ms": 48.27241700000013
+    },
+    {
+      "sample": 4,
+      "case": "redraw",
+      "revision": "after",
+      "ms": 52.96437499999979
+    },
+    {
+      "sample": 4,
+      "case": "scrolling",
+      "revision": "before",
+      "ms": 96.79483299999993
+    },
+    {
+      "sample": 4,
+      "case": "scrolling",
+      "revision": "after",
+      "ms": 16.477000000000317
+    },
+    {
+      "sample": 5,
+      "case": "help",
+      "revision": "after",
+      "ms": 6.62099999999964
+    },
+    {
+      "sample": 5,
+      "case": "help",
+      "revision": "before",
+      "ms": 36.058708000000024
+    },
+    {
+      "sample": 5,
+      "case": "sparse",
+      "revision": "after",
+      "ms": 7.98541699999987
+    },
+    {
+      "sample": 5,
+      "case": "sparse",
+      "revision": "before",
+      "ms": 111.64520799999991
+    },
+    {
+      "sample": 5,
+      "case": "redraw",
+      "revision": "after",
+      "ms": 49.860541999999896
+    },
+    {
+      "sample": 5,
+      "case": "redraw",
+      "revision": "before",
+      "ms": 49.79508299999998
+    },
+    {
+      "sample": 5,
+      "case": "scrolling",
+      "revision": "after",
+      "ms": 15.199292000000241
+    },
+    {
+      "sample": 5,
+      "case": "scrolling",
+      "revision": "before",
+      "ms": 98.16916700000002
+    },
+    {
+      "sample": 6,
+      "case": "help",
+      "revision": "before",
+      "ms": 32.06683299999986
+    },
+    {
+      "sample": 6,
+      "case": "help",
+      "revision": "after",
+      "ms": 11.091541000000234
+    },
+    {
+      "sample": 6,
+      "case": "sparse",
+      "revision": "before",
+      "ms": 112.1310840000001
+    },
+    {
+      "sample": 6,
+      "case": "sparse",
+      "revision": "after",
+      "ms": 10.029833000000053
+    },
+    {
+      "sample": 6,
+      "case": "redraw",
+      "revision": "before",
+      "ms": 49.25479200000018
+    },
+    {
+      "sample": 6,
+      "case": "redraw",
+      "revision": "after",
+      "ms": 50.81604100000004
+    },
+    {
+      "sample": 6,
+      "case": "scrolling",
+      "revision": "before",
+      "ms": 90.90050000000019
+    },
+    {
+      "sample": 6,
+      "case": "scrolling",
+      "revision": "after",
+      "ms": 16.600625000000036
+    }
+  ],
+  "summary": {
+    "help": {
+      "before": {
+        "median": 33.53545799999995,
+        "p75": 34.81858399999987,
+        "min": 32.06683299999986,
+        "max": 36.058708000000024
+      },
+      "after": {
+        "median": 8.03591700000004,
+        "p75": 11.091541000000234,
+        "min": 6.430082999999968,
+        "max": 11.339541999999938
+      },
+      "medianChangePercent": -76
+    },
+    "sparse": {
+      "before": {
+        "median": 112.23291699999993,
+        "p75": 112.69145800000001,
+        "min": 111.64520799999991,
+        "max": 114.769542
+      },
+      "after": {
+        "median": 9.350750000000062,
+        "p75": 9.749916999999982,
+        "min": 7.920791000000008,
+        "max": 10.029833000000053
+      },
+      "medianChangePercent": -91.7
+    },
+    "redraw": {
+      "before": {
+        "median": 49.25479200000018,
+        "p75": 49.79508299999998,
+        "min": 48.27241700000013,
+        "max": 50.36800000000005
+      },
+      "after": {
+        "median": 50.686207999999965,
+        "p75": 51.389625000000024,
+        "min": 49.860541999999896,
+        "max": 52.96437499999979
+      },
+      "medianChangePercent": 2.9
+    },
+    "scrolling": {
+      "before": {
+        "median": 96.22370799999999,
+        "p75": 98.16916700000002,
+        "min": 90.90050000000019,
+        "max": 99.38270799999987
+      },
+      "after": {
+        "median": 16.600625000000036,
+        "p75": 17.512959000000023,
+        "min": 15.199292000000241,
+        "max": 19.105000000000018
+      },
+      "medianChangePercent": -82.7
+    }
+  }
+}

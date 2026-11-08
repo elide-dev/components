@@ -1,10 +1,24 @@
 import { render } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { CodeLines } from "./code-lines";
 
 const logo = [{ tokens: [{ text: "██╗ dull", style: { color: "#ff88f0" } }, { text: "─┐▀" }] }];
 
 describe("CodeLines terminal glyphs", () => {
+  it("reuses unchanged recording rows and still applies changed display options", () => {
+    const first = { tokens: [{ text: "stable", column: 0, columns: 6 }] };
+    const second = { tokens: [{ text: "before", column: 0, columns: 6 }] };
+    const rowAction = vi.fn(() => null);
+    const view = render(<CodeLines positioned variant="terminal" lines={[first, second]} rowAction={rowAction} />);
+    expect(rowAction).toHaveBeenCalledTimes(2);
+    view.rerender(<CodeLines positioned variant="terminal" lines={[first, { tokens: [{ text: "after", column: 0, columns: 5 }] }]} rowAction={rowAction} />);
+    expect(rowAction).toHaveBeenCalledTimes(3);
+    expect(view.container).toHaveTextContent("after");
+    view.rerender(<CodeLines positioned variant="terminal" lines={[first, second]} rowAction={rowAction} lineNumbers />);
+    expect(rowAction).toHaveBeenCalledTimes(5);
+    expect(view.container.querySelector('code')).toHaveAttribute('data-numbers', 'true');
+  });
+
   it("places recording runs at VT columns without nesting a wrapper around each glyph", () => {
     const { container } = render(<CodeLines variant="terminal" positioned links={false} lines={[{ tokens: [
       { text: "text ", column: 0, columns: 5 },

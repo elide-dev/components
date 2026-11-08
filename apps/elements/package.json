@@ -14,7 +14,9 @@
     "build:code-perf": "node perf/code-build.mjs",
     "perf:code": "node perf/code-run.mjs",
     "build:catalog-perf": "node perf/catalog-build.mjs",
-    "perf:catalog": "node perf/catalog-run.mjs"
+    "perf:catalog": "node perf/catalog-run.mjs",
+    "build:widget-perf": "node perf/widgets-build.mjs",
+    "perf:widgets": "node perf/widgets-run.mjs"
   },
   "dependencies": {
     "@elide/elements": "workspace:*",

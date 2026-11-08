@@ -1,0 +1,615 @@
+{
+  "parity": "Exact before/after HTML and PNG match in both runtimes",
+  "artifacts": [
+    {
+      "scenario": "terminal",
+      "kind": "react",
+      "extension": "html",
+      "sha256": "266252eb7a2ddaac4e77ed427cf7af813db24edcd04e388801bf3ffc9f8503f6"
+    },
+    {
+      "scenario": "terminal",
+      "kind": "react",
+      "extension": "png",
+      "sha256": "9c5e0a5b5069ab73358efe4ceb7cf8a317991d4d9a14f48e4654dcae8c14bca1"
+    },
+    {
+      "scenario": "terminal",
+      "kind": "preact",
+      "extension": "html",
+      "sha256": "39a2c30bb999e3cfbc26f20fad8038ed92ccf99b100c732697be07cbe09eb87e"
+    },
+    {
+      "scenario": "terminal",
+      "kind": "preact",
+      "extension": "png",
+      "sha256": "9c5e0a5b5069ab73358efe4ceb7cf8a317991d4d9a14f48e4654dcae8c14bca1"
+    },
+    {
+      "scenario": "scene",
+      "kind": "react",
+      "extension": "html",
+      "sha256": "03b324680e7b5a35b02f3a5039ad18decde59b0d39ace8e0e65f8ae07b85ee28"
+    },
+    {
+      "scenario": "scene",
+      "kind": "react",
+      "extension": "png",
+      "sha256": "dcad6fface6400836118d9ff844bfea0ca3d24e3c09f06aced507112d8f5b316"
+    },
+    {
+      "scenario": "scene",
+      "kind": "preact",
+      "extension": "html",
+      "sha256": "6c1d6f7d6c1de22930329527599291d608af1cf6190012d418000b367654d590"
+    },
+    {
+      "scenario": "scene",
+      "kind": "preact",
+      "extension": "png",
+      "sha256": "dcad6fface6400836118d9ff844bfea0ca3d24e3c09f06aced507112d8f5b316"
+    }
+  ],
+  "rows": [
+    {
+      "scenario": "terminal",
+      "kind": "react",
+      "count": 1,
+      "metric": "workMs",
+      "before": {
+        "median": 434.38699999999994,
+        "p75": 453.668,
+        "min": 416.191,
+        "max": 489.7710000000001
+      },
+      "after": {
+        "median": 390.027,
+        "p75": 393.91299999999995,
+        "min": 361.202,
+        "max": 407.664
+      },
+      "changePercent": -10.2,
+      "regression": false
+    },
+    {
+      "scenario": "terminal",
+      "kind": "react",
+      "count": 1,
+      "metric": "scriptMs",
+      "before": {
+        "median": 153.24800000000002,
+        "p75": 157.59099999999998,
+        "min": 149.52300000000002,
+        "max": 175.178
+      },
+      "after": {
+        "median": 102.945,
+        "p75": 107.634,
+        "min": 93.76400000000001,
+        "max": 112.48100000000001
+      },
+      "changePercent": -32.8,
+      "regression": false
+    },
+    {
+      "scenario": "terminal",
+      "kind": "react",
+      "count": 1,
+      "metric": "layoutMs",
+      "before": {
+        "median": 45.772999999999996,
+        "p75": 49.97700000000001,
+        "min": 40.364999999999995,
+        "max": 50.645999999999994
+      },
+      "after": {
+        "median": 44.552,
+        "p75": 49.4,
+        "min": 42.765,
+        "max": 51.618
+      },
+      "changePercent": -2.7,
+      "regression": false
+    },
+    {
+      "scenario": "terminal",
+      "kind": "react",
+      "count": 1,
+      "metric": "startupMs",
+      "before": {
+        "median": 201.136,
+        "p75": 210.865,
+        "min": 198.53,
+        "max": 335.217
+      },
+      "after": {
+        "median": 201.822,
+        "p75": 207.55,
+        "min": 196.78799999999998,
+        "max": 209.72
+      },
+      "changePercent": 0.3,
+      "regression": false
+    },
+    {
+      "scenario": "terminal",
+      "kind": "react",
+      "count": 1,
+      "metric": "heapBytes",
+      "before": {
+        "median": 2597356,
+        "p75": 2602416,
+        "min": 2594056,
+        "max": 2605180
+      },
+      "after": {
+        "median": 2604828,
+        "p75": 2605660,
+        "min": 2604448,
+        "max": 2606104
+      },
+      "changePercent": 0.3,
+      "regression": false
+    },
+    {
+      "scenario": "terminal",
+      "kind": "react",
+      "count": 1,
+      "metric": "postWorkHeapBytes",
+      "before": {
+        "median": 3301000,
+        "p75": 3305060,
+        "min": 3296196,
+        "max": 3309716
+      },
+      "after": {
+        "median": 3275896,
+        "p75": 3276984,
+        "min": 3272240,
+        "max": 3288752
+      },
+      "changePercent": -0.8,
+      "regression": false
+    },
+    {
+      "scenario": "terminal",
+      "kind": "react",
+      "count": 1,
+      "metric": "nodes",
+      "before": {
+        "median": 1080,
+        "p75": 1080,
+        "min": 1080,
+        "max": 1080
+      },
+      "after": {
+        "median": 1080,
+        "p75": 1080,
+        "min": 1080,
+        "max": 1080
+      },
+      "changePercent": 0,
+      "regression": false
+    },
+    {
+      "scenario": "terminal",
+      "kind": "preact",
+      "count": 1,
+      "metric": "workMs",
+      "before": {
+        "median": 435.47099999999995,
+        "p75": 444.491,
+        "min": 421.74099999999993,
+        "max": 513.3760000000001
+      },
+      "after": {
+        "median": 363.458,
+        "p75": 365.45799999999997,
+        "min": 343.84,
+        "max": 379.311
+      },
+      "changePercent": -16.5,
+      "regression": false
+    },
+    {
+      "scenario": "terminal",
+      "kind": "preact",
+      "count": 1,
+      "metric": "scriptMs",
+      "before": {
+        "median": 148.04899999999998,
+        "p75": 155.534,
+        "min": 144.43800000000002,
+        "max": 184.89799999999997
+      },
+      "after": {
+        "median": 84.12899999999999,
+        "p75": 89.45299999999999,
+        "min": 83.239,
+        "max": 91.504
+      },
+      "changePercent": -43.2,
+      "regression": false
+    },
+    {
+      "scenario": "terminal",
+      "kind": "preact",
+      "count": 1,
+      "metric": "layoutMs",
+      "before": {
+        "median": 47.157999999999994,
+        "p75": 48.421,
+        "min": 38.156000000000006,
+        "max": 50.06099999999999
+      },
+      "after": {
+        "median": 42.681999999999995,
+        "p75": 44.482,
+        "min": 39.189,
+        "max": 47.045
+      },
+      "changePercent": -9.5,
+      "regression": false
+    },
+    {
+      "scenario": "terminal",
+      "kind": "preact",
+      "count": 1,
+      "metric": "startupMs",
+      "before": {
+        "median": 171.466,
+        "p75": 178.42,
+        "min": 163.989,
+        "max": 200.53799999999998
+      },
+      "after": {
+        "median": 169.084,
+        "p75": 170.721,
+        "min": 162.302,
+        "max": 177.362
+      },
+      "changePercent": -1.4,
+      "regression": false
+    },
+    {
+      "scenario": "terminal",
+      "kind": "preact",
+      "count": 1,
+      "metric": "heapBytes",
+      "before": {
+        "median": 2051848,
+        "p75": 2053208,
+        "min": 2050012,
+        "max": 2054752
+      },
+      "after": {
+        "median": 2069840,
+        "p75": 2070116,
+        "min": 2066828,
+        "max": 2070156
+      },
+      "changePercent": 0.9,
+      "regression": false
+    },
+    {
+      "scenario": "terminal",
+      "kind": "preact",
+      "count": 1,
+      "metric": "postWorkHeapBytes",
+      "before": {
+        "median": 2433228,
+        "p75": 2435208,
+        "min": 2422196,
+        "max": 2437812
+      },
+      "after": {
+        "median": 2443268,
+        "p75": 2443620,
+        "min": 2440552,
+        "max": 2445172
+      },
+      "changePercent": 0.4,
+      "regression": false
+    },
+    {
+      "scenario": "terminal",
+      "kind": "preact",
+      "count": 1,
+      "metric": "nodes",
+      "before": {
+        "median": 1079,
+        "p75": 1079,
+        "min": 1079,
+        "max": 1079
+      },
+      "after": {
+        "median": 1079,
+        "p75": 1079,
+        "min": 1079,
+        "max": 1079
+      },
+      "changePercent": 0,
+      "regression": false
+    },
+    {
+      "scenario": "scene",
+      "kind": "react",
+      "count": 1,
+      "metric": "workMs",
+      "before": {
+        "median": 206.387,
+        "p75": 219.46099999999998,
+        "min": 178.45600000000002,
+        "max": 252.74099999999999
+      },
+      "after": {
+        "median": 52.479,
+        "p75": 63.70299999999998,
+        "min": 38.021,
+        "max": 66.49800000000003
+      },
+      "changePercent": -74.6,
+      "regression": false
+    },
+    {
+      "scenario": "scene",
+      "kind": "react",
+      "count": 1,
+      "metric": "scriptMs",
+      "before": {
+        "median": 174.11599999999999,
+        "p75": 186.64600000000004,
+        "min": 153.33200000000002,
+        "max": 206.35199999999998
+      },
+      "after": {
+        "median": 36.992999999999995,
+        "p75": 43.335,
+        "min": 25.506,
+        "max": 44.65799999999999
+      },
+      "changePercent": -78.8,
+      "regression": false
+    },
+    {
+      "scenario": "scene",
+      "kind": "react",
+      "count": 1,
+      "metric": "layoutMs",
+      "before": {
+        "median": 0.3429999999999995,
+        "p75": 0.8660000000000022,
+        "min": 0.12900000000000064,
+        "max": 1.3010000000000002
+      },
+      "after": {
+        "median": 0.2739999999999999,
+        "p75": 0.7820000000000015,
+        "min": 0.11299999999999852,
+        "max": 1.0010000000000019
+      },
+      "changePercent": -20.1,
+      "regression": false
+    },
+    {
+      "scenario": "scene",
+      "kind": "react",
+      "count": 1,
+      "metric": "startupMs",
+      "before": {
+        "median": 163.506,
+        "p75": 181.077,
+        "min": 158.667,
+        "max": 183.697
+      },
+      "after": {
+        "median": 160.549,
+        "p75": 165.022,
+        "min": 157.008,
+        "max": 177.588
+      },
+      "changePercent": -1.8,
+      "regression": false
+    },
+    {
+      "scenario": "scene",
+      "kind": "react",
+      "count": 1,
+      "metric": "heapBytes",
+      "before": {
+        "median": 2253944,
+        "p75": 2256532,
+        "min": 2251700,
+        "max": 2257108
+      },
+      "after": {
+        "median": 2262000,
+        "p75": 2265548,
+        "min": 2260776,
+        "max": 2271528
+      },
+      "changePercent": 0.4,
+      "regression": false
+    },
+    {
+      "scenario": "scene",
+      "kind": "react",
+      "count": 1,
+      "metric": "postWorkHeapBytes",
+      "before": {
+        "median": 3035396,
+        "p75": 3038660,
+        "min": 3034408,
+        "max": 3038916
+      },
+      "after": {
+        "median": 2642676,
+        "p75": 2646156,
+        "min": 2641412,
+        "max": 2648524
+      },
+      "changePercent": -12.9,
+      "regression": false
+    },
+    {
+      "scenario": "scene",
+      "kind": "react",
+      "count": 1,
+      "metric": "nodes",
+      "before": {
+        "median": 1021,
+        "p75": 1021,
+        "min": 1021,
+        "max": 1021
+      },
+      "after": {
+        "median": 1021,
+        "p75": 1021,
+        "min": 1021,
+        "max": 1021
+      },
+      "changePercent": 0,
+      "regression": false
+    },
+    {
+      "scenario": "scene",
+      "kind": "preact",
+      "count": 1,
+      "metric": "workMs",
+      "before": {
+        "median": 193.18299999999996,
+        "p75": 197.57399999999998,
+        "min": 186.814,
+        "max": 205.494
+      },
+      "after": {
+        "median": 41.791999999999994,
+        "p75": 44.66900000000001,
+        "min": 34.67100000000001,
+        "max": 52.29499999999998
+      },
+      "changePercent": -78.4,
+      "regression": false
+    },
+    {
+      "scenario": "scene",
+      "kind": "preact",
+      "count": 1,
+      "metric": "scriptMs",
+      "before": {
+        "median": 161.115,
+        "p75": 162.95399999999998,
+        "min": 157.333,
+        "max": 166.792
+      },
+      "after": {
+        "median": 23.266999999999996,
+        "p75": 25.65599999999999,
+        "min": 19.311000000000003,
+        "max": 31.005
+      },
+      "changePercent": -85.6,
+      "regression": false
+    },
+    {
+      "scenario": "scene",
+      "kind": "preact",
+      "count": 1,
+      "metric": "layoutMs",
+      "before": {
+        "median": 0.1260000000000011,
+        "p75": 0.4689999999999972,
+        "min": 0.12300000000000158,
+        "max": 0.785000000000001
+      },
+      "after": {
+        "median": 0.4930000000000004,
+        "p75": 0.8990000000000005,
+        "min": 0.11800000000000005,
+        "max": 0.9569999999999995
+      },
+      "changePercent": 291.3,
+      "regression": false
+    },
+    {
+      "scenario": "scene",
+      "kind": "preact",
+      "count": 1,
+      "metric": "startupMs",
+      "before": {
+        "median": 120.818,
+        "p75": 121.27799999999999,
+        "min": 118.2,
+        "max": 133.306
+      },
+      "after": {
+        "median": 120.585,
+        "p75": 124,
+        "min": 117.326,
+        "max": 127.468
+      },
+      "changePercent": -0.2,
+      "regression": false
+    },
+    {
+      "scenario": "scene",
+      "kind": "preact",
+      "count": 1,
+      "metric": "heapBytes",
+      "before": {
+        "median": 1830224,
+        "p75": 1832244,
+        "min": 1829120,
+        "max": 1833856
+      },
+      "after": {
+        "median": 1846428,
+        "p75": 1850144,
+        "min": 1841788,
+        "max": 1850144
+      },
+      "changePercent": 0.9,
+      "regression": false
+    },
+    {
+      "scenario": "scene",
+      "kind": "preact",
+      "count": 1,
+      "metric": "postWorkHeapBytes",
+      "before": {
+        "median": 2425408,
+        "p75": 2426768,
+        "min": 2424168,
+        "max": 2427440
+      },
+      "after": {
+        "median": 2047188,
+        "p75": 2048552,
+        "min": 2040196,
+        "max": 2048556
+      },
+      "changePercent": -15.6,
+      "regression": false
+    },
+    {
+      "scenario": "scene",
+      "kind": "preact",
+      "count": 1,
+      "metric": "nodes",
+      "before": {
+        "median": 1020,
+        "p75": 1020,
+        "min": 1020,
+        "max": 1020
+      },
+      "after": {
+        "median": 1020,
+        "p75": 1020,
+        "min": 1020,
+        "max": 1020
+      },
+      "changePercent": 0,
+      "regression": false
+    }
+  ]
+}

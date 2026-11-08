@@ -310,3 +310,5 @@ for a portable standalone element when behavior requires client code, with
 page-level measurements deciding between them. The next acceptance surface is a
 representative static page with fonts/images, slow loading, layout stability,
 native scrolling, and essential interaction—not repeated logo resizing.
+
+[Terminal, CodeScene and CodeBlock quality and performance evidence](./WIDGETS.md).

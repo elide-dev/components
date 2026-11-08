@@ -59,6 +59,7 @@ try {
 
       // Autoplay (in view) types the session out with no layout shift at all.
       const recordingRoot = page.getByTestId("code-recording");
+      await recordingRoot.scrollIntoViewIfNeeded();
       await recordingRoot.getByRole("button", { name: "Pause", exact: true }).waitFor();
       await recordingRoot.getByRole("button", { name: "Play", exact: true }).waitFor({ timeout: 15_000 });
       assert.match(await recordingRoot.locator('pre[aria-hidden="true"]').textContent(), /Hello from Elide!/);

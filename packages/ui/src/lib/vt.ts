@@ -257,12 +257,27 @@ export function createTerminal(options: TerminalOptions = {}): VirtualTerminal {
 
 function fromState(s: TerminalState): VirtualTerminal {
   const screen = () => (s.usingAlt ? s.alt : s.main);
+  // One rendered variant per live row. Weak keys release scrolled-away rows;
+  // edits invalidate only the rows they touch, and cursor/options are part of
+  // the lookup so a moving cursor never leaves stale cell markup behind.
+  const renderedRows = new WeakMap<Row, { cursorCol?: number; positioned: boolean; line: CodeLine }>();
+
+  let invalidatedRow: Row | undefined;
+  function invalidate(row: Row) {
+    // Printing a run touches the same row many times. One deletion is enough
+    // until a snapshot renders it again or another row is edited.
+    if (invalidatedRow !== row) {
+      renderedRows.delete(row);
+      invalidatedRow = row;
+    }
+  }
 
   // ---- cell helpers -------------------------------------------------------
   /** The attribute erased cells take: current background only (BCE). */
   const eraseAttr = (): Attr => (s.attr.bg === undefined ? DEFAULT_ATTR : { bg: s.attr.bg });
 
   function eraseCells(row: Row, from: number, to: number) {
+    invalidate(row);
     const attr = eraseAttr();
     const end = Math.min(to, s.cols);
     if (attr === DEFAULT_ATTR && end >= row.length) {
@@ -282,6 +297,7 @@ function fromState(s: TerminalState): VirtualTerminal {
   }
 
   function setCell(row: Row, x: number, cell: Cell) {
+    invalidate(row);
     while (row.length < x) row.push(BLANK);
     // Overwriting half of a wide character clears its other half.
     const existing = row[x];
@@ -342,6 +358,7 @@ function fromState(s: TerminalState): VirtualTerminal {
         isZeroWidth(ch) ||
         (REGIONAL_INDICATOR.test(ch) && [...targetCell.ch].length === 1 && REGIONAL_INDICATOR.test(targetCell.ch)));
     if (joins) {
+      invalidate(rows[s.y]);
       rows[s.y][target] = { ...targetCell, ch: targetCell.ch + ch };
       s.joinNext = ch === "\u200d";
       return;
@@ -576,6 +593,7 @@ function fromState(s: TerminalState): VirtualTerminal {
       case "@": {
         const row = rows[s.y];
         if (s.x < row.length) {
+          invalidate(row);
           row.splice(s.x, 0, ...Array.from({ length: n(0) }, () => BLANK));
           if (row.length > s.cols) row.length = s.cols;
         }
@@ -583,7 +601,10 @@ function fromState(s: TerminalState): VirtualTerminal {
       }
       case "P": {
         const row = rows[s.y];
-        if (s.x < row.length) row.splice(s.x, n(0));
+        if (s.x < row.length) {
+          invalidate(row);
+          row.splice(s.x, n(0));
+        }
         break;
       }
       case "L":
@@ -737,7 +758,10 @@ function fromState(s: TerminalState): VirtualTerminal {
     const nextCols = Math.max(1, Math.floor(cols));
     const nextRows = Math.max(1, Math.floor(rows));
     for (const buffer of [s.main, s.alt]) {
-      for (const row of buffer) if (row.length > nextCols) row.length = nextCols;
+      for (const row of buffer) if (row.length > nextCols) {
+        invalidate(row);
+        row.length = nextCols;
+      }
     }
     if (nextRows < s.rows) {
       // Push rows above the cursor into scrollback so the cursor stays visible.
@@ -761,6 +785,8 @@ function fromState(s: TerminalState): VirtualTerminal {
   }
 
   function rowToLine(row: Row, cursorCol: number | undefined, positioned = false): CodeLine {
+    const cached = renderedRows.get(row);
+    if (cached && cached.cursorCol === cursorCol && cached.positioned === positioned) return cached.line;
     const tokens: CodeToken[] = [];
     let text = "";
     let attr: Attr | undefined;
@@ -800,10 +826,13 @@ function fromState(s: TerminalState): VirtualTerminal {
       text += cell.ch;
     }
     flush();
-    return { tokens };
+    const line = { tokens };
+    renderedRows.set(row, { cursorCol, positioned, line });
+    return line;
   }
 
   function snapshot(options: SnapshotOptions = {}): TerminalScreen {
+    invalidatedRow = undefined;
     const includeScrollback = (options.scrollback ?? true) && !s.usingAlt;
     const above = includeScrollback ? s.scrollback : [];
     const showCursor = (options.cursor ?? true) && s.cursorVisible;

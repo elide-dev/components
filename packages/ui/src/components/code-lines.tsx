@@ -222,7 +222,7 @@ function rowInsight(number: number, insights: CodeInsights | undefined, hottest:
 }
 
 /** Accessible names for a row's decorations, exit status and insights. */
-function rowLabels(line: CodeLine, applied: readonly LineDecoration[] | undefined, insight: RowInsight, props: CodeLinesProps): string | undefined {
+function rowLabels(line: CodeLine, applied: readonly LineDecoration[] | undefined, insight: RowInsight, props: CodeRowOptions): string | undefined {
   const labels = (applied ?? []).map((decoration) => decoration.label ?? props.decorationLabels?.[decoration.kind]).filter(Boolean);
   if (line.exitCode !== undefined && props.exitLabel) labels.push(props.exitLabel(line.exitCode));
   const names = props.insightLabels;
@@ -231,17 +231,19 @@ function rowLabels(line: CodeLine, applied: readonly LineDecoration[] | undefine
   return labels.length ? labels.join(", ") : undefined;
 }
 
+type CodeRowOptions = Omit<CodeLinesProps, "lines">;
+
 interface RowProps {
   line: CodeLine;
   index: number;
   number: number;
   /** Samples on the hottest line of the file (scales the heat tint). */
   hottest: number;
-  props: CodeLinesProps;
+  props: CodeRowOptions;
 }
 
 /** The row's data attributes: drive gutter glyphs, overlays and accessible names from CSS. */
-function rowAttributes(line: CodeLine, number: number, hottest: number, props: CodeLinesProps): Record<string, string | number | boolean | undefined> {
+function rowAttributes(line: CodeLine, number: number, hottest: number, props: CodeRowOptions): Record<string, string | number | boolean | undefined> {
   const applied = props.decorations?.filter((decoration) => decorationCovers(decoration, number));
   const insight = rowInsight(number, props.insights, hottest);
   return {
@@ -283,7 +285,7 @@ interface RowProps {
   number: number;
   /** Samples on the hottest line of the file (scales the heat tint). */
   hottest: number;
-  props: CodeLinesProps;
+  props: CodeRowOptions;
 }
 
 /** One grid row: `[marks] [number] [prompt] [content]`, plus optional overlays and action. */
@@ -310,6 +312,15 @@ function CodeRow({ line, index, number, hottest, props }: RowProps) {
   );
 }
 
+// VT snapshots preserve unchanged row identities. Compare display options as well
+// so locale, decorations and callbacks still update when a row's text does not.
+const RecordingRow = React.memo(CodeRow, (before, after) => {
+  if (before.line !== after.line || before.index !== after.index || before.number !== after.number || before.hottest !== after.hottest) return false;
+  const a = before.props, b = after.props;
+  const keys = Object.keys(a) as (keyof CodeRowOptions)[];
+  return keys.length === Object.keys(b).length && keys.every(key => Object.is(a[key], b[key]));
+});
+
 /**
  * One CSS-grid row per line: `[marks] [number] [prompt] [content]`. Gutter
  * glyphs, numbers and prompts are pseudo-elements, so they are never selected
@@ -317,7 +328,9 @@ function CodeRow({ line, index, number, hottest, props }: RowProps) {
  * newline so `textContent` reads as the original text.
  */
 export const CodeLines = React.memo(function CodeLines(props: CodeLinesProps) {
-  const { lines, lang, variant = "editor", lineNumbers = false, startLine = 1, decorations, wrap = false, folds } = props;
+  const { lines, ...rowOptions } = props;
+  const { lang, variant = "editor", lineNumbers = false, startLine = 1, decorations, wrap = false, folds } = rowOptions;
+  const Row = props.positioned ? RecordingRow : CodeRow;
   const last = startLine + lines.length - 1;
   const marks = lines.some((line) => line.exitCode !== undefined) || !!decorations?.some((d) => MARKED.has(d.kind));
   const hottest = Math.max(0, ...Object.values(props.insights?.profile?.lines ?? {}).map((line) => line.self));
@@ -335,7 +348,7 @@ export const CodeLines = React.memo(function CodeLines(props: CodeLinesProps) {
         // Rows are keyed by line number: positional identity (a source line, a screen row).
         const number = line.number ?? startLine + index;
         const fold = folds?.find((candidate) => number >= candidate.start && number <= candidate.end);
-        if (!fold) return <CodeRow key={number} line={line} index={index} number={number} hottest={hottest} props={props} />;
+        if (!fold) return <Row key={number} line={line} index={index} number={number} hottest={hottest} props={rowOptions} />;
         if (number !== fold.start) return null;
         return (
           <span key={number} className="eld-line eld-fold-row">

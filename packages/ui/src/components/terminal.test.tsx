@@ -116,6 +116,23 @@ describe("Terminal — rows, wrapping, links and chrome", () => {
 });
 
 describe("Terminal — recordings", () => {
+  it("parks playback started while offscreen and resumes when the viewport reports it visible", async () => {
+    const observers: { callback: IntersectionObserverCallback; options?: IntersectionObserverInit }[] = [];
+    vi.stubGlobal("IntersectionObserver", class {
+      constructor(callback: IntersectionObserverCallback, options?: IntersectionObserverInit) { observers.push({ callback, options }); }
+      observe() {} disconnect() {}
+    });
+    const user = userEvent.setup();
+    render(<Terminal code="$ x" recording={{ cast, poster: "first" }} />);
+    const observer = observers.find(entry => !entry.options?.rootMargin)!;
+    const report = (visible: boolean) => act(() => observer.callback([{ isIntersecting: !visible, intersectionRatio: visible ? 0 : 1 }, { isIntersecting: visible, intersectionRatio: visible ? 1 : 0 }] as IntersectionObserverEntry[], {} as IntersectionObserver));
+    report(false);
+    await user.click(screen.getByRole("button", { name: "Play", exact: true }));
+    expect(screen.getByRole("button", { name: "Play", exact: true })).toBeInTheDocument();
+    report(true);
+    expect(screen.getByRole("button", { name: "Pause", exact: true })).toBeInTheDocument();
+  });
+
   it("skips height-probing screens with explicit rows while preserving the transcript", () => {
     const probe = vi.spyOn(CastRenderer.prototype, "screen");
     try {
@@ -193,6 +210,30 @@ describe("Terminal — recordings", () => {
     await waitFor(() =>
       expect(container.querySelector('pre[aria-hidden="true"]')).toHaveTextContent("Hello from Elide!"),
     );
+  });
+
+  it("ignores a stale response after switching recording URLs", async () => {
+    const responses = new Map<string, (response: Response) => void>();
+    vi.stubGlobal("fetch", vi.fn((url: string) => new Promise<Response>(resolve => responses.set(url, resolve))));
+    const view = render(<Terminal code="$ fallback" recording="/old.cast" />);
+    await waitFor(() => expect(responses.has("/old.cast")).toBe(true));
+    view.rerender(<Terminal code="$ fallback" recording="/new.cast" />);
+    await waitFor(() => expect(responses.has("/new.cast")).toBe(true));
+    await act(async () => responses.get("/new.cast")!(new Response(cast.replace("Hello", "Latest"))));
+    expect(view.container.querySelector('pre[aria-hidden="true"]')).toHaveTextContent("Latest");
+    await act(async () => responses.get("/old.cast")!(new Response(cast)));
+    expect(view.container.querySelector('pre[aria-hidden="true"]')).toHaveTextContent("Latest");
+    expect(view.container.querySelector('pre[aria-hidden="true"]')).not.toHaveTextContent("Hello");
+  });
+
+  it("preserves browser shortcuts and dismisses the poster after keyboard seeking", async () => {
+    const user = userEvent.setup();
+    const view = render(<Terminal code="$ x" recording={{ cast, poster: "first" }} />);
+    screen.getByRole("group", { name: "Terminal recording" }).focus();
+    await user.keyboard("{Control>}k{/Control}");
+    expect(screen.getByRole("button", { name: "Play" })).toBeInTheDocument();
+    await user.keyboard("{End}{Home}");
+    expect(view.container.querySelector('button[aria-hidden="true"]')).toBeNull();
   });
 
   it("reports a recording that fails to load and keeps the transcript", async () => {
