@@ -1,0 +1,4484 @@
+{
+  "metadata": {
+    "build": {
+      "baseline": "44f6c9c",
+      "variants": [
+        {
+          "kind": "react",
+          "revision": "before",
+          "directory": "react-before"
+        },
+        {
+          "kind": "react",
+          "revision": "after",
+          "directory": "react-after"
+        },
+        {
+          "kind": "preact",
+          "revision": "before",
+          "directory": "preact-before"
+        },
+        {
+          "kind": "preact",
+          "revision": "after",
+          "directory": "preact-after"
+        }
+      ],
+      "components": [
+        {
+          "name": "sidebar",
+          "before": "f51be39050aeec5f0448152293637dcd2f966fdbdb2a046edd1b368ded500a0d",
+          "after": "93f11de65fcd2cfc0424f07dc30186f8b1a43d90121b600589737ccd294d857c"
+        },
+        {
+          "name": "code-surface",
+          "before": "f0ee6cde29778421cf39b0c84fd1549c5ecc818b5e0cd0a092287df8ef013a8f",
+          "after": "b410d2fbe6b479ab714becb429274fe1992c8b05b2f36f8cd3a5c37566193e58"
+        },
+        {
+          "name": "support-matrix",
+          "before": "8f916522c7e85dcf02efcd8bfa46c789061909bc1ae0abd8ff8a3875415eafb9",
+          "after": "9bb8d8305ba14327b3196fe07437d06e47d5d0cf5320d6ae67e6e8c1fbeb7756"
+        }
+      ],
+      "fixture": "2ca3bed48506603fed134abf20ced425dc64d82757716d912089ebea6499bc0c"
+    },
+    "samples": 7,
+    "browser": "158.0.8127.18",
+    "cpu": "Apple M5 Max",
+    "throttle": 4,
+    "viewport": {
+      "width": 900,
+      "height": 900
+    },
+    "counts": [
+      100,
+      1000
+    ],
+    "cases": [
+      "sidebar",
+      "chrome",
+      "matrix"
+    ]
+  },
+  "trials": [
+    {
+      "sample": 0,
+      "scenario": "sidebar",
+      "count": 100,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 125.467,
+      "mounted": {
+        "heap": 1825232,
+        "documents": 1,
+        "nodes": 287,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2527224,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2558716,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 0,
+      "scenario": "sidebar",
+      "count": 100,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 121.984,
+      "mounted": {
+        "heap": 1809664,
+        "documents": 1,
+        "nodes": 287,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2532008,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2565288,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 0,
+      "scenario": "sidebar",
+      "count": 100,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 88.658,
+      "mounted": {
+        "heap": 1451396,
+        "documents": 1,
+        "nodes": 286,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2119076,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2129396,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 0,
+      "scenario": "sidebar",
+      "count": 100,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 86.71,
+      "mounted": {
+        "heap": 1408176,
+        "documents": 1,
+        "nodes": 286,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2122884,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2131164,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 0,
+      "scenario": "sidebar",
+      "count": 1000,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 173.70499999999998,
+      "mounted": {
+        "heap": 2844380,
+        "documents": 1,
+        "nodes": 2727,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2801888,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2836852,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 0,
+      "scenario": "sidebar",
+      "count": 1000,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 171.44400000000002,
+      "mounted": {
+        "heap": 2644164,
+        "documents": 1,
+        "nodes": 2727,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2793288,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2827248,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 0,
+      "scenario": "sidebar",
+      "count": 1000,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 132.628,
+      "mounted": {
+        "heap": 2612716,
+        "documents": 1,
+        "nodes": 2726,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2397432,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2416956,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 0,
+      "scenario": "sidebar",
+      "count": 1000,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 124.178,
+      "mounted": {
+        "heap": 2191904,
+        "documents": 1,
+        "nodes": 2726,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2396012,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2418396,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 0,
+      "scenario": "chrome",
+      "count": 100,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 115.93199999999999,
+      "mounted": {
+        "heap": 2198716,
+        "documents": 1,
+        "nodes": 2112,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2480596,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2515940,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 0,
+      "scenario": "chrome",
+      "count": 100,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 116.93,
+      "mounted": {
+        "heap": 2048760,
+        "documents": 1,
+        "nodes": 2112,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2460504,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2492440,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 0,
+      "scenario": "chrome",
+      "count": 100,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 83.949,
+      "mounted": {
+        "heap": 1763536,
+        "documents": 1,
+        "nodes": 2111,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2073468,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2090224,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 0,
+      "scenario": "chrome",
+      "count": 100,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 79.36699999999999,
+      "mounted": {
+        "heap": 1607496,
+        "documents": 1,
+        "nodes": 2111,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2071692,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2086200,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 0,
+      "scenario": "chrome",
+      "count": 1000,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 275.82099999999997,
+      "mounted": {
+        "heap": 6556564,
+        "documents": 1,
+        "nodes": 21012,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2741296,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2771832,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 0,
+      "scenario": "chrome",
+      "count": 1000,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 276.332,
+      "mounted": {
+        "heap": 5226044,
+        "documents": 1,
+        "nodes": 21012,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2712952,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2744080,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 0,
+      "scenario": "chrome",
+      "count": 1000,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 256.295,
+      "mounted": {
+        "heap": 5975232,
+        "documents": 1,
+        "nodes": 21011,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2335380,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2351324,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 0,
+      "scenario": "chrome",
+      "count": 1000,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 239.69199999999998,
+      "mounted": {
+        "heap": 4399416,
+        "documents": 1,
+        "nodes": 21011,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2317400,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2339956,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 0,
+      "scenario": "matrix",
+      "count": 100,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 142.14499999999998,
+      "mounted": {
+        "heap": 1983208,
+        "documents": 1,
+        "nodes": 991,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2531208,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2563888,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 0,
+      "scenario": "matrix",
+      "count": 100,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 135.879,
+      "mounted": {
+        "heap": 1990724,
+        "documents": 1,
+        "nodes": 991,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2545424,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2577692,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 0,
+      "scenario": "matrix",
+      "count": 100,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 102.51100000000001,
+      "mounted": {
+        "heap": 1599488,
+        "documents": 1,
+        "nodes": 990,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2130152,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2146724,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 0,
+      "scenario": "matrix",
+      "count": 100,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 95.816,
+      "mounted": {
+        "heap": 1614180,
+        "documents": 1,
+        "nodes": 990,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2149312,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2167600,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 0,
+      "scenario": "matrix",
+      "count": 1000,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 272.74199999999996,
+      "mounted": {
+        "heap": 4116772,
+        "documents": 1,
+        "nodes": 9691,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2750092,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2787884,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 0,
+      "scenario": "matrix",
+      "count": 1000,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 276.009,
+      "mounted": {
+        "heap": 4053540,
+        "documents": 1,
+        "nodes": 9691,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2759488,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2800028,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 0,
+      "scenario": "matrix",
+      "count": 1000,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 212.489,
+      "mounted": {
+        "heap": 3937880,
+        "documents": 1,
+        "nodes": 9690,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2354560,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2377800,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 0,
+      "scenario": "matrix",
+      "count": 1000,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 211.893,
+      "mounted": {
+        "heap": 3892788,
+        "documents": 1,
+        "nodes": 9690,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2372932,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2395732,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 1,
+      "scenario": "sidebar",
+      "count": 100,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 118.733,
+      "mounted": {
+        "heap": 1813160,
+        "documents": 1,
+        "nodes": 287,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2493316,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2526596,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 1,
+      "scenario": "sidebar",
+      "count": 100,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 85.86399999999999,
+      "mounted": {
+        "heap": 1448348,
+        "documents": 1,
+        "nodes": 286,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2072956,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2083312,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 1,
+      "scenario": "sidebar",
+      "count": 100,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 85.482,
+      "mounted": {
+        "heap": 1412832,
+        "documents": 1,
+        "nodes": 286,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2084444,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2092728,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 1,
+      "scenario": "sidebar",
+      "count": 100,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 121.533,
+      "mounted": {
+        "heap": 1828728,
+        "documents": 1,
+        "nodes": 287,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2488556,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2520000,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 1,
+      "scenario": "sidebar",
+      "count": 1000,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 168.242,
+      "mounted": {
+        "heap": 2646716,
+        "documents": 1,
+        "nodes": 2727,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2753120,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2791104,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 1,
+      "scenario": "sidebar",
+      "count": 1000,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 123.53500000000001,
+      "mounted": {
+        "heap": 2608108,
+        "documents": 1,
+        "nodes": 2726,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2349220,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2368736,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 1,
+      "scenario": "sidebar",
+      "count": 1000,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 124.959,
+      "mounted": {
+        "heap": 2198936,
+        "documents": 1,
+        "nodes": 2726,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2359500,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2379008,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 1,
+      "scenario": "sidebar",
+      "count": 1000,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 167.093,
+      "mounted": {
+        "heap": 2844488,
+        "documents": 1,
+        "nodes": 2727,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2760076,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2792784,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 1,
+      "scenario": "chrome",
+      "count": 100,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 116.092,
+      "mounted": {
+        "heap": 2053148,
+        "documents": 1,
+        "nodes": 2112,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2426088,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2456680,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 1,
+      "scenario": "chrome",
+      "count": 100,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 83.193,
+      "mounted": {
+        "heap": 1764724,
+        "documents": 1,
+        "nodes": 2111,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2034700,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2051128,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 1,
+      "scenario": "chrome",
+      "count": 100,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 83.246,
+      "mounted": {
+        "heap": 1607536,
+        "documents": 1,
+        "nodes": 2111,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2031652,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2046220,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 1,
+      "scenario": "chrome",
+      "count": 100,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 117.20400000000001,
+      "mounted": {
+        "heap": 2195120,
+        "documents": 1,
+        "nodes": 2112,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2438368,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2473748,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 1,
+      "scenario": "chrome",
+      "count": 1000,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 271.969,
+      "mounted": {
+        "heap": 5225708,
+        "documents": 1,
+        "nodes": 21012,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2673868,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2705020,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 1,
+      "scenario": "chrome",
+      "count": 1000,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 249.643,
+      "mounted": {
+        "heap": 5974784,
+        "documents": 1,
+        "nodes": 21011,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2294608,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2311580,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 1,
+      "scenario": "chrome",
+      "count": 1000,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 242.313,
+      "mounted": {
+        "heap": 4402288,
+        "documents": 1,
+        "nodes": 21011,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2280492,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2299912,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 1,
+      "scenario": "chrome",
+      "count": 1000,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 286.27200000000005,
+      "mounted": {
+        "heap": 6559908,
+        "documents": 1,
+        "nodes": 21012,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2705600,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2735372,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 1,
+      "scenario": "matrix",
+      "count": 100,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 132.898,
+      "mounted": {
+        "heap": 1999804,
+        "documents": 1,
+        "nodes": 991,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2516232,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2549888,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 1,
+      "scenario": "matrix",
+      "count": 100,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 95.11999999999999,
+      "mounted": {
+        "heap": 1602656,
+        "documents": 1,
+        "nodes": 990,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2090940,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2113160,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 1,
+      "scenario": "matrix",
+      "count": 100,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 104.70599999999999,
+      "mounted": {
+        "heap": 1612892,
+        "documents": 1,
+        "nodes": 990,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2105800,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2130452,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 1,
+      "scenario": "matrix",
+      "count": 100,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 132.77,
+      "mounted": {
+        "heap": 1981420,
+        "documents": 1,
+        "nodes": 991,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2491136,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2523816,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 1,
+      "scenario": "matrix",
+      "count": 1000,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 271.354,
+      "mounted": {
+        "heap": 4055856,
+        "documents": 1,
+        "nodes": 9691,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2724336,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2765548,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 1,
+      "scenario": "matrix",
+      "count": 1000,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 226.632,
+      "mounted": {
+        "heap": 3932964,
+        "documents": 1,
+        "nodes": 9690,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2310076,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2333608,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 1,
+      "scenario": "matrix",
+      "count": 1000,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 225.902,
+      "mounted": {
+        "heap": 3892800,
+        "documents": 1,
+        "nodes": 9690,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2333324,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2356148,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 1,
+      "scenario": "matrix",
+      "count": 1000,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 268.44800000000004,
+      "mounted": {
+        "heap": 4108156,
+        "documents": 1,
+        "nodes": 9691,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2702812,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2745960,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 2,
+      "scenario": "sidebar",
+      "count": 100,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 85.367,
+      "mounted": {
+        "heap": 1448348,
+        "documents": 1,
+        "nodes": 286,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2072956,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2083312,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 2,
+      "scenario": "sidebar",
+      "count": 100,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 81.354,
+      "mounted": {
+        "heap": 1410320,
+        "documents": 1,
+        "nodes": 286,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2081932,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2090212,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 2,
+      "scenario": "sidebar",
+      "count": 100,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 118.68900000000001,
+      "mounted": {
+        "heap": 1825220,
+        "documents": 1,
+        "nodes": 287,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2485012,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2516504,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 2,
+      "scenario": "sidebar",
+      "count": 100,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 118.198,
+      "mounted": {
+        "heap": 1809664,
+        "documents": 1,
+        "nodes": 287,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2489796,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2523064,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 2,
+      "scenario": "sidebar",
+      "count": 1000,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 126.04199999999999,
+      "mounted": {
+        "heap": 2612692,
+        "documents": 1,
+        "nodes": 2726,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2353840,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2373356,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 2,
+      "scenario": "sidebar",
+      "count": 1000,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 121.20599999999999,
+      "mounted": {
+        "heap": 2199232,
+        "documents": 1,
+        "nodes": 2726,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2359796,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2379180,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 2,
+      "scenario": "sidebar",
+      "count": 1000,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 167.09799999999998,
+      "mounted": {
+        "heap": 2840944,
+        "documents": 1,
+        "nodes": 2727,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2755688,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2790512,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 2,
+      "scenario": "sidebar",
+      "count": 1000,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 167.63400000000001,
+      "mounted": {
+        "heap": 2650564,
+        "documents": 1,
+        "nodes": 2727,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2757148,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2789600,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 2,
+      "scenario": "chrome",
+      "count": 100,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 82.47500000000001,
+      "mounted": {
+        "heap": 1763592,
+        "documents": 1,
+        "nodes": 2111,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2033536,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2049964,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 2,
+      "scenario": "chrome",
+      "count": 100,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 89.387,
+      "mounted": {
+        "heap": 1604720,
+        "documents": 1,
+        "nodes": 2111,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2028836,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2043380,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 2,
+      "scenario": "chrome",
+      "count": 100,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 122.613,
+      "mounted": {
+        "heap": 2195292,
+        "documents": 1,
+        "nodes": 2112,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2438368,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2473748,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 2,
+      "scenario": "chrome",
+      "count": 100,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 113.68599999999999,
+      "mounted": {
+        "heap": 2056572,
+        "documents": 1,
+        "nodes": 2112,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2429512,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2460084,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 2,
+      "scenario": "chrome",
+      "count": 1000,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 253.471,
+      "mounted": {
+        "heap": 5975652,
+        "documents": 1,
+        "nodes": 21011,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2295584,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2311604,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 2,
+      "scenario": "chrome",
+      "count": 1000,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 239.59900000000002,
+      "mounted": {
+        "heap": 4400512,
+        "documents": 1,
+        "nodes": 21011,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2278516,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2299140,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 2,
+      "scenario": "chrome",
+      "count": 1000,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 279.587,
+      "mounted": {
+        "heap": 6556772,
+        "documents": 1,
+        "nodes": 21012,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2702208,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2733308,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 2,
+      "scenario": "chrome",
+      "count": 1000,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 277.283,
+      "mounted": {
+        "heap": 5229424,
+        "documents": 1,
+        "nodes": 21012,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2677476,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2708712,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 2,
+      "scenario": "matrix",
+      "count": 100,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 91.967,
+      "mounted": {
+        "heap": 1604272,
+        "documents": 1,
+        "nodes": 990,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2092568,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2114788,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 2,
+      "scenario": "matrix",
+      "count": 100,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 95.625,
+      "mounted": {
+        "heap": 1616020,
+        "documents": 1,
+        "nodes": 990,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2108772,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2133424,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 2,
+      "scenario": "matrix",
+      "count": 100,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 130.666,
+      "mounted": {
+        "heap": 1976696,
+        "documents": 1,
+        "nodes": 991,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2486412,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2519204,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 2,
+      "scenario": "matrix",
+      "count": 100,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 129.936,
+      "mounted": {
+        "heap": 1987216,
+        "documents": 1,
+        "nodes": 991,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2503632,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2537188,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 2,
+      "scenario": "matrix",
+      "count": 1000,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 211.113,
+      "mounted": {
+        "heap": 3937084,
+        "documents": 1,
+        "nodes": 9690,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2314268,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2337548,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 2,
+      "scenario": "matrix",
+      "count": 1000,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 217.334,
+      "mounted": {
+        "heap": 3892788,
+        "documents": 1,
+        "nodes": 9690,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2333324,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2356148,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 2,
+      "scenario": "matrix",
+      "count": 1000,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 269.989,
+      "mounted": {
+        "heap": 4110492,
+        "documents": 1,
+        "nodes": 9691,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2704808,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2746676,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 2,
+      "scenario": "matrix",
+      "count": 1000,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 271.492,
+      "mounted": {
+        "heap": 4052516,
+        "documents": 1,
+        "nodes": 9691,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2720824,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2761964,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 3,
+      "scenario": "sidebar",
+      "count": 100,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 88.44399999999999,
+      "mounted": {
+        "heap": 1412808,
+        "documents": 1,
+        "nodes": 286,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2084420,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2092760,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 3,
+      "scenario": "sidebar",
+      "count": 100,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 118.455,
+      "mounted": {
+        "heap": 1823780,
+        "documents": 1,
+        "nodes": 287,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2483848,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2515328,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 3,
+      "scenario": "sidebar",
+      "count": 100,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 114.491,
+      "mounted": {
+        "heap": 1809636,
+        "documents": 1,
+        "nodes": 287,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2489756,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2523000,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 3,
+      "scenario": "sidebar",
+      "count": 100,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 82.976,
+      "mounted": {
+        "heap": 1452988,
+        "documents": 1,
+        "nodes": 286,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2077596,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2087896,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 3,
+      "scenario": "sidebar",
+      "count": 1000,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 122.499,
+      "mounted": {
+        "heap": 2199248,
+        "documents": 1,
+        "nodes": 2726,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2359812,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2379092,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 3,
+      "scenario": "sidebar",
+      "count": 1000,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 167.00699999999998,
+      "mounted": {
+        "heap": 2840880,
+        "documents": 1,
+        "nodes": 2727,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2756436,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2790528,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 3,
+      "scenario": "sidebar",
+      "count": 1000,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 160.666,
+      "mounted": {
+        "heap": 2649144,
+        "documents": 1,
+        "nodes": 2727,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2754784,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2790864,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 3,
+      "scenario": "sidebar",
+      "count": 1000,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 125.427,
+      "mounted": {
+        "heap": 2610260,
+        "documents": 1,
+        "nodes": 2726,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2351372,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2370864,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 3,
+      "scenario": "chrome",
+      "count": 100,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 84.68299999999999,
+      "mounted": {
+        "heap": 1607536,
+        "documents": 1,
+        "nodes": 2111,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2031652,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2046220,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 3,
+      "scenario": "chrome",
+      "count": 100,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 119.582,
+      "mounted": {
+        "heap": 2206040,
+        "documents": 1,
+        "nodes": 2112,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2449116,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2483144,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 3,
+      "scenario": "chrome",
+      "count": 100,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 120.271,
+      "mounted": {
+        "heap": 2051796,
+        "documents": 1,
+        "nodes": 2112,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2424736,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2456660,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 3,
+      "scenario": "chrome",
+      "count": 100,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 86.65599999999999,
+      "mounted": {
+        "heap": 1763512,
+        "documents": 1,
+        "nodes": 2111,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2033504,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2050212,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 3,
+      "scenario": "chrome",
+      "count": 1000,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 236.66,
+      "mounted": {
+        "heap": 4399452,
+        "documents": 1,
+        "nodes": 21011,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2277372,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2297984,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 3,
+      "scenario": "chrome",
+      "count": 1000,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 280.884,
+      "mounted": {
+        "heap": 6555692,
+        "documents": 1,
+        "nodes": 21012,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2701384,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2732832,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 3,
+      "scenario": "chrome",
+      "count": 1000,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 271.55,
+      "mounted": {
+        "heap": 5229584,
+        "documents": 1,
+        "nodes": 21012,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2677384,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2708608,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 3,
+      "scenario": "chrome",
+      "count": 1000,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 258.118,
+      "mounted": {
+        "heap": 5976220,
+        "documents": 1,
+        "nodes": 21011,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2295992,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2313152,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 3,
+      "scenario": "matrix",
+      "count": 100,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 91.19099999999999,
+      "mounted": {
+        "heap": 1617812,
+        "documents": 1,
+        "nodes": 990,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2110576,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2135228,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 3,
+      "scenario": "matrix",
+      "count": 100,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 129.82,
+      "mounted": {
+        "heap": 1981520,
+        "documents": 1,
+        "nodes": 991,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2491236,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2522600,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 3,
+      "scenario": "matrix",
+      "count": 100,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 130.923,
+      "mounted": {
+        "heap": 1987216,
+        "documents": 1,
+        "nodes": 991,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2503632,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2537188,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 3,
+      "scenario": "matrix",
+      "count": 100,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 93.169,
+      "mounted": {
+        "heap": 1601508,
+        "documents": 1,
+        "nodes": 990,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2089792,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2112012,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 3,
+      "scenario": "matrix",
+      "count": 1000,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 211.895,
+      "mounted": {
+        "heap": 3889236,
+        "documents": 1,
+        "nodes": 9690,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2329808,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2352632,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 3,
+      "scenario": "matrix",
+      "count": 1000,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 272.329,
+      "mounted": {
+        "heap": 4112292,
+        "documents": 1,
+        "nodes": 9691,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2706788,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2749888,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 3,
+      "scenario": "matrix",
+      "count": 1000,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 275.06,
+      "mounted": {
+        "heap": 4051208,
+        "documents": 1,
+        "nodes": 9691,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2719660,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2760800,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 3,
+      "scenario": "matrix",
+      "count": 1000,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 216.29899999999998,
+      "mounted": {
+        "heap": 3933084,
+        "documents": 1,
+        "nodes": 9690,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2310196,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2333560,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 4,
+      "scenario": "sidebar",
+      "count": 100,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 118.76,
+      "mounted": {
+        "heap": 1823896,
+        "documents": 1,
+        "nodes": 287,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2483848,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2515340,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 4,
+      "scenario": "sidebar",
+      "count": 100,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 114.782,
+      "mounted": {
+        "heap": 1816860,
+        "documents": 1,
+        "nodes": 287,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2497016,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2530296,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 4,
+      "scenario": "sidebar",
+      "count": 100,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 86.896,
+      "mounted": {
+        "heap": 1456684,
+        "documents": 1,
+        "nodes": 286,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2081292,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2091612,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 4,
+      "scenario": "sidebar",
+      "count": 100,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 83.881,
+      "mounted": {
+        "heap": 1412860,
+        "documents": 1,
+        "nodes": 286,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2084472,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2092756,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 4,
+      "scenario": "sidebar",
+      "count": 1000,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 164.252,
+      "mounted": {
+        "heap": 2846304,
+        "documents": 1,
+        "nodes": 2727,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2761092,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2795312,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 4,
+      "scenario": "sidebar",
+      "count": 1000,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 163.937,
+      "mounted": {
+        "heap": 2644784,
+        "documents": 1,
+        "nodes": 2727,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2751188,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2785356,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 4,
+      "scenario": "sidebar",
+      "count": 1000,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 119.40599999999999,
+      "mounted": {
+        "heap": 2608116,
+        "documents": 1,
+        "nodes": 2726,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2349192,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2368700,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 4,
+      "scenario": "sidebar",
+      "count": 1000,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 118.767,
+      "mounted": {
+        "heap": 2194424,
+        "documents": 1,
+        "nodes": 2726,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2354952,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2374332,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 4,
+      "scenario": "chrome",
+      "count": 100,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 114.622,
+      "mounted": {
+        "heap": 2196928,
+        "documents": 1,
+        "nodes": 2112,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2439992,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2475372,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 4,
+      "scenario": "chrome",
+      "count": 100,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 118.58,
+      "mounted": {
+        "heap": 2048748,
+        "documents": 1,
+        "nodes": 2112,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2421616,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2452272,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 4,
+      "scenario": "chrome",
+      "count": 100,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 87.229,
+      "mounted": {
+        "heap": 1764700,
+        "documents": 1,
+        "nodes": 2111,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2034660,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2051344,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 4,
+      "scenario": "chrome",
+      "count": 100,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 83.537,
+      "mounted": {
+        "heap": 1607496,
+        "documents": 1,
+        "nodes": 2111,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2031612,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2046180,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 4,
+      "scenario": "chrome",
+      "count": 1000,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 286.186,
+      "mounted": {
+        "heap": 6557604,
+        "documents": 1,
+        "nodes": 21012,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2703296,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2732168,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 4,
+      "scenario": "chrome",
+      "count": 1000,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 276.83299999999997,
+      "mounted": {
+        "heap": 5231128,
+        "documents": 1,
+        "nodes": 21012,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2678696,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2708556,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 4,
+      "scenario": "chrome",
+      "count": 1000,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 258.12600000000003,
+      "mounted": {
+        "heap": 5975712,
+        "documents": 1,
+        "nodes": 21011,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2295612,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2311632,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 4,
+      "scenario": "chrome",
+      "count": 1000,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 239.043,
+      "mounted": {
+        "heap": 4403240,
+        "documents": 1,
+        "nodes": 21011,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2281408,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2300864,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 4,
+      "scenario": "matrix",
+      "count": 100,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 132.42499999999998,
+      "mounted": {
+        "heap": 1985136,
+        "documents": 1,
+        "nodes": 991,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2494852,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2527568,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 4,
+      "scenario": "matrix",
+      "count": 100,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 130.92000000000002,
+      "mounted": {
+        "heap": 1988156,
+        "documents": 1,
+        "nodes": 991,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2504572,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2538216,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 4,
+      "scenario": "matrix",
+      "count": 100,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 90.673,
+      "mounted": {
+        "heap": 1599488,
+        "documents": 1,
+        "nodes": 990,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2087928,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2110148,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 4,
+      "scenario": "matrix",
+      "count": 100,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 93.436,
+      "mounted": {
+        "heap": 1614016,
+        "documents": 1,
+        "nodes": 990,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2106924,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2131576,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 4,
+      "scenario": "matrix",
+      "count": 1000,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 266.368,
+      "mounted": {
+        "heap": 4109452,
+        "documents": 1,
+        "nodes": 9691,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2703136,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2747000,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 4,
+      "scenario": "matrix",
+      "count": 1000,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 270.772,
+      "mounted": {
+        "heap": 4051328,
+        "documents": 1,
+        "nodes": 9691,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2719636,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2760800,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 4,
+      "scenario": "matrix",
+      "count": 1000,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 210.07500000000002,
+      "mounted": {
+        "heap": 3937728,
+        "documents": 1,
+        "nodes": 9690,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2314856,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2338288,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 4,
+      "scenario": "matrix",
+      "count": 1000,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 213.286,
+      "mounted": {
+        "heap": 3896060,
+        "documents": 1,
+        "nodes": 9690,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2334752,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2357576,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 5,
+      "scenario": "sidebar",
+      "count": 100,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 118.39099999999999,
+      "mounted": {
+        "heap": 1822260,
+        "documents": 1,
+        "nodes": 287,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2502416,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2535696,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 5,
+      "scenario": "sidebar",
+      "count": 100,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 86.047,
+      "mounted": {
+        "heap": 1453068,
+        "documents": 1,
+        "nodes": 286,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2077676,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2087976,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 5,
+      "scenario": "sidebar",
+      "count": 100,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 85.052,
+      "mounted": {
+        "heap": 1408148,
+        "documents": 1,
+        "nodes": 286,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2079784,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2088064,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 5,
+      "scenario": "sidebar",
+      "count": 100,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 116.172,
+      "mounted": {
+        "heap": 1825992,
+        "documents": 1,
+        "nodes": 287,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2487796,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2519264,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 5,
+      "scenario": "sidebar",
+      "count": 1000,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 166.643,
+      "mounted": {
+        "heap": 2647280,
+        "documents": 1,
+        "nodes": 2727,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2753684,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2789288,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 5,
+      "scenario": "sidebar",
+      "count": 1000,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 129.155,
+      "mounted": {
+        "heap": 2609128,
+        "documents": 1,
+        "nodes": 2726,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2350204,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2369704,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 5,
+      "scenario": "sidebar",
+      "count": 1000,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 125.244,
+      "mounted": {
+        "heap": 2191520,
+        "documents": 1,
+        "nodes": 2726,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2353712,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2375580,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 5,
+      "scenario": "sidebar",
+      "count": 1000,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 185.63299999999998,
+      "mounted": {
+        "heap": 2853472,
+        "documents": 1,
+        "nodes": 2727,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2769048,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2803152,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 5,
+      "scenario": "chrome",
+      "count": 100,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 118.479,
+      "mounted": {
+        "heap": 2052212,
+        "documents": 1,
+        "nodes": 2112,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2425152,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2455724,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 5,
+      "scenario": "chrome",
+      "count": 100,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 92.277,
+      "mounted": {
+        "heap": 1768200,
+        "documents": 1,
+        "nodes": 2111,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2038176,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2054968,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 5,
+      "scenario": "chrome",
+      "count": 100,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 89.907,
+      "mounted": {
+        "heap": 1607536,
+        "documents": 1,
+        "nodes": 2111,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2031652,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2046220,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 5,
+      "scenario": "chrome",
+      "count": 100,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 131.62099999999998,
+      "mounted": {
+        "heap": 2195248,
+        "documents": 1,
+        "nodes": 2112,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2438396,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2472436,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 5,
+      "scenario": "chrome",
+      "count": 1000,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 305.079,
+      "mounted": {
+        "heap": 5229328,
+        "documents": 1,
+        "nodes": 21012,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2677384,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2708632,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 5,
+      "scenario": "chrome",
+      "count": 1000,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 282.874,
+      "mounted": {
+        "heap": 5975708,
+        "documents": 1,
+        "nodes": 21011,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2295568,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2311612,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 5,
+      "scenario": "chrome",
+      "count": 1000,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 269.018,
+      "mounted": {
+        "heap": 4399452,
+        "documents": 1,
+        "nodes": 21011,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2277572,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2297076,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 5,
+      "scenario": "chrome",
+      "count": 1000,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 314.50899999999996,
+      "mounted": {
+        "heap": 6561872,
+        "documents": 1,
+        "nodes": 21012,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2699212,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2730332,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 5,
+      "scenario": "matrix",
+      "count": 100,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 153.82299999999998,
+      "mounted": {
+        "heap": 1988204,
+        "documents": 1,
+        "nodes": 991,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2504620,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2536836,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 5,
+      "scenario": "matrix",
+      "count": 100,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 108.13799999999999,
+      "mounted": {
+        "heap": 1606980,
+        "documents": 1,
+        "nodes": 990,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2095264,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2117484,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 5,
+      "scenario": "matrix",
+      "count": 100,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 104.45,
+      "mounted": {
+        "heap": 1617800,
+        "documents": 1,
+        "nodes": 990,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2110564,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2135216,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 5,
+      "scenario": "matrix",
+      "count": 100,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 146.08599999999998,
+      "mounted": {
+        "heap": 1976748,
+        "documents": 1,
+        "nodes": 991,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2486452,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2519256,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 5,
+      "scenario": "matrix",
+      "count": 1000,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 301.65999999999997,
+      "mounted": {
+        "heap": 4053772,
+        "documents": 1,
+        "nodes": 9691,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2722112,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2761936,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 5,
+      "scenario": "matrix",
+      "count": 1000,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 227.913,
+      "mounted": {
+        "heap": 3934428,
+        "documents": 1,
+        "nodes": 9690,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2310212,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2333560,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 5,
+      "scenario": "matrix",
+      "count": 1000,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 241.12800000000001,
+      "mounted": {
+        "heap": 3889044,
+        "documents": 1,
+        "nodes": 9690,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2329604,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2352428,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 5,
+      "scenario": "matrix",
+      "count": 1000,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 298.95300000000003,
+      "mounted": {
+        "heap": 4112972,
+        "documents": 1,
+        "nodes": 9691,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2707500,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2750648,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 6,
+      "scenario": "sidebar",
+      "count": 100,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 99.36,
+      "mounted": {
+        "heap": 1452988,
+        "documents": 1,
+        "nodes": 286,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2077572,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2087864,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 6,
+      "scenario": "sidebar",
+      "count": 100,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 103.422,
+      "mounted": {
+        "heap": 1408176,
+        "documents": 1,
+        "nodes": 286,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2079812,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2088092,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 6,
+      "scenario": "sidebar",
+      "count": 100,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 147.203,
+      "mounted": {
+        "heap": 1825232,
+        "documents": 1,
+        "nodes": 287,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2485000,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2516504,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 6,
+      "scenario": "sidebar",
+      "count": 100,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 142.63899999999998,
+      "mounted": {
+        "heap": 1813160,
+        "documents": 1,
+        "nodes": 287,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2493316,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2526564,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 6,
+      "scenario": "sidebar",
+      "count": 1000,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 149.86599999999999,
+      "mounted": {
+        "heap": 2610244,
+        "documents": 1,
+        "nodes": 2726,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2351356,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2372500,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 6,
+      "scenario": "sidebar",
+      "count": 1000,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 143.894,
+      "mounted": {
+        "heap": 2192060,
+        "documents": 1,
+        "nodes": 2726,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2352588,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2374336,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 6,
+      "scenario": "sidebar",
+      "count": 1000,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 198.357,
+      "mounted": {
+        "heap": 2848148,
+        "documents": 1,
+        "nodes": 2727,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2762912,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2797704,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 6,
+      "scenario": "sidebar",
+      "count": 1000,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 191.384,
+      "mounted": {
+        "heap": 2645420,
+        "documents": 1,
+        "nodes": 2727,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2751232,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2787592,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 6,
+      "scenario": "chrome",
+      "count": 100,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 91.547,
+      "mounted": {
+        "heap": 1764724,
+        "documents": 1,
+        "nodes": 2111,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2034700,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2051408,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 6,
+      "scenario": "chrome",
+      "count": 100,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 87.847,
+      "mounted": {
+        "heap": 1607536,
+        "documents": 1,
+        "nodes": 2111,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2031652,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2046220,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 6,
+      "scenario": "chrome",
+      "count": 100,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 125.09600000000002,
+      "mounted": {
+        "heap": 2193512,
+        "documents": 1,
+        "nodes": 2112,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2436672,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2470712,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 6,
+      "scenario": "chrome",
+      "count": 100,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 123.809,
+      "mounted": {
+        "heap": 2050676,
+        "documents": 1,
+        "nodes": 2112,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2423628,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2455516,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 6,
+      "scenario": "chrome",
+      "count": 1000,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 277.737,
+      "mounted": {
+        "heap": 5974600,
+        "documents": 1,
+        "nodes": 21011,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2294648,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2310668,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 6,
+      "scenario": "chrome",
+      "count": 1000,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 278.71299999999997,
+      "mounted": {
+        "heap": 4399252,
+        "documents": 1,
+        "nodes": 21011,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2277372,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2296912,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 6,
+      "scenario": "chrome",
+      "count": 1000,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 305.34299999999996,
+      "mounted": {
+        "heap": 6558256,
+        "documents": 1,
+        "nodes": 21012,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2703936,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2735456,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 6,
+      "scenario": "chrome",
+      "count": 1000,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 288.018,
+      "mounted": {
+        "heap": 5229644,
+        "documents": 1,
+        "nodes": 21012,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2677344,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2708752,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 6,
+      "scenario": "matrix",
+      "count": 100,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 98.078,
+      "mounted": {
+        "heap": 1600652,
+        "documents": 1,
+        "nodes": 990,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2089092,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2111312,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 6,
+      "scenario": "matrix",
+      "count": 100,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 103.123,
+      "mounted": {
+        "heap": 1612852,
+        "documents": 1,
+        "nodes": 990,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2105760,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2130412,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 6,
+      "scenario": "matrix",
+      "count": 100,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 145.35899999999998,
+      "mounted": {
+        "heap": 1985072,
+        "documents": 1,
+        "nodes": 991,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2494788,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2527592,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 6,
+      "scenario": "matrix",
+      "count": 100,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 140.118,
+      "mounted": {
+        "heap": 1987152,
+        "documents": 1,
+        "nodes": 991,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2503580,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2537224,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 6,
+      "scenario": "matrix",
+      "count": 1000,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 222.517,
+      "mounted": {
+        "heap": 3933164,
+        "documents": 1,
+        "nodes": 9690,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2310212,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2333728,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 6,
+      "scenario": "matrix",
+      "count": 1000,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 229.048,
+      "mounted": {
+        "heap": 3894632,
+        "documents": 1,
+        "nodes": 9690,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2333324,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2356148,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 6,
+      "scenario": "matrix",
+      "count": 1000,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 297.993,
+      "mounted": {
+        "heap": 4113004,
+        "documents": 1,
+        "nodes": 9691,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2707500,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2750684,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 6,
+      "scenario": "matrix",
+      "count": 1000,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 281.675,
+      "mounted": {
+        "heap": 4055756,
+        "documents": 1,
+        "nodes": 9691,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2724360,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2764196,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 158
+      }
+    }
+  ],
+  "artifacts": {
+    "sidebar-1000-preact-before.png": "f85f08a0dbcaa5e7fdbb522fc8d377ff3cab38965cfdcedd8f8e6f0e4466d35c",
+    "matrix-100-react-before.png": "d6aa5e549d40b4b8bbf6d75c055d44deb2372c83963fc0dc0739e4ada5a90004",
+    "chrome-100-react-before.html": "0f0fc7f16b00bb94839311dad0296830f56cad89fcc66432354d82d69c19ff69",
+    "matrix-1000-react-before.html": "03446f292e187794a796ffbb30d9f2d6ca924099a081ac7820a868febaa6c9e1",
+    "chrome-1000-preact-before.png": "4aeedade4ba10a95268d33b1b1305eef1ac9e04a66df18bb02e195481a0337c8",
+    "chrome-1000-preact-after.png": "4aeedade4ba10a95268d33b1b1305eef1ac9e04a66df18bb02e195481a0337c8",
+    "sidebar-100-react-before.png": "f85f08a0dbcaa5e7fdbb522fc8d377ff3cab38965cfdcedd8f8e6f0e4466d35c",
+    "chrome-1000-react-before.png": "4aeedade4ba10a95268d33b1b1305eef1ac9e04a66df18bb02e195481a0337c8",
+    "sidebar-100-preact-after.png": "f85f08a0dbcaa5e7fdbb522fc8d377ff3cab38965cfdcedd8f8e6f0e4466d35c",
+    "chrome-100-preact-after.html": "63a8dac19c8fe1cf2a4343059898d46b3cdd8b53b8c0191a2faa06442ef5b324",
+    "matrix-1000-preact-after.html": "9f2b1162daa930d3d89c6af68a6b933a7cf1b359a982fd65a686a937405708ce",
+    "matrix-100-preact-after.png": "d6aa5e549d40b4b8bbf6d75c055d44deb2372c83963fc0dc0739e4ada5a90004",
+    "sidebar-100-react-after.png": "f85f08a0dbcaa5e7fdbb522fc8d377ff3cab38965cfdcedd8f8e6f0e4466d35c",
+    "chrome-100-react-before.png": "4aeedade4ba10a95268d33b1b1305eef1ac9e04a66df18bb02e195481a0337c8",
+    "matrix-1000-preact-before.html": "9f2b1162daa930d3d89c6af68a6b933a7cf1b359a982fd65a686a937405708ce",
+    "sidebar-1000-react-before.png": "f85f08a0dbcaa5e7fdbb522fc8d377ff3cab38965cfdcedd8f8e6f0e4466d35c",
+    "matrix-1000-react-after.html": "03446f292e187794a796ffbb30d9f2d6ca924099a081ac7820a868febaa6c9e1",
+    "matrix-100-preact-before.png": "d6aa5e549d40b4b8bbf6d75c055d44deb2372c83963fc0dc0739e4ada5a90004",
+    "sidebar-100-preact-after.html": "f32fe02dbc0bc4b8cba31d320fa49044bc24b6953ce142fc85a1becbaaae707e",
+    "matrix-100-preact-before.html": "b993c977721c795a25d07438ecf76b734a32657ed60923a08861543af0807e5a",
+    "sidebar-100-react-before.html": "0b28ab0e1d49cc18485972ca4911b4a5b857a669579fba86b7595ee73f6d44de",
+    "chrome-100-preact-after.png": "4aeedade4ba10a95268d33b1b1305eef1ac9e04a66df18bb02e195481a0337c8",
+    "chrome-1000-preact-before.html": "a9a5c4e59e5b1d8e003722359fbe2525a5bb179c9bec74964d490fd4364b3b42",
+    "sidebar-1000-preact-after.png": "f85f08a0dbcaa5e7fdbb522fc8d377ff3cab38965cfdcedd8f8e6f0e4466d35c",
+    "matrix-100-react-after.png": "d6aa5e549d40b4b8bbf6d75c055d44deb2372c83963fc0dc0739e4ada5a90004",
+    "matrix-100-react-after.html": "14867bfbf31b424c9c912b5d5fdfe5853f269b407f0ed1654bc2da46f8cfb9cc",
+    "sidebar-1000-preact-after.html": "5e0d8b5cc83cfaeb4b25e156acd1ff82b385f8b0e46abe2cf8e9d2153c464bd9",
+    "chrome-1000-react-after.png": "4aeedade4ba10a95268d33b1b1305eef1ac9e04a66df18bb02e195481a0337c8",
+    "sidebar-100-react-after.html": "0b28ab0e1d49cc18485972ca4911b4a5b857a669579fba86b7595ee73f6d44de",
+    "chrome-1000-preact-after.html": "a9a5c4e59e5b1d8e003722359fbe2525a5bb179c9bec74964d490fd4364b3b42",
+    "chrome-1000-react-after.html": "3e77a8f759cd5572309c42f96f17bdd7cb954d0fd72b5fee78c71d822e760a0d",
+    "chrome-100-react-after.png": "4aeedade4ba10a95268d33b1b1305eef1ac9e04a66df18bb02e195481a0337c8",
+    "sidebar-1000-react-before.html": "65506e52dd0cb0945e28bccf998e49928d87b1f56ab8584f80a297ed050acedf",
+    "matrix-1000-preact-before.png": "6c06a3207c02521c1cdb378074566cf03e182235da3e8bfeedd8d7e7c970297a",
+    "chrome-100-preact-before.png": "4aeedade4ba10a95268d33b1b1305eef1ac9e04a66df18bb02e195481a0337c8",
+    "chrome-1000-react-before.html": "3e77a8f759cd5572309c42f96f17bdd7cb954d0fd72b5fee78c71d822e760a0d",
+    "sidebar-1000-react-after.html": "65506e52dd0cb0945e28bccf998e49928d87b1f56ab8584f80a297ed050acedf",
+    "chrome-100-preact-before.html": "63a8dac19c8fe1cf2a4343059898d46b3cdd8b53b8c0191a2faa06442ef5b324",
+    "matrix-1000-react-before.png": "6c06a3207c02521c1cdb378074566cf03e182235da3e8bfeedd8d7e7c970297a",
+    "sidebar-1000-react-after.png": "f85f08a0dbcaa5e7fdbb522fc8d377ff3cab38965cfdcedd8f8e6f0e4466d35c",
+    "chrome-100-react-after.html": "0f0fc7f16b00bb94839311dad0296830f56cad89fcc66432354d82d69c19ff69",
+    "sidebar-100-preact-before.html": "f32fe02dbc0bc4b8cba31d320fa49044bc24b6953ce142fc85a1becbaaae707e",
+    "matrix-1000-react-after.png": "6c06a3207c02521c1cdb378074566cf03e182235da3e8bfeedd8d7e7c970297a",
+    "matrix-100-preact-after.html": "b993c977721c795a25d07438ecf76b734a32657ed60923a08861543af0807e5a",
+    "sidebar-100-preact-before.png": "f85f08a0dbcaa5e7fdbb522fc8d377ff3cab38965cfdcedd8f8e6f0e4466d35c",
+    "sidebar-1000-preact-before.html": "5e0d8b5cc83cfaeb4b25e156acd1ff82b385f8b0e46abe2cf8e9d2153c464bd9",
+    "matrix-1000-preact-after.png": "6c06a3207c02521c1cdb378074566cf03e182235da3e8bfeedd8d7e7c970297a",
+    "matrix-100-react-before.html": "14867bfbf31b424c9c912b5d5fdfe5853f269b407f0ed1654bc2da46f8cfb9cc"
+  }
+}

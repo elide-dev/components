@@ -2,6 +2,8 @@
 
 The [optimization round](./OPTIMIZATION.md) records paired CPU/memory results
 for the shared React/Preact code renderer and direct Lit logo sizing.
+The [catalog follow-up](./CATALOG.md) covers navigation, code-surface chrome,
+clipboard cleanup, rejected experiments, and the terminal help-viewer fix.
 
 Compare static SVG, the current React logo, Preact/compat, direct Lit, and the React-to-Lit
 adapter using isolated production builds. This measures the logo adoption cost;

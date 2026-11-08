@@ -1,0 +1,484 @@
+{
+  "rows": [
+    {
+      "scenario": "sidebar",
+      "kind": "react",
+      "count": 100,
+      "metric": "startupMs",
+      "before": {
+        "median": 119.059,
+        "p75": 122.59200000000001,
+        "min": 117.622,
+        "max": 209.885
+      },
+      "after": {
+        "median": 119.004,
+        "p75": 120.987,
+        "min": 117.26899999999999,
+        "max": 122.376
+      },
+      "changePercent": 0,
+      "regression": false
+    },
+    {
+      "scenario": "sidebar",
+      "kind": "react",
+      "count": 100,
+      "metric": "heapBytes",
+      "before": {
+        "median": 1826736,
+        "p75": 1828728,
+        "min": 1822068,
+        "max": 1832356
+      },
+      "after": {
+        "median": 1810396,
+        "p75": 1814888,
+        "min": 1808452,
+        "max": 1822240
+      },
+      "changePercent": -0.9,
+      "regression": false
+    },
+    {
+      "scenario": "sidebar",
+      "kind": "react",
+      "count": 100,
+      "metric": "nodes",
+      "before": {
+        "median": 287,
+        "p75": 287,
+        "min": 287,
+        "max": 287
+      },
+      "after": {
+        "median": 287,
+        "p75": 287,
+        "min": 287,
+        "max": 287
+      },
+      "changePercent": 0,
+      "regression": false
+    },
+    {
+      "scenario": "sidebar",
+      "kind": "preact",
+      "count": 100,
+      "metric": "startupMs",
+      "before": {
+        "median": 86.101,
+        "p75": 87.105,
+        "min": 83.221,
+        "max": 87.377
+      },
+      "after": {
+        "median": 86.248,
+        "p75": 89.872,
+        "min": 84.638,
+        "max": 90.144
+      },
+      "changePercent": 0.2,
+      "regression": false
+    },
+    {
+      "scenario": "sidebar",
+      "kind": "preact",
+      "count": 100,
+      "metric": "heapBytes",
+      "before": {
+        "median": 1448348,
+        "p75": 1453068,
+        "min": 1448348,
+        "max": 1453068
+      },
+      "after": {
+        "median": 1411040,
+        "p75": 1412668,
+        "min": 1407984,
+        "max": 1412668
+      },
+      "changePercent": -2.6,
+      "regression": false
+    },
+    {
+      "scenario": "sidebar",
+      "kind": "preact",
+      "count": 100,
+      "metric": "nodes",
+      "before": {
+        "median": 286,
+        "p75": 286,
+        "min": 286,
+        "max": 286
+      },
+      "after": {
+        "median": 286,
+        "p75": 286,
+        "min": 286,
+        "max": 286
+      },
+      "changePercent": 0,
+      "regression": false
+    },
+    {
+      "scenario": "sidebar",
+      "kind": "react",
+      "count": 1000,
+      "metric": "startupMs",
+      "before": {
+        "median": 175.582,
+        "p75": 180.12,
+        "min": 166.572,
+        "max": 182.23700000000002
+      },
+      "after": {
+        "median": 172.244,
+        "p75": 173.346,
+        "min": 166.80100000000002,
+        "max": 175.928
+      },
+      "changePercent": -1.9,
+      "regression": false
+    },
+    {
+      "scenario": "sidebar",
+      "kind": "react",
+      "count": 1000,
+      "metric": "heapBytes",
+      "before": {
+        "median": 2842776,
+        "p75": 2844556,
+        "min": 2839608,
+        "max": 2848136
+      },
+      "after": {
+        "median": 2644560,
+        "p75": 2653968,
+        "min": 2642244,
+        "max": 2656284
+      },
+      "changePercent": -7,
+      "regression": false
+    },
+    {
+      "scenario": "sidebar",
+      "kind": "react",
+      "count": 1000,
+      "metric": "nodes",
+      "before": {
+        "median": 2727,
+        "p75": 2727,
+        "min": 2727,
+        "max": 2727
+      },
+      "after": {
+        "median": 2727,
+        "p75": 2727,
+        "min": 2727,
+        "max": 2727
+      },
+      "changePercent": 0,
+      "regression": false
+    },
+    {
+      "scenario": "sidebar",
+      "kind": "preact",
+      "count": 1000,
+      "metric": "startupMs",
+      "before": {
+        "median": 127.03,
+        "p75": 128.62199999999999,
+        "min": 123.942,
+        "max": 129.964
+      },
+      "after": {
+        "median": 124.389,
+        "p75": 124.958,
+        "min": 121.171,
+        "max": 125.01899999999999
+      },
+      "changePercent": -2.1,
+      "regression": false
+    },
+    {
+      "scenario": "sidebar",
+      "kind": "preact",
+      "count": 1000,
+      "metric": "heapBytes",
+      "before": {
+        "median": 2609240,
+        "p75": 2610256,
+        "min": 2608144,
+        "max": 2615308
+      },
+      "after": {
+        "median": 2196364,
+        "p75": 2198796,
+        "min": 2194044,
+        "max": 2208176
+      },
+      "changePercent": -15.8,
+      "regression": false
+    },
+    {
+      "scenario": "sidebar",
+      "kind": "preact",
+      "count": 1000,
+      "metric": "nodes",
+      "before": {
+        "median": 2726,
+        "p75": 2726,
+        "min": 2726,
+        "max": 2726
+      },
+      "after": {
+        "median": 2726,
+        "p75": 2726,
+        "min": 2726,
+        "max": 2726
+      },
+      "changePercent": 0,
+      "regression": false
+    },
+    {
+      "scenario": "chrome",
+      "kind": "react",
+      "count": 100,
+      "metric": "startupMs",
+      "before": {
+        "median": 119.25800000000001,
+        "p75": 125.278,
+        "min": 116.448,
+        "max": 129.67999999999998
+      },
+      "after": {
+        "median": 117.718,
+        "p75": 127.96,
+        "min": 116.006,
+        "max": 129.53
+      },
+      "changePercent": -1.3,
+      "regression": false
+    },
+    {
+      "scenario": "chrome",
+      "kind": "react",
+      "count": 100,
+      "metric": "heapBytes",
+      "before": {
+        "median": 2194408,
+        "p75": 2196132,
+        "min": 2192160,
+        "max": 2196980
+      },
+      "after": {
+        "median": 2053476,
+        "p75": 2053476,
+        "min": 2050684,
+        "max": 2057024
+      },
+      "changePercent": -6.4,
+      "regression": false
+    },
+    {
+      "scenario": "chrome",
+      "kind": "react",
+      "count": 100,
+      "metric": "nodes",
+      "before": {
+        "median": 2112,
+        "p75": 2112,
+        "min": 2112,
+        "max": 2112
+      },
+      "after": {
+        "median": 2112,
+        "p75": 2112,
+        "min": 2112,
+        "max": 2112
+      },
+      "changePercent": 0,
+      "regression": false
+    },
+    {
+      "scenario": "chrome",
+      "kind": "preact",
+      "count": 100,
+      "metric": "startupMs",
+      "before": {
+        "median": 84.34,
+        "p75": 86.995,
+        "min": 80.991,
+        "max": 93.60799999999999
+      },
+      "after": {
+        "median": 86.948,
+        "p75": 89.548,
+        "min": 82.60900000000001,
+        "max": 91.369
+      },
+      "changePercent": 3.1,
+      "regression": false
+    },
+    {
+      "scenario": "chrome",
+      "kind": "preact",
+      "count": 100,
+      "metric": "heapBytes",
+      "before": {
+        "median": 1766532,
+        "p75": 1768192,
+        "min": 1763504,
+        "max": 1768192
+      },
+      "after": {
+        "median": 1607332,
+        "p75": 1607372,
+        "min": 1602692,
+        "max": 1607632
+      },
+      "changePercent": -9,
+      "regression": false
+    },
+    {
+      "scenario": "chrome",
+      "kind": "preact",
+      "count": 100,
+      "metric": "nodes",
+      "before": {
+        "median": 2111,
+        "p75": 2111,
+        "min": 2111,
+        "max": 2111
+      },
+      "after": {
+        "median": 2111,
+        "p75": 2111,
+        "min": 2111,
+        "max": 2111
+      },
+      "changePercent": 0,
+      "regression": false
+    },
+    {
+      "scenario": "chrome",
+      "kind": "react",
+      "count": 1000,
+      "metric": "startupMs",
+      "before": {
+        "median": 291.846,
+        "p75": 320.113,
+        "min": 288.153,
+        "max": 327.594
+      },
+      "after": {
+        "median": 285.452,
+        "p75": 300.625,
+        "min": 274.032,
+        "max": 320.218
+      },
+      "changePercent": -2.2,
+      "regression": false
+    },
+    {
+      "scenario": "chrome",
+      "kind": "react",
+      "count": 1000,
+      "metric": "heapBytes",
+      "before": {
+        "median": 6556564,
+        "p75": 6556616,
+        "min": 6553384,
+        "max": 6556628
+      },
+      "after": {
+        "median": 5227928,
+        "p75": 5230452,
+        "min": 5225840,
+        "max": 5231944
+      },
+      "changePercent": -20.3,
+      "regression": false
+    },
+    {
+      "scenario": "chrome",
+      "kind": "react",
+      "count": 1000,
+      "metric": "nodes",
+      "before": {
+        "median": 21012,
+        "p75": 21012,
+        "min": 21012,
+        "max": 21012
+      },
+      "after": {
+        "median": 21012,
+        "p75": 21012,
+        "min": 21012,
+        "max": 21012
+      },
+      "changePercent": 0,
+      "regression": false
+    },
+    {
+      "scenario": "chrome",
+      "kind": "preact",
+      "count": 1000,
+      "metric": "startupMs",
+      "before": {
+        "median": 262.77099999999996,
+        "p75": 264.43100000000004,
+        "min": 253.843,
+        "max": 277.02900000000005
+      },
+      "after": {
+        "median": 255.90400000000002,
+        "p75": 267.21,
+        "min": 241.004,
+        "max": 275.225
+      },
+      "changePercent": -2.6,
+      "regression": false
+    },
+    {
+      "scenario": "chrome",
+      "kind": "preact",
+      "count": 1000,
+      "metric": "heapBytes",
+      "before": {
+        "median": 5975248,
+        "p75": 5975272,
+        "min": 5974560,
+        "max": 5975272
+      },
+      "after": {
+        "median": 4399292,
+        "p75": 4402920,
+        "min": 4398128,
+        "max": 4403244
+      },
+      "changePercent": -26.4,
+      "regression": false
+    },
+    {
+      "scenario": "chrome",
+      "kind": "preact",
+      "count": 1000,
+      "metric": "nodes",
+      "before": {
+        "median": 21011,
+        "p75": 21011,
+        "min": 21011,
+        "max": 21011
+      },
+      "after": {
+        "median": 21011,
+        "p75": 21011,
+        "min": 21011,
+        "max": 21011
+      },
+      "changePercent": 0,
+      "regression": false
+    }
+  ]
+}

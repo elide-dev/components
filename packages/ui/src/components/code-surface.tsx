@@ -36,48 +36,41 @@ export function CodeSurface({ raised = false, chrome = "auto", tone = "dark", cl
   );
 }
 
-const glyph = "block size-[0.6875rem] shrink-0";
-
+// Shared immutable native markup: no IDs, hooks, refs or handlers to isolate.
 /** macOS traffic lights. Decorative. */
-function MacControls() {
-  return (
-    <span aria-hidden className="eld-chrome-mac items-center gap-[0.4375rem]">
-      <span className={cn(glyph, "rounded-full bg-[var(--code-chrome-close)]")} />
-      <span className={cn(glyph, "rounded-full bg-[var(--code-chrome-minimize)]")} />
-      <span className={cn(glyph, "rounded-full bg-[var(--code-chrome-zoom)]")} />
-    </span>
-  );
-}
+const macControls = (
+  <span aria-hidden className="eld-chrome-mac items-center gap-[0.4375rem]">
+    <span className="block size-[0.6875rem] shrink-0 rounded-full bg-[var(--code-chrome-close)]" />
+    <span className="block size-[0.6875rem] shrink-0 rounded-full bg-[var(--code-chrome-minimize)]" />
+    <span className="block size-[0.6875rem] shrink-0 rounded-full bg-[var(--code-chrome-zoom)]" />
+  </span>
+);
 
 /** Windows minimize / maximize / close. Decorative. */
-function WindowsControls() {
-  return (
-    <span aria-hidden className="eld-chrome-windows items-center gap-4 text-[var(--code-control-foreground)]">
-      <svg viewBox="0 0 10 10" className="size-2.5 shrink-0" fill="none" stroke="currentColor" strokeWidth="1">
-        <path d="M0 5.5h10" />
-      </svg>
-      <svg viewBox="0 0 10 10" className="size-2.5 shrink-0" fill="none" stroke="currentColor" strokeWidth="1">
-        <rect x="0.5" y="0.5" width="9" height="9" />
-      </svg>
-      <svg viewBox="0 0 10 10" className="size-2.5 shrink-0" fill="none" stroke="currentColor" strokeWidth="1">
-        <path d="M0.5 0.5l9 9M9.5 0.5l-9 9" />
-      </svg>
-    </span>
-  );
-}
+const windowsControls = (
+  <span aria-hidden className="eld-chrome-windows items-center gap-4 text-[var(--code-control-foreground)]">
+    <svg viewBox="0 0 10 10" className="size-2.5 shrink-0" fill="none" stroke="currentColor" strokeWidth="1">
+      <path d="M0 5.5h10" />
+    </svg>
+    <svg viewBox="0 0 10 10" className="size-2.5 shrink-0" fill="none" stroke="currentColor" strokeWidth="1">
+      <rect x="0.5" y="0.5" width="9" height="9" />
+    </svg>
+    <svg viewBox="0 0 10 10" className="size-2.5 shrink-0" fill="none" stroke="currentColor" strokeWidth="1">
+      <path d="M0.5 0.5l9 9M9.5 0.5l-9 9" />
+    </svg>
+  </span>
+);
 
 /** GNOME (Adwaita) close button. Decorative. */
-function LinuxControls() {
-  return (
-    <span aria-hidden className="eld-chrome-linux items-center">
-      <span className="flex size-[1.125rem] items-center justify-center rounded-full bg-[var(--code-control-hover)] text-[var(--code-control-foreground)]">
-        <svg viewBox="0 0 10 10" className="size-2" fill="none" stroke="currentColor" strokeWidth="1.5">
-          <path d="M1.5 1.5l7 7M8.5 1.5l-7 7" />
-        </svg>
-      </span>
+const linuxControls = (
+  <span aria-hidden className="eld-chrome-linux items-center">
+    <span className="flex size-[1.125rem] items-center justify-center rounded-full bg-[var(--code-control-hover)] text-[var(--code-control-foreground)]">
+      <svg viewBox="0 0 10 10" className="size-2" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <path d="M1.5 1.5l7 7M8.5 1.5l-7 7" />
+      </svg>
     </span>
-  );
-}
+  </span>
+);
 
 export interface CodeSurfaceTitleBarProps {
   /** Centered label (filename, `user@host: cwd`, …). */
@@ -105,14 +98,14 @@ export function CodeSurfaceTitleBar({ title, actions, chrome = "auto", className
       )}
       style={codeSurfaceElevStyle}
     >
-      <div className="flex min-w-0 items-center">{mac ? <MacControls /> : null}</div>
+      <div className="flex min-w-0 items-center">{mac ? macControls : null}</div>
       <div className="min-w-0 truncate text-center font-mono text-[0.78125rem] tracking-wide text-[var(--code-title-foreground)]">
         {typeof title === "string" ? <bdi>{title}</bdi> : title}
       </div>
       <div className="flex min-w-0 items-center justify-end gap-2">
         {actions}
-        {chrome === "auto" || chrome === "windows" ? <WindowsControls /> : null}
-        {chrome === "auto" || chrome === "linux" ? <LinuxControls /> : null}
+        {chrome === "auto" || chrome === "windows" ? windowsControls : null}
+        {chrome === "auto" || chrome === "linux" ? linuxControls : null}
       </div>
     </div>
   );

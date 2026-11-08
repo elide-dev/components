@@ -2,6 +2,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi } from "vitest";
 import { Sidebar, SidebarGroup, SidebarItem, SectionSwitcher } from "./sidebar";
+import { MessagesProvider } from "../i18n/provider";
 
 const sections = [
   { id: "start", title: "Start", subtitle: "Get running in minutes" },
@@ -52,6 +53,22 @@ describe("SidebarItem", () => {
 });
 
 describe("SidebarGroup", () => {
+  it("updates localized row labels and preserves focused links when the group rerenders", () => {
+    const items = [{ label: "Ready", href: "#ready" }, { label: "Later", comingSoon: true }];
+    const view = render(<MessagesProvider messages={{ sidebar: { comingSoon: "Soon" } }}>
+      <SidebarGroup label="Guides" items={items} />
+    </MessagesProvider>);
+    const link = screen.getByRole("link", { name: "Ready" });
+    link.focus();
+    view.rerender(<MessagesProvider messages={{ sidebar: { comingSoon: "Bientôt" } }}>
+      <SidebarGroup label="Guides" items={items} />
+    </MessagesProvider>);
+    expect(screen.getByText("Bientôt")).toBeInTheDocument();
+    expect(screen.queryByText("Soon")).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Ready" })).toBe(link);
+    expect(document.activeElement).toBe(link);
+  });
+
   it("renders its label and every item", () => {
     render(
       <SidebarGroup

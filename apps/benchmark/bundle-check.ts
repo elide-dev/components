@@ -26,8 +26,10 @@ const splitDir = mkdtempSync(join(tmpdir(), "elide-bundle-"));
 try {
   for (const [name, exported, budget, forbidden, label] of [
     ["code-block", "CodeBlock", 24_000, /codeToTokensBase|Unsupported asciicast version/, "Shiki or the terminal runtime (Shiki loads lazily)"],
-    // 31 KB: VT, shell tokenizer, recording player (incl. marker controls) and adaptive chrome.
-    ["terminal", "Terminal", 31_000, /codeToTokensBase/, "Shiki"],
+    // 31.1 KB: includes fixed-cell positioning for faithful TUI playback.
+    // The fidelity fix measured 31,028 B; keep a reviewed 100 B allowance rather
+    // than flattening row boundaries that increased retained React heap.
+    ["terminal", "Terminal", 31_100, /codeToTokensBase/, "Shiki"],
     ["code-sample", "CodeSample", 25_000, /codeToTokensBase|Unsupported asciicast version/, "a code surface it does not render"],
     ["code-group", "CodeGroup", 25_000, /codeToTokensBase|Unsupported asciicast version/, "a code surface it does not render"],
     ["shiki", "Shiki runtime (lazy)", 64_000, /typescript\/lib/, "the TypeScript compiler (Twoslash stays a build-time peer)"],
