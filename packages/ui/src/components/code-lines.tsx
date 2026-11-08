@@ -6,8 +6,8 @@ import { DRAWN } from "../lib/terminal-glyphs";
 import { tokenStyleToCss } from "../lib/token-style";
 
 /** Token text; on a terminal, box-drawing and block characters become drawn cells. */
-function TokenText({ text, draw }: { text: string; draw: boolean }) {
-  if (!draw || !DRAWN.test(text)) return <>{text}</>;
+function tokenText(text: string, draw: boolean): React.ReactNode {
+  if (!draw || !DRAWN.test(text)) return text;
   const parts: React.ReactNode[] = [];
   let run = "";
   for (const ch of text) {
@@ -24,25 +24,27 @@ function TokenText({ text, draw }: { text: string; draw: boolean }) {
     );
   }
   if (run) parts.push(run);
-  return <>{parts}</>;
+  return parts;
 }
 
-function Token({ token, links, draw }: { token: CodeToken; links: boolean; draw: boolean }) {
+// Tokens have no state or lifecycle. Render their native nodes directly rather
+// than retaining two component instances per token in large code surfaces.
+function renderToken(token: CodeToken, links: boolean, draw: boolean, key: number) {
   const style = tokenStyleToCss(token.style);
   // A terminal cell's background fills the whole row, as the grid does, not just the glyph box.
   const own = token.cursor ? "eld-terminal-cursor" : token.style?.className;
   const className = draw && token.style?.background && !token.cursor ? (own ? `${own} eld-cell-bg` : "eld-cell-bg") : own;
-  const text = <TokenText text={token.text} draw={draw} />;
+  const text = tokenText(token.text, draw);
   if (token.href && links) {
     return (
-      <a href={token.href} className={className ? `eld-code-link ${className}` : "eld-code-link"} style={style} rel="noreferrer">
+      <a key={key} href={token.href} className={className ? `eld-code-link ${className}` : "eld-code-link"} style={style} rel="noreferrer">
         {text}
       </a>
     );
   }
-  if (!style && !className) return text;
+  if (!style && !className) return <React.Fragment key={key}>{text}</React.Fragment>;
   return (
-    <span className={className} style={style}>
+    <span key={key} className={className} style={style}>
       {text}
     </span>
   );
@@ -89,7 +91,7 @@ function LineTokens({
     return (
       <>
         {withColumns(tokens).map(({ token, column }) => (
-          <Token key={column} token={token} links={links} draw={draw} />
+          renderToken(token, links, draw, column)
         ))}
       </>
     );
@@ -97,7 +99,7 @@ function LineTokens({
   return (
     <>
       {segmentLine(tokens, inline).map(({ column, pieces, decoration }) => {
-        const children = pieces.map((piece) => <Token key={piece.column} token={piece.token} links={links && !decoration} draw={draw} />);
+        const children = pieces.map((piece) => renderToken(piece.token, links && !decoration, draw, piece.column));
         if (!decoration) return <React.Fragment key={column}>{children}</React.Fragment>;
         return (
           <InlineWrapper key={column} decoration={decoration} id={decoration.kind === "hover" ? hoverId?.(decoration) : undefined}>

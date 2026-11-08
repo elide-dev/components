@@ -10,7 +10,9 @@
     "build:perf": "node perf/build.mjs",
     "perf": "node perf/run.mjs",
     "test:perf": "node perf/budgets.test.mjs && node perf/check.mjs",
-    "perf:gate": "node perf/gate.mjs"
+    "perf:gate": "node perf/gate.mjs",
+    "build:code-perf": "node perf/code-build.mjs",
+    "perf:code": "node perf/code-run.mjs"
   },
   "dependencies": {
     "@elide/elements": "workspace:*",

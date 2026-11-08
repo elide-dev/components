@@ -52,8 +52,6 @@ export class ElideLogoElement extends LitElement {
     :host([hidden]) { display: none; }
     .frame {
       display: block;
-      height: var(--eld-logo-height, var(--_height));
-      width: calc(var(--eld-logo-height, var(--_height)) * var(--_aspect));
     }
     svg, img { display: block; height: 100%; width: 100%; }
     .light { display: var(--eld-brand-light-display, block); }
@@ -73,7 +71,12 @@ export class ElideLogoElement extends LitElement {
     const width = explicitHeight ? Math.round(height * aspect * 100) / 100
       : height * (format === 'svg' ? aspect : BASE_SIZE[form].width / BASE_SIZE[form].height);
     return html`<span part="artwork" class="frame"
-      style=${styleMap({ '--_height': `${height}px`, '--_aspect': String(width / height) })}
+      style=${styleMap({
+        // Private inherited variables invalidate descendant styles on every
+        // resize. Keep sizing local while preserving the public CSS override.
+        height: `var(--eld-logo-height, ${height}px)`,
+        width: `calc(var(--eld-logo-height, ${height}px) * ${width / height})`,
+      })}
       role=${this.decorative ? nothing : 'img'}
       aria-label=${this.decorative ? nothing : this.accessibleLabel}
       aria-hidden=${this.decorative ? 'true' : nothing}>

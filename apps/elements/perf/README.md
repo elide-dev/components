@@ -1,5 +1,8 @@
 # Logo performance benchmark
 
+The [optimization round](./OPTIMIZATION.md) records paired CPU/memory results
+for the shared React/Preact code renderer and direct Lit logo sizing.
+
 Compare static SVG, the current React logo, Preact/compat, direct Lit, and the React-to-Lit
 adapter using isolated production builds. This measures the logo adoption cost;
 it does not establish performance for playback, menus, or the whole catalog.
