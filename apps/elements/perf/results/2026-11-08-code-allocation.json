@@ -1,0 +1,1452 @@
+{
+  "metadata": {
+    "browser": "158.0.8127.18",
+    "cpu": "Apple M5 Max",
+    "throttle": 4,
+    "samples": 7,
+    "commit": "4a3bf0cd02180a7015f05719866f2baa07a5d6ba",
+    "dirty": true,
+    "build": {
+      "baseline": "4a3bf0cd02180a7015f05719866f2baa07a5d6ba",
+      "variants": [
+        {
+          "kind": "react",
+          "revision": "before",
+          "directory": "react-before"
+        },
+        {
+          "kind": "react",
+          "revision": "after",
+          "directory": "react-after"
+        },
+        {
+          "kind": "preact",
+          "revision": "before",
+          "directory": "preact-before"
+        },
+        {
+          "kind": "preact",
+          "revision": "after",
+          "directory": "preact-after"
+        }
+      ],
+      "sourceHashes": {
+        "before": "912a9b69ec065d443eda6c4f6938daa84cc26fb60f6847a3289920e84c7f4be4",
+        "after": "ae7b5afc91ef768ed9de7c6200d17071ed6913aa8ef6d2e0bb4d49109382e09c"
+      },
+      "fixtureHash": "94212d83b265014b8588b4deb1ef61e2acdc43598058dcb7c73af25568d9464c",
+      "cssHash": "cbc29dee65523308a32225cce602dda97a82ac7d27bcbac124b00c1c36da6b51"
+    },
+    "viewport": {
+      "width": 900,
+      "height": 900
+    },
+    "counts": [
+      100,
+      1000
+    ],
+    "tokensPerRow": 12
+  },
+  "trials": [
+    {
+      "sample": 0,
+      "count": 100,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 110.25699999999999,
+      "mounted": {
+        "heap": 1663796,
+        "documents": 1,
+        "nodes": 2115,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2023652,
+        "documents": 1,
+        "nodes": 14,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2251436,
+        "documents": 1,
+        "nodes": 14,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 0,
+      "count": 100,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 108.455,
+      "mounted": {
+        "heap": 1661028,
+        "documents": 1,
+        "nodes": 2115,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2021464,
+        "documents": 1,
+        "nodes": 14,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2246960,
+        "documents": 1,
+        "nodes": 14,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 0,
+      "count": 100,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 73.762,
+      "mounted": {
+        "heap": 1367108,
+        "documents": 1,
+        "nodes": 2114,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 1625412,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 1676116,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 0,
+      "count": 100,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 75.051,
+      "mounted": {
+        "heap": 1364348,
+        "documents": 1,
+        "nodes": 2114,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 1624012,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 1672908,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 0,
+      "count": 1000,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 267.053,
+      "mounted": {
+        "heap": 5285388,
+        "documents": 1,
+        "nodes": 21015,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2462992,
+        "documents": 1,
+        "nodes": 14,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2679600,
+        "documents": 1,
+        "nodes": 14,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 0,
+      "count": 1000,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 265.53700000000003,
+      "mounted": {
+        "heap": 5265756,
+        "documents": 1,
+        "nodes": 21015,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2459456,
+        "documents": 1,
+        "nodes": 14,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2675840,
+        "documents": 1,
+        "nodes": 14,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 0,
+      "count": 1000,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 322.973,
+      "mounted": {
+        "heap": 5916776,
+        "documents": 1,
+        "nodes": 21014,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2054600,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2110596,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 0,
+      "count": 1000,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 310.907,
+      "mounted": {
+        "heap": 5914644,
+        "documents": 1,
+        "nodes": 21014,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2057820,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2107152,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 1,
+      "count": 100,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 144.984,
+      "mounted": {
+        "heap": 1661028,
+        "documents": 1,
+        "nodes": 2115,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 1997928,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2223056,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 1,
+      "count": 100,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 87.98400000000001,
+      "mounted": {
+        "heap": 1367108,
+        "documents": 1,
+        "nodes": 2114,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 1602832,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 1654748,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 1,
+      "count": 100,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 91.50999999999999,
+      "mounted": {
+        "heap": 1364312,
+        "documents": 1,
+        "nodes": 2114,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 1601396,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 1651124,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 1,
+      "count": 100,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 125.12200000000001,
+      "mounted": {
+        "heap": 1663796,
+        "documents": 1,
+        "nodes": 2115,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2000116,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2226760,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 1,
+      "count": 1000,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 277.46,
+      "mounted": {
+        "heap": 5265640,
+        "documents": 1,
+        "nodes": 21015,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2444772,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2660844,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 1,
+      "count": 1000,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 259.248,
+      "mounted": {
+        "heap": 5916776,
+        "documents": 1,
+        "nodes": 21014,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2040924,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2097852,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 1,
+      "count": 1000,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 243.826,
+      "mounted": {
+        "heap": 5913676,
+        "documents": 1,
+        "nodes": 21014,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2043276,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2093348,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 1,
+      "count": 1000,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 266.25,
+      "mounted": {
+        "heap": 5285344,
+        "documents": 1,
+        "nodes": 21015,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2448364,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2664492,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 2,
+      "count": 100,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 81.095,
+      "mounted": {
+        "heap": 1367144,
+        "documents": 1,
+        "nodes": 2114,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 1602868,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 1655164,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 2,
+      "count": 100,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 79.749,
+      "mounted": {
+        "heap": 1364312,
+        "documents": 1,
+        "nodes": 2114,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 1601396,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 1651504,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 2,
+      "count": 100,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 115.887,
+      "mounted": {
+        "heap": 1663796,
+        "documents": 1,
+        "nodes": 2115,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 1999340,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2226016,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 2,
+      "count": 100,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 121.021,
+      "mounted": {
+        "heap": 1661036,
+        "documents": 1,
+        "nodes": 2115,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 1997936,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2222352,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 2,
+      "count": 1000,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 264.816,
+      "mounted": {
+        "heap": 5916920,
+        "documents": 1,
+        "nodes": 21014,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2040960,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2097852,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 2,
+      "count": 1000,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 216.923,
+      "mounted": {
+        "heap": 5914664,
+        "documents": 1,
+        "nodes": 21014,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2044164,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2093340,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 2,
+      "count": 1000,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 235.288,
+      "mounted": {
+        "heap": 5285384,
+        "documents": 1,
+        "nodes": 21015,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2448404,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2663604,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 2,
+      "count": 1000,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 238.47099999999998,
+      "mounted": {
+        "heap": 5265696,
+        "documents": 1,
+        "nodes": 21015,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2444840,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2660768,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 3,
+      "count": 100,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 68.175,
+      "mounted": {
+        "heap": 1364312,
+        "documents": 1,
+        "nodes": 2114,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 1601396,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 1651504,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 3,
+      "count": 100,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 100.179,
+      "mounted": {
+        "heap": 1663780,
+        "documents": 1,
+        "nodes": 2115,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 1999336,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2227104,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 3,
+      "count": 100,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 97.571,
+      "mounted": {
+        "heap": 1661028,
+        "documents": 1,
+        "nodes": 2115,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 1997928,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2224216,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 3,
+      "count": 100,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 64.584,
+      "mounted": {
+        "heap": 1367144,
+        "documents": 1,
+        "nodes": 2114,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 1602868,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 1654724,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 3,
+      "count": 1000,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 215.118,
+      "mounted": {
+        "heap": 5913576,
+        "documents": 1,
+        "nodes": 21014,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2043184,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2093956,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 3,
+      "count": 1000,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 241.15900000000002,
+      "mounted": {
+        "heap": 5285464,
+        "documents": 1,
+        "nodes": 21015,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2448516,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2663780,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 3,
+      "count": 1000,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 264.283,
+      "mounted": {
+        "heap": 5265716,
+        "documents": 1,
+        "nodes": 21015,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2444860,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2660064,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 3,
+      "count": 1000,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 260.878,
+      "mounted": {
+        "heap": 5916816,
+        "documents": 1,
+        "nodes": 21014,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2040964,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2095752,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 4,
+      "count": 100,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 142.463,
+      "mounted": {
+        "heap": 1663804,
+        "documents": 1,
+        "nodes": 2115,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 1999360,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2226792,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 4,
+      "count": 100,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 144.057,
+      "mounted": {
+        "heap": 1661028,
+        "documents": 1,
+        "nodes": 2115,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 1997928,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2223412,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 4,
+      "count": 100,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 97.954,
+      "mounted": {
+        "heap": 1367108,
+        "documents": 1,
+        "nodes": 2114,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 1602832,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 1654688,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 4,
+      "count": 100,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 88.42899999999999,
+      "mounted": {
+        "heap": 1364312,
+        "documents": 1,
+        "nodes": 2114,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 1601396,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 1651124,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 4,
+      "count": 1000,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 283.71299999999997,
+      "mounted": {
+        "heap": 5285288,
+        "documents": 1,
+        "nodes": 21015,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2448308,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2664588,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 4,
+      "count": 1000,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 387.68399999999997,
+      "mounted": {
+        "heap": 5265504,
+        "documents": 1,
+        "nodes": 21015,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2444840,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2660844,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 4,
+      "count": 1000,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 333.05899999999997,
+      "mounted": {
+        "heap": 5916780,
+        "documents": 1,
+        "nodes": 21014,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2040920,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2095708,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 4,
+      "count": 1000,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 317.094,
+      "mounted": {
+        "heap": 5914624,
+        "documents": 1,
+        "nodes": 21014,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2044116,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2093192,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 5,
+      "count": 100,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 144.94099999999997,
+      "mounted": {
+        "heap": 1660816,
+        "documents": 1,
+        "nodes": 2115,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 1997888,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2222316,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 5,
+      "count": 100,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 101.255,
+      "mounted": {
+        "heap": 1367108,
+        "documents": 1,
+        "nodes": 2114,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 1602832,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 1655128,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 5,
+      "count": 100,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 89.21,
+      "mounted": {
+        "heap": 1364348,
+        "documents": 1,
+        "nodes": 2114,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 1601432,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 1651540,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 5,
+      "count": 100,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 136.11599999999999,
+      "mounted": {
+        "heap": 1663796,
+        "documents": 1,
+        "nodes": 2115,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 1999352,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2226040,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 5,
+      "count": 1000,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 310.26599999999996,
+      "mounted": {
+        "heap": 5265772,
+        "documents": 1,
+        "nodes": 21015,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2445680,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2660752,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 5,
+      "count": 1000,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 299.739,
+      "mounted": {
+        "heap": 5916880,
+        "documents": 1,
+        "nodes": 21014,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2040920,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2095832,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 5,
+      "count": 1000,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 313.572,
+      "mounted": {
+        "heap": 5914068,
+        "documents": 1,
+        "nodes": 21014,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2043704,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2092136,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 5,
+      "count": 1000,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 336.77299999999997,
+      "mounted": {
+        "heap": 5285384,
+        "documents": 1,
+        "nodes": 21015,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2448404,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2664568,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 6,
+      "count": 100,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 111.609,
+      "mounted": {
+        "heap": 1367108,
+        "documents": 1,
+        "nodes": 2114,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 1602832,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 1655128,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 6,
+      "count": 100,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 100.963,
+      "mounted": {
+        "heap": 1364348,
+        "documents": 1,
+        "nodes": 2114,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 1601432,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 1651540,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 6,
+      "count": 100,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 156.21599999999998,
+      "mounted": {
+        "heap": 1663796,
+        "documents": 1,
+        "nodes": 2115,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 1999352,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2226780,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 6,
+      "count": 100,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 161.36700000000002,
+      "mounted": {
+        "heap": 1661028,
+        "documents": 1,
+        "nodes": 2115,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 1997928,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2223096,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 6,
+      "count": 1000,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 359.738,
+      "mounted": {
+        "heap": 5916740,
+        "documents": 1,
+        "nodes": 21014,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2040888,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2097652,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 6,
+      "count": 1000,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 357.276,
+      "mounted": {
+        "heap": 5913696,
+        "documents": 1,
+        "nodes": 21014,
+        "jsEventListeners": 0
+      },
+      "empty": {
+        "heap": 2043304,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2092048,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 6,
+      "count": 1000,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 344.775,
+      "mounted": {
+        "heap": 5285212,
+        "documents": 1,
+        "nodes": 21015,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2448384,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2663724,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 6,
+      "count": 1000,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 336.842,
+      "mounted": {
+        "heap": 5265716,
+        "documents": 1,
+        "nodes": 21015,
+        "jsEventListeners": 145
+      },
+      "empty": {
+        "heap": 2444860,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 2660068,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      }
+    }
+  ]
+}

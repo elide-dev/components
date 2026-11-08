@@ -1,6 +1,7 @@
 import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { CastRenderer } from "../lib/asciicast";
 import { Terminal } from "./terminal";
 
 const ESC = "\x1b";
@@ -115,6 +116,17 @@ describe("Terminal — rows, wrapping, links and chrome", () => {
 });
 
 describe("Terminal — recordings", () => {
+  it("skips height-probing screens with explicit rows while preserving the transcript", () => {
+    const probe = vi.spyOn(CastRenderer.prototype, "screen");
+    try {
+      const { container } = render(<Terminal code="$ elide run app.ts" recording={{ cast, rows: 6 }} />);
+      // Only the displayed poster is requested; no height-sampling timeline.
+      expect(probe).toHaveBeenCalled();
+      expect(probe.mock.calls.every(([time]) => time === 1)).toBe(true);
+      expect(container.querySelector("pre.sr-only")).toHaveTextContent("Hello from Elide!");
+    } finally { probe.mockRestore(); }
+  });
+
   it("renders the final frame as a poster, with a transcript for assistive tech", () => {
     const { container } = render(<Terminal code={"$ elide run app.ts"} recording={{ cast }} />);
     const screenPre = container.querySelector('[data-slot="terminal-recording"] pre[aria-hidden="true"]')!;

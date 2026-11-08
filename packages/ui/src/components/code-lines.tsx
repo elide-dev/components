@@ -1,7 +1,7 @@
 import * as React from "react";
 import type { CodeInsights, CodeLine, CodeToken, InlineDecoration, LineDecoration, LineDecorationKind } from "../lib/code-model";
 import { decorationCovers } from "../lib/code-model";
-import { segmentLine, withColumns } from "../lib/segments";
+import { segmentLine } from "../lib/segments";
 import { DRAWN } from "../lib/terminal-glyphs";
 import { tokenStyleToCss } from "../lib/token-style";
 
@@ -97,13 +97,12 @@ function LineTokens({
   hoverId?: (decoration: InlineDecoration) => string;
 }) {
   if (!inline.length) {
-    return (
-      <>
-        {withColumns(tokens).map(({ token, column }) => (
-          renderToken(token, links, draw, column)
-        ))}
-      </>
-    );
+    let column = 0;
+    return <>{tokens.map((token) => {
+      const node = renderToken(token, links, draw, column);
+      column += token.text.length;
+      return node;
+    })}</>;
   }
   return (
     <>
@@ -275,6 +274,9 @@ function RowBadges({ badges }: { badges: readonly CodeAnnotationBadge[] }) {
   );
 }
 
+const NO_BADGES: readonly CodeAnnotationBadge[] = [];
+const NO_INLINE: readonly InlineDecoration[] = [];
+
 interface RowProps {
   line: CodeLine;
   index: number;
@@ -287,8 +289,8 @@ interface RowProps {
 /** One grid row: `[marks] [number] [prompt] [content]`, plus optional overlays and action. */
 function CodeRow({ line, index, number, hottest, props }: RowProps) {
   const { "data-share": share, ...attributes } = rowAttributes(line, number, hottest, props);
-  const badges = props.annotations?.filter((annotation) => annotation.line === number) ?? [];
-  const lineInline = props.inline?.filter((decoration) => decoration.line === number) ?? [];
+  const badges = props.annotations?.filter((annotation) => annotation.line === number) ?? NO_BADGES;
+  const lineInline = props.inline?.filter((decoration) => decoration.line === number) ?? NO_INLINE;
   return (
     <span className="eld-line" {...attributes}>
       {props.lineNumbers && props.lineLinks ? <LineNumberLink prefix={props.lineLinks} number={number} label={props.lineLabel?.(number) ?? String(number)} /> : null}

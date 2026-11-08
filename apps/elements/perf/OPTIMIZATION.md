@@ -79,3 +79,25 @@ UI lint/i18n checks, and logo parity/SSR/hydration in Chromium, Firefox and WebK
 The production code fixture checks hydration, selection, highlighting and
 offscreen playback suspension across all three engines. Layout Shift observation
 is enforced in Chromium; unsupported engines are explicitly not certified for it.
+
+## Follow-up: shared code rendering and explicit recording height
+
+The undecorated token path now computes positional keys while rendering, removing
+an intermediate array and one temporary object per token. Rows without inline
+decorations or annotation badges reuse immutable empty arrays. Component and DOM
+boundaries remain intact. This applies to CodeBlock, Terminal and CodeScene.
+
+Seven paired trials against `4a3bf0c` preserve exact HTML/PNG output and warmed
+DOM/document/listener cleanup. At 1,000 lines, mounted React heap falls from
+5,285,384 to 5,265,716 B; Preact falls from 5,916,780 to 5,914,068 B.
+This is a small incremental saving. Startup ranges overlap widely, so there is
+no demonstrated CPU improvement. [Raw results](./results/2026-11-08-code-allocation.json)
+and [summary](./results/2026-11-08-code-allocation-summary.json).
+
+The recording player also skips its automatic height scan when `rows` is supplied.
+That removes up to 25 full screen snapshots and their sequential VT replay during
+initial preparation; the final transcript snapshot remains for accessibility.
+Without explicit rows, existing sampled height detection is preserved. A lifecycle
+regression test verifies that only the poster time is requested with explicit rows,
+and that the accessible transcript still contains the recording's output.
+This operation-count reduction is not a measured playback FPS or CPU percentage.

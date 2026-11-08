@@ -73,11 +73,11 @@ function isCast(value: unknown): value is Cast {
  * Tallest content (rows) a cast produces, sampled across its timeline, plus
  * its final transcript. Sampling is capped so long casts stay cheap.
  */
-function measure(cast: Cast): { rows: number; transcript: string } {
+function measure(cast: Cast, explicitRows?: number): { rows: number; transcript: string } {
   const probe = new CastRenderer(cast);
-  let rows = 1;
+  let rows = explicitRows ?? 1;
   const samples = Math.min(24, Math.max(1, cast.events.length));
-  for (let i = 0; i <= samples; i++) {
+  for (let i = 0; explicitRows === undefined && i <= samples; i++) {
     const screen = probe.screen((cast.duration * i) / samples);
     let last = screen.lines.length - 1;
     while (last >= 0 && screen.lines[last].tokens.every((token) => !token.text.trim())) last--;
@@ -365,7 +365,7 @@ export function TerminalRecording({ source, script, prompt, fallback }: Terminal
   const [requested, setRequested] = React.useState(false);
   const { cast, failed, loading } = useCast(options, script, prompt, viewport.near || requested);
   const renderer = React.useMemo(() => cast && new CastRenderer(cast), [cast]);
-  const measured = React.useMemo(() => cast && measure(cast), [cast]);
+  const measured = React.useMemo(() => cast && measure(cast, options.rows), [cast, options.rows]);
   const posterTime = posterTimeFor(cast, poster);
   const markers = React.useMemo(() => cast?.markers ?? [], [cast]);
   const cues = React.useMemo(() => markers.map((marker) => marker.time), [markers]);
