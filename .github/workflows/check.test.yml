@@ -15,11 +15,11 @@ jobs:
       contents: read
     steps:
       - name: "Setup: Harden Runner"
-        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        uses: step-security/harden-runner@1d88384fd173af6ecb012dfd0264a306b711241a # v2.22.4
         with:
           egress-policy: audit
       - name: "Setup: Checkout"
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - name: "Setup: Workspace"
@@ -44,14 +44,14 @@ jobs:
           files: packages/ui/test-report.junit.xml,apps/storybook/test-report.junit.xml
           token: ${{ secrets.CODECOV_TOKEN }}
       - name: "Coverage: Upload ui-unit (jsdom) to Codecov"
-        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
         with:
           files: packages/ui/coverage/lcov.info
           flags: ui-unit
           fail_ci_if_error: false
           token: ${{ secrets.CODECOV_TOKEN }}
       - name: "Coverage: Upload ui-browser (Storybook) to Codecov"
-        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
         with:
           files: apps/storybook/coverage/lcov.info
           flags: ui-browser
