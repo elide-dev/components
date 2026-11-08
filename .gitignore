@@ -14,3 +14,6 @@ coverage/
 # Local performance audit artifacts
 apps/benchmark/lighthouse*.json
 apps/benchmark/.profiles/
+
+# Local logo performance measurements and heap snapshots
+apps/elements/.profiles/

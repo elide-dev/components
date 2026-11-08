@@ -1,0 +1,132 @@
+{
+  "metadata": {
+    "date": "2026-11-08T19:08:28.070Z",
+    "commit": "03006fc8c02d4aa3de26658bfdcf1d7802073e1a",
+    "dirty": true,
+    "browser": "158.0.8127.18",
+    "os": "darwin 25.6.0 arm64",
+    "cpuModel": "Apple M5 Max",
+    "options": {
+      "samples": 5,
+      "counts": [
+        1,
+        100,
+        1000
+      ],
+      "steps": 20,
+      "cycles": 100,
+      "cpu": 4,
+      "trace": false,
+      "viewport": {
+        "width": 900,
+        "height": 900
+      }
+    },
+    "cache": "New context and disabled HTTP cache per trial; browser process and OS caches may be warm",
+    "network": "Local HTTP without network throttling; compressed sizes are calculated separately per resource",
+    "notes": "Logo microbenchmark, not INP or a playback result. Static update driver is test-injected. CDP heap sampling is a separate instrumented pass. CPU slowdown does not model mobile GPU/memory."
+  },
+  "bundles": {
+    "description": "Independent production builds. JS includes benchmark driver and full runtime; identical minimal CSS is inline in HTML. Compression is per resource, not a network measurement.",
+    "variants": {
+      "react": {
+        "js": [
+          {
+            "file": "entry.js",
+            "raw": 260949,
+            "gzip": 80774,
+            "brotli": 69388
+          }
+        ],
+        "html": {
+          "raw": 591,
+          "gzip": 384,
+          "brotli": 273
+        },
+        "inlineCSS": {
+          "raw": 314,
+          "gzip": 210,
+          "brotli": 161
+        }
+      },
+      "lit": {
+        "js": [
+          {
+            "file": "entry.js",
+            "raw": 30284,
+            "gzip": 10596,
+            "brotli": 9318
+          }
+        ],
+        "html": {
+          "raw": 591,
+          "gzip": 384,
+          "brotli": 273
+        },
+        "inlineCSS": {
+          "raw": 314,
+          "gzip": 210,
+          "brotli": 161
+        }
+      },
+      "adapter": {
+        "js": [
+          {
+            "file": "entry.js",
+            "raw": 251733,
+            "gzip": 79275,
+            "brotli": 68056
+          }
+        ],
+        "html": {
+          "raw": 591,
+          "gzip": 384,
+          "brotli": 273
+        },
+        "inlineCSS": {
+          "raw": 314,
+          "gzip": 210,
+          "brotli": 161
+        }
+      },
+      "static": {
+        "js": [],
+        "html": {
+          "1": {
+            "raw": 6928,
+            "gzip": 2374,
+            "brotli": 1981
+          },
+          "100": {
+            "raw": 639133,
+            "gzip": 7185,
+            "brotli": 2448
+          },
+          "1000": {
+            "raw": 6387433,
+            "gzip": 47368,
+            "brotli": 5517
+          }
+        },
+        "inlineCSS": {
+          "raw": 314,
+          "gzip": 210,
+          "brotli": 161
+        }
+      }
+    }
+  },
+  "sourceFilesSHA256": {
+    "perf/browser.mjs": "da0883fac7bf84f441a130191103232321c2c4e9ca1d8f63b32553f20f9d7e6b",
+    "perf/build.mjs": "eb1217b193fbe4bbdfc27282c9cda2e79db061ac3d5364024afaf6748d4c98d6",
+    "perf/check.mjs": "6b5be1f79398e95ee69d8c60e0936dced088172c2dab3bb48c3716422cfaa259",
+    "perf/run.mjs": "7b3451a53db1bf7caf9c7bb3bfd0eda52bc57634a8d8338679131b2c2e7a1cf1",
+    "perf/summarize.mjs": "db41712fe595332417404cfacca90ce6c1c9c8c1c65225c2c7bae61181c5666e",
+    "src/perf/adapter.tsx": "257e47464f74d1187f0cb9092beb69aa4b42c3dff413504b0064601167cc362a",
+    "src/perf/driver.ts": "a512ad7b9c57a7a2c2eda848ad8e399ef84e83aa096d9b5958c0384953900202",
+    "src/perf/lit.ts": "e946e04f0152d8f9df48f054d1e6fa723b5437f88f17beaf2075fa35a4502935",
+    "src/perf/react-driver.tsx": "359e5306e2b32851394132868313a7abff803d0bb2bc3a5ffb11f47bf3f6da50",
+    "src/perf/react.tsx": "4db74fcb0948be9dc3bbd5276227b6d39a31b1cf3c87f58a0186f5fbb42e22af"
+  },
+  "exportNote": "Scalar trial fields exported to CSV. Per-instance diagnostic height/color arrays remain in the local raw run; no timing or memory trials were omitted."
+}

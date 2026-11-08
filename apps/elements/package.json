@@ -5,8 +5,11 @@
   "type": "module",
   "scripts": {
     "build": "node build.mjs",
-    "test": "node check.mjs",
-    "lint": "tsc --noEmit"
+    "test": "node check.mjs && node perf/check.mjs",
+    "lint": "tsc --noEmit",
+    "build:perf": "node perf/build.mjs",
+    "perf": "node perf/run.mjs",
+    "test:perf": "node perf/check.mjs"
   },
   "dependencies": {
     "@elide/elements": "workspace:*",

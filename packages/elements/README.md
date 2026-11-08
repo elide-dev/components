@@ -119,6 +119,11 @@ exercise the other installed Playwright engines. `bun run test:preact` verifies
 adapter property updates in the existing Preact client/hydration fixture.
 Storybook's `Brand/ElideLogoElement` stories provide the visual review surface.
 
+The [performance harness](../../apps/elements/perf/README.md) independently builds
+static SVG, React, Lit, and React-adapter consumers. It measures startup, local
+and bulk updates, CSS theme changes, idle activity, sampled allocations, and
+retained memory. Run its timed measurements separately from correctness tests.
+
 This is the logo vertical slice. CopyCommand, playback, generated custom-element
 manifests, and broader migration remain subsequent work in the
 [architecture](../../docs/web-components-architecture.md). No CPU or memory
