@@ -31,6 +31,9 @@ export interface TokenStyle {
 
 export interface CodeToken {
   text: string;
+  /** VT cell position/advance, present on positioned recording snapshots. */
+  column?: number;
+  columns?: number;
   style?: TokenStyle;
   /** The terminal cursor sits on this token (always a single cell). */
   cursor?: boolean;

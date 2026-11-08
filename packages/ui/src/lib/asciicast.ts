@@ -251,7 +251,7 @@ export class CastRenderer {
   screen(time: number): TerminalScreen {
     const terminal = this.at(time);
     if (this.cached?.index === this.index) return this.cached.screen;
-    const screen = terminal.snapshot({ scrollback: false });
+    const screen = terminal.snapshot({ scrollback: false, positioned: true });
     this.cached = { index: this.index, screen };
     return screen;
   }

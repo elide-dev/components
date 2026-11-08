@@ -9,6 +9,7 @@
  * sequences never leak into the rendered text. No DOM, so it runs during SSR.
  */
 import type { CodeLine, CodeToken, TokenStyle } from "./code-model";
+import { DRAWN } from "./terminal-glyphs";
 
 /** 0–255 palette index, or a `#rrggbb` truecolor. */
 type Color = number | string;
@@ -59,6 +60,8 @@ export interface SnapshotOptions {
   trim?: boolean;
   /** Mark the cursor cell with `CodeToken.cursor` when visible (default true). */
   cursor?: boolean;
+  /** Preserve exact VT columns and separate drawn cells for recording playback. */
+  positioned?: boolean;
 }
 
 export interface TerminalOptions {
@@ -757,13 +760,16 @@ function fromState(s: TerminalState): VirtualTerminal {
     moveTo(s.x, s.y);
   }
 
-  function rowToLine(row: Row, cursorCol: number | undefined): CodeLine {
+  function rowToLine(row: Row, cursorCol: number | undefined, positioned = false): CodeLine {
     const tokens: CodeToken[] = [];
     let text = "";
     let attr: Attr | undefined;
+    let start = 0;
+    let end = 0;
     const flush = () => {
       if (text) {
         const token: CodeToken = attr === undefined || attr === DEFAULT_ATTR ? { text } : withStyle({ text }, toStyle(attr));
+        if (positioned) { token.column = start; token.columns = end - start; }
         if (attr?.href) token.href = attr.href;
         tokens.push(token);
       }
@@ -776,9 +782,12 @@ function fromState(s: TerminalState): VirtualTerminal {
     for (let x = 0; x < length; x++) {
       const cell = cells[x] ?? BLANK;
       if (cell.ch === "") continue;
-      if (x === col) {
+      if (x === col || (positioned && cell.ch.length === 1 && DRAWN.test(cell.ch))) {
         flush();
-        tokens.push(withStyle({ text: cell.ch, cursor: true }, toStyle(cell.attr)));
+        const token: CodeToken = { text: cell.ch };
+        if (x === col) token.cursor = true;
+        if (positioned) { token.column = x; token.columns = cell.wide ? 2 : 1; }
+        tokens.push(withStyle(token, toStyle(cell.attr)));
         attr = undefined;
         continue;
       }
@@ -786,6 +795,8 @@ function fromState(s: TerminalState): VirtualTerminal {
         flush();
         attr = cell.attr;
       }
+      if (!text) start = x;
+      end = x + (cell.wide ? 2 : 1);
       text += cell.ch;
     }
     flush();
@@ -798,8 +809,8 @@ function fromState(s: TerminalState): VirtualTerminal {
     const showCursor = (options.cursor ?? true) && s.cursorVisible;
     const viewport = screen();
     const lines = [
-      ...above.map((row) => rowToLine(row, undefined)),
-      ...viewport.map((row, y) => rowToLine(row, showCursor && y === s.y ? s.x : undefined)),
+      ...above.map((row) => rowToLine(row, undefined, options.positioned)),
+      ...viewport.map((row, y) => rowToLine(row, showCursor && y === s.y ? s.x : undefined, options.positioned)),
     ];
     const cursorRow = above.length + s.y;
     if (options.trim) {

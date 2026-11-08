@@ -34,6 +34,15 @@ function renderToken(token: CodeToken, links: boolean, draw: boolean, key: numbe
   // A terminal cell's background fills the whole row, as the grid does, not just the glyph box.
   const own = token.cursor ? "eld-terminal-cursor" : token.style?.className;
   const className = draw && token.style?.background && !token.cursor ? (own ? `${own} eld-cell-bg` : "eld-cell-bg") : own;
+  if (draw && token.column !== undefined && token.columns !== undefined) {
+    const glyph = token.text.length === 1 && DRAWN.test(token.text);
+    const positionedStyle = { ...style, insetInlineStart: `${token.column}ch`,
+      inlineSize: glyph ? undefined : `${token.columns}ch` };
+    const positionedClass = `eld-terminal-cell${className ? ` ${className}` : ''}${glyph ? ' eld-glyph' : ''}`;
+    // The VT owns cell widths, including wide graphemes. Position runs at their
+    // recorded columns so ANSI segmentation and glyph rounding cannot move art.
+    return <span key={key} className={positionedClass} style={positionedStyle} data-glyph={glyph ? token.text : undefined}>{token.text}</span>;
+  }
   const text = tokenText(token.text, draw);
   if (token.href && links) {
     return (
@@ -140,6 +149,8 @@ export interface InsightLabels {
 
 export interface CodeLinesProps {
   lines: readonly CodeLine[];
+  /** Fixed VT-cell runs supplied by a recording snapshot. */
+  positioned?: boolean;
   /** Coverage (edge strip) and profile (heat tint + share) overlays, by line number. */
   insights?: CodeInsights;
   insightLabels?: InsightLabels;
@@ -312,6 +323,7 @@ export const CodeLines = React.memo(function CodeLines(props: CodeLinesProps) {
     <code
       className={lang ? `eld-lines language-${lang}` : "eld-lines"}
       data-variant={variant}
+      data-positioned={props.positioned || undefined}
       data-wrap={wrap || undefined}
       data-marks={marks || undefined}
       data-numbers={lineNumbers || undefined}

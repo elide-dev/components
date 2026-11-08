@@ -11,6 +11,21 @@ const screenText = (data: string, cols = 20, rows = 4) => {
 };
 
 describe("lite VT — text and cursor", () => {
+  it("preserves cell columns across text runs, drawn glyphs and wide graphemes", () => {
+    const terminal = createTerminal({ cols: 20, rows: 1 });
+    terminal.write("ab界e\u0301█═");
+    const ordinary = terminal.snapshot({ cursor: false });
+    const positioned = terminal.snapshot({ cursor: false, positioned: true });
+    expect(lineText(positioned.lines[0])).toBe(lineText(ordinary.lines[0]));
+    expect(positioned.lines[0].tokens.map(({ text, column, columns }) => ({ text, column, columns }))).toEqual([
+      { text: "ab界e\u0301", column: 0, columns: 5 },
+      { text: "█", column: 5, columns: 1 },
+      { text: "═", column: 6, columns: 1 },
+    ]);
+    terminal.write(`${ESC}[1;4H`);
+    expect(terminal.snapshot({ positioned: true }).lines[0].tokens.find(token => token.cursor)).toMatchObject({ text: "界", column: 2, columns: 2 });
+  });
+
   it("prints, carriage-returns and line-feeds like a PTY", () => {
     expect(screenText("hello\r\nworld")).toEqual(["hello", "world", "", ""]);
     // Bare LF keeps the column without convertEol.

@@ -327,7 +327,7 @@ function RecordingScreen({ lines, gridStyle, reserve, fallback }: { lines?: Code
   if (lines) {
     return (
       <pre dir="ltr" aria-hidden className="eld-code-body eld-terminal-screen" style={gridStyle}>
-        <CodeLines lines={lines} variant="terminal" links={false} remountChangedRows />
+        <CodeLines lines={lines} variant="terminal" links={false} positioned remountChangedRows />
       </pre>
     );
   }

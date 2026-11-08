@@ -5,6 +5,21 @@ import { CodeLines } from "./code-lines";
 const logo = [{ tokens: [{ text: "██╗ dull", style: { color: "#ff88f0" } }, { text: "─┐▀" }] }];
 
 describe("CodeLines terminal glyphs", () => {
+  it("places recording runs at VT columns without nesting a wrapper around each glyph", () => {
+    const { container } = render(<CodeLines variant="terminal" positioned links={false} lines={[{ tokens: [
+      { text: "text ", column: 0, columns: 5 },
+      { text: "█", column: 5, columns: 1, style: { color: "#ff88f0" } },
+      { text: "界", column: 6, columns: 2, cursor: true },
+    ] }]} />);
+    expect(container.textContent).toBe("text █界\n");
+    expect(container.querySelectorAll('.eld-terminal-cell')).toHaveLength(3);
+    expect(container.querySelector<HTMLElement>('.eld-glyph')?.style.insetInlineStart).toBe("5ch");
+    expect(container.querySelector('.eld-glyph')).toHaveStyle({ color: "#ff88f0" });
+    expect(container.querySelector('.eld-glyph')?.parentElement).toHaveClass('eld-content');
+    expect(container.querySelector<HTMLElement>('.eld-terminal-cursor')?.style.insetInlineStart).toBe("6ch");
+    expect(container.querySelector<HTMLElement>('.eld-terminal-cursor')?.style.inlineSize).toBe("2ch");
+  });
+
   it("preserves token links and focus across same-column text updates", () => {
     const makeLines = (text: string) => [{ tokens: [
       { text: "See " },
