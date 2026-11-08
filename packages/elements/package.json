@@ -1,0 +1,47 @@
+{
+  "name": "@elide/elements",
+  "version": "0.2.0",
+  "private": true,
+  "description": "Elide native Web Components, built with Lit and shared brand geometry.",
+  "license": "UNLICENSED",
+  "type": "module",
+  "sideEffects": [
+    "./dist/define/*.js"
+  ],
+  "exports": {
+    "./logo": {
+      "types": "./dist/logo.d.ts",
+      "import": "./dist/logo.js"
+    },
+    "./define/logo": {
+      "types": "./dist/define/logo.d.ts",
+      "import": "./dist/define/logo.js"
+    },
+    "./ssr": {
+      "types": "./dist/ssr.d.ts",
+      "node": "./dist/ssr.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "lint": "tsc -p tsconfig.json --noEmit",
+    "test": "node test/ssr.test.mjs"
+  },
+  "dependencies": {
+    "@elide/brand": "workspace:*",
+    "lit": "3.3.3",
+    "@lit-labs/ssr": "4.1.0"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/elide-dev/components.git",
+    "directory": "packages/elements"
+  }
+}

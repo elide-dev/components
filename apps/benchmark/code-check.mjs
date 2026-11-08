@@ -30,9 +30,10 @@ try {
       // Web fonts swapping in is the page's concern (and Lighthouse's CLS); measure
       // the components from here on, recording what moved so failures are actionable.
       await page.evaluate(() => document.fonts.ready);
-      await page.evaluate(() => {
+      const observesLayoutShift = await page.evaluate(() => {
         window.__cls = 0;
         window.__shifts = [];
+        if (!PerformanceObserver.supportedEntryTypes.includes("layout-shift")) return false;
         new PerformanceObserver(list => {
           for (const entry of list.getEntries()) {
             if (entry.hadRecentInput) continue;
@@ -40,12 +41,14 @@ try {
             window.__shifts.push(...entry.sources.map(source => source.node?.parentElement?.className ?? source.node?.nodeName));
           }
         }).observe({ type: "layout-shift" });
+        return true;
       });
+      if (engine === "chromium") assert.ok(observesLayoutShift, "Chromium must support the CLS gate");
       const shifted = () => page.evaluate(() => `${window.__cls} from ${JSON.stringify(window.__shifts)}`);
 
       // Shiki loads lazily and upgrades the plain server-rendered source in place.
       await page.locator("code.language-ts .tk-keyword").first().waitFor();
-      assert.equal(await page.evaluate(() => window.__cls), 0, `Highlighting must not shift layout: ${await shifted()}`);
+      if (observesLayoutShift) assert.equal(await page.evaluate(() => window.__cls), 0, `Highlighting must not shift layout: ${await shifted()}`);
 
       // The inline platform script picked a chrome variant; CSS alone shows it.
       const os = await page.evaluate(() => document.documentElement.dataset.os);
@@ -56,10 +59,11 @@ try {
 
       // Autoplay (in view) types the session out with no layout shift at all.
       const recordingRoot = page.getByTestId("code-recording");
+      await recordingRoot.scrollIntoViewIfNeeded();
       await recordingRoot.getByRole("button", { name: "Pause", exact: true }).waitFor();
       await recordingRoot.getByRole("button", { name: "Play", exact: true }).waitFor({ timeout: 15_000 });
       assert.match(await recordingRoot.locator('pre[aria-hidden="true"]').textContent(), /Hello from Elide!/);
-      assert.equal(await page.evaluate(() => window.__cls), 0, `Recording playback must not shift layout: ${await shifted()}`);
+      if (observesLayoutShift) assert.equal(await page.evaluate(() => window.__cls), 0, `Recording playback must not shift layout: ${await shifted()}`);
 
       // Copying a session yields commands and output, never prompts or gutter glyphs.
       const selected = await page.getByTestId("code-session").locator("pre").evaluate(pre => {
@@ -84,7 +88,7 @@ try {
       await recordingRoot.scrollIntoViewIfNeeded();
       await recordingRoot.getByRole("button", { name: "Pause", exact: true }).waitFor();
       assert.deepEqual(errors, [], "No console errors or warnings (including hydration)");
+      console.log(`${engine}: SSR, hydration, highlighting, selection and offscreen suspension passed; ${observesLayoutShift ? "zero layout shift observed" : "Layout Shift API unavailable (not certified)"}.`);
     } finally { await browser.close(); }
   }
-  console.log("Code samples: SSR text, OS chrome via CSS, zero-CLS playback, prompt-free copy, clean hydration passed.");
 } finally { await new Promise(resolve => server.httpServer.close(resolve)); }

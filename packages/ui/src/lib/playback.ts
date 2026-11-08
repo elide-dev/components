@@ -128,7 +128,8 @@ export function createPlayback(options: PlaybackOptions): Playback {
       }
     }
     emit({ time });
-    frame = clock.requestFrame(tick);
+    // Subscribers can pause/dispose synchronously at a breakpoint.
+    if (state.playing && frame === undefined) frame = clock.requestFrame(tick);
   }
 
   const playback: Playback = {

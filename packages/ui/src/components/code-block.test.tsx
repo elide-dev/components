@@ -1,7 +1,9 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { CodeBlock } from "./code-block";
+import * as highlighterRegistry from "./highlight-registry";
+import * as idleScheduler from "../lib/schedule";
 
 describe("CodeBlock — editor variant", () => {
   it("renders the filename, a line-number gutter, a vim status bar, and a copy button", () => {
@@ -70,6 +72,76 @@ describe("CodeBlock — body", () => {
 });
 
 describe("CodeBlock — Shiki highlighting", () => {
+  it("does not tokenize a hidden file when its pending module import finishes", async () => {
+    const shiki = await import("./shiki");
+    const highlight = vi.spyOn(shiki, "highlightToLines");
+    const registry = vi.spyOn(highlighterRegistry, "getSyncHighlighter").mockReturnValue(undefined);
+    const pending: (() => void)[] = [];
+    const cancel = vi.fn();
+    const schedule = vi.spyOn(idleScheduler, "scheduleIdle").mockImplementation((run) => { pending.push(run); return cancel; });
+    try {
+      const files = [{ name: "a.ts", lang: "ts", code: "const a = 1;" }, { name: "b.ts", lang: "ts", code: "const b = 2;" }];
+      const { rerender, unmount } = render(<CodeBlock files={files} activeFile="a.ts" />);
+      expect(pending).toHaveLength(1);
+      act(() => { pending[0](); });
+      // Switch before the import's continuation can tokenize the old source.
+      rerender(<CodeBlock files={files} activeFile="b.ts" />);
+      await act(async () => { await vi.dynamicImportSettled(); });
+      expect(highlight).not.toHaveBeenCalled();
+      expect(cancel).toHaveBeenCalledTimes(1);
+      expect(pending).toHaveLength(2);
+      // Unmount cancels the newly active file's queued work as well.
+      unmount();
+      expect(cancel).toHaveBeenCalledTimes(2);
+    } finally {
+      highlight.mockRestore();
+      registry.mockRestore();
+      schedule.mockRestore();
+    }
+  });
+
+  it("highlights only the selected file and reuses completed highlighting when revisiting it", async () => {
+    const highlight = vi.fn((code: string) => [{ tokens: [{ text: code, style: { className: "tk-param" } }] }]);
+    const registry = vi.spyOn(highlighterRegistry, "getSyncHighlighter").mockReturnValue({ highlight });
+    try {
+      const user = userEvent.setup();
+      const files = Array.from({ length: 12 }, (_, i) => ({ name: `file-${i}.ts`, lang: "ts", code: `const value = ${i};` }));
+      const { container } = render(<CodeBlock files={files} />);
+      expect(highlight.mock.calls.map(([code]) => code)).toEqual([files[0].code]);
+      // Inactive source stays available in SSR/native hidden panels.
+      expect(container.querySelectorAll('[role="tabpanel"]')).toHaveLength(12);
+      expect(container.textContent).toContain(files[11].code);
+      await user.click(screen.getByRole("tab", { name: files[11].name }));
+      expect(highlight.mock.calls.map(([code]) => code)).toEqual([files[0].code, files[11].code]);
+      await user.click(screen.getByRole("tab", { name: files[0].name }));
+      expect(highlight).toHaveBeenCalledTimes(2);
+      expect(screen.getByRole("tabpanel").querySelector(".tk-param")).toHaveTextContent(files[0].code);
+    } finally { registry.mockRestore(); }
+  });
+
+  it("uses newly supplied highlighted lines ahead of a previous client upgrade", () => {
+    const highlight = vi.fn(() => [{ tokens: [{ text: "x", style: { className: "tk-keyword" } }] }]);
+    const registry = vi.spyOn(highlighterRegistry, "getSyncHighlighter").mockReturnValue({ highlight });
+    try {
+      const { container, rerender } = render(<CodeBlock code="x" lang="ts" />);
+      expect(container.querySelector(".tk-keyword")).toHaveTextContent("x");
+      rerender(<CodeBlock code="x" lang="ts" lines={[{ tokens: [{ text: "x", style: { className: "tk-param" } }] }]} />);
+      expect(container.querySelector(".tk-param")).toHaveTextContent("x");
+      expect(container.querySelector(".tk-keyword")).toBeNull();
+      expect(highlight).toHaveBeenCalledTimes(1);
+    } finally { registry.mockRestore(); }
+  });
+
+  it("does not highlight source behind a custom rendered body", () => {
+    const highlight = vi.fn();
+    const registry = vi.spyOn(highlighterRegistry, "getSyncHighlighter").mockReturnValue({ highlight });
+    try {
+      render(<CodeBlock code="unused" lang="ts"><span>Custom output</span></CodeBlock>);
+      expect(screen.getByText("Custom output")).toBeInTheDocument();
+      expect(highlight).not.toHaveBeenCalled();
+    } finally { registry.mockRestore(); }
+  });
+
   it("renders plain text first (SSR-safe), then upgrades with Shiki", async () => {
     const { container } = render(<CodeBlock lang="java" filename="Main.java" code={'public final class Main {\n  String s = "hi";\n}'} />);
     const text = (sel: string) => [...container.querySelectorAll(sel)].map((el) => el.textContent);
@@ -203,6 +275,20 @@ describe("CodeBlock — editor features", () => {
     expect(screen.getAllByText("only.ts").length).toBeGreaterThan(0);
   });
 
+  it("keeps a visible, keyboard-reachable tab when the selected file is removed", async () => {
+    const user = userEvent.setup();
+    const files = [{ name: "a", code: "first" }, { name: "b", code: "second" }, { name: "c", code: "third" }];
+    const { rerender } = render(<CodeBlock files={files} />);
+    await user.click(screen.getByRole("tab", { name: "c" }));
+    rerender(<CodeBlock files={files.slice(0, 2)} />);
+    const selected = screen.getByRole("tab", { selected: true });
+    expect(selected).toHaveAccessibleName("b");
+    expect(selected).toHaveAttribute("tabindex", "0");
+    expect(screen.getByRole("tabpanel")).toHaveTextContent("second");
+    await user.click(screen.getByRole("button", { name: "Copy" }));
+    expect(await navigator.clipboard.readText()).toBe("second");
+  });
+
   it("wraps in a figure with a caption and renders extra actions", () => {
     const { container } = render(<CodeBlock code={"x"} caption="Figure 1" actions={<a href="/play">Open</a>} />);
     expect(container.querySelector("figure > figcaption")).toHaveTextContent("Figure 1");
@@ -211,6 +297,15 @@ describe("CodeBlock — editor features", () => {
 });
 
 describe("CodeBlock — rows, decorations, wrapping and chrome", () => {
+  it("responds to changes in the boolean wrap prop", () => {
+    const { container, rerender } = render(<CodeBlock code="long line" wrap={false} />);
+    expect(container.querySelector("pre")).toHaveAttribute("tabindex", "0");
+    rerender(<CodeBlock code="long line" wrap />);
+    expect(container.querySelector(".eld-lines")).toHaveAttribute("data-wrap");
+    expect(container.querySelector("pre")).not.toHaveAttribute("tabindex");
+    rerender(<CodeBlock code="long line" wrap={false} />);
+    expect(container.querySelector(".eld-lines")).not.toHaveAttribute("data-wrap");
+  });
   it("marks decorated rows with kinds and localized names, and enables the marks column", () => {
     const { container } = render(
       <CodeBlock

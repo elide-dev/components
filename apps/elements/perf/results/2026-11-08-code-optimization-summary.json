@@ -1,0 +1,221 @@
+{
+  "parity": "Exact HTML and viewport PNG match in React and Preact",
+  "rows": [
+    {
+      "kind": "react",
+      "count": 100,
+      "metric": "startupMs",
+      "beforeMedian": 94.398,
+      "afterMedian": 89.812,
+      "changePercent": -4.9,
+      "beforeP75": 95.13000000000001,
+      "afterP75": 90.49300000000001,
+      "beforeRange": [
+        87.926,
+        96.03699999999999
+      ],
+      "afterRange": [
+        88.718,
+        90.884
+      ]
+    },
+    {
+      "kind": "react",
+      "count": 100,
+      "metric": "heapBytes",
+      "beforeMedian": 1980700,
+      "afterMedian": 1661648,
+      "changePercent": -16.1,
+      "beforeP75": 1981516,
+      "afterP75": 1661656,
+      "beforeRange": [
+        1980488,
+        1981540
+      ],
+      "afterRange": [
+        1661636,
+        1661672
+      ]
+    },
+    {
+      "kind": "react",
+      "count": 100,
+      "metric": "nodes",
+      "beforeMedian": 2115,
+      "afterMedian": 2115,
+      "changePercent": 0,
+      "beforeP75": 2115,
+      "afterP75": 2115,
+      "beforeRange": [
+        2115,
+        2115
+      ],
+      "afterRange": [
+        2115,
+        2115
+      ]
+    },
+    {
+      "kind": "react",
+      "count": 1000,
+      "metric": "startupMs",
+      "beforeMedian": 227.59799999999998,
+      "afterMedian": 217.384,
+      "changePercent": -4.5,
+      "beforeP75": 231.38400000000001,
+      "afterP75": 218.274,
+      "beforeRange": [
+        224.048,
+        241.565
+      ],
+      "afterRange": [
+        211.21599999999998,
+        227.143
+      ]
+    },
+    {
+      "kind": "react",
+      "count": 1000,
+      "metric": "heapBytes",
+      "beforeMedian": 8437948,
+      "afterMedian": 5283120,
+      "changePercent": -37.4,
+      "beforeP75": 8438004,
+      "afterP75": 5283256,
+      "beforeRange": [
+        8437772,
+        8438008
+      ],
+      "afterRange": [
+        5283040,
+        5283260
+      ]
+    },
+    {
+      "kind": "react",
+      "count": 1000,
+      "metric": "nodes",
+      "beforeMedian": 21015,
+      "afterMedian": 21015,
+      "changePercent": 0,
+      "beforeP75": 21015,
+      "afterP75": 21015,
+      "beforeRange": [
+        21015,
+        21015
+      ],
+      "afterRange": [
+        21015,
+        21015
+      ]
+    },
+    {
+      "kind": "preact",
+      "count": 100,
+      "metric": "startupMs",
+      "beforeMedian": 60.724000000000004,
+      "afterMedian": 60.486,
+      "changePercent": -0.4,
+      "beforeP75": 62.078,
+      "afterP75": 61.451,
+      "beforeRange": [
+        60.516,
+        64.21499999999999
+      ],
+      "afterRange": [
+        58.472,
+        62.79
+      ]
+    },
+    {
+      "kind": "preact",
+      "count": 100,
+      "metric": "heapBytes",
+      "beforeMedian": 1751652,
+      "afterMedian": 1365036,
+      "changePercent": -22.1,
+      "beforeP75": 1753308,
+      "afterP75": 1365072,
+      "beforeRange": [
+        1751632,
+        1753308
+      ],
+      "afterRange": [
+        1365036,
+        1365072
+      ]
+    },
+    {
+      "kind": "preact",
+      "count": 100,
+      "metric": "nodes",
+      "beforeMedian": 2114,
+      "afterMedian": 2114,
+      "changePercent": 0,
+      "beforeP75": 2114,
+      "afterP75": 2114,
+      "beforeRange": [
+        2114,
+        2114
+      ],
+      "afterRange": [
+        2114,
+        2114
+      ]
+    },
+    {
+      "kind": "preact",
+      "count": 1000,
+      "metric": "startupMs",
+      "beforeMedian": 216.565,
+      "afterMedian": 209.058,
+      "changePercent": -3.5,
+      "beforeP75": 224.957,
+      "afterP75": 212.929,
+      "beforeRange": [
+        213.006,
+        227.745
+      ],
+      "afterRange": [
+        203.904,
+        223.808
+      ]
+    },
+    {
+      "kind": "preact",
+      "count": 1000,
+      "metric": "heapBytes",
+      "beforeMedian": 9753260,
+      "afterMedian": 5914564,
+      "changePercent": -39.4,
+      "beforeP75": 9753664,
+      "afterP75": 5914624,
+      "beforeRange": [
+        9744016,
+        9755028
+      ],
+      "afterRange": [
+        5914504,
+        5914996
+      ]
+    },
+    {
+      "kind": "preact",
+      "count": 1000,
+      "metric": "nodes",
+      "beforeMedian": 21014,
+      "afterMedian": 21014,
+      "changePercent": 0,
+      "beforeP75": 21014,
+      "afterP75": 21014,
+      "beforeRange": [
+        21014,
+        21014
+      ],
+      "afterRange": [
+        21014,
+        21014
+      ]
+    }
+  ]
+}

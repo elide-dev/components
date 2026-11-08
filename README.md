@@ -13,6 +13,9 @@ place and move together.
   Depend on this alone if all you need is the palette/type/radius system.
 - **`@elide/ui`** — the React/Preact component catalog, built on shadcn + Base UI
   and themed entirely from `@elide/tokens`.
+- **[`@elide/elements`](./packages/elements/README.md)** — opt-in Lit Web Components,
+  starting with the logo, explicit SSR, and a React adapter at `@elide/ui/elements/logo`.
+  Plain browser consumers need no React or Tailwind.
 - **`@elide/icons`** — _(planned)_ Lucide, re-exported for React and as raw SVG.
 
 Apps (Storybook, and later the Astro docs site) live under `apps/`.

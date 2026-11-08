@@ -73,11 +73,11 @@ function isCast(value: unknown): value is Cast {
  * Tallest content (rows) a cast produces, sampled across its timeline, plus
  * its final transcript. Sampling is capped so long casts stay cheap.
  */
-function measure(cast: Cast): { rows: number; transcript: string } {
+function measure(cast: Cast, explicitRows?: number): { rows: number; transcript: string } {
   const probe = new CastRenderer(cast);
-  let rows = 1;
+  let rows = explicitRows ?? 1;
   const samples = Math.min(24, Math.max(1, cast.events.length));
-  for (let i = 0; i <= samples; i++) {
+  for (let i = 0; explicitRows === undefined && i <= samples; i++) {
     const screen = probe.screen((cast.duration * i) / samples);
     let last = screen.lines.length - 1;
     while (last >= 0 && screen.lines[last].tokens.every((token) => !token.text.trim())) last--;
@@ -97,25 +97,29 @@ function useViewport(ref: React.RefObject<HTMLDivElement | null>) {
       setState({ near: true, visible: true, onscreen: true });
       return;
     }
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const entry = entries[entries.length - 1];
-        setState((previous) => ({
-          // Prefetch a little before the player is on screen; once near, stay loaded.
-          near: previous.near || entry.isIntersecting,
-          visible: entry.intersectionRatio >= 0.5,
-          onscreen: entry.isIntersecting,
-        }));
-      },
-      { rootMargin: "200px 0px", threshold: [0, 0.5] },
-    );
+    const prefetch = new IntersectionObserver((entries) => {
+      if (entries.some(entry => entry.isIntersecting)) {
+        setState(previous => previous.near ? previous : { ...previous, near: true });
+        prefetch.disconnect();
+      }
+    }, { rootMargin: "200px 0px" });
+    const observer = new IntersectionObserver((entries) => {
+      const entry = entries[entries.length - 1];
+      if (!entry) return;
+      const visible = entry.intersectionRatio >= 0.5;
+      const onscreen = entry.isIntersecting;
+      setState(previous => previous.visible === visible && previous.onscreen === onscreen
+        ? previous : { ...previous, visible, onscreen });
+    }, { threshold: [0, 0.5] });
+    prefetch.observe(element);
     observer.observe(element);
-    return () => observer.disconnect();
+    return () => { prefetch.disconnect(); observer.disconnect(); };
+
   }, [ref]);
   return state;
 }
 
-type Remote = { status: "idle" | "loading" } | { status: "ready"; cast: Cast } | { status: "error" };
+type Remote = { status: "idle" } | { src: string; status: "loading" | "error" } | { src: string; status: "ready"; cast: Cast };
 
 /** Resolve the recording (inline, synthesized or fetched) into a normalized cast. */
 function useCast(options: TerminalRecordingOptions, script: readonly TerminalLine[], prompt: string | undefined, load: boolean) {
@@ -139,25 +143,28 @@ function useCast(options: TerminalRecordingOptions, script: readonly TerminalLin
   React.useEffect(() => {
     if (!srcKey || local.cast || !load) return;
     const controller = new AbortController();
-    setRemote({ status: "loading" });
+    setRemote({ src: srcKey, status: "loading" });
     fetch(srcKey, { signal: controller.signal })
       .then((response) => {
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         return response.text();
       })
-      .then((text) => setRemote({ status: "ready", cast: parseAsciicast(text) }))
+      .then((text) => {
+        if (!controller.signal.aborted) setRemote({ src: srcKey, status: "ready", cast: parseAsciicast(text) });
+      })
       .catch(() => {
-        if (!controller.signal.aborted) setRemote({ status: "error" });
+        if (!controller.signal.aborted) setRemote({ src: srcKey, status: "error" });
       });
     return () => controller.abort();
   }, [srcKey, local.cast, load]);
 
-  const raw = local.cast ?? (remote.status === "ready" ? remote.cast : undefined);
+  const current = "src" in remote && remote.src === srcKey ? remote : undefined;
+  const raw = local.cast ?? (current?.status === "ready" ? current.cast : undefined);
   const cast = React.useMemo(
     () => raw && normalizeCast(raw, { idleTimeLimit: idleTimeLimit ?? raw.idleTimeLimit ?? 2 }),
     [raw, idleTimeLimit],
   );
-  return { cast, failed: !!local.error || remote.status === "error", loading: remote.status === "loading" };
+  return { cast, failed: !!local.error || (!local.cast && current?.status === "error"), loading: !local.cast && current?.status === "loading" };
 }
 
 /**
@@ -284,9 +291,11 @@ interface ControlsProps {
 /** Play/pause, restart, marker navigation, scrubber, time and speed. */
 function RecordingControls({ state, cast, markers, failed, messages: m, locale, onToggle, onRestart, onSeek, onSpeed }: ControlsProps) {
   const format = useTimeFormat(locale);
-  const elapsed = format.time(state.time);
-  const total = format.time(cast?.duration ?? 0);
-  const speedLabel = `${format.number(state.speed)}×`;
+  const seconds = Math.floor(state.time);
+  const duration = cast?.duration ?? 0;
+  const elapsed = React.useMemo(() => format.time(seconds), [format, seconds]);
+  const total = React.useMemo(() => format.time(duration), [format, duration]);
+  const speedLabel = React.useMemo(() => `${format.number(state.speed)}×`, [format, state.speed]);
   return (
     <div data-slot="terminal-controls" className="flex items-center gap-1 border-t px-2 py-1" style={codeSurfaceElevStyle}>
       <button type="button" className={codeControlClassName} aria-label={state.playing ? m.pause : m.play} onClick={onToggle} disabled={failed}>
@@ -327,7 +336,7 @@ function RecordingScreen({ lines, gridStyle, reserve, fallback }: { lines?: Code
   if (lines) {
     return (
       <pre dir="ltr" aria-hidden className="eld-code-body eld-terminal-screen" style={gridStyle}>
-        <CodeLines lines={lines} variant="terminal" links={false} remountChangedRows />
+        <CodeLines lines={lines} variant="terminal" links={false} positioned remountChangedRows />
       </pre>
     );
   }
@@ -365,7 +374,7 @@ export function TerminalRecording({ source, script, prompt, fallback }: Terminal
   const [requested, setRequested] = React.useState(false);
   const { cast, failed, loading } = useCast(options, script, prompt, viewport.near || requested);
   const renderer = React.useMemo(() => cast && new CastRenderer(cast), [cast]);
-  const measured = React.useMemo(() => cast && measure(cast), [cast]);
+  const measured = React.useMemo(() => cast && measure(cast, options.rows), [cast, options.rows]);
   const posterTime = posterTimeFor(cast, poster);
   const markers = React.useMemo(() => cast?.markers ?? [], [cast]);
   const cues = React.useMemo(() => markers.map((marker) => marker.time), [markers]);
@@ -404,7 +413,7 @@ export function TerminalRecording({ source, script, prompt, fallback }: Terminal
       pausedOffscreen.current = false;
       playback.play();
     }
-  }, [viewport.onscreen, playback]);
+  }, [viewport.onscreen, playback, state.playing]);
 
   function toggle() {
     setInteracted(true);
@@ -439,21 +448,17 @@ export function TerminalRecording({ source, script, prompt, fallback }: Terminal
     if (resume) playback.play();
   }
 
-  const shortcuts: Record<string, () => void> = {
-    " ": toggle,
-    k: toggle,
-    ArrowLeft: () => playback.seekBy(-5),
-    ArrowRight: () => playback.seekBy(5),
-    Home: () => playback.seek(0),
-    End: () => playback.seek(cast?.duration ?? 0),
-    m: () => stepMarker(1),
-    M: () => stepMarker(-1),
-  };
-
   function onKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
-    // Controls handle their own keys; only the focused screen maps shortcuts.
+    if (event.target !== event.currentTarget || !cast || event.altKey || event.ctrlKey || event.metaKey) return;
+    const shortcuts: Record<string, () => void> = {
+      " ": toggle, k: toggle,
+      ArrowLeft: () => playback.seekBy(-5), ArrowRight: () => playback.seekBy(5),
+      Home: () => playback.seek(0), End: () => playback.seek(cast.duration),
+      m: () => stepMarker(1), M: () => stepMarker(-1),
+    };
     const action = shortcuts[event.key];
-    if (event.target !== event.currentTarget || !cast || !action) return;
+    if (!action) return;
+    setInteracted(true);
     action();
     event.preventDefault();
   }
@@ -466,7 +471,7 @@ export function TerminalRecording({ source, script, prompt, fallback }: Terminal
     [screen, rows],
   );
   const showOverlay = !!cast && !interacted && !state.playing && state.time === posterTime;
-  const gridStyle = { "--eld-cols": cast?.cols ?? 80, "--eld-rows": rows } as React.CSSProperties;
+  const gridStyle = { "--eld-cols": screen?.cols ?? cast?.cols ?? 80, "--eld-rows": rows } as React.CSSProperties;
 
   return (
     <div ref={rootRef} data-slot="terminal-recording" data-playing={state.playing || undefined} className="eld-terminal-player">

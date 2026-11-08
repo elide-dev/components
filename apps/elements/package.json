@@ -1,0 +1,41 @@
+{
+  "name": "@elide/elements-consumer",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "node check.mjs && node perf/budgets.test.mjs && node perf/check.mjs",
+    "lint": "tsc --noEmit",
+    "build:perf": "node perf/build.mjs",
+    "perf": "node perf/run.mjs",
+    "test:perf": "node perf/budgets.test.mjs && node perf/check.mjs",
+    "perf:gate": "node perf/gate.mjs",
+    "build:code-perf": "node perf/code-build.mjs",
+    "perf:code": "node perf/code-run.mjs",
+    "build:catalog-perf": "node perf/catalog-build.mjs",
+    "perf:catalog": "node perf/catalog-run.mjs",
+    "build:widget-perf": "node perf/widgets-build.mjs",
+    "perf:widgets": "node perf/widgets-run.mjs"
+  },
+  "dependencies": {
+    "@elide/elements": "workspace:*",
+    "@elide/ui": "workspace:*",
+    "@elide/tokens": "workspace:*",
+    "@lit-labs/ssr-client": "1.1.8",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "vite": "^8.3.6",
+    "@vitejs/plugin-react": "^6.2.1",
+    "@tailwindcss/vite": "^4.3.5",
+    "tailwindcss": "^4.3.5",
+    "playwright": "^1.65.0",
+    "sharp": "^0.35.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "typescript": "^7.0.2",
+    "preact": "^11.2.0"
+  }
+}

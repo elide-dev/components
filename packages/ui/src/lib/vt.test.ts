@@ -11,6 +11,21 @@ const screenText = (data: string, cols = 20, rows = 4) => {
 };
 
 describe("lite VT — text and cursor", () => {
+  it("preserves cell columns across text runs, drawn glyphs and wide graphemes", () => {
+    const terminal = createTerminal({ cols: 20, rows: 1 });
+    terminal.write("ab界e\u0301█═");
+    const ordinary = terminal.snapshot({ cursor: false });
+    const positioned = terminal.snapshot({ cursor: false, positioned: true });
+    expect(lineText(positioned.lines[0])).toBe(lineText(ordinary.lines[0]));
+    expect(positioned.lines[0].tokens.map(({ text, column, columns }) => ({ text, column, columns }))).toEqual([
+      { text: "ab界e\u0301", column: 0, columns: 5 },
+      { text: "█", column: 5, columns: 1 },
+      { text: "═", column: 6, columns: 1 },
+    ]);
+    terminal.write(`${ESC}[1;4H`);
+    expect(terminal.snapshot({ positioned: true }).lines[0].tokens.find(token => token.cursor)).toMatchObject({ text: "界", column: 2, columns: 2 });
+  });
+
   it("prints, carriage-returns and line-feeds like a PTY", () => {
     expect(screenText("hello\r\nworld")).toEqual(["hello", "world", "", ""]);
     // Bare LF keeps the column without convertEol.
@@ -194,5 +209,74 @@ describe("renderAnsi / stripAnsi", () => {
 
   it("strips escape sequences", () => {
     expect(stripAnsi(`${ESC}[1;31mred${ESC}[0m ${ESC}]0;title\x07ok${ESC}(B`)).toBe("red ok");
+  });
+});
+
+
+describe("lite VT — incremental snapshots", () => {
+  it("reuses untouched rows and replaces edited rows without changing prior snapshots", () => {
+    const terminal = createTerminal({ cols: 20, rows: 3 });
+    terminal.write(`${ESC}[?25lfirst\r\nsecond\r\nthird`);
+    const before = terminal.snapshot({ positioned: true });
+    const saved = structuredClone(before);
+    terminal.write(`${ESC}[2;1Hupdated`);
+    const after = terminal.snapshot({ positioned: true });
+    expect(after.lines[0]).toBe(before.lines[0]);
+    expect(after.lines[1]).not.toBe(before.lines[1]);
+    expect(after.lines[2]).toBe(before.lines[2]);
+    expect(before).toEqual(saved);
+    expect(lineText(after.lines[1])).toBe("updated");
+  });
+
+  it("invalidates cursor and positioning variants independently of cell edits", () => {
+    const terminal = createTerminal({ cols: 12, rows: 3 });
+    terminal.write("界e\u0301█\r\nnext");
+    const before = terminal.snapshot({ positioned: true });
+    terminal.write(`${ESC}[1;2H`);
+    const moved = terminal.snapshot({ positioned: true });
+    expect(moved.lines[0]).not.toBe(before.lines[0]);
+    expect(moved.lines[1]).not.toBe(before.lines[1]);
+    expect(moved.lines[2]).toBe(before.lines[2]);
+    expect(moved.lines[0].tokens.find(token => token.cursor)).toMatchObject({ text: "界", column: 0, columns: 2 });
+    const hidden = terminal.snapshot({ positioned: true, cursor: false });
+    expect(hidden.lines.every(line => line.tokens.every(token => !token.cursor))).toBe(true);
+    const ordinary = terminal.snapshot({ cursor: false });
+    expect(ordinary.lines.every(line => line.tokens.every(token => token.column === undefined))).toBe(true);
+    expect(terminal.snapshot({ positioned: true })).toEqual(moved);
+  });
+
+  it("matches fresh replay through edits, scrolls, alt screens, erases and combining characters", () => {
+    const operations = [
+      "abcdef\r\n界e\r\nlast", "\u0301", `${ESC}[1;3H${ESC}[2@`,
+      `${ESC}[1P`, `${ESC}[41m${ESC}[2X`, `${ESC}[0m${ESC}[K`,
+      `${ESC}[2;1H${ESC}[L`, `${ESC}[M`, `${ESC}[S`, `${ESC}[T`,
+      `${ESC}[?1049halt界`, `${ESC}[?1049l`, `${ESC}[1J`, `${ESC}[2J`,
+      `restored${ESC}[?25l`, `${ESC}c`, "after reset",
+    ];
+    const terminal = createTerminal({ cols: 12, rows: 3 });
+    let source = "";
+    for (const operation of operations) {
+      const old = terminal.snapshot({ positioned: true });
+      const saved = structuredClone(old);
+      source += operation;
+      terminal.write(operation);
+      const fresh = createTerminal({ cols: 12, rows: 3 });
+      fresh.write(source);
+      expect(terminal.snapshot({ positioned: true })).toEqual(fresh.snapshot({ positioned: true }));
+      expect(old).toEqual(saved);
+    }
+  });
+
+  it("invalidates clipped rows on resize and isolates cloned seek states", () => {
+    const terminal = createTerminal({ cols: 12, rows: 3 });
+    terminal.write(`${ESC}[?25labcdef\r\nghijkl`);
+    const before = terminal.snapshot({ positioned: true });
+    const clone = terminal.clone();
+    terminal.resize(3, 3);
+    expect(text(terminal.snapshot({ positioned: true }).lines)).toEqual(["abc", "ghi", ""]);
+    expect(clone.snapshot({ positioned: true })).toEqual(before);
+    clone.write(`${ESC}[1;1HZ`);
+    expect(text(clone.snapshot({ positioned: true }).lines)[0]).toBe("Zbcdef");
+    expect(text(terminal.snapshot({ positioned: true }).lines)[0]).toBe("abc");
   });
 });

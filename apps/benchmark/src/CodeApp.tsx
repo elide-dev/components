@@ -3,6 +3,7 @@ import { CodeBlock } from "@elide/ui/components/code-block";
 import { CodeSample } from "@elide/ui/components/code-sample";
 import { Terminal } from "@elide/ui/components/terminal";
 import type { HighlightedCode } from "@elide/ui/components/shiki";
+import { elideHelpCast } from '../../../packages/ui/src/stories/fixtures/help-cast.ts';
 
 const ESC = "\x1b";
 
@@ -53,6 +54,10 @@ export function CodeApp({ highlighted }: { highlighted?: HighlightedCode }) {
           ]}
           data-testid="code-session"
         />
+      </section>
+      <section aria-labelledby="fidelity-heading">
+        <h2 id="fidelity-heading">Terminal cell fidelity</h2>
+        <Terminal title="Elide help" code="elide help" recording={{ cast: elideHelpCast, poster: 0.5, rows: 30 }} data-testid="code-help" />
       </section>
     </main>
     <footer>Elide · Interface components · <a href="/">Overview</a></footer>

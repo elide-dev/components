@@ -723,6 +723,20 @@
     contain: layout paint;
   }
 
+  .eld-terminal-screen .eld-lines[data-positioned] .eld-content {
+    position: relative;
+    inline-size: calc(var(--eld-cols, 80) * 1ch);
+    block-size: calc(var(--code-line-height) * 1em);
+    padding-inline-end: 0;
+  }
+
+  .eld-terminal-screen .eld-terminal-cell {
+    position: absolute;
+    inset-block-start: 0;
+    block-size: calc(var(--code-line-height) * 1em);
+    white-space: pre;
+  }
+
   /* ---- Terminal glyphs (`lib/terminal-glyphs.ts`) ------------------------ */
   /* Box drawing and blocks are drawn, as a terminal draws them: one cell wide and the full row
    * tall, so block art (the `elide help` logo) meets across rows and box lines join. The
@@ -736,7 +750,7 @@
     --eld-gx-r: none;
     display: inline-block;
     position: relative;
-    inline-size: 0.6em;
+    inline-size: 1ch;
     block-size: calc(var(--code-line-height) * 1em);
     vertical-align: top;
     -webkit-text-fill-color: transparent;
@@ -830,7 +844,7 @@
   :where(.eld-lines[data-variant="terminal"]) .eld-glyph[data-glyph="╗"],
   :where(.eld-lines[data-variant="terminal"]) .eld-glyph[data-glyph="╚"],
   :where(.eld-lines[data-variant="terminal"]) .eld-glyph[data-glyph="╝"] {
-    inline-size: calc(0.6em + 0.5px);
+    inline-size: calc(1ch + 0.5px);
     block-size: calc(var(--code-line-height) * 1em + 1px);
     margin-block: -0.5px;
     margin-inline: -0.25px;

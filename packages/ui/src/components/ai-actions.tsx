@@ -2,6 +2,7 @@ import * as React from "react";
 import { Check, ExternalLink, Sparkles } from "lucide-react";
 import { cn } from "../lib/utils";
 import { useMessages } from "../i18n/context";
+import { useClipboardFeedback } from "../lib/use-clipboard-feedback";
 import { ClaudeIcon, MarkdownIcon, OpenAIIcon } from "./ai-icons";
 
 /**
@@ -41,7 +42,7 @@ export function AiActions({
   ...props
 }: AiActionsProps) {
   const m = useMessages();
-  const [copied, setCopied] = React.useState(false);
+  const { copied, copy } = useClipboardFeedback();
 
   return (
     <div
@@ -56,13 +57,7 @@ export function AiActions({
       {markdown ? (
         <button
           type="button"
-          onClick={() => {
-            // Swallow clipboard rejections (no permission / headless) so a failed
-            // copy doesn't surface as an unhandled promise rejection.
-            void navigator.clipboard?.writeText(markdown)?.catch(() => {});
-            setCopied(true);
-            setTimeout(() => setCopied(false), 1500);
-          }}
+          onClick={() => void copy(markdown)}
           className={itemClass}
         >
           {copied ? (

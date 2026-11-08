@@ -6,6 +6,7 @@ import { Terminal } from "../components/terminal";
 import { I18nProvider } from "../i18n/provider";
 import ar from "../i18n/locales/ar";
 import { elideBuildCast, elideRunCast } from "./fixtures/casts";
+import { elideHelpCast } from "./fixtures/help-cast";
 
 const ESC = "\x1b";
 
@@ -22,6 +23,11 @@ const meta = {
 
 export default meta;
 type Story = StoryObj<typeof meta>;
+
+/** Real help TUI: animated decorations must not move its logo or borders. */
+export const HelpFidelity: Story = {
+  args: { title: "Elide help", code: "elide help", recording: { cast: elideHelpCast, poster: 0.5, rows: 30 } },
+};
 
 /** Prompts mark commands; other lines are output and keep their ANSI colors. Copy yields only the commands. */
 export const Session: Story = {

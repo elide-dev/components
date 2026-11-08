@@ -26,8 +26,9 @@ const splitDir = mkdtempSync(join(tmpdir(), "elide-bundle-"));
 try {
   for (const [name, exported, budget, forbidden, label] of [
     ["code-block", "CodeBlock", 24_000, /codeToTokensBase|Unsupported asciicast version/, "Shiki or the terminal runtime (Shiki loads lazily)"],
-    // 31 KB: VT, shell tokenizer, recording player (incl. marker controls) and adaptive chrome.
-    ["terminal", "Terminal", 31_000, /codeToTokensBase/, "Shiki"],
+    // 31.5 KB: fixed-cell playback, sparse-row reuse and lifecycle fixes.
+    // Measured 31,431 B; the 400 B allowance buys tested playback CPU savings.
+    ["terminal", "Terminal", 31_500, /codeToTokensBase/, "Shiki"],
     ["code-sample", "CodeSample", 25_000, /codeToTokensBase|Unsupported asciicast version/, "a code surface it does not render"],
     ["code-group", "CodeGroup", 25_000, /codeToTokensBase|Unsupported asciicast version/, "a code surface it does not render"],
     ["shiki", "Shiki runtime (lazy)", 64_000, /typescript\/lib/, "the TypeScript compiler (Twoslash stays a build-time peer)"],

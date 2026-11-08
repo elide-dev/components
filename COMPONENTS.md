@@ -108,7 +108,7 @@ site is on the catalog.
   lite VT. Budgets (gzip, React external) are enforced by
   `apps/benchmark/bundle-check.ts`, measured with code splitting: CodeBlock ≤
   24 KB (Shiki and the terminal runtime load lazily or not at all), Terminal ≤
-  31 KB, CodeSample/CodeGroup ≤ 25 KB, the lazy Shiki runtime ≤ 64 KB (never
+  31.5 KB (including fixed-cell playback and sparse-row reuse), CodeSample/CodeGroup ≤ 25 KB, the lazy Shiki runtime ≤ 64 KB (never
   the TypeScript compiler).
   `apps/benchmark/code.html` is the Lighthouse and `code-check.mjs` target.
   Roadmap: data adapters for scenes (lcov, `.cpuprofile`, Elide-native),

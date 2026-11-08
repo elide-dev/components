@@ -1,18 +1,39 @@
 # Architecture
 
+## Direction
+
+The target architecture is **selective Lit Web Components with thin React
+adapters**, alongside static HTML/SVG and the existing React/Base UI catalog.
+Optimize shipped bytes, update locality, CPU, and retained memory while preserving
+visual and accessibility quality. The implementation and support matrix below
+describe the established catalog. The first additive slice is now available in
+[`@elide/elements`](./packages/elements/README.md): the Lit logo, explicit SSR,
+and a React/Preact adapter. Other migrations remain planned.
+
+For websites, prioritize static HTML/SVG/CSS, low startup/idle overhead, layout
+stability, smooth scrolling, and native browser capabilities. Hydrate only the
+behavior that needs it. Preact is a tested compatibility option for existing
+React components; Lit is the portable-element option. Bulk update throughput is
+secondary to these delivery goals.
+
+See [Web Components architecture](./docs/web-components-architecture.md) for
+package boundaries, Shadow DOM CSS, rendering and SSR contracts, performance
+acceptance criteria, and the migration sequence. This supersedes the previous
+decision to exclude Lit. Migration is component-by-component, not a catalog rewrite.
+
 ## Goals
 
 1. One source of truth for Elide's UI, consumed by **multiple repos** (docs site,
    marketing site, future apps).
 2. **Tokens are independent** of components — usable on their own anywhere.
-3. Components run in **React and Preact**. (Lit / web components are explicitly
-   out of scope for components; the tokens remain usable from anything.)
-4. Build **on top of shadcn's Base-UI rewrite** rather than reinventing
-   primitives.
+3. Portable components use native custom elements and Lit; **React and Preact**
+   remain supported through tested adapters. Static content needs no client runtime.
+4. Retain **shadcn + Base UI** for behavior-heavy React primitives until a native
+   replacement passes equivalent accessibility, behavior, and performance checks.
 5. A published **catalog** (Storybook + Chromatic) that doubles as the review and
    visual-regression surface.
 
-## Layers
+## Current layers
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -29,16 +50,18 @@
 └─────────────────────────────────────────────────────────────┘
 ```
 
-The **framework line** sits between `@elide/ui` (React) and everything below it.
-Anything below the line is portable to any target; anything above is React/Preact.
+Today the **framework line** sits between `@elide/ui` (React) and everything below
+it. The target adds `@elide/elements` below that line and React adapters in
+`@elide/ui`; dependencies must never flow from elements back into React packages.
 
-## Framework support
+## Current framework support
 
 | Target | Components | Tokens |
 | --- | --- | --- |
 | **React** (19.2.8+) | ✅ primary, tested | ✅ |
 | **Preact** (11.2) | Supported via `preact/compat`; maintained Chromium consumer smoke | ✅ |
-| Anything else (Astro static, native, Figma…) | — | ✅ tokens only |
+| Plain browser / static HTML | Opt-in `eld-logo` pilot; explicit SSR | ✅ |
+| Non-web consumers (native, Figma…) | — | ✅ tokens only |
 
 **Preact** uses the same published React API through `preact/compat`, configured
 in the consumer's bundler and TypeScript resolver. The aliases must apply to
@@ -80,6 +103,11 @@ Shared rules in `@elide/ui/platform.css` provide intrinsic/container layouts,
 overlay transitions, optional native anchors, and document rendering features.
 `@elide/ui/styles.css` includes them; custom Tailwind pipelines must import them.
 
+Migrated elements use scoped CSS and inherited tokens instead of relying on
+global Tailwind selectors inside shadow roots. Tailwind remains supported for
+consumer layouts and unmigrated React components. The target CSS contract is
+defined in the [Web Components design](./docs/web-components-architecture.md#css-and-theming).
+
 ## Distribution
 
 Dual model, both backed by the same source:
@@ -99,6 +127,9 @@ Dual model, both backed by the same source:
   a story is the definition of done for a component.
 
 ## Porting order
+
+The original catalog development order below remains useful for React components.
+For Lit adoption, follow the gated [migration sequence](./docs/web-components-architecture.md#migration-sequence).
 
 Leaf → composite → template, so dependencies land before dependents:
 

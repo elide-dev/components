@@ -1,13 +1,13 @@
 import * as React from "react";
 import type { CodeInsights, CodeLine, CodeToken, InlineDecoration, LineDecoration, LineDecorationKind } from "../lib/code-model";
 import { decorationCovers } from "../lib/code-model";
-import { segmentLine, withColumns } from "../lib/segments";
+import { segmentLine } from "../lib/segments";
 import { DRAWN } from "../lib/terminal-glyphs";
 import { tokenStyleToCss } from "../lib/token-style";
 
 /** Token text; on a terminal, box-drawing and block characters become drawn cells. */
-function TokenText({ text, draw }: { text: string; draw: boolean }) {
-  if (!draw || !DRAWN.test(text)) return <>{text}</>;
+function tokenText(text: string, draw: boolean): React.ReactNode {
+  if (!draw || !DRAWN.test(text)) return text;
   const parts: React.ReactNode[] = [];
   let run = "";
   for (const ch of text) {
@@ -24,25 +24,36 @@ function TokenText({ text, draw }: { text: string; draw: boolean }) {
     );
   }
   if (run) parts.push(run);
-  return <>{parts}</>;
+  return parts;
 }
 
-function Token({ token, links, draw }: { token: CodeToken; links: boolean; draw: boolean }) {
+// Tokens have no state or lifecycle. Render their native nodes directly rather
+// than retaining two component instances per token in large code surfaces.
+function renderToken(token: CodeToken, links: boolean, draw: boolean, key: number) {
   const style = tokenStyleToCss(token.style);
   // A terminal cell's background fills the whole row, as the grid does, not just the glyph box.
   const own = token.cursor ? "eld-terminal-cursor" : token.style?.className;
   const className = draw && token.style?.background && !token.cursor ? (own ? `${own} eld-cell-bg` : "eld-cell-bg") : own;
-  const text = <TokenText text={token.text} draw={draw} />;
+  if (draw && token.column !== undefined && token.columns !== undefined) {
+    const glyph = token.text.length === 1 && DRAWN.test(token.text);
+    const positionedStyle = { ...style, insetInlineStart: `${token.column}ch`,
+      inlineSize: glyph ? undefined : `${token.columns}ch` };
+    const positionedClass = `eld-terminal-cell${className ? ` ${className}` : ''}${glyph ? ' eld-glyph' : ''}`;
+    // The VT owns cell widths, including wide graphemes. Position runs at their
+    // recorded columns so ANSI segmentation and glyph rounding cannot move art.
+    return <span key={key} className={positionedClass} style={positionedStyle} data-glyph={glyph ? token.text : undefined}>{token.text}</span>;
+  }
+  const text = tokenText(token.text, draw);
   if (token.href && links) {
     return (
-      <a href={token.href} className={className ? `eld-code-link ${className}` : "eld-code-link"} style={style} rel="noreferrer">
+      <a key={key} href={token.href} className={className ? `eld-code-link ${className}` : "eld-code-link"} style={style} rel="noreferrer">
         {text}
       </a>
     );
   }
-  if (!style && !className) return text;
+  if (!style && !className) return <React.Fragment key={key}>{text}</React.Fragment>;
   return (
-    <span className={className} style={style}>
+    <span key={key} className={className} style={style}>
       {text}
     </span>
   );
@@ -86,18 +97,17 @@ function LineTokens({
   hoverId?: (decoration: InlineDecoration) => string;
 }) {
   if (!inline.length) {
-    return (
-      <>
-        {withColumns(tokens).map(({ token, column }) => (
-          <Token key={column} token={token} links={links} draw={draw} />
-        ))}
-      </>
-    );
+    let column = 0;
+    return <>{tokens.map((token) => {
+      const node = renderToken(token, links, draw, column);
+      column += token.text.length;
+      return node;
+    })}</>;
   }
   return (
     <>
       {segmentLine(tokens, inline).map(({ column, pieces, decoration }) => {
-        const children = pieces.map((piece) => <Token key={piece.column} token={piece.token} links={links && !decoration} draw={draw} />);
+        const children = pieces.map((piece) => renderToken(piece.token, links && !decoration, draw, piece.column));
         if (!decoration) return <React.Fragment key={column}>{children}</React.Fragment>;
         return (
           <InlineWrapper key={column} decoration={decoration} id={decoration.kind === "hover" ? hoverId?.(decoration) : undefined}>
@@ -138,6 +148,8 @@ export interface InsightLabels {
 
 export interface CodeLinesProps {
   lines: readonly CodeLine[];
+  /** Fixed VT-cell runs supplied by a recording snapshot. */
+  positioned?: boolean;
   /** Coverage (edge strip) and profile (heat tint + share) overlays, by line number. */
   insights?: CodeInsights;
   insightLabels?: InsightLabels;
@@ -210,7 +222,7 @@ function rowInsight(number: number, insights: CodeInsights | undefined, hottest:
 }
 
 /** Accessible names for a row's decorations, exit status and insights. */
-function rowLabels(line: CodeLine, applied: readonly LineDecoration[] | undefined, insight: RowInsight, props: CodeLinesProps): string | undefined {
+function rowLabels(line: CodeLine, applied: readonly LineDecoration[] | undefined, insight: RowInsight, props: CodeRowOptions): string | undefined {
   const labels = (applied ?? []).map((decoration) => decoration.label ?? props.decorationLabels?.[decoration.kind]).filter(Boolean);
   if (line.exitCode !== undefined && props.exitLabel) labels.push(props.exitLabel(line.exitCode));
   const names = props.insightLabels;
@@ -219,17 +231,19 @@ function rowLabels(line: CodeLine, applied: readonly LineDecoration[] | undefine
   return labels.length ? labels.join(", ") : undefined;
 }
 
+type CodeRowOptions = Omit<CodeLinesProps, "lines">;
+
 interface RowProps {
   line: CodeLine;
   index: number;
   number: number;
   /** Samples on the hottest line of the file (scales the heat tint). */
   hottest: number;
-  props: CodeLinesProps;
+  props: CodeRowOptions;
 }
 
 /** The row's data attributes: drive gutter glyphs, overlays and accessible names from CSS. */
-function rowAttributes(line: CodeLine, number: number, hottest: number, props: CodeLinesProps): Record<string, string | number | boolean | undefined> {
+function rowAttributes(line: CodeLine, number: number, hottest: number, props: CodeRowOptions): Record<string, string | number | boolean | undefined> {
   const applied = props.decorations?.filter((decoration) => decorationCovers(decoration, number));
   const insight = rowInsight(number, props.insights, hottest);
   return {
@@ -262,20 +276,23 @@ function RowBadges({ badges }: { badges: readonly CodeAnnotationBadge[] }) {
   );
 }
 
+const NO_BADGES: readonly CodeAnnotationBadge[] = [];
+const NO_INLINE: readonly InlineDecoration[] = [];
+
 interface RowProps {
   line: CodeLine;
   index: number;
   number: number;
   /** Samples on the hottest line of the file (scales the heat tint). */
   hottest: number;
-  props: CodeLinesProps;
+  props: CodeRowOptions;
 }
 
 /** One grid row: `[marks] [number] [prompt] [content]`, plus optional overlays and action. */
 function CodeRow({ line, index, number, hottest, props }: RowProps) {
   const { "data-share": share, ...attributes } = rowAttributes(line, number, hottest, props);
-  const badges = props.annotations?.filter((annotation) => annotation.line === number) ?? [];
-  const lineInline = props.inline?.filter((decoration) => decoration.line === number) ?? [];
+  const badges = props.annotations?.filter((annotation) => annotation.line === number) ?? NO_BADGES;
+  const lineInline = props.inline?.filter((decoration) => decoration.line === number) ?? NO_INLINE;
   return (
     <span className="eld-line" {...attributes}>
       {props.lineNumbers && props.lineLinks ? <LineNumberLink prefix={props.lineLinks} number={number} label={props.lineLabel?.(number) ?? String(number)} /> : null}
@@ -295,6 +312,15 @@ function CodeRow({ line, index, number, hottest, props }: RowProps) {
   );
 }
 
+// VT snapshots preserve unchanged row identities. Compare display options as well
+// so locale, decorations and callbacks still update when a row's text does not.
+const RecordingRow = React.memo(CodeRow, (before, after) => {
+  if (before.line !== after.line || before.index !== after.index || before.number !== after.number || before.hottest !== after.hottest) return false;
+  const a = before.props, b = after.props;
+  const keys = Object.keys(a) as (keyof CodeRowOptions)[];
+  return keys.length === Object.keys(b).length && keys.every(key => Object.is(a[key], b[key]));
+});
+
 /**
  * One CSS-grid row per line: `[marks] [number] [prompt] [content]`. Gutter
  * glyphs, numbers and prompts are pseudo-elements, so they are never selected
@@ -302,7 +328,9 @@ function CodeRow({ line, index, number, hottest, props }: RowProps) {
  * newline so `textContent` reads as the original text.
  */
 export const CodeLines = React.memo(function CodeLines(props: CodeLinesProps) {
-  const { lines, lang, variant = "editor", lineNumbers = false, startLine = 1, decorations, wrap = false, folds } = props;
+  const { lines, ...rowOptions } = props;
+  const { lang, variant = "editor", lineNumbers = false, startLine = 1, decorations, wrap = false, folds } = rowOptions;
+  const Row = props.positioned ? RecordingRow : CodeRow;
   const last = startLine + lines.length - 1;
   const marks = lines.some((line) => line.exitCode !== undefined) || !!decorations?.some((d) => MARKED.has(d.kind));
   const hottest = Math.max(0, ...Object.values(props.insights?.profile?.lines ?? {}).map((line) => line.self));
@@ -310,6 +338,7 @@ export const CodeLines = React.memo(function CodeLines(props: CodeLinesProps) {
     <code
       className={lang ? `eld-lines language-${lang}` : "eld-lines"}
       data-variant={variant}
+      data-positioned={props.positioned || undefined}
       data-wrap={wrap || undefined}
       data-marks={marks || undefined}
       data-numbers={lineNumbers || undefined}
@@ -319,7 +348,7 @@ export const CodeLines = React.memo(function CodeLines(props: CodeLinesProps) {
         // Rows are keyed by line number: positional identity (a source line, a screen row).
         const number = line.number ?? startLine + index;
         const fold = folds?.find((candidate) => number >= candidate.start && number <= candidate.end);
-        if (!fold) return <CodeRow key={number} line={line} index={index} number={number} hottest={hottest} props={props} />;
+        if (!fold) return <Row key={number} line={line} index={index} number={number} hottest={hottest} props={rowOptions} />;
         if (number !== fold.start) return null;
         return (
           <span key={number} className="eld-line eld-fold-row">

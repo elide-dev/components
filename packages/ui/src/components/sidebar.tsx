@@ -110,17 +110,17 @@ export interface SidebarItemProps {
   onSelect?: () => void;
 }
 
-export function SidebarItem({ label, href, active, external, comingSoon, onSelect }: SidebarItemProps) {
-  const m = useMessages();
+function sidebarItem({ label, href, active, external, comingSoon, onSelect }: SidebarItemProps, comingSoonLabel: string, key?: React.Key) {
   if (comingSoon) {
     return (
       <span
+        key={key}
         aria-disabled="true"
         className="flex items-center justify-between gap-2 rounded-lg px-2.5 py-1.5 text-[13.5px] text-muted-foreground/60"
       >
         {label}
         <Badge variant="neutral" size="sm" className="shrink-0">
-          {m.sidebar.comingSoon}
+          {comingSoonLabel}
         </Badge>
       </span>
     );
@@ -128,6 +128,7 @@ export function SidebarItem({ label, href, active, external, comingSoon, onSelec
 
   return (
     <a
+      key={key}
       href={href}
       aria-current={active ? "page" : undefined}
       target={external ? "_blank" : undefined}
@@ -146,19 +147,26 @@ export function SidebarItem({ label, href, active, external, comingSoon, onSelec
   );
 }
 
+/** Standalone item; groups share one localization subscription for their rows. */
+export function SidebarItem(props: SidebarItemProps) {
+  const m = useMessages();
+  return sidebarItem(props, m.sidebar.comingSoon);
+}
+
 export interface SidebarGroupProps extends React.ComponentProps<"div"> {
   label: string;
   items: SidebarItemProps[];
 }
 
 export function SidebarGroup({ label, items, className, ...props }: SidebarGroupProps) {
+  const m = useMessages();
   return (
     <div className={cn("flex flex-col gap-0.5", className)} {...props}>
       <div className="px-2.5 pb-1 font-mono text-[11px] font-semibold tracking-normal text-subtle-foreground">
         {label}
       </div>
       {items.map((item) => (
-        <SidebarItem key={item.label} {...item} />
+        sidebarItem(item, m.sidebar.comingSoon, item.label)
       ))}
     </div>
   );

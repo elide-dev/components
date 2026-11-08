@@ -9,6 +9,7 @@
  * sequences never leak into the rendered text. No DOM, so it runs during SSR.
  */
 import type { CodeLine, CodeToken, TokenStyle } from "./code-model";
+import { DRAWN } from "./terminal-glyphs";
 
 /** 0–255 palette index, or a `#rrggbb` truecolor. */
 type Color = number | string;
@@ -59,6 +60,8 @@ export interface SnapshotOptions {
   trim?: boolean;
   /** Mark the cursor cell with `CodeToken.cursor` when visible (default true). */
   cursor?: boolean;
+  /** Preserve exact VT columns and separate drawn cells for recording playback. */
+  positioned?: boolean;
 }
 
 export interface TerminalOptions {
@@ -254,12 +257,27 @@ export function createTerminal(options: TerminalOptions = {}): VirtualTerminal {
 
 function fromState(s: TerminalState): VirtualTerminal {
   const screen = () => (s.usingAlt ? s.alt : s.main);
+  // One rendered variant per live row. Weak keys release scrolled-away rows;
+  // edits invalidate only the rows they touch, and cursor/options are part of
+  // the lookup so a moving cursor never leaves stale cell markup behind.
+  const renderedRows = new WeakMap<Row, { cursorCol?: number; positioned: boolean; line: CodeLine }>();
+
+  let invalidatedRow: Row | undefined;
+  function invalidate(row: Row) {
+    // Printing a run touches the same row many times. One deletion is enough
+    // until a snapshot renders it again or another row is edited.
+    if (invalidatedRow !== row) {
+      renderedRows.delete(row);
+      invalidatedRow = row;
+    }
+  }
 
   // ---- cell helpers -------------------------------------------------------
   /** The attribute erased cells take: current background only (BCE). */
   const eraseAttr = (): Attr => (s.attr.bg === undefined ? DEFAULT_ATTR : { bg: s.attr.bg });
 
   function eraseCells(row: Row, from: number, to: number) {
+    invalidate(row);
     const attr = eraseAttr();
     const end = Math.min(to, s.cols);
     if (attr === DEFAULT_ATTR && end >= row.length) {
@@ -279,6 +297,7 @@ function fromState(s: TerminalState): VirtualTerminal {
   }
 
   function setCell(row: Row, x: number, cell: Cell) {
+    invalidate(row);
     while (row.length < x) row.push(BLANK);
     // Overwriting half of a wide character clears its other half.
     const existing = row[x];
@@ -339,6 +358,7 @@ function fromState(s: TerminalState): VirtualTerminal {
         isZeroWidth(ch) ||
         (REGIONAL_INDICATOR.test(ch) && [...targetCell.ch].length === 1 && REGIONAL_INDICATOR.test(targetCell.ch)));
     if (joins) {
+      invalidate(rows[s.y]);
       rows[s.y][target] = { ...targetCell, ch: targetCell.ch + ch };
       s.joinNext = ch === "\u200d";
       return;
@@ -573,6 +593,7 @@ function fromState(s: TerminalState): VirtualTerminal {
       case "@": {
         const row = rows[s.y];
         if (s.x < row.length) {
+          invalidate(row);
           row.splice(s.x, 0, ...Array.from({ length: n(0) }, () => BLANK));
           if (row.length > s.cols) row.length = s.cols;
         }
@@ -580,7 +601,10 @@ function fromState(s: TerminalState): VirtualTerminal {
       }
       case "P": {
         const row = rows[s.y];
-        if (s.x < row.length) row.splice(s.x, n(0));
+        if (s.x < row.length) {
+          invalidate(row);
+          row.splice(s.x, n(0));
+        }
         break;
       }
       case "L":
@@ -734,7 +758,10 @@ function fromState(s: TerminalState): VirtualTerminal {
     const nextCols = Math.max(1, Math.floor(cols));
     const nextRows = Math.max(1, Math.floor(rows));
     for (const buffer of [s.main, s.alt]) {
-      for (const row of buffer) if (row.length > nextCols) row.length = nextCols;
+      for (const row of buffer) if (row.length > nextCols) {
+        invalidate(row);
+        row.length = nextCols;
+      }
     }
     if (nextRows < s.rows) {
       // Push rows above the cursor into scrollback so the cursor stays visible.
@@ -757,13 +784,18 @@ function fromState(s: TerminalState): VirtualTerminal {
     moveTo(s.x, s.y);
   }
 
-  function rowToLine(row: Row, cursorCol: number | undefined): CodeLine {
+  function rowToLine(row: Row, cursorCol: number | undefined, positioned = false): CodeLine {
+    const cached = renderedRows.get(row);
+    if (cached && cached.cursorCol === cursorCol && cached.positioned === positioned) return cached.line;
     const tokens: CodeToken[] = [];
     let text = "";
     let attr: Attr | undefined;
+    let start = 0;
+    let end = 0;
     const flush = () => {
       if (text) {
         const token: CodeToken = attr === undefined || attr === DEFAULT_ATTR ? { text } : withStyle({ text }, toStyle(attr));
+        if (positioned) { token.column = start; token.columns = end - start; }
         if (attr?.href) token.href = attr.href;
         tokens.push(token);
       }
@@ -776,9 +808,12 @@ function fromState(s: TerminalState): VirtualTerminal {
     for (let x = 0; x < length; x++) {
       const cell = cells[x] ?? BLANK;
       if (cell.ch === "") continue;
-      if (x === col) {
+      if (x === col || (positioned && cell.ch.length === 1 && DRAWN.test(cell.ch))) {
         flush();
-        tokens.push(withStyle({ text: cell.ch, cursor: true }, toStyle(cell.attr)));
+        const token: CodeToken = { text: cell.ch };
+        if (x === col) token.cursor = true;
+        if (positioned) { token.column = x; token.columns = cell.wide ? 2 : 1; }
+        tokens.push(withStyle(token, toStyle(cell.attr)));
         attr = undefined;
         continue;
       }
@@ -786,20 +821,25 @@ function fromState(s: TerminalState): VirtualTerminal {
         flush();
         attr = cell.attr;
       }
+      if (!text) start = x;
+      end = x + (cell.wide ? 2 : 1);
       text += cell.ch;
     }
     flush();
-    return { tokens };
+    const line = { tokens };
+    renderedRows.set(row, { cursorCol, positioned, line });
+    return line;
   }
 
   function snapshot(options: SnapshotOptions = {}): TerminalScreen {
+    invalidatedRow = undefined;
     const includeScrollback = (options.scrollback ?? true) && !s.usingAlt;
     const above = includeScrollback ? s.scrollback : [];
     const showCursor = (options.cursor ?? true) && s.cursorVisible;
     const viewport = screen();
     const lines = [
-      ...above.map((row) => rowToLine(row, undefined)),
-      ...viewport.map((row, y) => rowToLine(row, showCursor && y === s.y ? s.x : undefined)),
+      ...above.map((row) => rowToLine(row, undefined, options.positioned)),
+      ...viewport.map((row, y) => rowToLine(row, showCursor && y === s.y ? s.x : undefined, options.positioned)),
     ];
     const cursorRow = above.length + s.y;
     if (options.trim) {

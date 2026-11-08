@@ -102,12 +102,15 @@ const useIsomorphicLayoutEffect = typeof window === "undefined" ? React.useEffec
  * Lines for `code`: provided lines, else synchronous (shell or plain) lines,
  * upgraded by Shiki after mount. Server and first client render agree, so
  * hydration never mismatches; a cached grammar upgrades before paint.
+ * Hidden file panels keep their source but defer grammar work until selected.
  */
-function useHighlightedLines(code: string, lang: string | undefined, provided: CodeLine[] | undefined): CodeLine[] {
+function useHighlightedLines(code: string, lang: string | undefined, provided: CodeLine[] | undefined, active: boolean): CodeLine[] {
   const initial = React.useMemo(() => provided ?? syncLines(code, lang), [provided, code, lang]);
   const [upgraded, setUpgraded] = React.useState<{ code: string; lang: string; lines: CodeLine[] }>();
   useIsomorphicLayoutEffect(() => {
-    if (provided || !lang || isShellLang(lang)) return;
+    if (!active || provided || !lang || isShellLang(lang)) return;
+    // Reopening a tab reuses its highlighted lines; no global source cache.
+    if (upgraded?.code === code && upgraded.lang === lang) return;
     const ready = getSyncHighlighter()?.highlight(code, lang);
     if (ready) {
       setUpgraded({ code, lang, lines: ready });
@@ -118,7 +121,7 @@ function useHighlightedLines(code: string, lang: string | undefined, provided: C
     // rather than competing with page load and input.
     const run = () =>
       import("./shiki")
-        .then((shiki) => (shiki.resolveLanguage(lang) ? shiki.highlightToLines(code, lang) : undefined))
+        .then((shiki) => (live && shiki.resolveLanguage(lang) ? shiki.highlightToLines(code, lang) : undefined))
         .then((lines) => {
           if (live && lines) setUpgraded({ code, lang, lines });
         })
@@ -130,8 +133,8 @@ function useHighlightedLines(code: string, lang: string | undefined, provided: C
       live = false;
       cancel();
     };
-  }, [code, lang, provided]);
-  return upgraded && upgraded.code === code && upgraded.lang === lang ? upgraded.lines : initial;
+  }, [code, lang, provided, active, upgraded]);
+  return provided ?? (upgraded && upgraded.code === code && upgraded.lang === lang ? upgraded.lines : initial);
 }
 
 function slug(value: string): string {
@@ -165,6 +168,7 @@ function prepare(file: CodeFile | (Omit<CodeFile, "name"> & { name?: string }), 
 }
 
 interface BodyProps {
+  active?: boolean;
   file: PreparedFile;
   id: string;
   lineNumbers: boolean;
@@ -177,9 +181,9 @@ interface BodyProps {
   children?: React.ReactNode;
 }
 
-function CodeBody({ file, id, lineNumbers, startLine, wrapped, lineLinks, maxLines, annotations, label, children }: BodyProps) {
+function CodeBody({ file, id, lineNumbers, startLine, wrapped, lineLinks, maxLines, annotations, label, children, active = true }: BodyProps) {
   const m = useMessages().codeBlock;
-  const lines = useHighlightedLines(file.code, file.lang, file.lines);
+  const lines = useHighlightedLines(file.code, file.lang, file.lines, active && children == null);
   const [expandedFolds, setExpandedFolds] = React.useState<ReadonlySet<string>>(() => new Set());
   const [expanded, setExpanded] = React.useState(false);
   /** Line of the note under the pointer or focus. */
@@ -366,6 +370,7 @@ function CodeBodies({
         <div key={key} role="tabpanel" id={`${id}-panel-${index}`} aria-labelledby={`${id}-tab-${index}`} hidden={index !== active}>
           <CodeBody
             {...bodyProps}
+            active={index === active}
             file={file}
             id={`${id}-${slug(key)}`}
             lineLinks={linkPrefix && `${linkPrefix}${slug(key)}-`}
@@ -487,13 +492,14 @@ export function CodeBlock({
   const m = useMessages();
   const reactId = React.useId();
   const { legacyTerminal, lineNumbers, statusBar, grammar } = variantDefaults(variant, lineNumbersProp, statusBarProp, lang);
-  const [wrapped, setWrapped] = React.useState(wrap === true);
+  const [wrapChoice, setWrapped] = React.useState(wrap === true);
+  const wrapped = wrap === "toggle" ? wrapChoice : wrap === true;
 
   const prepared = usePreparedFiles({ files, notations, filename, lang: grammar, code, lines: linesProp, inline, highlight, decorations, insights });
   const [chosen, setActive] = React.useState(0);
   const controlled = activeFile === undefined ? -1 : prepared.findIndex((file) => file.name === activeFile);
-  const active = controlled >= 0 ? controlled : chosen;
-  const current = prepared[Math.min(active, prepared.length - 1)];
+  const active = controlled >= 0 ? controlled : Math.min(chosen, prepared.length - 1);
+  const current = prepared[active];
   const id = blockId(lineLinks, filename, reactId);
   const linkPrefix = lineLinks ? `${id}-` : undefined;
 

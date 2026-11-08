@@ -39,6 +39,16 @@ describe("cueIndexAt", () => {
 });
 
 describe("createPlayback", () => {
+  it("does not leave a pending frame when a subscriber pauses at a breakpoint", () => {
+    const harness = manualClock();
+    const playback = createPlayback({ duration: 10, clock: harness.clock });
+    playback.subscribe(state => { if (state.playing && state.time >= 1) playback.pause(); });
+    playback.play();
+    harness.advance(1000);
+    expect(playback.getState().playing).toBe(false);
+    expect(harness.scheduled).toBe(false);
+  });
+
   it("advances with the clock, scaled by speed", () => {
     const { clock, advance } = manualClock();
     const playback = createPlayback({ duration: 10, clock });

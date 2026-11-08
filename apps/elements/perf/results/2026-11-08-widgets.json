@@ -1,0 +1,2210 @@
+{
+  "metadata": {
+    "node": "v24.22.1",
+    "platform": "darwin",
+    "arch": "arm64",
+    "build": {
+      "baseline": "3262c98f49d3aef44e28b3dd6c31156d1196a2ae",
+      "variants": [
+        {
+          "kind": "react",
+          "revision": "before",
+          "directory": "react-before"
+        },
+        {
+          "kind": "react",
+          "revision": "after",
+          "directory": "react-after"
+        },
+        {
+          "kind": "preact",
+          "revision": "before",
+          "directory": "preact-before"
+        },
+        {
+          "kind": "preact",
+          "revision": "after",
+          "directory": "preact-after"
+        }
+      ],
+      "sourceHashes": [
+        {
+          "file": "lib/vt.ts",
+          "before": "3706843eaa8850ecc328b4a5e30ea5fce7d03e8c547b1c70d20711236171c88a",
+          "after": "2aff1761a2c982f82ad0b83b84923ef79763e3dd79ee6bb057877d384af11bc4"
+        },
+        {
+          "file": "lib/playback.ts",
+          "before": "eba8dcfb34dbfe6493137025710c528b92f090a5c6ee88a0531d66c486357b47",
+          "after": "4a736558bda2a6d2e599332b797bd45b2f94f9d062ac86567b6b80b067e305fb"
+        },
+        {
+          "file": "components/code-lines.tsx",
+          "before": "ae7b5afc91ef768ed9de7c6200d17071ed6913aa8ef6d2e0bb4d49109382e09c",
+          "after": "9a753291b249e12f29af5bb8ca4e18e5b23c16e533bf0ca2d17ab7524526a26a"
+        },
+        {
+          "file": "components/terminal-recording.tsx",
+          "before": "2adcf2b403785fd3d27a20604e9402cad7db85c9bfa7f7dad25bb55544d3e2f7",
+          "after": "58cb5591c3bc709242823e2a298fe74174d485de629bb3574f0481e1975f3d36"
+        },
+        {
+          "file": "components/code-block.tsx",
+          "before": "8820148c22dbf0dfbd1b7e70a8279586a0e2d73ee2090b9f7c96b9e5341e8f99",
+          "after": "97fffcf4a10145178eb6c3ed1fe8f625d5cd664d982a518a7a3c333442d7b5fe"
+        },
+        {
+          "file": "components/code-scene.tsx",
+          "before": "e14d6ac40214d7fda81b1adb7ef2a86c238d48bb044de38a93c58e8d787e6a3a",
+          "after": "c61570806610a935f7c08419a32b043348566b9e5f7379008a2522cc5c21bd5c"
+        }
+      ],
+      "fixtureHash": "48e713bda0ab63b2425bc848464773ae9d6281657dadadd9126be0796ec6f098"
+    },
+    "samples": 7,
+    "browser": "158.0.8127.18",
+    "cpu": "Apple M5 Max",
+    "throttle": 4,
+    "viewport": {
+      "width": 900,
+      "height": 900
+    },
+    "counts": [
+      1
+    ],
+    "cases": [
+      "terminal",
+      "scene"
+    ]
+  },
+  "trials": [
+    {
+      "sample": 0,
+      "scenario": "terminal",
+      "count": 1,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 335.217,
+      "work": {
+        "TaskDuration": 453.668,
+        "ScriptDuration": 153.24800000000002,
+        "LayoutDuration": 50.645999999999994,
+        "RecalcStyleDuration": 51.97399999999999
+      },
+      "mounted": {
+        "heap": 2605180,
+        "documents": 1,
+        "nodes": 1080,
+        "jsEventListeners": 152
+      },
+      "afterWork": {
+        "heap": 3309716,
+        "documents": 1,
+        "nodes": 1080,
+        "jsEventListeners": 151
+      },
+      "empty": {
+        "heap": 3434472,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 3467660,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 0,
+      "scenario": "terminal",
+      "count": 1,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 209.72,
+      "work": {
+        "TaskDuration": 390.027,
+        "ScriptDuration": 102.945,
+        "LayoutDuration": 46.844,
+        "RecalcStyleDuration": 51.529
+      },
+      "mounted": {
+        "heap": 2606104,
+        "documents": 1,
+        "nodes": 1080,
+        "jsEventListeners": 152
+      },
+      "afterWork": {
+        "heap": 3288752,
+        "documents": 1,
+        "nodes": 1080,
+        "jsEventListeners": 151
+      },
+      "empty": {
+        "heap": 3435408,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 3462684,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 0,
+      "scenario": "terminal",
+      "count": 1,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 171.466,
+      "work": {
+        "TaskDuration": 421.74099999999993,
+        "ScriptDuration": 144.43800000000002,
+        "LayoutDuration": 39.319,
+        "RecalcStyleDuration": 54.318999999999996
+      },
+      "mounted": {
+        "heap": 2050124,
+        "documents": 1,
+        "nodes": 1079,
+        "jsEventListeners": 8
+      },
+      "afterWork": {
+        "heap": 2433160,
+        "documents": 1,
+        "nodes": 1079,
+        "jsEventListeners": 7
+      },
+      "empty": {
+        "heap": 2586312,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2625032,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 0,
+      "scenario": "terminal",
+      "count": 1,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 163.116,
+      "work": {
+        "TaskDuration": 365.45799999999997,
+        "ScriptDuration": 84.12899999999999,
+        "LayoutDuration": 44.482,
+        "RecalcStyleDuration": 52.684000000000005
+      },
+      "mounted": {
+        "heap": 2070060,
+        "documents": 1,
+        "nodes": 1079,
+        "jsEventListeners": 8
+      },
+      "afterWork": {
+        "heap": 2443268,
+        "documents": 1,
+        "nodes": 1079,
+        "jsEventListeners": 7
+      },
+      "empty": {
+        "heap": 2597416,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2631084,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 0,
+      "scenario": "scene",
+      "count": 1,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 183.697,
+      "work": {
+        "TaskDuration": 219.46099999999998,
+        "ScriptDuration": 186.64600000000004,
+        "LayoutDuration": 0.13099999999999917,
+        "RecalcStyleDuration": 0.798
+      },
+      "mounted": {
+        "heap": 2254140,
+        "documents": 1,
+        "nodes": 1021,
+        "jsEventListeners": 151
+      },
+      "afterWork": {
+        "heap": 3035392,
+        "documents": 1,
+        "nodes": 1021,
+        "jsEventListeners": 151
+      },
+      "empty": {
+        "heap": 3370928,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 3381868,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 0,
+      "scenario": "scene",
+      "count": 1,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 177.588,
+      "work": {
+        "TaskDuration": 66.49800000000003,
+        "ScriptDuration": 39.338,
+        "LayoutDuration": 0.7709999999999974,
+        "RecalcStyleDuration": 1.0370000000000033
+      },
+      "mounted": {
+        "heap": 2261816,
+        "documents": 1,
+        "nodes": 1021,
+        "jsEventListeners": 151
+      },
+      "afterWork": {
+        "heap": 2642604,
+        "documents": 1,
+        "nodes": 1021,
+        "jsEventListeners": 151
+      },
+      "empty": {
+        "heap": 3145220,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      },
+      "teardown": {
+        "heap": 3174040,
+        "documents": 1,
+        "nodes": 13,
+        "jsEventListeners": 158
+      }
+    },
+    {
+      "sample": 0,
+      "scenario": "scene",
+      "count": 1,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 120.818,
+      "work": {
+        "TaskDuration": 196.10800000000003,
+        "ScriptDuration": 161.115,
+        "LayoutDuration": 0.12300000000000158,
+        "RecalcStyleDuration": 1.006
+      },
+      "mounted": {
+        "heap": 1829120,
+        "documents": 1,
+        "nodes": 1020,
+        "jsEventListeners": 7
+      },
+      "afterWork": {
+        "heap": 2424168,
+        "documents": 1,
+        "nodes": 1020,
+        "jsEventListeners": 7
+      },
+      "empty": {
+        "heap": 3114164,
+        "documents": 1,
+        "nodes": 919,
+        "jsEventListeners": 19
+      },
+      "teardown": {
+        "heap": 3139804,
+        "documents": 1,
+        "nodes": 919,
+        "jsEventListeners": 19
+      }
+    },
+    {
+      "sample": 0,
+      "scenario": "scene",
+      "count": 1,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 120.585,
+      "work": {
+        "TaskDuration": 39.03100000000001,
+        "ScriptDuration": 23.099999999999994,
+        "LayoutDuration": 0.5669999999999981,
+        "RecalcStyleDuration": 0.16199999999999548
+      },
+      "mounted": {
+        "heap": 1846428,
+        "documents": 1,
+        "nodes": 1020,
+        "jsEventListeners": 7
+      },
+      "afterWork": {
+        "heap": 2047188,
+        "documents": 1,
+        "nodes": 1020,
+        "jsEventListeners": 7
+      },
+      "empty": {
+        "heap": 2456352,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      },
+      "teardown": {
+        "heap": 2490868,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 13
+      }
+    },
+    {
+      "sample": 1,
+      "scenario": "terminal",
+      "count": 1,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 207.55,
+      "work": {
+        "TaskDuration": 374.35799999999995,
+        "ScriptDuration": 93.76400000000001,
+        "LayoutDuration": 42.765,
+        "RecalcStyleDuration": 55.462999999999994
+      },
+      "mounted": {
+        "heap": 2604828,
+        "documents": 1,
+        "nodes": 1080,
+        "jsEventListeners": 152
+      },
+      "afterWork": {
+        "heap": 3272936,
+        "documents": 1,
+        "nodes": 1080,
+        "jsEventListeners": 151
+      },
+      "empty": {
+        "heap": 2670836,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 145
+      },
+      "teardown": {
+        "heap": 2698068,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 145
+      }
+    },
+    {
+      "sample": 1,
+      "scenario": "terminal",
+      "count": 1,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 171.792,
+      "work": {
+        "TaskDuration": 435.47099999999995,
+        "ScriptDuration": 146.089,
+        "LayoutDuration": 45.647,
+        "RecalcStyleDuration": 52.229000000000006
+      },
+      "mounted": {
+        "heap": 2054752,
+        "documents": 1,
+        "nodes": 1079,
+        "jsEventListeners": 8
+      },
+      "afterWork": {
+        "heap": 2437812,
+        "documents": 1,
+        "nodes": 1079,
+        "jsEventListeners": 7
+      },
+      "empty": {
+        "heap": 1823860,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 0
+      },
+      "teardown": {
+        "heap": 1866292,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 0
+      }
+    },
+    {
+      "sample": 1,
+      "scenario": "terminal",
+      "count": 1,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 169.084,
+      "work": {
+        "TaskDuration": 379.311,
+        "ScriptDuration": 89.45299999999999,
+        "LayoutDuration": 47.045,
+        "RecalcStyleDuration": 51.94199999999999
+      },
+      "mounted": {
+        "heap": 2066828,
+        "documents": 1,
+        "nodes": 1079,
+        "jsEventListeners": 8
+      },
+      "afterWork": {
+        "heap": 2440552,
+        "documents": 1,
+        "nodes": 1079,
+        "jsEventListeners": 7
+      },
+      "empty": {
+        "heap": 1827144,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 0
+      },
+      "teardown": {
+        "heap": 1864856,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 0
+      }
+    },
+    {
+      "sample": 1,
+      "scenario": "terminal",
+      "count": 1,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 210.865,
+      "work": {
+        "TaskDuration": 432.933,
+        "ScriptDuration": 152.493,
+        "LayoutDuration": 42.491,
+        "RecalcStyleDuration": 53.67100000000001
+      },
+      "mounted": {
+        "heap": 2597356,
+        "documents": 1,
+        "nodes": 1080,
+        "jsEventListeners": 152
+      },
+      "afterWork": {
+        "heap": 3301000,
+        "documents": 1,
+        "nodes": 1080,
+        "jsEventListeners": 151
+      },
+      "empty": {
+        "heap": 2663156,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 145
+      },
+      "teardown": {
+        "heap": 2696332,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 145
+      }
+    },
+    {
+      "sample": 1,
+      "scenario": "scene",
+      "count": 1,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 157.008,
+      "work": {
+        "TaskDuration": 38.021,
+        "ScriptDuration": 25.506,
+        "LayoutDuration": 0.11299999999999852,
+        "RecalcStyleDuration": 0.9499999999999995
+      },
+      "mounted": {
+        "heap": 2265548,
+        "documents": 1,
+        "nodes": 1021,
+        "jsEventListeners": 151
+      },
+      "afterWork": {
+        "heap": 2646156,
+        "documents": 1,
+        "nodes": 1021,
+        "jsEventListeners": 151
+      },
+      "empty": {
+        "heap": 2397324,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 145
+      },
+      "teardown": {
+        "heap": 2424812,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 145
+      }
+    },
+    {
+      "sample": 1,
+      "scenario": "scene",
+      "count": 1,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 118.612,
+      "work": {
+        "TaskDuration": 186.814,
+        "ScriptDuration": 157.333,
+        "LayoutDuration": 0.1260000000000011,
+        "RecalcStyleDuration": 0.8190000000000003
+      },
+      "mounted": {
+        "heap": 1833856,
+        "documents": 1,
+        "nodes": 1020,
+        "jsEventListeners": 7
+      },
+      "afterWork": {
+        "heap": 2426768,
+        "documents": 1,
+        "nodes": 1020,
+        "jsEventListeners": 7
+      },
+      "empty": {
+        "heap": 2355808,
+        "documents": 1,
+        "nodes": 918,
+        "jsEventListeners": 6
+      },
+      "teardown": {
+        "heap": 2382060,
+        "documents": 1,
+        "nodes": 918,
+        "jsEventListeners": 6
+      }
+    },
+    {
+      "sample": 1,
+      "scenario": "scene",
+      "count": 1,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 117.326,
+      "work": {
+        "TaskDuration": 52.29499999999998,
+        "ScriptDuration": 31.005,
+        "LayoutDuration": 0.8990000000000005,
+        "RecalcStyleDuration": 0.6390000000000007
+      },
+      "mounted": {
+        "heap": 1841788,
+        "documents": 1,
+        "nodes": 1020,
+        "jsEventListeners": 7
+      },
+      "afterWork": {
+        "heap": 2040236,
+        "documents": 1,
+        "nodes": 1020,
+        "jsEventListeners": 7
+      },
+      "empty": {
+        "heap": 1694156,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 0
+      },
+      "teardown": {
+        "heap": 1729888,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 0
+      }
+    },
+    {
+      "sample": 1,
+      "scenario": "scene",
+      "count": 1,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 181.077,
+      "work": {
+        "TaskDuration": 212.025,
+        "ScriptDuration": 176.944,
+        "LayoutDuration": 0.8660000000000022,
+        "RecalcStyleDuration": 0.5939999999999973
+      },
+      "mounted": {
+        "heap": 2257108,
+        "documents": 1,
+        "nodes": 1021,
+        "jsEventListeners": 151
+      },
+      "afterWork": {
+        "heap": 3038660,
+        "documents": 1,
+        "nodes": 1021,
+        "jsEventListeners": 151
+      },
+      "empty": {
+        "heap": 2622648,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 145
+      },
+      "teardown": {
+        "heap": 2628672,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 145
+      }
+    },
+    {
+      "sample": 2,
+      "scenario": "terminal",
+      "count": 1,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 163.989,
+      "work": {
+        "TaskDuration": 430.98100000000005,
+        "ScriptDuration": 148.04899999999998,
+        "LayoutDuration": 47.157999999999994,
+        "RecalcStyleDuration": 51.152
+      },
+      "mounted": {
+        "heap": 2050012,
+        "documents": 1,
+        "nodes": 1079,
+        "jsEventListeners": 8
+      },
+      "afterWork": {
+        "heap": 2434028,
+        "documents": 1,
+        "nodes": 1079,
+        "jsEventListeners": 7
+      },
+      "empty": {
+        "heap": 1819020,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 0
+      },
+      "teardown": {
+        "heap": 1861368,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 0
+      }
+    },
+    {
+      "sample": 2,
+      "scenario": "terminal",
+      "count": 1,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 177.362,
+      "work": {
+        "TaskDuration": 361.23199999999997,
+        "ScriptDuration": 91.504,
+        "LayoutDuration": 41.562999999999995,
+        "RecalcStyleDuration": 49.933
+      },
+      "mounted": {
+        "heap": 2070116,
+        "documents": 1,
+        "nodes": 1079,
+        "jsEventListeners": 8
+      },
+      "afterWork": {
+        "heap": 2443620,
+        "documents": 1,
+        "nodes": 1079,
+        "jsEventListeners": 7
+      },
+      "empty": {
+        "heap": 1830156,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 0
+      },
+      "teardown": {
+        "heap": 1867840,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 0
+      }
+    },
+    {
+      "sample": 2,
+      "scenario": "terminal",
+      "count": 1,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 201.136,
+      "work": {
+        "TaskDuration": 489.7710000000001,
+        "ScriptDuration": 175.178,
+        "LayoutDuration": 49.97700000000001,
+        "RecalcStyleDuration": 52.653000000000006
+      },
+      "mounted": {
+        "heap": 2598700,
+        "documents": 1,
+        "nodes": 1080,
+        "jsEventListeners": 152
+      },
+      "afterWork": {
+        "heap": 3303504,
+        "documents": 1,
+        "nodes": 1080,
+        "jsEventListeners": 151
+      },
+      "empty": {
+        "heap": 2666280,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 145
+      },
+      "teardown": {
+        "heap": 2699508,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 145
+      }
+    },
+    {
+      "sample": 2,
+      "scenario": "terminal",
+      "count": 1,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 201.822,
+      "work": {
+        "TaskDuration": 393.91299999999995,
+        "ScriptDuration": 105.445,
+        "LayoutDuration": 42.84199999999999,
+        "RecalcStyleDuration": 51.394999999999996
+      },
+      "mounted": {
+        "heap": 2604448,
+        "documents": 1,
+        "nodes": 1080,
+        "jsEventListeners": 152
+      },
+      "afterWork": {
+        "heap": 3272240,
+        "documents": 1,
+        "nodes": 1080,
+        "jsEventListeners": 151
+      },
+      "empty": {
+        "heap": 2670776,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 145
+      },
+      "teardown": {
+        "heap": 2698144,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 145
+      }
+    },
+    {
+      "sample": 2,
+      "scenario": "scene",
+      "count": 1,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 121.27799999999999,
+      "work": {
+        "TaskDuration": 190.10999999999999,
+        "ScriptDuration": 158.59699999999998,
+        "LayoutDuration": 0.785000000000001,
+        "RecalcStyleDuration": 0.2139999999999989
+      },
+      "mounted": {
+        "heap": 1832244,
+        "documents": 1,
+        "nodes": 1020,
+        "jsEventListeners": 7
+      },
+      "afterWork": {
+        "heap": 2427440,
+        "documents": 1,
+        "nodes": 1020,
+        "jsEventListeners": 7
+      },
+      "empty": {
+        "heap": 2354304,
+        "documents": 1,
+        "nodes": 918,
+        "jsEventListeners": 6
+      },
+      "teardown": {
+        "heap": 2380052,
+        "documents": 1,
+        "nodes": 918,
+        "jsEventListeners": 6
+      }
+    },
+    {
+      "sample": 2,
+      "scenario": "scene",
+      "count": 1,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 122.449,
+      "work": {
+        "TaskDuration": 44.66900000000001,
+        "ScriptDuration": 22.972000000000005,
+        "LayoutDuration": 0.12099999999999958,
+        "RecalcStyleDuration": 0.15500000000000236
+      },
+      "mounted": {
+        "heap": 1841788,
+        "documents": 1,
+        "nodes": 1020,
+        "jsEventListeners": 7
+      },
+      "afterWork": {
+        "heap": 2040196,
+        "documents": 1,
+        "nodes": 1020,
+        "jsEventListeners": 7
+      },
+      "empty": {
+        "heap": 1694156,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 0
+      },
+      "teardown": {
+        "heap": 1735112,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 0
+      }
+    },
+    {
+      "sample": 2,
+      "scenario": "scene",
+      "count": 1,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 164.659,
+      "work": {
+        "TaskDuration": 178.45600000000002,
+        "ScriptDuration": 154.48299999999998,
+        "LayoutDuration": 0.3429999999999995,
+        "RecalcStyleDuration": 1.0800000000000045
+      },
+      "mounted": {
+        "heap": 2251700,
+        "documents": 1,
+        "nodes": 1021,
+        "jsEventListeners": 151
+      },
+      "afterWork": {
+        "heap": 3034408,
+        "documents": 1,
+        "nodes": 1021,
+        "jsEventListeners": 151
+      },
+      "empty": {
+        "heap": 2617728,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 145
+      },
+      "teardown": {
+        "heap": 2623800,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 145
+      }
+    },
+    {
+      "sample": 2,
+      "scenario": "scene",
+      "count": 1,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 160.303,
+      "work": {
+        "TaskDuration": 59.668,
+        "ScriptDuration": 43.335,
+        "LayoutDuration": 0.11800000000000005,
+        "RecalcStyleDuration": 1.337999999999999
+      },
+      "mounted": {
+        "heap": 2265496,
+        "documents": 1,
+        "nodes": 1021,
+        "jsEventListeners": 151
+      },
+      "afterWork": {
+        "heap": 2646104,
+        "documents": 1,
+        "nodes": 1021,
+        "jsEventListeners": 151
+      },
+      "empty": {
+        "heap": 2396648,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 145
+      },
+      "teardown": {
+        "heap": 2424072,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 145
+      }
+    },
+    {
+      "sample": 3,
+      "scenario": "terminal",
+      "count": 1,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 162.302,
+      "work": {
+        "TaskDuration": 363.458,
+        "ScriptDuration": 83.239,
+        "LayoutDuration": 42.681999999999995,
+        "RecalcStyleDuration": 52.282000000000004
+      },
+      "mounted": {
+        "heap": 2070156,
+        "documents": 1,
+        "nodes": 1079,
+        "jsEventListeners": 8
+      },
+      "afterWork": {
+        "heap": 2445172,
+        "documents": 1,
+        "nodes": 1079,
+        "jsEventListeners": 7
+      },
+      "empty": {
+        "heap": 1829856,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 0
+      },
+      "teardown": {
+        "heap": 1867564,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 0
+      }
+    },
+    {
+      "sample": 3,
+      "scenario": "terminal",
+      "count": 1,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 206.604,
+      "work": {
+        "TaskDuration": 419.254,
+        "ScriptDuration": 149.52300000000002,
+        "LayoutDuration": 40.364999999999995,
+        "RecalcStyleDuration": 51.396
+      },
+      "mounted": {
+        "heap": 2602416,
+        "documents": 1,
+        "nodes": 1080,
+        "jsEventListeners": 152
+      },
+      "afterWork": {
+        "heap": 3305060,
+        "documents": 1,
+        "nodes": 1080,
+        "jsEventListeners": 151
+      },
+      "empty": {
+        "heap": 2669920,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 145
+      },
+      "teardown": {
+        "heap": 2703184,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 145
+      }
+    },
+    {
+      "sample": 3,
+      "scenario": "terminal",
+      "count": 1,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 196.78799999999998,
+      "work": {
+        "TaskDuration": 369.595,
+        "ScriptDuration": 96.81700000000001,
+        "LayoutDuration": 43.198,
+        "RecalcStyleDuration": 48.11
+      },
+      "mounted": {
+        "heap": 2604568,
+        "documents": 1,
+        "nodes": 1080,
+        "jsEventListeners": 152
+      },
+      "afterWork": {
+        "heap": 3275896,
+        "documents": 1,
+        "nodes": 1080,
+        "jsEventListeners": 151
+      },
+      "empty": {
+        "heap": 2673620,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 145
+      },
+      "teardown": {
+        "heap": 2700948,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 145
+      }
+    },
+    {
+      "sample": 3,
+      "scenario": "terminal",
+      "count": 1,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 178.42,
+      "work": {
+        "TaskDuration": 443.87,
+        "ScriptDuration": 155.534,
+        "LayoutDuration": 48.25200000000001,
+        "RecalcStyleDuration": 50.44
+      },
+      "mounted": {
+        "heap": 2051556,
+        "documents": 1,
+        "nodes": 1079,
+        "jsEventListeners": 8
+      },
+      "afterWork": {
+        "heap": 2422196,
+        "documents": 1,
+        "nodes": 1079,
+        "jsEventListeners": 7
+      },
+      "empty": {
+        "heap": 1820064,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 0
+      },
+      "teardown": {
+        "heap": 1862712,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 0
+      }
+    },
+    {
+      "sample": 3,
+      "scenario": "scene",
+      "count": 1,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 118.931,
+      "work": {
+        "TaskDuration": 40.077,
+        "ScriptDuration": 23.266999999999996,
+        "LayoutDuration": 0.12599999999999764,
+        "RecalcStyleDuration": 1.1889999999999956
+      },
+      "mounted": {
+        "heap": 1850144,
+        "documents": 1,
+        "nodes": 1020,
+        "jsEventListeners": 7
+      },
+      "afterWork": {
+        "heap": 2048552,
+        "documents": 1,
+        "nodes": 1020,
+        "jsEventListeners": 7
+      },
+      "empty": {
+        "heap": 1702476,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 0
+      },
+      "teardown": {
+        "heap": 1739228,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 0
+      }
+    },
+    {
+      "sample": 3,
+      "scenario": "scene",
+      "count": 1,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 162.182,
+      "work": {
+        "TaskDuration": 184.96999999999997,
+        "ScriptDuration": 153.33200000000002,
+        "LayoutDuration": 1.3010000000000002,
+        "RecalcStyleDuration": 0.18599999999999867
+      },
+      "mounted": {
+        "heap": 2253944,
+        "documents": 1,
+        "nodes": 1021,
+        "jsEventListeners": 151
+      },
+      "afterWork": {
+        "heap": 3036344,
+        "documents": 1,
+        "nodes": 1021,
+        "jsEventListeners": 151
+      },
+      "empty": {
+        "heap": 2619652,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 145
+      },
+      "teardown": {
+        "heap": 2625676,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 145
+      }
+    },
+    {
+      "sample": 3,
+      "scenario": "scene",
+      "count": 1,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 160.549,
+      "work": {
+        "TaskDuration": 52.479,
+        "ScriptDuration": 36.992999999999995,
+        "LayoutDuration": 0.2739999999999999,
+        "RecalcStyleDuration": 1.5109999999999983
+      },
+      "mounted": {
+        "heap": 2271528,
+        "documents": 1,
+        "nodes": 1021,
+        "jsEventListeners": 151
+      },
+      "afterWork": {
+        "heap": 2648524,
+        "documents": 1,
+        "nodes": 1021,
+        "jsEventListeners": 151
+      },
+      "empty": {
+        "heap": 2399056,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 145
+      },
+      "teardown": {
+        "heap": 2426564,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 145
+      }
+    },
+    {
+      "sample": 3,
+      "scenario": "scene",
+      "count": 1,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 118.2,
+      "work": {
+        "TaskDuration": 193.18299999999996,
+        "ScriptDuration": 162.587,
+        "LayoutDuration": 0.1250000000000001,
+        "RecalcStyleDuration": 1.0330000000000061
+      },
+      "mounted": {
+        "heap": 1830224,
+        "documents": 1,
+        "nodes": 1020,
+        "jsEventListeners": 7
+      },
+      "afterWork": {
+        "heap": 2425408,
+        "documents": 1,
+        "nodes": 1020,
+        "jsEventListeners": 7
+      },
+      "empty": {
+        "heap": 2352272,
+        "documents": 1,
+        "nodes": 918,
+        "jsEventListeners": 6
+      },
+      "teardown": {
+        "heap": 2378508,
+        "documents": 1,
+        "nodes": 918,
+        "jsEventListeners": 6
+      }
+    },
+    {
+      "sample": 4,
+      "scenario": "terminal",
+      "count": 1,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 198.53,
+      "work": {
+        "TaskDuration": 449.678,
+        "ScriptDuration": 157.59099999999998,
+        "LayoutDuration": 46.81,
+        "RecalcStyleDuration": 52.00999999999999
+      },
+      "mounted": {
+        "heap": 2594284,
+        "documents": 1,
+        "nodes": 1080,
+        "jsEventListeners": 152
+      },
+      "afterWork": {
+        "heap": 3299656,
+        "documents": 1,
+        "nodes": 1080,
+        "jsEventListeners": 151
+      },
+      "empty": {
+        "heap": 2661608,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 145
+      },
+      "teardown": {
+        "heap": 2694824,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 145
+      }
+    },
+    {
+      "sample": 4,
+      "scenario": "terminal",
+      "count": 1,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 202.396,
+      "work": {
+        "TaskDuration": 407.664,
+        "ScriptDuration": 112.48100000000001,
+        "LayoutDuration": 51.618,
+        "RecalcStyleDuration": 53.219
+      },
+      "mounted": {
+        "heap": 2605660,
+        "documents": 1,
+        "nodes": 1080,
+        "jsEventListeners": 152
+      },
+      "afterWork": {
+        "heap": 3276984,
+        "documents": 1,
+        "nodes": 1080,
+        "jsEventListeners": 151
+      },
+      "empty": {
+        "heap": 2674664,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 145
+      },
+      "teardown": {
+        "heap": 2702020,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 145
+      }
+    },
+    {
+      "sample": 4,
+      "scenario": "terminal",
+      "count": 1,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 165.373,
+      "work": {
+        "TaskDuration": 444.491,
+        "ScriptDuration": 150.78400000000002,
+        "LayoutDuration": 48.421,
+        "RecalcStyleDuration": 48.966
+      },
+      "mounted": {
+        "heap": 2052820,
+        "documents": 1,
+        "nodes": 1079,
+        "jsEventListeners": 8
+      },
+      "afterWork": {
+        "heap": 2423940,
+        "documents": 1,
+        "nodes": 1079,
+        "jsEventListeners": 7
+      },
+      "empty": {
+        "heap": 1822364,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 0
+      },
+      "teardown": {
+        "heap": 1864724,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 0
+      }
+    },
+    {
+      "sample": 4,
+      "scenario": "terminal",
+      "count": 1,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 170.721,
+      "work": {
+        "TaskDuration": 365.21000000000004,
+        "ScriptDuration": 83.91200000000002,
+        "LayoutDuration": 44.283,
+        "RecalcStyleDuration": 55.97099999999999
+      },
+      "mounted": {
+        "heap": 2067032,
+        "documents": 1,
+        "nodes": 1079,
+        "jsEventListeners": 8
+      },
+      "afterWork": {
+        "heap": 2441636,
+        "documents": 1,
+        "nodes": 1079,
+        "jsEventListeners": 7
+      },
+      "empty": {
+        "heap": 1827168,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 0
+      },
+      "teardown": {
+        "heap": 1864880,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 0
+      }
+    },
+    {
+      "sample": 4,
+      "scenario": "scene",
+      "count": 1,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 163.116,
+      "work": {
+        "TaskDuration": 198.65899999999996,
+        "ScriptDuration": 167.53099999999998,
+        "LayoutDuration": 0.2519999999999988,
+        "RecalcStyleDuration": 0.7139999999999993
+      },
+      "mounted": {
+        "heap": 2256532,
+        "documents": 1,
+        "nodes": 1021,
+        "jsEventListeners": 151
+      },
+      "afterWork": {
+        "heap": 3038916,
+        "documents": 1,
+        "nodes": 1021,
+        "jsEventListeners": 151
+      },
+      "empty": {
+        "heap": 2622236,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 145
+      },
+      "teardown": {
+        "heap": 2628308,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 145
+      }
+    },
+    {
+      "sample": 4,
+      "scenario": "scene",
+      "count": 1,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 165.022,
+      "work": {
+        "TaskDuration": 63.70299999999998,
+        "ScriptDuration": 44.65799999999999,
+        "LayoutDuration": 1.0010000000000019,
+        "RecalcStyleDuration": 0.1789999999999986
+      },
+      "mounted": {
+        "heap": 2260808,
+        "documents": 1,
+        "nodes": 1021,
+        "jsEventListeners": 151
+      },
+      "afterWork": {
+        "heap": 2641412,
+        "documents": 1,
+        "nodes": 1021,
+        "jsEventListeners": 151
+      },
+      "empty": {
+        "heap": 2391944,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 145
+      },
+      "teardown": {
+        "heap": 2419328,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 145
+      }
+    },
+    {
+      "sample": 4,
+      "scenario": "scene",
+      "count": 1,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 119.94399999999999,
+      "work": {
+        "TaskDuration": 205.494,
+        "ScriptDuration": 166.792,
+        "LayoutDuration": 0.13400000000000217,
+        "RecalcStyleDuration": 1.6259999999999954
+      },
+      "mounted": {
+        "heap": 1829120,
+        "documents": 1,
+        "nodes": 1020,
+        "jsEventListeners": 7
+      },
+      "afterWork": {
+        "heap": 2425220,
+        "documents": 1,
+        "nodes": 1020,
+        "jsEventListeners": 7
+      },
+      "empty": {
+        "heap": 2352132,
+        "documents": 1,
+        "nodes": 918,
+        "jsEventListeners": 6
+      },
+      "teardown": {
+        "heap": 2378308,
+        "documents": 1,
+        "nodes": 918,
+        "jsEventListeners": 6
+      }
+    },
+    {
+      "sample": 4,
+      "scenario": "scene",
+      "count": 1,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 127.468,
+      "work": {
+        "TaskDuration": 41.791999999999994,
+        "ScriptDuration": 25.65599999999999,
+        "LayoutDuration": 0.4930000000000004,
+        "RecalcStyleDuration": 1.3670000000000002
+      },
+      "mounted": {
+        "heap": 1850144,
+        "documents": 1,
+        "nodes": 1020,
+        "jsEventListeners": 7
+      },
+      "afterWork": {
+        "heap": 2048556,
+        "documents": 1,
+        "nodes": 1020,
+        "jsEventListeners": 7
+      },
+      "empty": {
+        "heap": 1702476,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 0
+      },
+      "teardown": {
+        "heap": 1738208,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 0
+      }
+    },
+    {
+      "sample": 5,
+      "scenario": "terminal",
+      "count": 1,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 199.354,
+      "work": {
+        "TaskDuration": 361.202,
+        "ScriptDuration": 98.03900000000002,
+        "LayoutDuration": 44.552,
+        "RecalcStyleDuration": 48.581999999999994
+      },
+      "mounted": {
+        "heap": 2605608,
+        "documents": 1,
+        "nodes": 1080,
+        "jsEventListeners": 152
+      },
+      "afterWork": {
+        "heap": 3273016,
+        "documents": 1,
+        "nodes": 1080,
+        "jsEventListeners": 151
+      },
+      "empty": {
+        "heap": 2671936,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 145
+      },
+      "teardown": {
+        "heap": 2699280,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 145
+      }
+    },
+    {
+      "sample": 5,
+      "scenario": "terminal",
+      "count": 1,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 164.345,
+      "work": {
+        "TaskDuration": 424.755,
+        "ScriptDuration": 146,
+        "LayoutDuration": 38.156000000000006,
+        "RecalcStyleDuration": 53.976000000000006
+      },
+      "mounted": {
+        "heap": 2053208,
+        "documents": 1,
+        "nodes": 1079,
+        "jsEventListeners": 8
+      },
+      "afterWork": {
+        "heap": 2433228,
+        "documents": 1,
+        "nodes": 1079,
+        "jsEventListeners": 7
+      },
+      "empty": {
+        "heap": 1822284,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 0
+      },
+      "teardown": {
+        "heap": 1864608,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 0
+      }
+    },
+    {
+      "sample": 5,
+      "scenario": "terminal",
+      "count": 1,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 168.75799999999998,
+      "work": {
+        "TaskDuration": 343.84,
+        "ScriptDuration": 87.52100000000002,
+        "LayoutDuration": 40.229,
+        "RecalcStyleDuration": 47.309000000000005
+      },
+      "mounted": {
+        "heap": 2069840,
+        "documents": 1,
+        "nodes": 1079,
+        "jsEventListeners": 8
+      },
+      "afterWork": {
+        "heap": 2443308,
+        "documents": 1,
+        "nodes": 1079,
+        "jsEventListeners": 7
+      },
+      "empty": {
+        "heap": 1829936,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 0
+      },
+      "teardown": {
+        "heap": 1867644,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 0
+      }
+    },
+    {
+      "sample": 5,
+      "scenario": "terminal",
+      "count": 1,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 198.946,
+      "work": {
+        "TaskDuration": 416.191,
+        "ScriptDuration": 150.26099999999997,
+        "LayoutDuration": 41.906,
+        "RecalcStyleDuration": 52.91900000000001
+      },
+      "mounted": {
+        "heap": 2594056,
+        "documents": 1,
+        "nodes": 1080,
+        "jsEventListeners": 152
+      },
+      "afterWork": {
+        "heap": 3296196,
+        "documents": 1,
+        "nodes": 1080,
+        "jsEventListeners": 151
+      },
+      "empty": {
+        "heap": 2661520,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 145
+      },
+      "teardown": {
+        "heap": 2694876,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 145
+      }
+    },
+    {
+      "sample": 5,
+      "scenario": "scene",
+      "count": 1,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 163.154,
+      "work": {
+        "TaskDuration": 49.06099999999999,
+        "ScriptDuration": 32.221,
+        "LayoutDuration": 0.11900000000000105,
+        "RecalcStyleDuration": 1.7459999999999976
+      },
+      "mounted": {
+        "heap": 2262000,
+        "documents": 1,
+        "nodes": 1021,
+        "jsEventListeners": 151
+      },
+      "afterWork": {
+        "heap": 2642676,
+        "documents": 1,
+        "nodes": 1021,
+        "jsEventListeners": 151
+      },
+      "empty": {
+        "heap": 2393844,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 145
+      },
+      "teardown": {
+        "heap": 2421372,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 145
+      }
+    },
+    {
+      "sample": 5,
+      "scenario": "scene",
+      "count": 1,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 121.051,
+      "work": {
+        "TaskDuration": 191.887,
+        "ScriptDuration": 160.818,
+        "LayoutDuration": 0.12399999999999911,
+        "RecalcStyleDuration": 0.42400000000000077
+      },
+      "mounted": {
+        "heap": 1829176,
+        "documents": 1,
+        "nodes": 1020,
+        "jsEventListeners": 7
+      },
+      "afterWork": {
+        "heap": 2424440,
+        "documents": 1,
+        "nodes": 1020,
+        "jsEventListeners": 7
+      },
+      "empty": {
+        "heap": 2351304,
+        "documents": 1,
+        "nodes": 918,
+        "jsEventListeners": 6
+      },
+      "teardown": {
+        "heap": 2377028,
+        "documents": 1,
+        "nodes": 918,
+        "jsEventListeners": 6
+      }
+    },
+    {
+      "sample": 5,
+      "scenario": "scene",
+      "count": 1,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 119.239,
+      "work": {
+        "TaskDuration": 34.67100000000001,
+        "ScriptDuration": 19.311000000000003,
+        "LayoutDuration": 0.11800000000000005,
+        "RecalcStyleDuration": 1.1560000000000041
+      },
+      "mounted": {
+        "heap": 1850144,
+        "documents": 1,
+        "nodes": 1020,
+        "jsEventListeners": 7
+      },
+      "afterWork": {
+        "heap": 2048552,
+        "documents": 1,
+        "nodes": 1020,
+        "jsEventListeners": 7
+      },
+      "empty": {
+        "heap": 1702476,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 0
+      },
+      "teardown": {
+        "heap": 1739268,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 0
+      }
+    },
+    {
+      "sample": 5,
+      "scenario": "scene",
+      "count": 1,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 158.667,
+      "work": {
+        "TaskDuration": 252.74099999999999,
+        "ScriptDuration": 206.35199999999998,
+        "LayoutDuration": 0.41199999999999914,
+        "RecalcStyleDuration": 1.4400000000000037
+      },
+      "mounted": {
+        "heap": 2252720,
+        "documents": 1,
+        "nodes": 1021,
+        "jsEventListeners": 151
+      },
+      "afterWork": {
+        "heap": 3035396,
+        "documents": 1,
+        "nodes": 1021,
+        "jsEventListeners": 151
+      },
+      "empty": {
+        "heap": 2618636,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 145
+      },
+      "teardown": {
+        "heap": 2620636,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 145
+      }
+    },
+    {
+      "sample": 6,
+      "scenario": "terminal",
+      "count": 1,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 200.53799999999998,
+      "work": {
+        "TaskDuration": 513.3760000000001,
+        "ScriptDuration": 184.89799999999997,
+        "LayoutDuration": 50.06099999999999,
+        "RecalcStyleDuration": 56.553
+      },
+      "mounted": {
+        "heap": 2051848,
+        "documents": 1,
+        "nodes": 1079,
+        "jsEventListeners": 8
+      },
+      "afterWork": {
+        "heap": 2435208,
+        "documents": 1,
+        "nodes": 1079,
+        "jsEventListeners": 7
+      },
+      "empty": {
+        "heap": 1821340,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 0
+      },
+      "teardown": {
+        "heap": 1863612,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 0
+      }
+    },
+    {
+      "sample": 6,
+      "scenario": "terminal",
+      "count": 1,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 169.36499999999998,
+      "work": {
+        "TaskDuration": 349.699,
+        "ScriptDuration": 83.433,
+        "LayoutDuration": 39.189,
+        "RecalcStyleDuration": 50.878
+      },
+      "mounted": {
+        "heap": 2067444,
+        "documents": 1,
+        "nodes": 1079,
+        "jsEventListeners": 8
+      },
+      "afterWork": {
+        "heap": 2440840,
+        "documents": 1,
+        "nodes": 1079,
+        "jsEventListeners": 7
+      },
+      "empty": {
+        "heap": 1827348,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 0
+      },
+      "teardown": {
+        "heap": 1864984,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 0
+      }
+    },
+    {
+      "sample": 6,
+      "scenario": "terminal",
+      "count": 1,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 200.72400000000002,
+      "work": {
+        "TaskDuration": 434.38699999999994,
+        "ScriptDuration": 156.57,
+        "LayoutDuration": 45.772999999999996,
+        "RecalcStyleDuration": 46.924
+      },
+      "mounted": {
+        "heap": 2596024,
+        "documents": 1,
+        "nodes": 1080,
+        "jsEventListeners": 152
+      },
+      "afterWork": {
+        "heap": 3300852,
+        "documents": 1,
+        "nodes": 1080,
+        "jsEventListeners": 151
+      },
+      "empty": {
+        "heap": 2663568,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 145
+      },
+      "teardown": {
+        "heap": 2696780,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 145
+      }
+    },
+    {
+      "sample": 6,
+      "scenario": "terminal",
+      "count": 1,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 201.51,
+      "work": {
+        "TaskDuration": 392.425,
+        "ScriptDuration": 107.634,
+        "LayoutDuration": 49.4,
+        "RecalcStyleDuration": 50.092
+      },
+      "mounted": {
+        "heap": 2604756,
+        "documents": 1,
+        "nodes": 1080,
+        "jsEventListeners": 152
+      },
+      "afterWork": {
+        "heap": 3276048,
+        "documents": 1,
+        "nodes": 1080,
+        "jsEventListeners": 151
+      },
+      "empty": {
+        "heap": 2673664,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 145
+      },
+      "teardown": {
+        "heap": 2700992,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 145
+      }
+    },
+    {
+      "sample": 6,
+      "scenario": "scene",
+      "count": 1,
+      "kind": "preact",
+      "revision": "before",
+      "startupMs": 133.306,
+      "work": {
+        "TaskDuration": 197.57399999999998,
+        "ScriptDuration": 162.95399999999998,
+        "LayoutDuration": 0.4689999999999972,
+        "RecalcStyleDuration": 1.2580000000000022
+      },
+      "mounted": {
+        "heap": 1832188,
+        "documents": 1,
+        "nodes": 1020,
+        "jsEventListeners": 7
+      },
+      "afterWork": {
+        "heap": 2426132,
+        "documents": 1,
+        "nodes": 1020,
+        "jsEventListeners": 7
+      },
+      "empty": {
+        "heap": 2355184,
+        "documents": 1,
+        "nodes": 918,
+        "jsEventListeners": 6
+      },
+      "teardown": {
+        "heap": 2380300,
+        "documents": 1,
+        "nodes": 918,
+        "jsEventListeners": 6
+      }
+    },
+    {
+      "sample": 6,
+      "scenario": "scene",
+      "count": 1,
+      "kind": "preact",
+      "revision": "after",
+      "startupMs": 124,
+      "work": {
+        "TaskDuration": 43.714000000000006,
+        "ScriptDuration": 24.974999999999998,
+        "LayoutDuration": 0.9569999999999995,
+        "RecalcStyleDuration": 0.8860000000000048
+      },
+      "mounted": {
+        "heap": 1841788,
+        "documents": 1,
+        "nodes": 1020,
+        "jsEventListeners": 7
+      },
+      "afterWork": {
+        "heap": 2040232,
+        "documents": 1,
+        "nodes": 1020,
+        "jsEventListeners": 7
+      },
+      "empty": {
+        "heap": 1694156,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 0
+      },
+      "teardown": {
+        "heap": 1729888,
+        "documents": 1,
+        "nodes": 11,
+        "jsEventListeners": 0
+      }
+    },
+    {
+      "sample": 6,
+      "scenario": "scene",
+      "count": 1,
+      "kind": "react",
+      "revision": "before",
+      "startupMs": 163.506,
+      "work": {
+        "TaskDuration": 206.387,
+        "ScriptDuration": 174.11599999999999,
+        "LayoutDuration": 0.12900000000000064,
+        "RecalcStyleDuration": 0.7269999999999985
+      },
+      "mounted": {
+        "heap": 2252900,
+        "documents": 1,
+        "nodes": 1021,
+        "jsEventListeners": 151
+      },
+      "afterWork": {
+        "heap": 3035076,
+        "documents": 1,
+        "nodes": 1021,
+        "jsEventListeners": 151
+      },
+      "empty": {
+        "heap": 2619208,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 145
+      },
+      "teardown": {
+        "heap": 2625232,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 145
+      }
+    },
+    {
+      "sample": 6,
+      "scenario": "scene",
+      "count": 1,
+      "kind": "react",
+      "revision": "after",
+      "startupMs": 157.309,
+      "work": {
+        "TaskDuration": 51.22199999999999,
+        "ScriptDuration": 31.53600000000001,
+        "LayoutDuration": 0.7820000000000015,
+        "RecalcStyleDuration": 0.802000000000004
+      },
+      "mounted": {
+        "heap": 2260776,
+        "documents": 1,
+        "nodes": 1021,
+        "jsEventListeners": 151
+      },
+      "afterWork": {
+        "heap": 2641492,
+        "documents": 1,
+        "nodes": 1021,
+        "jsEventListeners": 151
+      },
+      "empty": {
+        "heap": 2391740,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 145
+      },
+      "teardown": {
+        "heap": 2415104,
+        "documents": 1,
+        "nodes": 12,
+        "jsEventListeners": 145
+      }
+    }
+  ]
+}
