@@ -6,19 +6,23 @@ import { execFileSync } from 'node:child_process';
 import { cpus, platform, arch, release } from 'node:os';
 import { gzipSync } from 'node:zlib';
 import { installStaticDriver, afterPaint, workload, diagnostics } from './browser.mjs';
+import { observeRendering } from './observe.mjs';
 
 const args = Object.fromEntries(process.argv.slice(2).map(arg => arg.replace(/^--/, '').split('=')));
-for (const key of Object.keys(args)) assert.ok(['samples', 'counts', 'steps', 'cycles', 'cpu', 'trace', 'static-ui'].includes(key), `Unknown option ${key}`);
+for (const key of Object.keys(args)) assert.ok(['samples', 'counts', 'steps', 'cycles', 'cpu', 'trace', 'static-ui', 'rendering'].includes(key), `Unknown option ${key}`);
 const options = {
   samples: Number(args.samples ?? 5), counts: (args.counts ?? '1,100,1000').split(',').map(Number),
   steps: Number(args.steps ?? 20), cycles: Number(args.cycles ?? 100), cpu: Number(args.cpu ?? 4),
   trace: Object.hasOwn(args, 'trace'), viewport: { width: 900, height: 900 },
   staticUI: Object.hasOwn(args, 'static-ui'),
+  rendering: Object.hasOwn(args, 'rendering'),
+  idleMs: 2000,
 };
 for (const key of ['samples', 'steps', 'cycles']) assert.ok(Number.isInteger(options[key]) && options[key] > 0, `${key} must be a positive integer`);
 assert.ok(options.steps % 2 === 0, 'steps must be even so each workload returns to its initial state');
 assert.ok(options.counts.length && options.counts.every(count => [1, 100, 1000].includes(count)), 'counts must select from 1,100,1000');
 assert.ok(Number.isFinite(options.cpu) && options.cpu >= 1, 'cpu must be >= 1');
+assert.ok(!options.rendering || options.staticUI, '--rendering requires --static-ui');
 const kinds = ['static', 'react', 'preact', 'lit', 'adapter'];
 const stamp = new Date().toISOString().replace(/[:.]/g, '-');
 const directory = `.profiles/${stamp}`;
@@ -32,6 +36,7 @@ const report = {
     date: new Date().toISOString(), commit: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(),
     dirty: !!execFileSync('git', ['status', '--porcelain'], { encoding: 'utf8' }).trim(),
     browser: browser.version(), os: `${platform()} ${release()} ${arch()}`, cpuModel: cpus()[0]?.model,
+    node: process.version, zlib: process.versions.zlib,
     options, kinds, cache: 'New context and disabled HTTP cache per trial; browser process and OS caches may be warm',
     network: 'Local HTTP without network throttling; compressed sizes are calculated separately per resource',
     notes: 'Logo microbenchmark, not INP or a playback result. Static update driver is test-injected. CDP heap sampling is a separate instrumented pass. CPU slowdown does not model mobile GPU/memory.',
@@ -80,6 +85,7 @@ try {
         const context = await browser.newContext({ viewport: options.viewport, deviceScaleFactor: 1 });
         try {
           const page = await context.newPage();
+          if (options.rendering) await page.addInitScript(observeRendering);
           const errors = [];
           page.on('pageerror', error => errors.push(error.message));
           const session = await context.newCDPSession(page);
@@ -109,6 +115,7 @@ try {
             // main-thread cost, not compositor FPS or field responsiveness.
             const range = await page.evaluate(() => Math.max(0, document.documentElement.scrollHeight - innerHeight));
             let scroll = null;
+            const scrollStart = await page.evaluate(() => performance.now());
             if (range > 0) {
               await page.mouse.move(450, 450);
               if (options.trace) await session.send('Tracing.start', { categories: 'devtools.timeline,blink.user_timing', transferMode: 'ReturnAsStream' });
@@ -124,10 +131,14 @@ try {
               if (options.trace) await endTrace(session, `${directory}/${kind}-${count}-${sample}-scroll.json.gz`);
             }
             const beforeIdle = await metrics(session);
-            await page.waitForTimeout(500);
+            const idleStart = await page.evaluate(() => performance.now());
+            await page.waitForTimeout(options.idleMs);
             const idle = delta(beforeIdle, await metrics(session));
+            const rendering = options.rendering ? await page.evaluate(({ scrollStart, idleStart }) => ({
+              entries: window.renderingDiagnostics(), scrollStart, idleStart, end: performance.now(),
+            }), { scrollStart, idleStart }) : undefined;
             assert.deepEqual(errors, []);
-            report.trials.push({ sample, kind, count, startup, mountedMemory, scroll, idle });
+            report.trials.push({ sample, kind, count, startup, mountedMemory, scroll, idle, rendering });
             await writeFile(`${directory}/results.json`, JSON.stringify(report, null, 2) + '\n');
             console.log(`${sample + 1}/${options.samples} ${kind.padEnd(7)} n=${count}: startup ${startup.TaskDurationMs.toFixed(1)}ms; FCP ${startup.fcpMs}ms; scroll ${scroll ? scroll.TaskDurationMs.toFixed(1) + 'ms' : 'N/A'}; heap ${(mountedMemory.usedHeapBytes / 1024).toFixed(0)} KiB`);
             continue;
@@ -145,7 +156,7 @@ try {
             if (options.trace) await endTrace(session, `${directory}/${kind}-${count}-${sample}-${scenario}.json.gz`);
           }
           const idleBefore = await metrics(session);
-          await page.waitForTimeout(500);
+          await page.waitForTimeout(options.idleMs);
           scenarios.idle = delta(idleBefore, await metrics(session));
           const diagnostic = await page.evaluate(diagnostics, count);
           assert.equal(diagnostic.one.unrelatedMutations, 0, `${kind}: nonlocal update`);

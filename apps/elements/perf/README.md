@@ -30,7 +30,58 @@ Run on an otherwise idle machine, without concurrent builds/tests or browser
 activity. Each run writes raw results and metadata into an ignored `.profiles`
 directory. The runner rotates implementation order between samples and saves
 each completed trial. The summarizer rejects incomplete runs. Timing and heap
-values are diagnostic results, not flaky CI pass/fail thresholds.
+values are diagnostic results by default. The explicit release gate below runs
+only against a comparable baseline; ordinary CI gates bytes and behavior.
+
+## Acceptance gates
+
+The contract is [documented here](../../../docs/performance-gates.md). These are
+logo-fixture budgets, not certification of the whole component catalog.
+
+CI enforces complete gzip JS ceilings (including each runtime and driver):
+static **0 B**, Lit **12,000 B**, Preact **22,000 B**, React/adapter **85,000 B**.
+It also checks no retained DOM nodes, documents, or listeners after 20 warmed
+100-logo mount/unmount cycles, alongside existing visual, SSR, and locality tests.
+
+For release measurements, save runs from the baseline and candidate worktrees
+on the same idle machine, browser, viewport, and throttle. Use seven or more
+samples and identical options in each worktree:
+
+```sh
+node perf/run.mjs --static-ui --samples=7
+node perf/gate.mjs /path/to/baseline/results.json /path/to/candidate/results.json
+
+# Separate rendering diagnostics; do not use these CPU/heap values for comparisons.
+node perf/run.mjs --static-ui --rendering --samples=7
+node perf/gate.mjs /path/to/baseline-rendering/results.json /path/to/candidate-rendering/results.json
+
+# Separate retention pass; includes 100 warmed cycles at count=100.
+node perf/run.mjs --samples=7 --counts=100
+node perf/gate.mjs /path/to/baseline-retention/results.json /path/to/candidate-retention/results.json
+```
+
+The gate fails incomplete, duplicate, incompatible, or missing measurements.
+It compares p75 startup task time, FCP, scrolling task time, idle task time,
+mounted JS heap and DOM counts against the same implementation's baseline.
+A regression fails above **15% AND the metric's absolute noise allowance**:
+5 ms task work, 16 ms FCP, 2 ms idle work, 64 KiB JS heap, 4 DOM nodes.
+These are initial engineering guardrails, not statistically proven noise bounds.
+Keep the raw distribution; investigate failures and repeat paired runs on an idle
+machine rather than automatically updating the baseline. The comparison alone
+does not certify an improvement or a good absolute page experience.
+
+Rendering runs require zero long tasks/long animation frames starting during the
+scroll/idle window and at most 0.001 total non-input layout shift per trial.
+This sums all shifts (stricter than session-window CLS). Unsupported observation
+APIs fail certification. Startup long frames remain in the raw report for review;
+the 1,000-logo stress case is not given a fictitious universal startup deadline.
+Retention runs allow no DOM/listener/document growth and at most 128 KiB warmed
+JS heap growth after 100 cycles. This finite workload cannot prove leak freedom.
+The idle window is two seconds: it catches continuous work, not slow timers.
+
+The five-sample historical results predate these gates and cannot certify them.
+Use traces and real-device testing for paint/raster/compositor work; these gates
+do not claim FPS, total process memory, or field INP measurements.
 
 For a quick harness check or a separately instrumented trace:
 
@@ -102,7 +153,7 @@ CPU slowdown is not a simulation of mobile memory bandwidth or GPU behavior.
   frame waits and is not a useful throughput metric by itself.
 - **Theme:** toggle an inherited foreground variable. Correctness tests require
   no component DOM mutations; CSS recalculation/paint can still cost time.
-- **Idle:** measure main-thread work over 500ms with no component actions. Browser
+- **Idle:** measure main-thread work over two seconds with no component actions. Browser
   and test-protocol housekeeping can produce nonzero work.
 - **Mounted memory:** retained JS heap after forced GC, allocated heap capacity,
   DOM nodes, documents, and JS event listeners. Whole-page heap includes the
@@ -149,7 +200,8 @@ current static website goal, first measure a representative page with static
 content, fonts/images, and minimal interactive islands. No catalog migration
 should depend solely on these small-component results.
 
-`--static-ui` measures initial rendering, mounted JS heap, a 500ms idle window,
+`--static-ui` measures initial rendering, mounted JS heap, a two-second idle window
+(500ms in the historical results),
 and native wheel input on pages taller than the viewport. It skips component
 updates, allocation sampling, and teardown churn. All five implementations run
 in each sample; static output does not receive the injected update driver.

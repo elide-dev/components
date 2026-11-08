@@ -3,8 +3,10 @@ import { chromium } from 'playwright';
 import { preview } from 'vite';
 import { installStaticDriver, afterPaint, diagnostics } from './browser.mjs';
 import { readFile } from 'node:fs/promises';
+import { checkBundles } from './budgets.mjs';
 
 const bundles = JSON.parse(await readFile('dist/perf/bundles.json', 'utf8'));
+checkBundles(bundles);
 assert.deepEqual(bundles.variants.static.js, []);
 const server = await preview({ configFile: false, preview: { host: '127.0.0.1', port: 0 } });
 const base = `http://127.0.0.1:${server.httpServer.address().port}`;
@@ -36,9 +38,26 @@ try {
       await window.logoDriver.update([0], 32);
     });
     assert.equal(await page.locator('[data-item]').count(), 1);
+    const session = await page.context().newCDPSession(page);
+    await page.evaluate(async () => { await window.logoDriver.clear(); });
+    await page.evaluate(afterPaint);
+    await session.send('HeapProfiler.collectGarbage');
+    const before = await session.send('Memory.getDOMCounters');
+    await page.evaluate(async () => {
+      for (let cycle = 0; cycle < 20; cycle++) {
+        await window.logoDriver.mount(100);
+        await window.logoDriver.clear();
+      }
+    });
+    await page.evaluate(afterPaint);
+    await session.send('HeapProfiler.collectGarbage');
+    const after = await session.send('Memory.getDOMCounters');
+    for (const metric of ['nodes', 'documents', 'jsEventListeners']) {
+      assert.ok(after[metric] <= before[metric], `${kind}: retained ${metric} after teardown: ${before[metric]} -> ${after[metric]}`);
+    }
     assert.deepEqual(errors, []);
     await page.close();
-    console.log(`${kind}: equivalent geometry/theme, local updates, stable nodes, no-op writes, and remount pass`);
+    console.log(`${kind}: bundle budget, geometry/theme, local updates, stable nodes, no-op writes, remount, and DOM/listener cleanup pass`);
   }
 } finally {
   await browser.close();

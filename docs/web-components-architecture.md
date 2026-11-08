@@ -303,6 +303,11 @@ a page-level byte saving.
 
 ## Validation and performance gates
 
+The [performance acceptance contract](./performance-gates.md) defines the
+static-first metrics, executable logo budgets, and per-component promotion
+requirements. Release comparisons require at least seven samples; the earlier
+five-sample exploration below is diagnostic evidence, not gate certification.
+
 The production benchmark is the decision surface, not Storybook's development
 bundle. Extend `apps/benchmark` and its existing profiling method with equivalent
 React, Preact, Lit, and static cases. Include Lit and React runtimes in complete

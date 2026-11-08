@@ -5,11 +5,12 @@
   "type": "module",
   "scripts": {
     "build": "node build.mjs",
-    "test": "node check.mjs && node perf/check.mjs",
+    "test": "node check.mjs && node perf/budgets.test.mjs && node perf/check.mjs",
     "lint": "tsc --noEmit",
     "build:perf": "node perf/build.mjs",
     "perf": "node perf/run.mjs",
-    "test:perf": "node perf/check.mjs"
+    "test:perf": "node perf/budgets.test.mjs && node perf/check.mjs",
+    "perf:gate": "node perf/gate.mjs"
   },
   "dependencies": {
     "@elide/elements": "workspace:*",
