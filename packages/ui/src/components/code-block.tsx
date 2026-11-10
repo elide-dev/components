@@ -82,6 +82,12 @@ export interface CodeBlockProps {
   wrap?: boolean | "toggle";
   /** Make line numbers permalinks (`#<prefix>L12`); a string sets the prefix. */
   lineLinks?: boolean | string;
+  /**
+   * Base for the block's element ids (file tabs and panels, line anchors).
+   * Defaults to the `lineLinks` prefix, the filename, or a generated id; set
+   * it when separately rendered roots on one page would otherwise collide.
+   */
+  id?: string;
   /** Collapse to this many lines with a "Show more" control. */
   maxLines?: number;
   /** Numbered notes for lines (a code tour), listed under the code. */
@@ -464,6 +470,7 @@ function StatusBar({ file }: { file: PreparedFile }) {
 }
 
 export function CodeBlock({
+  id: idProp,
   variant = "editor",
   filename,
   lang,
@@ -500,7 +507,7 @@ export function CodeBlock({
   const controlled = activeFile === undefined ? -1 : prepared.findIndex((file) => file.name === activeFile);
   const active = controlled >= 0 ? controlled : Math.min(chosen, prepared.length - 1);
   const current = prepared[active];
-  const id = blockId(lineLinks, filename, reactId);
+  const id = idProp ? slug(idProp) || "code" : blockId(lineLinks, filename, reactId);
   const linkPrefix = lineLinks ? `${id}-` : undefined;
 
   // A single file is just a titled block; tabs start at two.

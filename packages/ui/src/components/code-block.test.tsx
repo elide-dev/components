@@ -356,3 +356,14 @@ describe("CodeBlock — rows, decorations, wrapping and chrome", () => {
     expect(container.querySelector(".sh-flag")).toHaveTextContent("--watch");
   });
 });
+
+describe("CodeBlock id", () => {
+  it("bases file tab and panel ids on `id`, so separate roots on one page stay unique", () => {
+    const files = [{ name: "a.ts", code: "a()" }, { name: "b.py", code: "b()" }];
+    const first = render(<CodeBlock files={files} id="sample-1" />);
+    const second = render(<CodeBlock files={files} id="sample-2" />);
+    expect(first.container.querySelector('[role="tab"]')?.id).toBe("sample-1-tab-0");
+    expect(second.container.querySelector('[role="tabpanel"]')?.id).toBe("sample-2-panel-0");
+    expect(first.container.querySelector('[role="tab"]')?.getAttribute("aria-controls")).toBe("sample-1-panel-0");
+  });
+});
