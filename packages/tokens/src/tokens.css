@@ -47,19 +47,23 @@
   --eld-magenta-900: #920959;
   --eld-magenta-950: #5b0035;
 
-  /* ---- Primitive · Neutral (mode base scale) ---- */
-  --eld-neutral-50: #fafcfa;
-  --eld-neutral-100: #f5f5f5;
-  --eld-neutral-200: #d4d4d4;
-  --eld-neutral-300: #c0c0c0;
-  --eld-neutral-400: #9a9a9a;
-  --eld-neutral-500: #737373;
-  --eld-neutral-550: #696969;
-  --eld-neutral-600: #525252;
-  --eld-neutral-700: #3a3a3a;
-  --eld-neutral-800: #1e1e22;
-  --eld-neutral-900: #0e0e11;
-  --eld-neutral-950: #0a0a0a;
+  /* ---- Primitive · Neutral (mode base scale) ----
+   * One hue (OKLCH 290, the purple scale's) at very low chroma, so surfaces,
+   * rules and text sit in the same family as the accent instead of beside it.
+   * Each step keeps the relative luminance of the grey it replaced, so every
+   * contrast pairing is unchanged. */
+  --eld-neutral-50: #fcfbfe;
+  --eld-neutral-100: #f5f5f8;
+  --eld-neutral-200: #d4d4d9;
+  --eld-neutral-300: #c0bfc5;
+  --eld-neutral-400: #9a99a0;
+  --eld-neutral-500: #73727a;
+  --eld-neutral-550: #696870;
+  --eld-neutral-600: #525159;
+  --eld-neutral-700: #3a3942;
+  --eld-neutral-800: #1e1d26;
+  --eld-neutral-900: #0e0d15;
+  --eld-neutral-950: #0a0a10;
 
   /* ---- Primitive · Brand + accents ---- */
   --eld-brand-purple: #662d91;
