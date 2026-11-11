@@ -402,7 +402,8 @@ function variantDefaults(variant: CodeBlockProps["variant"], lineNumbers: boolea
 }
 
 /** Id prefix for permalinks, notes and tab panels: explicit, else the filename, else a React id. */
-function blockId(lineLinks: CodeBlockProps["lineLinks"], filename: string | undefined, fallback: string): string {
+function blockId(lineLinks: CodeBlockProps["lineLinks"], filename: string | undefined, fallback: string, explicitId?: string): string {
+  if (explicitId) return slug(explicitId) || "code";
   return slug(typeof lineLinks === "string" ? lineLinks : (filename ?? fallback)) || "code";
 }
 
@@ -507,7 +508,7 @@ export function CodeBlock({
   const controlled = activeFile === undefined ? -1 : prepared.findIndex((file) => file.name === activeFile);
   const active = controlled >= 0 ? controlled : Math.min(chosen, prepared.length - 1);
   const current = prepared[active];
-  const id = idProp ? slug(idProp) || "code" : blockId(lineLinks, filename, reactId);
+  const id = blockId(lineLinks, filename, reactId, idProp);
   const linkPrefix = lineLinks ? `${id}-` : undefined;
 
   // A single file is just a titled block; tabs start at two.
