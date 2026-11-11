@@ -7,6 +7,9 @@ import { cva } from "class-variance-authority";
  * `gradient` is the purple-to-rose CTA (the "Install" button). `changelog` is the
  * softly tinted accent affordance used in the docs nav.
  *
+ * Edges are hard: a 1px rim with clear contrast against both the face and the
+ * page, and no blurred shadow around it (`outline` has none at all).
+ *
  * The hover surface (including its border and shadow) fades on ::before.
  * Its isolated negative stack keeps it behind the label without extra markup,
  * including when the classes are composed onto an anchor. The hit area stays
@@ -30,7 +33,7 @@ export const buttonVariants = cva(
         gradient:
           "text-primary-foreground [background:var(--eld-gradient-brand)_border-box_padding-box,var(--button-border-background)_border-box] shadow-[var(--button-shadow)] before:[background:var(--eld-gradient-hover)_border-box_padding-box,var(--button-border-hover-background)_border-box] before:shadow-[var(--button-shadow-hover)] supports-[background-clip:border-area]:[background-clip:padding-box,border-area] supports-[background-clip:border-area]:before:[background-clip:padding-box,border-area]",
         outline:
-          "border-foreground/25 bg-card text-foreground shadow-xs before:border-primary-emphasis/60 before:bg-primary-soft",
+          "border-foreground/40 bg-card text-foreground before:border-primary-emphasis/70 before:bg-primary-soft",
         ghost:
           "bg-transparent text-muted-foreground before:bg-primary-soft",
         changelog:
