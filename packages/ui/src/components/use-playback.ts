@@ -8,6 +8,13 @@ export interface UsePlaybackOptions {
   speed?: number;
   /** Initial position (e.g. the poster frame). Later changes are applied with `seek`. */
   time?: number;
+  /**
+   * While playing, whether a time-only change is worth a render. The clock
+   * ticks every animation frame; a consumer whose output changes less often
+   * (a recording between output events) returns false to skip the render.
+   * State changes other than time always render.
+   */
+  commit?: (committed: PlaybackState, next: PlaybackState) => boolean;
 }
 
 /**
@@ -27,9 +34,25 @@ export function usePlayback(options: UsePlaybackOptions): [PlaybackState, Playba
   );
   const [state, setState] = React.useState(() => playback.getState());
 
+  const commit = React.useRef(options.commit);
   React.useEffect(() => {
-    setState(playback.getState());
-    const unsubscribe = playback.subscribe(setState);
+    commit.current = options.commit;
+  }, [options.commit]);
+
+  React.useEffect(() => {
+    let committed = playback.getState();
+    setState(committed);
+    const unsubscribe = playback.subscribe((next) => {
+      // (`ended` only changes with `playing`.)
+      const timeOnly =
+        next.playing &&
+        committed.playing &&
+        next.speed === committed.speed &&
+        next.duration === committed.duration;
+      if (timeOnly && commit.current && !commit.current(committed, next)) return;
+      committed = next;
+      setState(next);
+    });
     const onVisibility = () => {
       if (document.hidden) playback.pause();
     };

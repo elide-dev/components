@@ -242,6 +242,9 @@ function MarkerButtons({ markers, time, label, onSeek }: { markers: readonly Cas
   );
 }
 
+/** Longest a playing recording goes without a render (seconds): the scrubber's pace. */
+const COMMIT_INTERVAL = 0.1;
+
 /** Scrubber with decorative marker ticks. */
 function Scrubber({ cast, markers, time, label, valueText, onSeek }: { cast?: Cast; markers: readonly CastMarker[]; time: number; label: string; valueText: string; onSeek: (time: number) => void }) {
   const duration = cast?.duration ?? 0;
@@ -379,7 +382,18 @@ export function TerminalRecording({ source, script, prompt, fallback }: Terminal
   const markers = React.useMemo(() => cast?.markers ?? [], [cast]);
   const cues = React.useMemo(() => markers.map((marker) => marker.time), [markers]);
 
-  const [state, playback] = usePlayback({ duration: cast?.duration ?? 0, cues, loop, speed: options.speed, time: posterTime });
+  // Render when the screen changes (cues sit on output events) or the clock
+  // moves a tenth of a second (the scrubber), not on every animation frame.
+  const commit = React.useMemo(() => {
+    let shown: unknown;
+    return (committed: PlaybackState, next: PlaybackState) => {
+      const screen = renderer?.screen(next.time);
+      const due = screen !== shown || Math.abs(next.time - committed.time) >= COMMIT_INTERVAL;
+      if (due) shown = screen;
+      return due;
+    };
+  }, [renderer]);
+  const [state, playback] = usePlayback({ duration: cast?.duration ?? 0, cues, loop, speed: options.speed, time: posterTime, commit });
   usePlaybackCallbacks(playback, markers, options);
   const pendingPlay = React.useRef(false);
   const autoplayed = React.useRef(false);
