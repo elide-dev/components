@@ -35,7 +35,9 @@ export function usePlayback(options: UsePlaybackOptions): [PlaybackState, Playba
   const [state, setState] = React.useState(() => playback.getState());
 
   const commit = React.useRef(options.commit);
-  commit.current = options.commit;
+  React.useEffect(() => {
+    commit.current = options.commit;
+  }, [options.commit]);
 
   React.useEffect(() => {
     let committed = playback.getState();

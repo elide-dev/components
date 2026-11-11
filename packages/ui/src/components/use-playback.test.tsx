@@ -14,7 +14,7 @@ describe("usePlayback commit", () => {
     onPlayback: (playback: Playback) => void;
   }) {
     const [state, playback] = usePlayback({ duration: 10, commit });
-    onRender(state);
+    React.useEffect(() => { onRender(state); }, [onRender, state]);
     React.useEffect(() => onPlayback(playback), [playback, onPlayback]);
     return null;
   }
@@ -53,5 +53,20 @@ describe("usePlayback commit", () => {
     expect(last.playing).toBe(false);
     // The paused state carries the clock's latest time, not the last committed one.
     expect(last.time).toBeCloseTo(probe.playback.getState().time, 5);
+  });
+
+  it("uses an updated predicate without interrupting playback", () => {
+    const renders: PlaybackState[] = [];
+    let playback!: Playback;
+    const onRender = (state: PlaybackState) => { renders.push(state); };
+    const onPlayback = (value: Playback) => { playback = value; };
+    const probe = render(<Probe commit={() => false} onRender={onRender} onPlayback={onPlayback} />);
+    act(() => playback.play());
+    frames(10);
+    const before = renders.length;
+    probe.rerender(<Probe commit={() => true} onRender={onRender} onPlayback={onPlayback} />);
+    frames(10);
+    expect(renders.length - before).toBeGreaterThanOrEqual(8);
+    expect(playback.getState().playing).toBe(true);
   });
 });
