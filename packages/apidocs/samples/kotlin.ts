@@ -100,6 +100,28 @@ const geometry: Type = type({
     f(`${K}/Geometry`, { name: "distance", params: [{ name: "a", type: [t("Point")] }, { name: "b", type: [t("Point")] }], returns: { type: [DOUBLE], doc: "the Euclidean distance" }, doc: "The distance between two points. One of two overloads." }),
     f(`${K}/Geometry`, { name: "distance", params: [{ name: "a", type: [t("Point")], doc: "the first point" }, { name: "b", type: [t("Point")], doc: "the second point" }, { name: "metric", type: [t("Metric")], defaultValue: "Metric.EUCLID", doc: "how to measure" }], returns: { type: [DOUBLE], doc: "the distance under `metric`" }, doc: "The distance between two points under a metric." }),
     f(`${K}/Geometry`, {
+      name: "transformShapes", wrap: true, since: "2.1",
+      params: [
+        { name: "shapes", type: list(t("Shape")), doc: "the shapes" },
+        { name: "transform", type: tk(ty("Transform", `${K}/Transform///PointingToDeclaration/`), "<", t("Shape"), ">"), doc: "applied to each shape" },
+        { name: "filter", type: tk("(", t("Shape"), ") -> ", BOOLEAN), defaultValue: "{ true }", doc: "keeps a result when it returns `true`" },
+        { name: "limit", type: [std("Int")], defaultValue: "Int.MAX_VALUE", doc: "the most results" },
+      ],
+      returns: { type: list(t("Shape")), doc: "the transformed shapes that pass `filter`" },
+      doc: "Transforms and filters shapes in one pass. Its signature is laid out as ktfmt lays it out.",
+    }),
+    f(`${K}/Geometry`, {
+      name: "nearest", wrap: true, since: "2.1",
+      params: [
+        { name: "point", type: [t("Point")], doc: "the point to measure from" },
+        { name: "candidates", type: tk(std("Collection", "kotlin.collections"), "<", t("Point"), ">"), doc: "the points to choose from" },
+        { name: "metric", type: [t("Metric")], defaultValue: "Metric.EUCLID", doc: "how to measure" },
+        { name: "maxDistance", type: [DOUBLE], defaultValue: "Double.POSITIVE_INFINITY", doc: "ignore candidates farther than this" },
+      ],
+      returns: { type: nullable(t("Point")), nullness: "nullable", doc: "the nearest candidate, or `null` when none is within `maxDistance`" },
+      doc: "The candidate nearest to a point.",
+    }),
+    f(`${K}/Geometry`, {
       name: "filterShapes", mods: ["inline"], typeParams: [{ name: "reified T", bounds: [[t("Shape")]], doc: "the shape type to keep" }],
       params: [{ name: "shapes", type: list(t("Shape")), doc: "the shapes" }], returns: { type: list(tp("T")), doc: "the shapes of type `T`" },
       doc: { body: [P("Keeps the shapes of one type."), CODE("kotlin", "val circles: List<Circle> = Geometry.filterShapes<Circle>(shapes)")] },

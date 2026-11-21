@@ -7,14 +7,14 @@ import { render } from "../src/render";
 const fixture: Model = JSON.parse(readFileSync(new URL("fixtures/fixture-java.api.json", import.meta.url), "utf8"));
 
 test("Markdown snapshots of the fixture", () => {
-  const out = render(fixture);
+  const out = render(fixture, { symbols: "none" });
   for (const page of ["fixture/java/Geometry.md", "fixture/java/Circle.md", "fixture/java/io/ShapeReader.md", "index.md", "llms.txt"]) {
     expect(out[page]).toMatchSnapshot(page);
   }
 });
 
 test("Markdown sections come in a fixed order", () => {
-  const md = render(samples.java)["com/example/geo/Shapes.md"] as string;
+  const md = render(samples.java, { symbols: "none" })["com/example/geo/Shapes.md"] as string;
   const parse = md.slice(md.indexOf("### parse(String)"), md.indexOf("### sum("));
   const order = ["```java", "Parses a shape", "**Parameters**", "**Returns**", "**Throws**", "> **API note**", "> **Implementation note**", "**See also**"];
   const at = order.map(marker => parse.indexOf(marker));

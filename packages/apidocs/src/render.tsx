@@ -11,9 +11,9 @@ import { guideMarkdown, indexMarkdown, packageMarkdown, typeMarkdown } from "./m
 import type { Model } from "./model";
 import { GuidePage } from "./narrative";
 import { IndexPage, PackagePage, TypePage } from "./pages";
-import { buildSite, INDEX, packagePage, type Site, typePage } from "./site";
+import { buildSite, INDEX, isThrowable, packagePage, type Site, typePage } from "./site";
 import { inlineText, summaryText, typeKindWord } from "./structure";
-import { withSym } from "./symbols";
+import { type SymbolKey, type SymbolMode, typeSymbolKey, withSym } from "./symbols";
 import { resolveTheme, type Theme, type ThemeLink, themeCss } from "./theme";
 import { safeUrl } from "./url";
 
@@ -35,7 +35,8 @@ export function render(modelInput: Model | string, themeInput?: Theme | string):
   const theme = safeTheme(resolveTheme(typeof themeInput === "string" ? JSON.parse(themeInput) : themeInput));
   const site = buildSite(model);
   const out: Output = {};
-  const pages: { page: string; title: string; summary: string }[] = [];
+  const pages: ListedPage[] = [];
+  const symbols = theme.symbols ?? "utf";
 
   const html = (page: string, language: string, node: preact.VNode) => {
     const ctx: PageContext = { site, theme, page, language };
@@ -43,29 +44,29 @@ export function render(modelInput: Model | string, themeInput?: Theme | string):
   };
 
   html(INDEX, site.language, <IndexPage />);
-  out[`${INDEX}.md`] = indexMarkdown(site);
-  pages.push({ page: INDEX, title: `${model.module.name} overview`, summary: summaryText(model.module.doc) });
+  out[`${INDEX}.md`] = indexMarkdown(site, symbols);
+  pages.push({ page: INDEX, title: `${model.module.name} overview`, summary: summaryText(model.module.doc), symbol: "module" });
   // Guides come right after the overview in llms-full.txt: agents should read them before the reference.
-  const guides: { page: string; title: string; summary: string }[] = [];
+  const guides: ListedPage[] = [];
   for (const entry of site.guides) {
     html(entry.page, site.language, <GuidePage entry={entry} />);
-    out[`${entry.page}.md`] = guideMarkdown(site, entry, theme.symbols);
-    guides.push({ page: entry.page, title: entry.guide.title, summary: oneLine(inlineText(entry.guide.summary)) });
+    out[`${entry.page}.md`] = guideMarkdown(site, entry, symbols);
+    guides.push({ page: entry.page, title: entry.guide.title, summary: oneLine(inlineText(entry.guide.summary)), symbol: "guide" });
   }
   for (const pkg of site.packages) {
     const page = packagePage(pkg);
     html(page, site.language, <PackagePage pkg={pkg} />);
-    out[`${page}.md`] = packageMarkdown(site, pkg);
-    pages.push({ page, title: `Package ${pkg.name}`, summary: summaryText(pkg.doc) });
+    out[`${page}.md`] = packageMarkdown(site, pkg, symbols);
+    pages.push({ page, title: `Package ${pkg.name}`, summary: summaryText(pkg.doc), symbol: "package" });
     for (const type of pkg.types ?? []) {
       const tpage = typePage(pkg, type);
       html(tpage, type.language, <TypePage type={type} />);
-      out[`${tpage}.md`] = typeMarkdown(site, type);
-      pages.push({ page: tpage, title: `${type.name} (${typeKindWord(type)} in ${pkg.name})`, summary: summaryText(type.doc) });
+      out[`${tpage}.md`] = typeMarkdown(site, type, symbols);
+      pages.push({ page: tpage, title: `${type.name} (${typeKindWord(type)} in ${pkg.name})`, summary: summaryText(type.doc), symbol: typeSymbolKey(type.kind, isThrowable(type)) });
     }
   }
 
-  out["llms.txt"] = llms(site, pages, guides, theme);
+  out["llms.txt"] = llms(site, pages, guides, symbols);
   out["llms-full.txt"] = [pages[0]!, ...guides, ...pages.slice(1)].map(p => `<!-- ${p.page}.md -->\n${out[`${p.page}.md`]}`).join("\n");
   out["api.json"] = JSON.stringify(model);
   // Javadoc's element-list: a module line first when the packages belong to a named JPMS module, as -link expects.
@@ -99,20 +100,38 @@ function safeTheme(theme: Theme): Theme {
 }
 
 /** llms.txt (llmstxt.org): what the module is, the guides, then every reference page, each with its summary. */
-function llms(site: Site, pages: { page: string; title: string; summary: string }[], guides: { page: string; title: string; summary: string }[], theme: Theme): string {
+function llms(site: Site, pages: ListedPage[], guides: ListedPage[], symbols: SymbolMode): string {
   const m = site.model.module;
+  const entry = (p: ListedPage) => `- [${withSym(symbols, p.symbol, p.title.replace(/([\\[\]<>])/g, "\\$1"))}](${p.page}.md)${p.summary ? `: ${p.summary}` : ""}`;
   const lines = [`# ${m.name}${m.version ? ` ${m.version}` : ""}`, ""];
   lines.push(`> ${summaryText(m.doc) || `API reference for ${m.name}.`}`, "");
-  lines.push("Each page below is Markdown; the HTML page of the same name has the same content. api.json is the full model.", "");
-  lines.push("## Overview", "", `- [${m.name}](index.md): packages and types`, `- [api.json](api.json): the apidocs/1 model`, "");
+  lines.push(
+    "Each page below is Markdown; the HTML page of the same name has the same content. llms-full.txt has every page in one file, and api.json is the apidocs/1 model.",
+    "",
+  );
+  lines.push(
+    "## Overview", "",
+    `- [${withSym(symbols, "module", m.name)}](index.md): packages and types`,
+    "- [llms-full.txt](llms-full.txt): every page in one file",
+    "- [api.json](api.json): the apidocs/1 model",
+    "",
+  );
   if (guides.length) {
-    lines.push(`## ${withSym(theme.symbols, "guide", "Guides")}`, "", "Read these first: they explain the concepts the reference pages assume.", "");
-    for (const g of guides) lines.push(`- [${g.title.replace(/([\\[\]])/g, "\\$1")}](${g.page}.md)${g.summary ? `: ${g.summary}` : ""}`);
+    lines.push("## Guides", "", "Read these first: they explain the concepts the reference pages assume.", "");
+    for (const g of guides) lines.push(entry(g));
     lines.push("");
   }
   lines.push("## Pages", "");
-  for (const p of pages.slice(1)) lines.push(`- [${p.title}](${p.page}.md)${p.summary ? `: ${p.summary}` : ""}`);
+  for (const p of pages.slice(1)) lines.push(entry(p));
   return lines.join("\n") + "\n";
+}
+
+/** A page as llms.txt lists it. */
+interface ListedPage {
+  page: string;
+  title: string;
+  summary: string;
+  symbol: SymbolKey;
 }
 
 /**

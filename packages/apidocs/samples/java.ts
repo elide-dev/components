@@ -212,7 +212,8 @@ const shapes: Type = type({
       ],
       returns: { type: tk(jdk("java.util", "List"), "<", tp("R"), ">"), nullness: "nonNull", doc: "the sorted, filtered results" },
       throws: [{ type: [t("GeometryException")], declared: true, doc: "if a shape cannot be measured in `units`" }],
-      doc: "Maps, filters and sorts shapes in one pass. A long signature, laid out one parameter per line.",
+      doc: "Maps, filters and sorts shapes in one pass. A long signature, laid out by google-java-format: one parameter per line, `throws` on its own line.",
+      wrap: true,
     }),
     m(shapesId, {
       name: "describe", mods: ["public", "static"], params: [{ name: "shape", type: [t("Shape")], doc: "the shape" }],
@@ -277,6 +278,21 @@ const reader: Type = type({
   members: [
     m(`${IO}.ShapeReader`, { name: "read", mods: ["public", "static"], params: [{ name: "in", type: [jdk("java.io", "InputStream")], doc: "the stream; not closed" }], returns: { type: tk(jdk("java.util", "List"), "<", t("Shape"), ">"), doc: "the shapes, in order" }, throws: [{ type: [jdk("java.io", "IOException")], declared: true, doc: "if reading fails" }], doc: "Reads every shape from a stream of UTF-8 text." }),
     m(`${IO}.ShapeReader`, { name: "read", mods: ["public", "static"], params: [{ name: "reader", type: [jdk("java.io", "Reader")], doc: "the reader; not closed" }, { name: "charset", type: [jdk("java.nio.charset", "Charset")], doc: "the charset the text was decoded from" }], returns: { type: tk(jdk("java.util", "List"), "<", t("Shape"), ">"), doc: "the shapes, in order" }, throws: [{ type: [jdk("java.io", "IOException")], declared: true, doc: "if reading fails" }], doc: "Reads every shape from a reader." }),
+    m(`${IO}.ShapeReader`, {
+      name: "readAll", mods: ["public", "static"], wrap: true, since: "2.1",
+      params: [
+        { name: "directory", type: [jdk("java.nio.file", "Path")], doc: "the directory to read" },
+        { name: "glob", type: [STRING], doc: "the file names to read, such as `*.shapes`" },
+        { name: "charset", type: [jdk("java.nio.charset", "Charset")], doc: "the files' charset" },
+        { name: "maxShapes", type: [INT], doc: "the most shapes to read before failing" },
+      ],
+      returns: { type: tk(jdk("java.util", "List"), "<", t("Shape", G), ">"), nullness: "nonNull", doc: "the shapes, by file name and then line" },
+      throws: [
+        { type: [jdk("java.io", "IOException")], declared: true, doc: "if a file cannot be read" },
+        { type: [t("GeometryException", G)], declared: true, doc: "if a line describes an impossible shape, or there are more than `maxShapes`" },
+      ],
+      doc: "Reads every shape from the matching files in a directory. Its signature is laid out as google-java-format lays it out.",
+    }),
     m(`${IO}.ShapeReader`, { name: "close", mods: ["public"], throws: [{ type: [jdk("java.io", "IOException")], declared: true, doc: "if closing the reader fails" }], doc: "Closes the underlying reader.", overrides: { id: "java.lang.AutoCloseable#close()", url: "https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/AutoCloseable.html#close()" } }),
   ],
   inherited: [fromObject],

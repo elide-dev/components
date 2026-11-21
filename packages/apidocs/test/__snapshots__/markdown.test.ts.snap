@@ -3,6 +3,8 @@
 exports[`Markdown snapshots of the fixture: fixture/java/Geometry.md 1`] = `
 "# Geometry
 
+[fixture](../../index.md) › [fixture.java](index.md) · Every page: [llms.txt](../../llms.txt)
+
 Class in [\`fixture.java\`](index.md). Since 1.0. Null-marked: types are non-null unless annotated.
 
 \`\`\`java
@@ -189,6 +191,8 @@ Finds a shape by name.
 exports[`Markdown snapshots of the fixture: fixture/java/Circle.md 1`] = `
 "# Circle
 
+[fixture](../../index.md) › [fixture.java](index.md) · Every page: [llms.txt](../../llms.txt)
+
 Record in [\`fixture.java\`](index.md). Since 1.0. Null-marked: types are non-null unless annotated.
 
 \`\`\`java
@@ -349,6 +353,8 @@ public @Nullable String label()
 exports[`Markdown snapshots of the fixture: fixture/java/io/ShapeReader.md 1`] = `
 "# ShapeReader
 
+[fixture](../../../index.md) › [fixture.java.io](index.md) · Every page: [llms.txt](../../../llms.txt)
+
 Class in [\`fixture.java.io\`](index.md). Since 1.0.
 
 \`\`\`java
@@ -443,6 +449,8 @@ Overrides [\`close()\`](https://docs.oracle.com/en/java/javase/25/docs/api/java.
 exports[`Markdown snapshots of the fixture: index.md 1`] = `
 "# fixture 1.0
 
+Every page: [llms.txt](llms.txt), or all in one file: [llms-full.txt](llms-full.txt)
+
 API reference for fixture.
 
 ## Packages
@@ -481,11 +489,12 @@ exports[`Markdown snapshots of the fixture: llms.txt 1`] = `
 
 > API reference for fixture.
 
-Each page below is Markdown; the HTML page of the same name has the same content. api.json is the full model.
+Each page below is Markdown; the HTML page of the same name has the same content. llms-full.txt has every page in one file, and api.json is the apidocs/1 model.
 
 ## Overview
 
 - [fixture](index.md): packages and types
+- [llms-full.txt](llms-full.txt): every page in one file
 - [api.json](api.json): the apidocs/1 model
 
 ## Pages

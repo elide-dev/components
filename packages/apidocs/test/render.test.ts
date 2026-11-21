@@ -97,7 +97,7 @@ describe("render", () => {
     const parse = shapes.slice(shapes.indexOf('id="parse(java.lang.String)"'));
     expect(parse.indexOf("callout-apiNote")).toBeGreaterThan(0);
     expect(parse.indexOf("callout-apiNote")).toBeLessThan(parse.indexOf("callout-implNote"));
-    expect(render(samples.java)["com/example/geo/Shapes.md"]).toContain("> **API note**");
+    expect(render(samples.java, { symbols: "none" })["com/example/geo/Shapes.md"]).toContain("> **API note**");
   });
 });
 

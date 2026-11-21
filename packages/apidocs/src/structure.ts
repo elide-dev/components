@@ -99,7 +99,11 @@ export function typeKindWord(type: Type): string {
   return `${sealed}${abstract}${type.kind === "enum" ? "enum class" : type.kind}`;
 }
 
-/** Tokens without annotations or type arguments: List<? extends T> becomes List. For summaries and titles. */
+/**
+ * Tokens without annotations or type arguments, on one line: List<? extends T> becomes List. For summaries and
+ * titles. A signature laid out by a source formatter carries newlines and indentation in its punctuation; they
+ * become single spaces, with none after an opening or before a closing parenthesis, and a trailing comma goes.
+ */
 export function compactTokens(tokens: Token[] | undefined): Token[] {
   const out: Token[] = [];
   let depth = 0;
@@ -116,6 +120,7 @@ export function compactTokens(tokens: Token[] | undefined): Token[] {
         else if (ch === ">") depth--;
         else if (depth === 0) text += ch;
       }
+      if (/\s{2,}|\n/.test(text)) text = text.replace(/\s+/g, " ").replace(/\(\s+/g, "(").replace(/,?\s+\)/g, ")");
       if (skipSpace) text = text.replace(/^\s+/, "");
       skipSpace = false;
       if (text) out.push({ kind: "punct", text });

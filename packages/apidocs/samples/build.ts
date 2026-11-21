@@ -171,6 +171,13 @@ export interface MemberSpec {
   since?: string;
   line?: number;
   file?: string;
+  /**
+   * Lay the signature out as the source formatter does when it is too long for one line: google-java-format
+   * (one parameter per line at +8, throws on its own continuation line) or ktfmt (one parameter per line at
+   * +4, the closing parenthesis and return type on their own line). The newlines and indentation go in the
+   * punctuation tokens, as the doclet and the Dokka plugin write them after running the formatter.
+   */
+  wrap?: boolean;
 }
 
 function params(list: ParamSpec[] | undefined): Param[] {
@@ -244,16 +251,17 @@ export function javaMember(owner: string, ownerName: string, spec: MemberSpec): 
     const tps = typeParamTokens(spec.typeParams, "extends");
     if (tps.length) sig.push(tps, " ");
     if (kind !== "constructor") sig.push(spec.returns?.type ?? [kw("void")], " ");
-    sig.push(nm(kind === "constructor" ? ownerName.split(".").pop()! : spec.name), "(");
+    const indent = "\n" + " ".repeat(8);
+    sig.push(nm(kind === "constructor" ? ownerName.split(".").pop()! : spec.name), "(", spec.wrap ? indent : "");
     (spec.params ?? []).forEach((p, i) => {
-      if (i) sig.push(", ");
+      if (i) sig.push(spec.wrap ? `,${indent}` : ", ");
       for (const a of p.annotations ?? []) sig.push(a, " ");
       sig.push(p.type, " ", prm(p.name));
     });
     sig.push(")");
     if (spec.defaultValue) sig.push(" ", kw("default"), " ", lit(spec.defaultValue));
     const declared = (spec.throws ?? []).filter(t => t.declared);
-    if (declared.length) sig.push(" ", kw("throws"), " ", ...declared.flatMap((t, i) => [...(i ? [", "] : []), t.type]));
+    if (declared.length) sig.push(spec.wrap ? indent : " ", kw("throws"), " ", ...declared.flatMap((t, i) => [...(i ? [", "] : []), t.type]));
   }
   const anchor = javaAnchor({ ...spec, kind });
   return base(owner, { ...spec, file: spec.file }, anchor, `${owner}#${anchor}`, tk(...sig), kind);
@@ -272,14 +280,14 @@ export function kotlinMember(owner: string, spec: MemberSpec): Member {
   if (kind !== "constructor") sig.push(nm(spec.name));
   if (kind === "property") sig.push(": ", spec.type!);
   else {
-    sig.push("(");
+    sig.push("(", spec.wrap ? "\n    " : "");
     (spec.params ?? []).forEach((p, i) => {
-      if (i) sig.push(", ");
+      if (i) sig.push(spec.wrap ? ",\n    " : ", ");
       if (p.varargs) sig.push(kw("vararg"), " ");
       sig.push(prm(p.name), ": ", p.type);
       if (p.defaultValue) sig.push(" = ", lit(p.defaultValue));
     });
-    sig.push(")");
+    sig.push(spec.wrap ? ",\n)" : ")");
     if (spec.returns) sig.push(": ", spec.returns.type);
   }
   const anchor = kind === "property" ? spec.name : `${spec.name}(${(spec.params ?? []).map(p => p.type.map(t => t.text).join("")).join(",")})`;

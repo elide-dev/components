@@ -38,6 +38,7 @@ doclet's flavor. `kotlin` is `samples/kotlin.ts`, the Dokka plugin's flavor. `re
 | Tables, ordered and unordered lists, block quote | java | `Shapes.html` description |
 | Raw HTML node (block and inline) | java | `Shapes.html` description (`<dl>`) and `describe` (`<sup>`) |
 | Very long signature, one parameter per line | java | `Shapes.html` `transform` |
+| Signatures as the source formatter lays them out (google-java-format, ktfmt), with one-line summaries and titles | java, kotlin | `Shapes.html` `transform`, `com/example/geo/io/ShapeReader.html` `readAll`; `org/example/kgeo/Geometry.html` `transformShapes`, `nearest` |
 | A type with hundreds of members (generated) | java | `com/example/geo/registry/ShapeCatalog.html` |
 | Top-level functions and properties | kotlin | `org/example/kgeo/index.html` |
 | Extension function and property with a receiver | kotlin | `org/example/kgeo/index.html` `scaled` and `isDegenerate` |
