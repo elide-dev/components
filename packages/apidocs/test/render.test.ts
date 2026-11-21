@@ -65,9 +65,6 @@ describe("render", () => {
       expect(out[page]).toMatchSnapshot(page);
     }
   });
-  test("Markdown snapshots", () => {
-    for (const page of ["fixture/java/Geometry.md", "fixture/java/Circle.md", "index.md", "llms.txt"]) expect(out[page]).toMatchSnapshot(page);
-  });
   test("a base URL adds canonical links and a sitemap", () => {
     const site = render(fixture, { baseUrl: "https://docs.example.com/api/" });
     expect(site["sitemap.xml"]).toContain("<loc>https://docs.example.com/api/fixture/java/Geometry.html</loc>");

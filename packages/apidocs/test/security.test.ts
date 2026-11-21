@@ -17,6 +17,9 @@ describe("safeUrl", () => {
     "&#106;avascript:alert(1)", "&#0000106avascript:alert(1)", "javascript&colon;alert(1)", "javascript&#58;alert(1)",
     "data:text/html,<script>alert(1)</script>", "DATA:text/html;base64,PHNjcmlwdD4=", "vbscript:msgbox(1)",
     "file:///etc/passwd", "blob:https://x/y", "\\\\evil/share", "java\u0000script:alert(1)",
+    "jav&amp;#x61;script:alert(1)", "jav&amp;amp;#x61;script:alert(1)", "&amp;#106;avascript:alert(1)",
+    "javascript&amp;colon;alert(1)", "javascript&amp;amp;colon;alert(1)", "java&Tab;script:alert(1)",
+    "java&NewLine;script:alert(1)", "&amp;amp;amp;amp;amp;amp;#106;avascript:alert(1)",
   ];
   for (const url of hostile) test(`rejects ${JSON.stringify(url)}`, () => expect(safeUrl(url)).toBeUndefined());
   const fine = ["https://example.com/a?b#c", "HTTP://example.com", "mailto:a@example.com", "../x.html#y", "x.html", "a/b.html#read(java.io.InputStream)"];
@@ -59,6 +62,26 @@ describe("sanitize", () => {
     ["</b>stray", "stray"],
   ];
   for (const [input, output] of cases) test(`sanitizes ${JSON.stringify(input)}`, () => expect(sanitize(input)).toBe(output));
+});
+
+describe("Markdown link destinations", () => {
+  const model: Model = {
+    schema: "apidocs/1",
+    module: { name: "m", doc: { body: [{ kind: "paragraph", children: [
+      { kind: "link", url: "https://example.com/a?b=1&amp;c=(x) y\"z'<w>`v\\", children: [{ kind: "text", text: "odd" }] },
+      { kind: "link", url: "jav&amp;#x61;script:alert(1)", children: [{ kind: "text", text: "double" }] },
+    ] }] } },
+  };
+  const md = render(model)["index.md"] as string;
+  test("are percent-encoded so a Markdown renderer cannot reinterpret them", () => {
+    const destination = /\[odd\]\(([^\s]*)\)/.exec(md)?.[1];
+    expect(destination).toBe("https://example.com/a?b=1%26c=%28x%29%20y%22z%27%3Cw%3E%60v%5C");
+    expect(destination).not.toMatch(/[&()<>"'`\\ ]/);
+  });
+  test("drop a doubly encoded script URL, keeping the label", () => {
+    expect(md).toContain("double");
+    expect(md).not.toMatch(/script:/i);
+  });
 });
 
 describe("hostile models and themes", () => {

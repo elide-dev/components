@@ -6,7 +6,7 @@
 import type { Block, Inline, Member, Package, Param, Thrown, Token, Type } from "./model";
 import { INDEX, packagePage, refLabel, relative, resolve, resolveRef, Site, tokenText, typePage } from "./site";
 import { NOTE_LABEL, sortedNotes } from "./components/declaration";
-import { safeUrl } from "./url";
+import { markdownDestination, safeUrl } from "./url";
 import { memberGroups, memberTitle, summaryText, typeGroups, typeKindWord } from "./structure";
 
 interface Md {
@@ -14,6 +14,8 @@ interface Md {
   page: string;
   language: string;
 }
+
+const dest = markdownDestination;
 
 function esc(text: string): string {
   return text.replace(/([\\`*_[\]<>|])/g, "\\$1");
@@ -44,7 +46,7 @@ function inlines(md: Md, nodes: Inline[] | undefined): string {
           ? codeSpan(plain(node.children))
           : inlines(md, node.children);
         const href = node.target ? resolveRef(md.site, md.page, ".md", node.target) : safeUrl(node.url);
-        return href ? `[${label}](${href.replace(/ /g, "%20").replace(/\)/g, "%29")})` : label;
+        return href ? `[${label}](${markdownDestination(href)})` : label;
       }
     }
   }).join("");
@@ -89,7 +91,7 @@ function tokens(md: Md, list: Token[] | undefined): string {
     if (href) {
       if (buffer) parts.push(codeSpan(buffer));
       buffer = "";
-      parts.push(`[${codeSpan(token.text)}](${href.replace(/ /g, "%20").replace(/\)/g, "%29")})`);
+      parts.push(`[${codeSpan(token.text)}](${markdownDestination(href)})`);
     } else {
       buffer += token.text;
     }
@@ -152,10 +154,10 @@ export function indexMarkdown(site: Site): string {
   const m = site.model.module;
   const parts = [`# ${m.name}${m.version ? ` ${m.version}` : ""}`, m.doc ? blocks(md, m.doc.body) : `API reference for ${esc(m.name)}.`];
   parts.push("## Packages\n\n" + site.packages.map(pkg =>
-    `- [${codeSpan(pkg.name)}](${relative(INDEX, packagePage(pkg), ".md")}): ${esc(summaryText(pkg.doc)) || "No description."}`).join("\n"));
+    `- [${codeSpan(pkg.name)}](${dest(relative(INDEX, packagePage(pkg), ".md"))}): ${esc(summaryText(pkg.doc)) || "No description."}`).join("\n"));
   for (const pkg of site.packages) {
     parts.push(`## Types in ${codeSpan(pkg.name)}\n\n` + (pkg.types ?? []).map(type =>
-      `- [${codeSpan(type.name)}](${relative(INDEX, typePage(pkg, type), ".md")}) (${typeKindWord(type)}): ${esc(summaryText(type.doc)) || "No description."}`).join("\n"));
+      `- [${codeSpan(type.name)}](${dest(relative(INDEX, typePage(pkg, type), ".md"))}) (${typeKindWord(type)}): ${esc(summaryText(type.doc)) || "No description."}`).join("\n"));
   }
   return join(parts);
 }
@@ -169,7 +171,7 @@ export function packageMarkdown(site: Site, pkg: Package): string {
   const parts = [`# ${pkg.name}`, facts.join(" "), deprecation(md, pkg.deprecated), blocks(md, pkg.doc?.body), notes(md, pkg.doc?.notes), see(md, pkg.doc?.see)];
   for (const group of typeGroups((pkg.types ?? []).filter(t => !t.enclosing))) {
     parts.push(`## ${group.title}\n\n` + group.types.map(type =>
-      `- [${codeSpan(type.name)}](${relative(page, typePage(pkg, type), ".md")}): ${esc(summaryText(type.doc)) || "No description."}`).join("\n"));
+      `- [${codeSpan(type.name)}](${dest(relative(page, typePage(pkg, type), ".md"))}): ${esc(summaryText(type.doc)) || "No description."}`).join("\n"));
   }
   if (pkg.typeAliases?.length) {
     parts.push("## Type aliases");
@@ -192,7 +194,7 @@ export function typeMarkdown(site: Site, type: Type): string {
   const entry = site.types.get(type.id)!;
   const page = entry.page;
   const md: Md = { site, page, language: type.language };
-  const facts = [`${capitalize(typeKindWord(type))} in [${codeSpan(entry.pkg.name)}](${relative(page, packagePage(entry.pkg), ".md")}).`];
+  const facts = [`${capitalize(typeKindWord(type))} in [${codeSpan(entry.pkg.name)}](${dest(relative(page, packagePage(entry.pkg), ".md"))}).`];
   if (type.since) facts.push(`Since ${esc(type.since)}.`);
   if (type.nullMarked) facts.push("Null-marked: types are non-null unless annotated.");
   if (type.enclosing) facts.push(`Nested in [${codeSpan(refLabel(site, { id: type.enclosing }))}](${resolve(site, page, ".md", type.enclosing)}).`);
@@ -208,7 +210,7 @@ export function typeMarkdown(site: Site, type: Type): string {
   parts.push(notes(md, type.doc?.notes), see(md, type.doc?.see));
   if (entry.nested.length) {
     parts.push("## Nested types\n\n" + entry.nested.map(t =>
-      `- [${codeSpan(t.name)}](${relative(page, typePage(entry.pkg, t), ".md")}) (${typeKindWord(t)}): ${esc(summaryText(t.doc)) || "No description."}`).join("\n"));
+      `- [${codeSpan(t.name)}](${dest(relative(page, typePage(entry.pkg, t), ".md"))}) (${typeKindWord(t)}): ${esc(summaryText(t.doc)) || "No description."}`).join("\n"));
   }
   for (const group of memberGroups(type)) {
     parts.push(`## ${group.title}`);
@@ -250,7 +252,7 @@ function memberMarkdown(md: Md, member: Member): string {
 function link(md: Md, ref: import("./model").Ref): string {
   const href = resolveRef(md.site, md.page, ".md", ref);
   const label = codeSpan(refLabel(md.site, ref));
-  return href ? `[${label}](${href.replace(/ /g, "%20").replace(/\)/g, "%29")})` : label;
+  return href ? `[${label}](${markdownDestination(href)})` : label;
 }
 
 function capitalize(s: string): string {
