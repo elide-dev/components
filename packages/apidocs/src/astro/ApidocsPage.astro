@@ -1,0 +1,57 @@
+---
+/**
+ * One page of an apidocs site as a whole Astro document: the static renderer's head metadata, top bar,
+ * navigator, content, rail and footer, with URLs in the Astro form (urls.ts), Astro's client router, and the
+ * search island. `page` is a page path from resolvePage ({ kind: "page", page }).
+ *
+ * Slots:
+ *   topbar  site-level controls where the module's version is, such as <VersionSelect> in a server island;
+ *           without it the module's version shows
+ *   notice  a line above the page, such as <VersionNotice> in a server island
+ *   head    extra head elements
+ */
+import { ClientRouter } from "astro:transitions";
+import "../styles/apidocs.css";
+import "./apidocs-astro.css";
+import type { Model } from "../model";
+import type { Theme } from "../theme";
+import { bundledFonts } from "./fonts";
+import { renderPage } from "./render";
+import Search from "./Search";
+
+interface Props {
+  model: Model;
+  page: string;
+  theme?: Theme;
+  /** The site's base path: "/api/komodo/main/". A trailing slash is added if missing. */
+  base: string;
+  /** The site's origin for canonical URLs; defaults to Astro.site, then the request's origin. theme.baseUrl wins. */
+  site?: string | URL;
+}
+
+const { model, page, theme, site } = Astro.props;
+const base = Astro.props.base.endsWith("/") ? Astro.props.base : `${Astro.props.base}/`;
+const baseUrl = new URL(base, site ?? Astro.site ?? Astro.url.origin).href;
+const parts = renderPage(model, page, theme, { base, baseUrl, fontUrl: asset => bundledFonts[asset] ?? `${base}assets/${asset}` });
+---
+<html lang="en" data-root={base}>
+  <head>
+    <Fragment set:html={parts.head} />
+    {parts.preload.map(href => <link rel="preload" as="font" type="font/woff2" crossorigin="anonymous" href={href} />)}
+    <style is:inline set:html={parts.themeCss}></style>
+    <ClientRouter fallback="swap" />
+    <slot name="head" />
+  </head>
+  <body>
+    <Fragment set:html={parts.body[0]} />
+    {Astro.slots.has("topbar") ? <slot name="topbar" /> : <Fragment set:html={parts.moduleVersion} />}
+    <Fragment set:html={parts.body[1]} />
+    <Search client:idle api={parts.api} />
+    <Fragment set:html={parts.body[2]} />
+    <slot name="notice" />
+    <Fragment set:html={parts.body[3]} />
+    <script>
+      import "./client";
+    </script>
+  </body>
+</html>

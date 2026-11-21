@@ -1,0 +1,44 @@
+---
+/**
+ * The route apidocs() injects for each site: `${base}[...path]`. It resolves the path, redirects the static
+ * form to the canonical one, serves text files, and renders pages with <ApidocsPage>, adding the version menu
+ * and notice as server islands when the site has a version.
+ */
+import { sites, versions } from "virtual:@elide/apidocs/sites";
+import ApidocsPage from "./ApidocsPage.astro";
+import { resolvePage } from "./resolve";
+import { renderText } from "./text";
+import VersionIsland from "./VersionIsland.astro";
+import VersionNotice from "./VersionNotice.astro";
+import VersionSelect from "./VersionSelect.astro";
+import { latestRelease } from "./versions";
+
+const pathname = Astro.url.pathname;
+const site = sites.filter(s => pathname.startsWith(s.base) || `${pathname}/` === s.base).sort((a, b) => b.base.length - a.base.length)[0];
+if (!site) return new Response("Not found", { status: 404 });
+if (`${pathname}/` === site.base) return Astro.redirect(site.base + Astro.url.search, 301);
+const path = pathname.slice(site.base.length);
+const resolved = resolvePage(site.model, path, site.theme);
+if (resolved.kind === "redirect") return Astro.redirect(site.base + resolved.to + Astro.url.search, 301);
+if (resolved.kind === "markdown" || resolved.kind === "file") {
+  const text = renderText(site.model, resolved.kind === "markdown" ? `${resolved.page}.md` : resolved.name, site.theme);
+  if (!text) return new Response("Not found", { status: 404 });
+  return new Response(text.body, { headers: { "content-type": text.contentType } });
+}
+if (resolved.kind === "missing") return new Response("Not found", { status: 404, headers: { "content-type": "text/plain; charset=utf-8" } });
+const page = resolved.page;
+const here = site.version ? versions.find(v => v.id === site.version) : undefined;
+const latest = latestRelease(versions);
+---
+<ApidocsPage model={site.model} page={page} theme={site.theme} base={site.base}>
+  {here && (
+    <VersionIsland server:defer slot="topbar" part="select" current={here.id} path={path}>
+      <VersionSelect slot="fallback" versions={versions} current={here.id} path={path} />
+    </VersionIsland>
+  )}
+  {here && latest && latest.id !== here.id && (
+    <VersionIsland server:defer slot="notice" part="notice" current={here.id} path={path}>
+      <VersionNotice slot="fallback" versions={versions} current={here.id} path={path} />
+    </VersionIsland>
+  )}
+</ApidocsPage>

@@ -11,6 +11,9 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
+    "apidocs:astro:dev": "bun run --cwd apps/apidocs-astro dev",
+    "apidocs:astro:build": "bun run --cwd apps/apidocs-astro build",
+    "apidocs:astro:preview": "bun run --cwd apps/apidocs-astro preview",
     "apidocs:audit": "bun run --cwd packages/apidocs audit",
     "apidocs:dev": "bun run --cwd packages/apidocs dev",
     "apidocs:guides": "bun run --cwd packages/apidocs guides",

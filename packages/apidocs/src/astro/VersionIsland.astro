@@ -1,0 +1,24 @@
+---
+/**
+ * The version menu or notice as a server island (render it with server:defer). It reads the newest versions
+ * with the app's loadVersions on each request, so a cached page shows a current list; the response may be
+ * cached briefly. Its fallback should be the same part rendered from the versions the page was rendered with.
+ *
+ * This one reads versions through apidocs(); an app without the integration writes its own island the same
+ * way, loading versions.json from wherever it keeps it (README, "Server islands").
+ */
+import { loadVersions } from "virtual:@elide/apidocs/sites";
+import VersionNotice from "./VersionNotice.astro";
+import VersionSelect from "./VersionSelect.astro";
+
+interface Props {
+  part: "select" | "notice";
+  current: string;
+  path?: string;
+}
+
+const { part, current, path } = Astro.props;
+const versions = await loadVersions(Astro.request);
+Astro.response.headers.set("cache-control", "public, max-age=60, stale-while-revalidate=600");
+---
+{part === "select" ? <VersionSelect versions={versions} current={current} path={path} /> : <VersionNotice versions={versions} current={current} path={path} />}

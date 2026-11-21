@@ -1,0 +1,41 @@
+---
+/**
+ * A compact version menu for the top bar: the current version, and the same page in each other version. A
+ * disclosure of plain links, so it works without JavaScript and the client router follows its links. The
+ * Astro client keeps each link pointing at the page being read (versionMenus in client.ts).
+ *
+ * Render it inside a server island so a cached page shows the newest versions.json, with a fallback that is
+ * this same component rendered from the versions known when the page was rendered: both draw the same closed
+ * box (the current version's label), so the island replaces it without moving anything.
+ */
+import { type Version, versionLabel } from "./versions";
+
+interface Props {
+  versions: Version[];
+  /** The id of the version this page belongs to. */
+  current: string;
+  /** The page's path under its site's base, so each link opens the same page in that version. */
+  path?: string;
+}
+
+const { versions, current, path = "" } = Astro.props;
+const here = versions.find(v => v.id === current);
+const label = here ? versionLabel(here) : current;
+const note = (v: Version) => (v.latest ? "latest" : v.channel === "development" ? "development" : v.channel === "prerelease" ? "prerelease" : undefined);
+---
+<details class="version-menu" data-version-menu>
+  <summary class="version-current" aria-label={`Version ${label}: other versions`} title="Other versions">
+    <span class="version">{label}</span>
+    <svg class="icon" viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M4 6.25 8 10.25l4-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" /></svg>
+  </summary>
+  <ul class="version-list">
+    {versions.map(v => (
+      <li>
+        <a href={v.base + path} data-version-base={v.base} aria-current={v.id === current ? "page" : undefined}>
+          <span class="version">{versionLabel(v)}</span>
+          {note(v) && <small>{note(v)}</small>}
+        </a>
+      </li>
+    ))}
+  </ul>
+</details>

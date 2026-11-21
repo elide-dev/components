@@ -85,8 +85,11 @@ export function resolveTheme(input: Theme | undefined): Theme {
   };
 }
 
-/** The theme stylesheet: font faces and token values. Paths are relative to assets/. */
-export function themeCss(theme: Theme): string {
+/**
+ * The theme stylesheet: font faces and token values. Paths are relative to assets/. `root` is the selector the
+ * tokens are set on: ":root:root" outranks the stylesheet's own :root defaults wherever the two are loaded.
+ */
+export function themeCss(theme: Theme, root = ":root"): string {
   const out: string[] = [];
   for (const face of theme.fonts ?? []) {
     out.push(
@@ -100,10 +103,10 @@ export function themeCss(theme: Theme): string {
     Object.entries(tokens ?? {}).map(([k, v]) => `--apidocs-${k}:${v};`).join("");
   const light = block(theme.tokens?.light);
   const dark = block(theme.tokens?.dark);
-  if (light) out.push(`:root{${light}}`);
+  if (light) out.push(`${root}{${light}}`);
   if (dark) {
-    out.push(`@media (prefers-color-scheme:dark){:root:not([data-theme=light]){${dark}}}`);
-    out.push(`:root[data-theme=dark]{${dark}}`);
+    out.push(`@media (prefers-color-scheme:dark){${root}:not([data-theme=light]){${dark}}}`);
+    out.push(`${root}[data-theme=dark]{${dark}}`);
   }
   if (theme.css) out.push(theme.css);
   return out.join("\n") + "\n";

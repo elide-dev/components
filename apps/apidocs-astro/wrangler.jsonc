@@ -1,0 +1,9 @@
+// The sample app as a Worker, for `wrangler dev` (bun run apidocs:astro:preview). It is never deployed.
+{
+  "name": "apidocs-astro-sample",
+  // The newest date the pinned wrangler's workerd supports; the adapter's default is newer.
+  "compatibility_date": "2026-11-04",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": false,
+  "preview_urls": false
+}

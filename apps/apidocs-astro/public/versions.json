@@ -1,0 +1,4 @@
+[
+  { "id": "2.0", "base": "/java/2.0/", "latest": true },
+  { "id": "main", "base": "/java/main/", "channel": "development" }
+]

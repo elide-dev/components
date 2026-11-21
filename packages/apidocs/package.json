@@ -9,6 +9,10 @@
   "exports": {
     ".": "./src/index.ts",
     "./import": "./src/import/index.ts",
+    "./astro": "./src/astro/index.ts",
+    "./astro/helpers": "./src/astro/helpers.ts",
+    "./astro/integration": "./src/astro/integration.ts",
+    "./samples": "./samples/index.ts",
     "./schema": "./schema/apidocs-1.schema.json",
     "./render.js": "./dist/render.js",
     "./assets/*": "./dist/assets/*"
@@ -42,8 +46,10 @@
     "preact-render-to-string": "^6.8.2"
   },
   "devDependencies": {
+    "@astrojs/preact": "6.1.6",
     "@types/bun": "^1.3.0",
     "@types/mdast": "4.0.4",
+    "astro": "7.4.7",
     "axe-core": "4.14.0",
     "chrome-launcher": "1.2.3",
     "lighthouse": "13.6.0",
@@ -56,6 +62,18 @@
     "typescript": "^7.0.2",
     "vite": "^8.3.6",
     "yaml": "2.9.1"
+  },
+  "peerDependencies": {
+    "@astrojs/preact": "^6.1.6",
+    "astro": "^7.4.7"
+  },
+  "peerDependenciesMeta": {
+    "@astrojs/preact": {
+      "optional": true
+    },
+    "astro": {
+      "optional": true
+    }
   },
   "repository": {
     "type": "git",
