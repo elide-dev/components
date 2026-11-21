@@ -3,7 +3,8 @@
  * rebuilt on copy from an allowlist: drawing elements (shapes, paths, groups, text, gradients, patterns, markers,
  * clip paths and masks, defs, symbol, title, desc, and use) with presentation attributes. Everything else is dropped
  * with its content: script, style, foreignObject, image, animation, links. An href survives only as a same-document
- * #fragment, and a url() value only as url(#fragment). Comments, the XML prolog and processing instructions are
+ * #fragment, and a url() value only as url(#fragment); a value with a backslash (a CSS escape) or a control character is
+ * dropped, and the style attribute and element always are. Comments, the XML prolog and processing instructions are
  * dropped; a DOCTYPE (which can declare entities), CDATA, an unknown entity or markup that does not parse rejects
  * the file. The output is the rebuilt markup, every value escaped.
  */
@@ -13,10 +14,16 @@ const ELEMENTS = new Set([
   "polygon", "text", "tspan", "textPath", "linearGradient", "radialGradient", "stop", "clipPath", "mask", "pattern", "marker",
 ]);
 
+/** Attributes that are names or prose, never read as CSS: only control characters refuse them. */
+const TEXT_ATTRIBUTES = new Set([
+  "id", "class", "version", "role", "aria-label", "aria-hidden", "aria-labelledby", "aria-describedby", "focusable",
+  "xml:space", "lang", "xml:lang",
+]);
+
+/** Attributes whose values are geometry or presentation, which a browser may read as CSS: checked by safeValue. */
 const ATTRIBUTES = new Set([
-  "id", "class", "viewBox", "width", "height", "x", "y", "x1", "y1", "x2", "y2", "cx", "cy", "r", "rx", "ry", "fx", "fy",
-  "d", "points", "transform", "pathLength", "preserveAspectRatio", "version", "role", "aria-label", "aria-hidden",
-  "aria-labelledby", "aria-describedby", "focusable", "xml:space", "lang", "xml:lang",
+  "viewBox", "width", "height", "x", "y", "x1", "y1", "x2", "y2", "cx", "cy", "r", "rx", "ry", "fx", "fy",
+  "d", "points", "transform", "pathLength", "preserveAspectRatio",
   "fill", "fill-opacity", "fill-rule", "stroke", "stroke-width", "stroke-linecap", "stroke-linejoin", "stroke-dasharray",
   "stroke-dashoffset", "stroke-opacity", "stroke-miterlimit", "opacity", "color", "visibility", "display", "overflow",
   "clip-path", "clip-rule", "mask", "marker-start", "marker-mid", "marker-end", "vector-effect", "paint-order",
@@ -110,25 +117,34 @@ function attributes(element: string, text: string, isRoot: boolean): string | un
   const seen = new Set<string>();
   for (const m of text.matchAll(/([A-Za-z_][\w:.-]*)\s*=\s*(?:"([^"]*)"|'([^']*)')/g)) {
     const name = m[1]!;
-    const value = decode(m[2] ?? m[3] ?? "");
+    // XML turns a literal tab, newline or carriage return in an attribute into a space before anything reads it (path
+    // data is often written over several lines); the same characters written as references stay, and are refused.
+    const value = decode((m[2] ?? m[3] ?? "").replace(/[\t\n\r]/g, " "));
     if (value === undefined) return undefined;
     if (seen.has(name)) continue;
     seen.add(name);
     let keep: string | undefined;
     if (name === "xmlns:xlink" && isRoot && value === NAMESPACES["xmlns:xlink"]) keep = value;
     else if (name === "href" || name === "xlink:href") keep = /^#[\w.:-]+$/.test(value.trim()) && (element === "use" || element === "textPath" || element.endsWith("Gradient") || element === "pattern") ? value.trim() : undefined;
+    else if (TEXT_ATTRIBUTES.has(name)) keep = /[\u0000-\u001f\u007f]/.test(value) ? undefined : value;
     else if (ATTRIBUTES.has(name)) keep = safeValue(value);
     if (keep !== undefined) out += ` ${name}="${escape(keep).replace(/"/g, "&quot;")}"`;
   }
   return out;
 }
 
-/** A presentation value, unless it reaches outside the document: url() only to a #fragment, nothing script-like. */
+/**
+ * A presentation or geometry value, which a browser may read as CSS, unless it could reach outside the document. Nothing
+ * is removed before the test, since CSS decodes escapes rather than ignoring them: a backslash or a control character
+ * refuses the value; a value that mentions url must be exactly one same-document url(#id); and expression, @import,
+ * javascript:, vbscript: and data: refuse it.
+ */
 function safeValue(value: string): string | undefined {
   // eslint-disable-next-line no-control-regex
-  const flat = value.replace(/[\u0000- \\]/g, "").toLowerCase();
-  if (/javascript:|vbscript:|data:|expression\(|@import/.test(flat)) return undefined;
-  for (const m of flat.matchAll(/url\(([^)]*)\)/g)) if (!/^['"]?#[\w.:-]+['"]?$/.test(m[1]!)) return undefined;
+  if (/[\\\u0000-\u001f\u007f]/.test(value)) return undefined;
+  const lower = value.toLowerCase();
+  if (lower.includes("url")) return /^\s*url\(\s*['"]?#[\w.:-]+['"]?\s*\)\s*$/i.test(value) ? value : undefined;
+  if (/expression|@import|javascript:|vbscript:|data:/.test(lower)) return undefined;
   return value;
 }
 

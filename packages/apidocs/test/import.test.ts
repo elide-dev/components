@@ -7,6 +7,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { readSuite } from "../src/import/files";
 import { imageSize } from "../src/import/images";
+import { sanitizeSvg } from "../src/import/svg";
 import { formatDiagnostic, guidesModel, importMarkdown, type ImportOptions, mapLink } from "../src/import/markdown";
 import { suiteSite } from "../src/import/suite";
 import type { Block, Guide, Inline, Model } from "../src/model";
@@ -323,6 +324,29 @@ describe("copied files", () => {
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
+  });
+  test("CSS escapes, control characters and anything but url(#id) refuse a presentation value", () => {
+    const value = (attr: string, v: string) => {
+      const result = sanitizeSvg(`<svg xmlns="http://www.w3.org/2000/svg"><rect ${attr}="${v}"/></svg>`);
+      if (!result.ok) throw new Error(result.reason);
+      return /<rect( [^>]*)?\/>/.exec(result.svg)![1] ?? "";
+    };
+    const refused: [string, string][] = [
+      ["fill", "\\75 rl(https://evil.example/p)"], ["fill", "\\75rl(https://evil.example/p)"], ["fill", "\\u rl(https://evil.example/p)"],
+      ["fill", "u\\rl(https://evil.example/p)"], ["fill", "\\6a avascript:alert(1)"], ["fill", "\\j avascript:alert(1)"],
+      ["fill", "\\65 xpression(alert(1))"], ["fill", "e\\xpression(alert(1))"], ["stroke", "\\75 \\72 \\6c (#g)"],
+      ["fill", "url(https://evil.example/p)"], ["fill", "url(#g) url(#h)"], ["fill", "url(#g), red"], ["fill", "URL( data:x )"],
+      ["fill", "expression(alert(1))"], ["fill", "red;@import x"], ["fill", "javascript:alert(1)"], ["fill", "vbscript:x"],
+      ["fill", "data:image/svg+xml,x"], ["fill", "red\u0000"], ["fill", "url(#g\u0000)"], ["fill", "red&#1;"], ["fill", "re&#9;d"], ["mask", "url(#m)x"],
+    ];
+    for (const [attr, v] of refused) expect([attr, v, value(attr, v)]).toEqual([attr, v, ""]);
+    expect(value("fill", "url(#gradient)")).toBe(' fill="url(#gradient)"');
+    expect(value("fill", " url( '#paint-1' ) ")).toBe(' fill=" url( \'#paint-1\' ) "');
+    expect(value("d", "M 0 0\n  L 10 10")).toBe(' d="M 0 0   L 10 10"');
+    expect(value("id", "has\\backslash")).toBe(' id="has\\backslash"');
+    expect(value("style", "fill:red")).toBe("");
+    // A null character written as a reference is not XML at all: the file is refused.
+    expect(sanitizeSvg('<svg xmlns="http://www.w3.org/2000/svg"><rect fill="red&#0;"/></svg>').ok).toBe(false);
   });
   test("an ordinary diagram keeps its drawing", () => {
     const { files, assets } = readSuite(SAMPLE);

@@ -121,7 +121,8 @@ Only images are copied: `png`, `jpg`, `jpeg`, `gif`, `webp`, `avif` and `svg`, b
 second document-like extension (`shot.html.png`) or ending in a dot or a space is refused, and so is every other
 type, with an error at the link. An SVG is rebuilt from an allowlist of drawing elements and presentation attributes
 (`src/import/svg.ts`): scripts, styles, `foreignObject`, embedded images, links, animation and event handlers go, an
-`href` survives only as a `#fragment` and `url()` only as `url(#fragment)`. An SVG with a DOCTYPE, CDATA or markup
+`href` survives only as a `#fragment` and `url()` only as a whole value `url(#fragment)`. A presentation value with a
+backslash (a CSS escape) or a control character is dropped, and so is any `style`. An SVG with a DOCTYPE, CDATA or markup
 that does not parse is refused. Symbolic links in the suite are not followed, and files are written from the bytes
 read at import.
 
