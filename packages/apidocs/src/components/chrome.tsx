@@ -374,7 +374,7 @@ export function TopBar() {
       <div class="topbar-tools">
         {site.packages.length > 0 && <a class="search-fallback" href={`${relative(page, INDEX, ".html")}#all-types`}>All types</a>}
         {astro ? <HoleMark name="search" /> : <SearchField apiLabel={site.packages.length > 0} />}
-        {(theme.links?.header ?? []).map(link => <a key={link.url} class="topbar-link" href={link.url}>{link.label}</a>)}
+        {(theme.links?.header ?? []).map(link => <a key={link.url} class="topbar-link" href={hrefFor(page, link.url)}>{link.label}</a>)}
         <button type="button" class="theme-switch" data-theme-switch data-js-only aria-label="Color theme: system">
           {/* The drawn icon everywhere; a sun or a moon where the platform's emoji are good (data-emoji). */}
           <span aria-hidden="true" class="theme-icon" />
