@@ -9,27 +9,37 @@ import { logoDark, logoLight, mark } from "./elide-artwork";
 
 const LATIN = "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD";
 
+const MONO =
+  '"JetBrains Mono Variable", "JetBrains Mono", "Apidocs Mono Fallback", var(--apidocs-font-system-mono), var(--apidocs-font-symbol), var(--apidocs-font-emoji)';
+
 export const elide: Theme = {
   name: "elide",
   logo: { light: logoLight, dark: logoDark, alt: "Elide" },
   favicon: mark,
+  // JetBrains Mono for code and for every type and member name; the reader's system fonts for prose and
+  // headings. The files hold Latin only, and the unicode-range says so, so a symbol or an emoji goes straight to
+  // the system font chosen for it.
   fonts: [
-    { family: "Inter Variable", asset: "fonts/inter-latin-wght-normal.woff2", unicodeRange: LATIN },
-    { family: "Inter Variable", asset: "fonts/inter-latin-wght-italic.woff2", style: "italic", unicodeRange: LATIN },
-    { family: "Instrument Sans Variable", asset: "fonts/instrument-sans-latin-wght-normal.woff2", unicodeRange: LATIN },
     { family: "JetBrains Mono Variable", asset: "fonts/jetbrains-mono-latin-wght-normal.woff2", unicodeRange: LATIN },
     { family: "JetBrains Mono Variable", asset: "fonts/jetbrains-mono-latin-wght-italic.woff2", style: "italic", unicodeRange: LATIN },
   ],
-  // Local fonts adjusted to the web fonts' metrics. When a web font is not ready at first paint, text set in
-  // these takes the same space, so nothing moves.
-  css:
-    '@font-face{font-family:"Apidocs Sans Fallback";src:local("Arial"),local("Liberation Sans"),local("Helvetica Neue");size-adjust:107.12%;ascent-override:90.44%;descent-override:22.52%;line-gap-override:0%}\n' +
-    '@font-face{font-family:"Apidocs Mono Fallback";src:local("Consolas");size-adjust:109.1%}',
+  // A local monospace font scaled to JetBrains Mono's width, for the moment before the web font is ready, so
+  // text takes the same space either way.
+  css: '@font-face{font-family:"Apidocs Mono Fallback";src:local("Consolas");size-adjust:109.1%}',
   tokens: {
     light: {
-      "font-sans": '"Inter Variable", Inter, "Apidocs Sans Fallback", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-      "font-display": '"Instrument Sans Variable", "Inter Variable", Inter, sans-serif',
-      "font-mono": '"JetBrains Mono Variable", "JetBrains Mono", "Apidocs Mono Fallback", ui-monospace, Menlo, Consolas, monospace',
+      "font-mono": MONO,
+      // JetBrains Mono's characters are 0.6em wide. These sizes make that a whole number of pixels (7, 8, 9, 10,
+      // 12, 15 and 18), so on a 1x display every character of code starts on a pixel and columns line up.
+      "size-xs": "11.6667px",
+      "size-sm": "13.3333px",
+      "size-md": "15px",
+      "size-lg": "16.6667px",
+      "size-xl": "20px",
+      "size-2xl": "25px",
+      "size-3xl": "30px",
+      // Code inside 15px prose: 13.3333px, the same 8px grid as code blocks.
+      "code-scale": "0.8889em",
       bg: neutral[50],
       surface: "#ffffff",
       subtle: neutral[100],

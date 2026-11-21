@@ -6,6 +6,7 @@
  * `extends` picks a preset: "neutral" (the default, unbranded) or "elide".
  */
 import { elide } from "./presets/elide";
+import type { SymbolMode } from "./symbols";
 
 export interface ThemeLink {
   label: string;
@@ -47,6 +48,11 @@ export interface Theme {
   sourceRef?: string;
   /** The site's absolute URL, with a trailing slash. Enables canonical links and sitemap.xml. */
   baseUrl?: string;
+  /**
+   * Which symbols pages write beside words: "utf" (plain Unicode symbols, the default), "emoji", or "none".
+   * Markdown pages and llms.txt use the set as text; HTML pages draw icons and offer the set where it reads well.
+   */
+  symbols?: SymbolMode;
   /** Extra CSS appended to the theme stylesheet. */
   css?: string;
 }

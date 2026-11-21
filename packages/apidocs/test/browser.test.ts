@@ -167,7 +167,7 @@ describe("from file:// with JavaScript on", () => {
     expect(local.errors).toEqual([]);
     await local.page.context().close();
     const served = await open("com/example/geo/Shapes.html", { http: true });
-    expect(await preloads(served.page)).toBe(3);
+    expect(await preloads(served.page)).toBe(1);
     expect(served.errors).toEqual([]);
     await served.page.context().close();
   });

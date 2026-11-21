@@ -85,7 +85,9 @@ describe("render", () => {
   test("the Elide preset adds its artwork and fonts", () => {
     const site = render(fixture, { extends: "elide" });
     expect(site["assets/logo-light.svg"]).toContain("<svg");
-    expect(site["assets/fonts/inter-latin-wght-normal.woff2"]).toEqual({ asset: "fonts/inter-latin-wght-normal.woff2" });
+    expect(site["assets/fonts/jetbrains-mono-latin-wght-normal.woff2"]).toEqual({ asset: "fonts/jetbrains-mono-latin-wght-normal.woff2" });
+    // Prose and headings use the reader's system fonts: no other font file ships.
+    expect(Object.keys(site).filter(f => f.startsWith("assets/fonts/")).sort()).toEqual(["assets/fonts/jetbrains-mono-latin-wght-italic.woff2", "assets/fonts/jetbrains-mono-latin-wght-normal.woff2"]);
     expect(site["assets/theme.css"]).toContain("--apidocs-accent:#6d28d9");
   });
   test("notes render as distinct callouts, the API note first", () => {
@@ -142,8 +144,9 @@ describe("layout", () => {
     expect(head).not.toContain('<link rel="preload"');
     expect(head).toContain('if(location.protocol!=="file:")');
     const urls = JSON.parse(/\(location\.protocol!=="file:"\)(\[[^\]]*\])/.exec(head)![1]!) as string[];
-    expect(urls.map(u => u.split("/").pop())).toEqual(["inter-latin-wght-normal.woff2", "instrument-sans-latin-wght-normal.woff2", "jetbrains-mono-latin-wght-normal.woff2"]);
-    expect(render(fixture)["index.html"]).not.toContain("protocol");
+    expect(urls.map(u => u.split("/").pop())).toEqual(["jetbrains-mono-latin-wght-normal.woff2"]);
+    // A theme without font files preloads nothing.
+    expect(render(fixture)["index.html"]).not.toContain(".forEach(function(h)");
   });
 });
 

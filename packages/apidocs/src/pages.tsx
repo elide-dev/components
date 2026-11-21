@@ -5,7 +5,7 @@ import { INDEX, packagePage, refLabel, relative, resolve, typePage } from "./sit
 import { compactTokens, memberGroups, memberTitle, summaryText, typeGroups, typeKindWord } from "./structure";
 import { Badge, Blocks, Inlines, Signature, TokenList } from "./components/doc";
 import type { Crumb, TocItem } from "./components/chrome";
-import { Shell, kindGlyph } from "./components/chrome";
+import { LanguageMark, Shell, kindGlyph, packageLanguages } from "./components/chrome";
 import { DeprecationBanner, MemberDetail, Notes, Params, RefLink, SeeAlso, SourceLink, TypeParams } from "./components/declaration";
 
 function moduleTitle(): string {
@@ -40,12 +40,13 @@ export function IndexPage() {
     { id: "all-types", label: "All types", depth: 1 },
   ];
   return (
-    <Shell title={`${moduleTitle()} API`} description={description} crumbs={[]} toc={toc} jsonLd={jsonLd(m.name, description, "module")}>
+    <Shell title={`${moduleTitle()} API`} description={description} crumbs={[]} toc={toc} jsonLd={jsonLd(m.name, description, "module")}
+      meta={{ kind: "module", keywords: site.packages.map(pkg => pkg.name) }}>
       <header class="page-head">
         <h1>{m.name}</h1>
         <p class="page-meta">
           {m.version && <Badge tone="since">version {m.version}</Badge>}
-          {(m.languages ?? []).map(l => <Badge key={l}>{l}</Badge>)}
+          {(m.languages ?? []).map(l => <LanguageMark key={l} language={l} label />)}
         </p>
       </header>
       {m.doc?.body ? <div class="prose"><Blocks nodes={m.doc.body} offset={0} /></div> : <p class="lede">{description}</p>}
@@ -101,10 +102,12 @@ export function PackagePage({ pkg }: { pkg: Package }) {
       crumbs={[{ label: usePage().site.model.module.name, page: INDEX }, { label: pkg.name }]}
       toc={toc}
       jsonLd={jsonLd(pkg.name, description, "package")}
+      meta={{ kind: "package", id: pkg.id, package: pkg.name, keywords: [pkg.name, ...tops.map(t => t.name)].slice(0, 24) }}
     >
       <header class="page-head">
         <h1><code>{pkg.name || "(default package)"}</code></h1>
         <p class="page-meta">
+          {packageLanguages(pkg, usePage().site.model.module.languages).map(l => <LanguageMark key={l} language={l} label />)}
           <span class="kind-word">package</span>
           {pkg.since && <Badge tone="since">since {pkg.since}</Badge>}
           {pkg.nullMarked && <Badge tone="non-null" title="JSpecify @NullMarked: types are non-null unless annotated">null-marked</Badge>}
@@ -190,10 +193,15 @@ export function TypePage({ type }: { type: Type }) {
   if (type.inherited?.length) toc.push({ id: "inherited-members", label: "Inherited members", depth: 1 });
 
   return (
-    <Shell title={`${type.name} (${moduleTitle()})`} description={description} crumbs={crumbs} toc={toc} jsonLd={jsonLd(type.name, description, typeKindWord(type))}>
+    <Shell title={`${type.name} (${moduleTitle()})`} description={description} crumbs={crumbs} toc={toc} jsonLd={jsonLd(type.name, description, typeKindWord(type))}
+      meta={{
+        kind: "type", id: type.id, package: pkg.name, language: type.language,
+        keywords: [type.name, `${pkg.name}.${type.name}`, typeKindWord(type), ...new Set((type.members ?? []).map(member => member.name))].slice(0, 32),
+      }}>
       <header class="page-head">
         <h1 data-kind={type.kind}><span class="glyph glyph-large" data-tone={kindGlyph(type).tone} aria-hidden="true">{kindGlyph(type).letter}</span>{type.name}</h1>
         <p class="page-meta">
+          <LanguageMark language={type.language} label />
           <span class="kind-word">{typeKindWord(type)}</span>
           <span class="in-package">in <a href={relative(entry.page, packagePage(pkg), ".html")}><code>{pkg.name}</code></a></span>
           {type.since && <Badge tone="since">since {type.since}</Badge>}
@@ -385,7 +393,8 @@ function SummaryTable({ rows, withKind }: { rows: Row[]; withKind?: boolean }) {
 
 /** `within` is the enclosing type's name on a nested-types table: rows drop that prefix. */
 function TypeTable({ types, pkg, withKind, within }: { types: Type[]; pkg: Package; withKind?: boolean; within?: string }) {
-  const { page } = usePage();
+  const { page, site } = usePage();
+  const mixed = (site.model.module.languages ?? []).length > 1;
   return (
     <SummaryTable
       withKind={withKind}
@@ -395,6 +404,7 @@ function TypeTable({ types, pkg, withKind, within }: { types: Type[]; pkg: Packa
           <a class="type-link" href={relative(page, typePage(pkg, type), ".html")}>
             <span class="glyph" data-tone={kindGlyph(type).tone} aria-hidden="true">{kindGlyph(type).letter}</span>
             <code>{within && type.name.startsWith(`${within}.`) ? type.name.slice(within.length + 1) : type.name}</code>
+            {mixed && <LanguageMark language={type.language} />}
           </a>
         ),
         kind: typeKindWord(type),

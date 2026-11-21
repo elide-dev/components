@@ -294,6 +294,77 @@ function listFilter(boxSelector: string, rowSelector: string, also?: string) {
   });
 }
 
+// ---- Copy the page as Markdown: read the Markdown file beside the page and put it on the clipboard.
+
+function copyMarkdown() {
+  const button = doc.querySelector<HTMLButtonElement>("[data-copy-markdown]");
+  if (!button) return;
+  const url = button.dataset.copyMarkdown!;
+  button.addEventListener("click", () => {
+    // XMLHttpRequest, not the newer API: the control exists only on a served page (data-served-only), and the
+    // output check forbids the newer call everywhere so that no page can come to depend on it from file://.
+    const request = new XMLHttpRequest();
+    request.open("GET", url);
+    request.responseType = "text";
+    const fail = () => {
+      window.location.href = url;
+    };
+    request.onerror = fail;
+    request.onload = async () => {
+      if (request.status < 200 || request.status >= 300) return fail();
+      try {
+        await navigator.clipboard.writeText(request.responseText);
+      } catch {
+        return fail();
+      }
+      button.dataset.copied = "";
+      button.setAttribute("aria-label", "Copied");
+      setTimeout(() => {
+        delete button.dataset.copied;
+        button.setAttribute("aria-label", "Copy this page as Markdown");
+      }, 1600);
+    };
+    request.send();
+  });
+}
+
+// ---- Menus built on <details>: close on Escape and on a click elsewhere.
+
+function menus() {
+  const open = () => doc.querySelectorAll<HTMLDetailsElement>("details.formats-menu[open]");
+  doc.addEventListener("click", event => {
+    for (const menu of open()) if (!menu.contains(event.target as Node)) menu.open = false;
+  });
+  doc.addEventListener("keydown", event => {
+    if (event.key !== "Escape") return;
+    for (const menu of open()) {
+      menu.open = false;
+      menu.querySelector<HTMLElement>("summary")?.focus();
+    }
+  });
+}
+
+// ---- Leaving for another page of this site: start the load bar; the next page finishes it.
+
+function leaving() {
+  const here = () => window.location.href.replace(/#.*$/, "");
+  doc.addEventListener("click", event => {
+    if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const link = (event.target as Element).closest?.("a[href]") as HTMLAnchorElement | null;
+    if (!link || link.target || link.hasAttribute("download")) return;
+    if (link.origin !== window.location.origin || link.href.replace(/#.*$/, "") === here()) return;
+    if (!/\.html$/.test(link.pathname)) return;
+    doc.documentElement.setAttribute("data-leaving", "");
+    try {
+      window.sessionStorage.setItem("apidocs-load", "1");
+    } catch {
+      /* storage blocked: the next page simply does not finish the bar */
+    }
+  });
+  // Back from the page cache: this page never unloaded, so clear what the click left.
+  window.addEventListener("pageshow", () => doc.documentElement.removeAttribute("data-leaving"));
+}
+
 // ---- The navigator toggle: remember "hidden" on wide screens; "[" toggles it.
 
 function navigatorToggle() {
@@ -334,6 +405,9 @@ function start() {
   searchBox();
   tableOfContents();
   navigatorToggle();
+  copyMarkdown();
+  menus();
+  leaving();
   // Types only: packages stay, so the way to another package is never filtered away.
   listFilter("[data-nav-filter]", ".nav-section:not(:first-of-type) .nav-list > li");
   listFilter("[data-toc-filter]", ".toc-entries > li", "#member-summary table.summary tbody tr");
