@@ -9,7 +9,7 @@
     "build": "astro build",
     "preview": "wrangler dev -c dist/server/wrangler.json --ip 127.0.0.1 --port 5190",
     "lint": "astro sync && tsc --noEmit",
-    "test": "bun test test/"
+    "test": "bun test --timeout 60000 test/"
   },
   "dependencies": {
     "@astrojs/cloudflare": "14.4.4",
