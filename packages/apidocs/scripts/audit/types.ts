@@ -59,6 +59,11 @@ export interface Site {
   url: string;
   /** Pages to audit closely, as paths relative to the site root. */
   pages: RepresentativePages;
+  /**
+   * The URL a page (a path in dir, such as "index.html") is served at. Defaults to url + page; a site mirrored from
+   * a server whose URLs differ from its file names (the Astro form, `--url`) maps them back.
+   */
+  urlOf?: (page: string) => string;
 }
 
 export interface RepresentativePages {

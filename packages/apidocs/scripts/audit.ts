@@ -9,17 +9,22 @@
  *                 [--lighthouse-sites first|all] [--form-factor mobile,desktop]
  *                 [--threshold N] [--threshold-lighthouse N] [--threshold-agentic N] [--threshold-css N]
  *                 [--host static|agent] [--no-base-url] [--no-build] [--out dir] [--json]
+ *                 [--url http://host/base/]
  *
  * Each site is built with dist/runner.mjs exactly as the doclet builds it, and
  * served on its own free localhost port for the run, with compression and
  * cache headers. Full reports go to a fresh temporary directory (or --out),
  * whose path is printed. Exits 1 when any score is below its threshold.
+ *
+ * --url audits a site that is already served, such as the Astro sample app (`bun run apidocs:astro:preview`),
+ * instead of building one: Lighthouse and agent readiness, read through the site's llms.txt (audit/remote.ts).
  */
 import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { samples } from "../samples";
 import { agenticAudit } from "./audit/agentic";
+import { mirrorSite } from "./audit/remote";
 import { buildDist, renderSite, representativePages } from "./audit/build";
 import { cssAudit, type Stylesheet } from "./audit/css";
 import { type FormFactor, type LighthouseRun, reportPath, startLighthouse } from "./audit/lighthouse";
@@ -38,7 +43,9 @@ const flag = (name: string) => {
 const list = (name: string, fallback: string[]) => flag(name)?.split(",").map(s => s.trim()).filter(Boolean) ?? fallback;
 const cwd = process.env.INIT_CWD ?? process.cwd();
 const AUDITS = ["lighthouse", "agentic", "css"] as const;
-const only = new Set(list("only", [...AUDITS]));
+const remote = flag("url") ? (flag("url")!.endsWith("/") ? flag("url")! : `${flag("url")}/`) : undefined;
+// A served site has no stylesheet files to read; the CSS audit runs on the static build.
+const only = new Set(list("only", remote ? ["lighthouse", "agentic"] : [...AUDITS]));
 for (const a of only) if (!AUDITS.includes(a as (typeof AUDITS)[number])) throw new Error(`--only takes ${AUDITS.join(", ")}; got ${a}`);
 const presets = list("preset", ["neutral", "elide"]);
 const sampleNames = list("sample", ["java", "kotlin"]);
@@ -52,7 +59,7 @@ const reportDir = flag("out") ? resolve(cwd, flag("out")!) : mkdtempSync(join(tm
 mkdirSync(join(reportDir, "lighthouse"), { recursive: true });
 const started = Date.now();
 
-if (!args.includes("--no-build")) {
+if (!args.includes("--no-build") && !remote) {
   console.log("  building dist/ ...");
   buildDist();
 }
@@ -60,7 +67,13 @@ if (!args.includes("--no-build")) {
 // Build each site under its own server, so each sits at a host root (llms.txt, robots.txt and sitemap.xml are root files).
 const servers: AuditServer[] = [];
 const sites: Site[] = [];
-const inputs = modelPath
+if (remote) {
+  sites.push(await mirrorSite("served", remote, join(reportDir, "sites", "served")));
+  console.log(`  served: ${sites[0]!.pages.all.length} pages from ${remote}`);
+}
+const inputs = remote
+  ? []
+  : modelPath
   ? presets.map(preset => ({ name: `model-${preset}`, preset, model: { path: modelPath } }))
   : sampleNames.flatMap(sample => {
       if (!samples[sample as keyof typeof samples]) throw new Error(`No sample named ${sample}; use ${Object.keys(samples).join(" or ")}`);
@@ -103,6 +116,7 @@ try {
   if (only.has("lighthouse")) {
     const which = flag("lighthouse-sites") ?? "first";
     const lhSites = which === "all" ? sites : [sites.find(s => s.name.endsWith("-elide")) ?? sites[0]!];
+    const at = (site: Site, page: string) => (site.urlOf ? site.urlOf(page) : site.url + page);
     console.log(`  lighthouse: ${lhSites.length} site(s) x 4 pages x ${formFactors.length} form factors ...`);
     const lh = await startLighthouse();
     try {
@@ -114,7 +128,7 @@ try {
             const t = Date.now();
             let run: LighthouseRun;
             try {
-              run = await lh.run(site.url + page, formFactor, base);
+              run = await lh.run(at(site, page), formFactor, base);
             } catch (e) {
               results.push({ audit: "lighthouse", target: `${site.name} ${page} ${formFactor}`, score: 0, threshold: threshold.lighthouse, failures: [`did not run: ${(e as Error).message.slice(0, 120)}`], findings: [] });
               continue;

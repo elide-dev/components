@@ -15,6 +15,17 @@ bun run audit --host agent                     # serve with Markdown negotiation
 bun run audit --threshold-lighthouse 95 --threshold-agentic 90 --threshold-css 0
 ```
 
+To audit a site that is already served, such as the Astro sample app (`bun run apidocs:astro:preview`, or its
+test server on port 5191), pass its base URL:
+
+```sh
+bun run audit --url http://127.0.0.1:5190/java/2.0/      # Lighthouse and agent readiness; nothing is built
+```
+
+The audit reads the site's `llms.txt` for its pages, fetches each at its Astro URL, and saves it in the static layout
+(`X.html`, its links mapped back to the static form) for the checks that read files; the checks that make requests,
+and Lighthouse, go to the server. The CSS audit needs the stylesheet files, so it runs on static builds only.
+
 Other flags: `--sample java,kotlin`, `--preset neutral,elide`, `--page <path.html>` (the largest type page to use),
 `--theme theme.json` (merged over the preset), `--lighthouse-sites first|all`, `--no-base-url`, `--no-build`, `--json`.
 `test/audit.test.ts` covers the rule logic and runs the agent-readiness audit over the Java sample; it does not run

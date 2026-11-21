@@ -91,6 +91,11 @@ const AGENTS_SEARCH = ["OAI-SearchBot", "Claude-SearchBot", "PerplexityBot"];
 const AGENTS_USER = ["ChatGPT-User", "Claude-User", "Perplexity-User"];
 const TOKEN_BUDGET_CHARS = 100_000;
 
+/** Where a page of the site is served. */
+function pageAt(site: Site, page: string): string {
+  return site.urlOf ? site.urlOf(page) : site.url + page;
+}
+
 export async function agenticAudit(site: Site, options: AgenticOptions = {}): Promise<AgenticReport> {
   const limit = options.pageLimit ?? 150;
   const pages = samplePages(site, limit);
@@ -235,7 +240,7 @@ export async function agenticAudit(site: Site, options: AgenticOptions = {}): Pr
 
   // noindex-directives
   {
-    const r = await get(site.url + site.pages.overview);
+    const r = await get(pageAt(site, site.pages.overview));
     const robotsMeta = ["robots", "googlebot", "bingbot"].map(k => overview.meta.get(k) ?? "").join(" ");
     const header = r.headers.get("x-robots-tag") ?? "";
     const hidden = /noindex/i.test(robotsMeta) || /noindex/i.test(header);
@@ -267,10 +272,13 @@ export async function agenticAudit(site: Site, options: AgenticOptions = {}): Pr
 
   // agent-crawler-reachability and bot-detection: the audit server serves every user agent alike; this proves the pages need no cookies or JS challenge.
   {
-    const base = await get(site.url + site.pages.overview);
+    const base = await get(pageAt(site, site.pages.overview));
     const uas = ["ChatGPT-User/1.0", "OAI-SearchBot/1.0", "Claude-User/1.0", "PerplexityBot/1.0"];
-    const results = await Promise.all(uas.map(async ua => ({ ua, r: await get(site.url + site.pages.overview, { "user-agent": `Mozilla/5.0 (compatible; ${ua})` }) })));
-    const ok = results.filter(x => x.r.status === 200 && x.r.text.length === base.text.length);
+    const results = await Promise.all(uas.map(async ua => ({ ua, r: await get(pageAt(site, site.pages.overview), { "user-agent": `Mozilla/5.0 (compatible; ${ua})` }) })));
+    // The same content: a page with server islands differs in every response (each render encrypts the islands'
+    // props anew), so compare the text a reader gets, not the bytes.
+    const text = (html: string) => readPage(html).mainText;
+    const ok = results.filter(x => x.r.status === 200 && text(x.r.text) === text(base.text));
     const s = 2 * ok.length / uas.length;
     const evidence = `${ok.length}/${uas.length} agent user agents got the same 200 page from the audit server. A real host's WAF or bot rules are not tested here.`;
     set("agent-crawler-reachability", { score: s, max: 2, status: statusOf(s, 2), evidence });
@@ -325,7 +333,7 @@ export async function agenticAudit(site: Site, options: AgenticOptions = {}): Pr
 
   // Host-dependent bonus checks.
   {
-    const r = await get(site.url + site.pages.overview);
+    const r = await get(pageAt(site, site.pages.overview));
     const link = r.headers.get("link") ?? "";
     set("link-headers-discovery", { score: link ? 1 : 0, max: 1, status: link ? "pass" : "fail", evidence: link ? `Link: ${link}` : "No Link response header on the overview (the host adds it; the agent host profile does)." });
     const md = await get(site.url, { accept: "text/markdown" });
