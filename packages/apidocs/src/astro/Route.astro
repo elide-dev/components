@@ -7,6 +7,7 @@
 import { sites, versions } from "virtual:@elide/apidocs/sites";
 import ApidocsPage from "./ApidocsPage.astro";
 import { resolvePage } from "./resolve";
+import { linkHeader, notFound, prefersMarkdown } from "./http";
 import { renderText } from "./text";
 import VersionIsland from "./VersionIsland.astro";
 import VersionNotice from "./VersionNotice.astro";
@@ -18,15 +19,25 @@ const site = sites.filter(s => pathname.startsWith(s.base) || `${pathname}/` ===
 if (!site) return new Response("Not found", { status: 404 });
 if (`${pathname}/` === site.base) return Astro.redirect(site.base + Astro.url.search, 301);
 const path = pathname.slice(site.base.length);
-const resolved = resolvePage(site.model, path, site.theme);
+// The site's address is known from the request, so sitemap.xml can list absolute URLs.
+const theme = { ...site.theme, baseUrl: site.theme.baseUrl ?? new URL(site.base, Astro.site ?? Astro.url.origin).href };
+const resolved = resolvePage(site.model, path, theme);
 if (resolved.kind === "redirect") return Astro.redirect(site.base + resolved.to + Astro.url.search, 301);
 if (resolved.kind === "markdown" || resolved.kind === "file") {
-  const text = renderText(site.model, resolved.kind === "markdown" ? `${resolved.page}.md` : resolved.name, site.theme);
+  const text = renderText(site.model, resolved.kind === "markdown" ? `${resolved.page}.md` : resolved.name, theme);
   if (!text) return new Response("Not found", { status: 404 });
   return new Response(text.body, { headers: { "content-type": text.contentType } });
 }
-if (resolved.kind === "missing") return new Response("Not found", { status: 404, headers: { "content-type": "text/plain; charset=utf-8" } });
+const accept = Astro.request.headers.get("accept");
+if (resolved.kind === "missing") return notFound(site.base, site.model.module.name, accept);
 const page = resolved.page;
+// One URL, two forms: a request that prefers Markdown gets the page's twin.
+if (prefersMarkdown(accept)) {
+  const text = renderText(site.model, `${page}.md`, theme)!;
+  return new Response(text.body, { headers: { "content-type": text.contentType, vary: "Accept", link: linkHeader(site.base, page) } });
+}
+Astro.response.headers.set("vary", "Accept");
+Astro.response.headers.set("link", linkHeader(site.base, page));
 const here = site.version ? versions.find(v => v.id === site.version) : undefined;
 const latest = latestRelease(versions);
 ---

@@ -8,6 +8,7 @@ export { default as VersionSelect } from "./VersionSelect.astro";
 export { type ApidocsOptions, type ApidocsSite, apidocs } from "./integration";
 export { renderPage, type PageParts, type RenderOptions } from "./render";
 export { type Resolved, resolvePage, sitePaths, textFiles } from "./resolve";
+export { linkHeader, notFound, prefersMarkdown } from "./http";
 export { prepareTheme, renderText, searchEntries, type TextFile } from "./text";
 export { assertBase, fileUrl, isBaseRelative, mapUrl, pageUrl, rewriteHtml } from "./urls";
 export { latestRelease, pathUnder, type Version, versionLabel } from "./versions";

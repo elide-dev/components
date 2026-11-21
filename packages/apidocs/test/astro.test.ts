@@ -9,7 +9,7 @@ import { samples } from "../samples";
 import { guidesModel, importMarkdown, readSuite } from "../src/import";
 import type { Model } from "../src/model";
 import { render } from "../src/render";
-import { assertBase, isBaseRelative, mapUrl, pageUrl, renderPage, renderText, resolvePage, searchEntries, sitePaths, textFiles } from "../src/astro/helpers";
+import { assertBase, isBaseRelative, linkHeader, mapUrl, notFound, pageUrl, prefersMarkdown, renderPage, renderText, resolvePage, searchEntries, sitePaths, textFiles } from "../src/astro/helpers";
 
 const fixture: Model = JSON.parse(readFileSync(new URL("fixtures/fixture-java.api.json", import.meta.url), "utf8"));
 const suite = readSuite(fileURLToPath(new URL("../samples/guides", import.meta.url)));
@@ -230,5 +230,26 @@ describe("untrusted links and paths", () => {
     }
     for (const to of ["", "a", "a/", "a/b", "packages"]) expect(isBaseRelative(to)).toBe(true);
     for (const to of ["/a", "//a", "\\a", "a\\b", "a/../b", "../a", "./a", "a//b", "https:x", "a\tb", "a\nb"]) expect(isBaseRelative(to)).toBe(false);
+  });
+});
+
+describe("serving helpers", () => {
+  test("prefersMarkdown reads the Accept header's preference", () => {
+    expect(prefersMarkdown("text/markdown")).toBe(true);
+    expect(prefersMarkdown("text/markdown, text/html;q=0.9")).toBe(true);
+    expect(prefersMarkdown("text/html, text/markdown;q=0.9")).toBe(false);
+    expect(prefersMarkdown("text/html,application/xhtml+xml,*/*;q=0.8")).toBe(false);
+    expect(prefersMarkdown(null)).toBe(false);
+  });
+  test("linkHeader names the twin, llms.txt and the model", () => {
+    expect(linkHeader("/docs/", "com/example/geo/index")).toBe('</docs/com/example/geo/index.md>; rel="alternate"; type="text/markdown", </docs/llms.txt>; rel="alternate"; type="text/markdown"; title="llms.txt", </docs/api.json>; rel="alternate"; type="application/json"; title="api.json"');
+  });
+  test("notFound answers 404 in the form asked for, pointing at the overview and llms.txt", async () => {
+    const html = notFound("/docs/", "geo <1>", "text/html");
+    expect(html.status).toBe(404);
+    expect(await html.text()).toContain('There is no such page in geo &lt;1&gt;. Start at the <a href="/docs/">overview</a>');
+    const md = notFound("/docs/", "geo", "text/markdown");
+    expect(md.headers.get("content-type")).toContain("text/markdown");
+    expect(await md.text()).toContain("[llms.txt](/docs/llms.txt)");
   });
 });
