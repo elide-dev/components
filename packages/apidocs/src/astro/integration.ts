@@ -36,7 +36,7 @@ export interface ApidocsOptions {
 }
 
 const VIRTUAL = "virtual:@elide/apidocs/sites";
-const PREACT = ["preact", "preact/hooks", "preact/jsx-runtime", "preact/jsx-dev-runtime", "preact/devtools", "preact-render-to-string"];
+const PREACT = ["preact", "preact/hooks", "preact/jsx-runtime", "preact/jsx-dev-runtime", "preact/devtools"];
 
 export function apidocs(options: ApidocsOptions = {}): AstroIntegration {
   const sites = options.sites ?? [];
