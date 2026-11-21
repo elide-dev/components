@@ -5,7 +5,9 @@
  * directory in their jars and start it with an external JavaScript runtime
  * (Bun or Node); it needs nothing else and never touches the network.
  *
- *   runner.mjs --bundle render.js --assets assets/ --model api.json [--theme theme.json] --out site/
+ *   runner.mjs --bundle render.js --assets assets/ --model api.json [--theme theme.json] [--source-ref ref] --out site/
+ *
+ * --source-ref sets the theme's sourceRef: the {ref} in its source-link template.
  *
  * Input and output go through files, so output size is not limited by a pipe.
  * On success it prints one JSON line, {"files":N,"bytes":N,"renderMs":N}, and
@@ -44,7 +46,8 @@ try {
   const api = globalThis.ApiDocs;
   if (!api || typeof api.render !== "function") throw new Error(`${options.bundle} does not define ApiDocs.render`);
   const model = readFileSync(options.model, "utf8");
-  const theme = options.theme ? readFileSync(options.theme, "utf8") : undefined;
+  const theme = options.theme ? JSON.parse(readFileSync(options.theme, "utf8")) : {};
+  if (options["source-ref"]) theme.sourceRef = options["source-ref"];
   const started = performance.now();
   const files = api.render(model, theme);
   const renderMs = Math.round(performance.now() - started);

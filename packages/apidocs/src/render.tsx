@@ -59,7 +59,9 @@ export function render(modelInput: Model | string, themeInput?: Theme | string):
   out["llms.txt"] = llms(site, pages);
   out["llms-full.txt"] = pages.map(p => `<!-- ${p.page}.md -->\n${out[`${p.page}.md`]}`).join("\n");
   out["api.json"] = JSON.stringify(model);
-  out["element-list"] = site.packages.map(p => p.name).filter(Boolean).join("\n") + "\n";
+  // Javadoc's element-list: a module line first when the packages belong to a named JPMS module, as -link expects.
+  const modulePrefix = model.module.javaModule ? [`module:${model.module.javaModule}`] : [];
+  out["element-list"] = [...modulePrefix, ...site.packages.map(p => p.name).filter(Boolean)].join("\n") + "\n";
   out["assets/search-index.js"] = searchIndex(site);
   out["assets/theme.css"] = themeCss({ ...theme, fonts: (theme.fonts ?? []).map(f => ({ ...f, asset: f.asset })) });
   for (const name of STATIC_ASSETS) out[`assets/${name}`] = { asset: name };

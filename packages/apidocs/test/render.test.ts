@@ -1,5 +1,7 @@
 import { describe, expect, test } from "bun:test";
-import { readFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { samples } from "../samples";
 import { generate } from "../scripts/gen-types";
@@ -55,6 +57,8 @@ describe("render", () => {
     expect(out["assets/apidocs.css"]).toEqual({ asset: "apidocs.css" });
     expect(out["sitemap.xml"]).toBeUndefined();
     expect(out["element-list"]).toBe("fixture.java\nfixture.java.io\n");
+    const named = render({ ...fixture, module: { ...fixture.module, javaModule: "dev.example.fixture" } });
+    expect(named["element-list"]).toBe("module:dev.example.fixture\nfixture.java\nfixture.java.io\n");
   });
   test("uses the JDK doclet's anchors", () => {
     const html = out["fixture/java/io/ShapeReader.html"] as string;
@@ -168,6 +172,24 @@ describe("output checker", () => {
       "a.html: link names a directory: dir/",
       "c.js: uses fetch",
     ]);
+  });
+});
+
+describe("runner", () => {
+  test("renders through dist/runner.mjs, with --source-ref filling the theme's {ref}", () => {
+    const work = mkdtempSync(join(tmpdir(), "apidocs-runner-"));
+    try {
+      writeFileSync(join(work, "model.json"), JSON.stringify(fixture));
+      writeFileSync(join(work, "theme.json"), JSON.stringify({ sourceLink: "https://example.com/blob/{ref}/{path}#L{line}" }));
+      const dist = new URL("../dist/", import.meta.url).pathname;
+      const run = spawnSync(process.execPath, [`${dist}runner.mjs`, "--bundle", `${dist}render.js`, "--assets", `${dist}assets`,
+        "--model", join(work, "model.json"), "--theme", join(work, "theme.json"), "--source-ref", "v1.2.3", "--out", join(work, "out")], { encoding: "utf8" });
+      expect(run.stderr).toBe("");
+      expect(JSON.parse(run.stdout).files).toBeGreaterThan(40);
+      expect(readFileSync(join(work, "out/fixture/java/Geometry.html"), "utf8")).toContain("https://example.com/blob/v1.2.3/fixture/java/Geometry.java#L");
+    } finally {
+      rmSync(work, { recursive: true, force: true });
+    }
   });
 });
 

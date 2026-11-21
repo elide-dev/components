@@ -25,6 +25,7 @@
       "properties": {
         "name": { "type": "string", "description": "The module's name, as pages show it." },
         "version": { "type": "string", "description": "The module's version." },
+        "javaModule": { "type": "string", "description": "The named JPMS module the packages belong to; absent for the unnamed module." },
         "languages": { "type": "array", "items": { "type": "string" }, "description": "The source languages, sorted: java, kotlin." },
         "doc": { "$ref": "#/$defs/Doc" }
       }

@@ -17,6 +17,8 @@ export interface Module {
   name: string;
   /** The module's version. */
   version?: string;
+  /** The named JPMS module the packages belong to; absent for the unnamed module. */
+  javaModule?: string;
   /** The source languages, sorted: java, kotlin. */
   languages?: string[];
   doc?: Doc;
