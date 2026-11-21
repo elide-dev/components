@@ -3,9 +3,9 @@
  * geometry library. Hand-written, except the generated Registry type with
  * hundreds of members. samples/FEATURES.md lists what each page shows.
  */
-import type { Member, Model, Package, Type } from "../src/model";
+import type { Guide, Member, Model, Package, Type } from "../src/model";
 import {
-  an, blocks, CODE, deprecated, doc, H, jdk, javaMember, kw, lit, nm, OL, P, QUOTE, RAW, TABLE, tk, tp, ty, type, UL,
+  ADMON, an, blocks, CODE, deprecated, doc, guide, H, jdk, javaMember, kw, lit, nm, OL, P, QUOTE, RAW, TABLE, tk, tp, ty, type, UL,
 } from "./build";
 
 const G = "com.example.geo";
@@ -138,7 +138,7 @@ const legacyShape: Type = type({
   id: `${G}.LegacyShape`, name: "LegacyShape", kind: "class", modifiers: ["public", "final"],
   signature: tk(kw("public"), " ", kw("final"), " ", kw("class"), " ", nm("LegacyShape")),
   superclass: [OBJECT], ancestors: [objectRef],
-  deprecated: deprecated("Use [[com.example.geo.Polygon]]; this class predates sealed shapes and will be removed in 3.0.", "2.0", true),
+  deprecated: deprecated("Use [[com.example.geo.Polygon]]; this class predates sealed shapes and will be removed in 3.0. See [[guide:migrating-from-1x#classes-to-replace|Classes to replace]] in the migration guide.", "2.0", true),
   doc: doc("A shape from the 1.x API."), since: "1.0",
 });
 
@@ -179,7 +179,7 @@ const shapes: Type = type({
           ["apiNote", "The text form is **not stable** across releases: store shapes some other way. Parsing `circle -1` throws rather than returning an empty shape."],
           ["implNote", "Parses with a hand-written scanner; no regular expressions."],
         ],
-        see: ["[[com.example.geo.io.ShapeReader]]", "[Shape text format](https://example.com/geo/format)"],
+        see: ["[[com.example.geo.io.ShapeReader]]", "[[guide:advanced/text-format#grammar|The text format: grammar]]", "[Shape text format](https://example.com/geo/format)"],
       },
     }),
     m(shapesId, {
@@ -315,12 +315,141 @@ function generated(): Type {
   });
 }
 
+// ---- Guides. Listed out of reading order on purpose: the migration guide has no order, and the Advanced group
+// lists its second guide first, so the pages show how the renderer orders them.
+
+function guides(): Guide[] {
+  const gettingStarted = guide({
+    slug: "getting-started", title: "Getting started", order: 1,
+    summary: "Add geo to a build and measure a first shape.",
+    source: { path: "docs/guides/getting-started.md", line: 1 },
+    body: [
+      P("geo measures plane shapes: circles, polygons and shapes you build from them. This guide adds it to a build and runs a first program."),
+      H(2, "Install"),
+      P("geo needs Java 21 or later. With Gradle, add the dependency to `build.gradle.kts`:"),
+      CODE("kotlin", 'dependencies {\n    implementation("com.example:geo:2.1.0")\n}'),
+      P("With Maven, add it to `pom.xml`:"),
+      CODE("xml", "<dependency>\n  <groupId>com.example</groupId>\n  <artifactId>geo</artifactId>\n  <version>2.1.0</version>\n</dependency>"),
+      P("On the module path, require the module:"),
+      CODE("java", "module my.app {\n    requires com.example.geo;\n}"),
+      H(2, "Your first shape"),
+      P("Create shapes with [[com.example.geo.Circle#of(double)|Circle.of]] and the [[com.example.geo.Polygon#<init>(double...)|Polygon]] constructor, then measure them with [[com.example.geo.Shapes]]:"),
+      CODE("java", 'import com.example.geo.*;\n\nclass First {\n    public static void main(String[] args) {\n        Shape circle = Circle.of(2);\n        Shape triangle = new Polygon(3, 3, 3);\n        System.out.printf("total area: %.2f m²%n", Shapes.total(circle, triangle));\n    }\n}'),
+      ADMON("tip", "Every length is in meters. To work in other units, see [[guide:concepts#units|Units]] in the concepts guide."),
+      H(2, "Next steps"),
+      UL(
+        "[[guide:concepts|Concepts]] explains shapes, measuring and units.",
+        "[[guide:migrating-from-1x|Migrating from 1.x]] lists what changed in 2.0.",
+        "The [[com.example.geo]] package is the reference for everything above.",
+      ),
+    ],
+  });
+
+  const concepts = guide({
+    slug: "concepts", title: "Concepts", order: 2,
+    summary: "Shapes, measuring and units: the ideas the reference pages assume.",
+    body: [
+      P("Three ideas carry the whole library: a closed set of shapes, pure functions that measure them, and one unit of length. Each section below links to the declarations it describes."),
+      H(2, "Shapes"),
+      P("Every shape implements the sealed interface [[com.example.geo.Shape]]. Two classes implement it:"),
+      UL(
+        [P("[[com.example.geo.Circle]], a record of a radius and an optional label."), UL("Create one with [[com.example.geo.Circle#of(double)|Circle.of(double)]].", "Its [[com.example.geo.Circle#area()|area()]] is `π r²`.")],
+        [P("[[com.example.geo.Polygon]], a regular polygon built from its sides."), UL("It extends [[com.example.geo.AbstractShape]], which adds [[com.example.geo.AbstractShape#perimeter()|perimeter()]].", "It is not sealed: [[guide:advanced/custom-shapes|Custom shapes]] shows how to extend it.")],
+      ),
+      ADMON("note", "Because the hierarchy is sealed, a `switch` over a shape needs no `default` branch, and the compiler tells you when a new shape appears."),
+      H(3, "Example"),
+      CODE("java", 'String describe(Shape shape) {\n    return switch (shape) {\n        case Circle c -> "circle of radius " + c.radius();\n        case Polygon p -> "polygon with perimeter " + p.perimeter();\n    };\n}'),
+      H(2, "Measuring"),
+      P("[[com.example.geo.Shapes]] holds the operations. They are pure: none modifies its arguments. `area` is overloaded, so the compiler picks [[com.example.geo.Shapes#area(com.example.geo.Circle)|area(Circle)]] or [[com.example.geo.Shapes#area(com.example.geo.Polygon)|area(Polygon)]] from the argument's static type."),
+      OL("Build the shapes.", "Measure each one, or sum them with [[com.example.geo.Shapes#total(com.example.geo.Shape...)|total(Shape...)]].", "Compare the results: shapes order by area."),
+      ADMON("tip", "To collect shapes as you go, use [[com.example.geo.Shapes$Builder|Shapes.Builder]] with the options of its nested enum [[com.example.geo.Shapes$Builder$Option|Shapes.Builder.Option]], such as [[com.example.geo.Shapes$Builder$Option#SORTED|SORTED]].", "Collecting shapes"),
+      H(3, "Example"),
+      CODE("java", "double small = Shapes.area(Circle.of(1));\ndouble large = Shapes.area(new Polygon(4, 4, 4, 4));\nassert small < large;"),
+      H(2, "Units"),
+      P("Every length is in meters, and every area in square meters. [[com.example.geo.Units]] converts other units at the edges of a program:"),
+      TABLE("Units of length", ["Unit", "Meters per unit", "Status"], [
+        ["[[com.example.geo.Units#METERS]]", "`1.0`", "The base unit"],
+        ["[[com.example.geo.Units#FEET]]", "`0.3048`", "Deprecated since 1.2"],
+      ]),
+      ADMON("important", "Methods take and return meters. Convert once, when a value enters the program, with [[com.example.geo.Units#toMeters(double)|toMeters(double)]]."),
+      ADMON("warning", "Converting back and forth between units loses precision. Keep lengths in meters until you show them.", "Round trips lose precision"),
+      H(2, "Parsing"),
+      P("[[com.example.geo.Shapes#parse(java.lang.String)|Shapes.parse]] reads the text form of one shape. The [[guide:advanced/text-format#grammar|text format guide]] has the grammar."),
+      ADMON("caution", "The text form is not stable across releases. Store shapes some other way, and never parse text you do not trust without a size limit."),
+      H(2, "Threads"),
+      ADMON("apiNote", "Every method of [[com.example.geo.Shapes]] is safe to call from several threads at once."),
+      ADMON("implSpec", "A subclass of [[com.example.geo.Polygon]] must keep `area()` free of side effects, so that callers may cache it."),
+      ADMON("implNote", "The library keeps no caches and allocates only the results it returns."),
+      H(2, "Further reading"),
+      UL(
+        "[Polygon](https://en.wikipedia.org/wiki/Polygon) on Wikipedia.",
+        "[[guide:migrating-from-1x#classes-to-replace|Classes to replace]], in the migration guide.",
+        "[[com.example.geo.Ellipse|Ellipse]] is planned for a later release. This model does not contain it, so the link renders as plain text.",
+        "[[guide:recipes|Recipes]] is a guide that does not exist yet, so this link renders as plain text too.",
+      ),
+    ],
+  });
+
+  const migration = guide({
+    slug: "migrating-from-1x", title: "Migrating from 1.x",
+    summary: "What changed in 2.0, and how to update code written for 1.x.",
+    body: [
+      P("Version 2.0 keeps every 1.x class, but deprecates a few for removal in 3.0. This guide lists each one with its replacement."),
+      ADMON("important", "Compile with `-Xlint:deprecation` to list every use of a deprecated declaration in your code."),
+      H(2, "Classes to replace"),
+      P("[[com.example.geo.LegacyShape]] predates sealed shapes. Replace it with [[com.example.geo.Polygon]] or [[com.example.geo.Circle]]:"),
+      TABLE("Replacements", ["1.x", "2.0"], [
+        ["[[com.example.geo.LegacyShape]]", "[[com.example.geo.Polygon]]"],
+        ["[[com.example.geo.Shapes#sum(java.util.List)|Shapes.sum(List)]]", "[[com.example.geo.Shapes#total(com.example.geo.Shape...)|Shapes.total(Shape...)]]"],
+        ["[[com.example.geo.Units#FEET]]", "[[com.example.geo.Units#METERS]], converting with `toMeters`"],
+      ]),
+      H(2, "Changed methods"),
+      P("[[com.example.geo.Shapes#sum(java.util.List)|sum(List)]] becomes [[com.example.geo.Shapes#total(com.example.geo.Shape...)|total(Shape...)]], which takes any number of shapes:"),
+      CODE("java", "// 1.x\ndouble before = Shapes.sum(List.of(a, b));\n\n// 2.0\ndouble after = Shapes.total(a, b);"),
+      H(2, "Units"),
+      P("[[com.example.geo.Units#FEET]] is deprecated: mixing units caused rounding errors. Convert to meters at the edge, as [[guide:concepts#units|Units]] describes."),
+      ADMON("caution", "When `FEET` goes in 3.0, the ordinals of later constants change. Do not store `ordinal()` values."),
+      H(2, "Checklist"),
+      OL("Update the dependency to 2.1.0.", "Fix each deprecation warning with the table above.", "Run your tests."),
+    ],
+  });
+
+  const textFormat = guide({
+    slug: "advanced/text-format", title: "The text format", group: "Advanced", order: 2,
+    summary: "The grammar `Shapes.parse` reads, and how to read files of shapes.",
+    source: { path: "docs/guides/advanced/text-format.md", line: 1 },
+    body: [
+      P("Shapes have a one-line text form, for logs and test fixtures. [[com.example.geo.Shapes#parse(java.lang.String)|Shapes.parse]] reads one; [[com.example.geo.io.ShapeReader]] reads a stream of them."),
+      H(2, "Grammar"),
+      CODE("text", "shape   = circle | polygon\ncircle  = \"circle\" number\npolygon = \"polygon\" number number number { number }\nnumber  = digit { digit } [ \".\" digit { digit } ]"),
+      P("Numbers are lengths in meters. Blank lines and lines starting with `#` are skipped."),
+      H(2, "Reading files"),
+      P("[[com.example.geo.io.ShapeReader#read(java.io.InputStream)|read(InputStream)]] reads UTF-8 text; the [[com.example.geo.io.ShapeReader#read(java.io.Reader,java.nio.charset.Charset)|read(Reader, Charset)]] overload reads text you have already decoded."),
+      CODE("java", 'try (var in = Files.newInputStream(Path.of("shapes.txt"))) {\n    List<Shape> shapes = ShapeReader.read(in);\n}'),
+      ADMON("warning", "A malformed line throws [[com.example.geo.GeometryException]] and stops the read. Validate files from users before you read them."),
+    ],
+  });
+
+  const customShapes = guide({
+    slug: "advanced/custom-shapes", title: "Custom shapes", group: "Advanced", order: 1,
+    summary: "Extend `Polygon` to add a shape of your own.",
+    body: [
+      P("[[com.example.geo.Shape]] is sealed, but [[com.example.geo.Polygon]] is not: extend it to add a shape the library does not have."),
+      CODE("java", "public final class Square extends Polygon {\n    public Square(double side) {\n        super(side, side, side, side);\n    }\n}"),
+      P("Override [[com.example.geo.AbstractShape#perimeter()|perimeter()]] only when you can compute it faster than summing the sides."),
+      ADMON("tip", "Keep custom shapes immutable, like the built-in ones; [[guide:concepts#threads|Threads]] explains why."),
+    ],
+  });
+
+  return [migration, gettingStarted, concepts, textFormat, customShapes];
+}
+
 const packages: Package[] = [
   {
     id: G, name: G, nullMarked: true, since: "1.0",
     doc: doc({
-      body: [P("Shapes, units and measurements."), H(2, "Where to start"), P("Start with [[com.example.geo.Shape]] and the operations in [[com.example.geo.Shapes]]. Readers live in [[com.example.geo.io]].")],
-      see: ["[[com.example.geo.io]]"],
+      body: [P("Shapes, units and measurements."), H(2, "Where to start"), P("Start with [[com.example.geo.Shape]] and the operations in [[com.example.geo.Shapes]]. Readers live in [[com.example.geo.io]]. The [[guide:concepts#shapes|Shapes]] section of the concepts guide explains how they fit together.")],
+      see: ["[[com.example.geo.io]]", "[[guide:concepts|Concepts]]"],
     }),
     types: [abstractShape, circle, geoException, legacyShape, measured, polygon, shape, shapes, builder, option, registry, units].sort((a, b) => a.name.localeCompare(b.name)),
   },
@@ -333,7 +462,12 @@ export const javaSample: Model = {
   schema: "apidocs/1",
   module: {
     name: "geo", version: "2.1.0", languages: ["java"],
-    doc: doc({ body: [P("A small geometry library: the Java-flavored sample for `@elide/apidocs`."), P("It shows every construct the doclet writes. See `samples/FEATURES.md` for the list.")] }),
+    doc: doc({ body: [
+      P("A small geometry library: the Java-flavored sample for `@elide/apidocs`."),
+      P("New here? Start with [[guide:getting-started|Getting started]], then read [[guide:concepts|Concepts]]."),
+      P("It shows every construct the doclet writes. See `samples/FEATURES.md` for the list."),
+    ] }),
+    guides: guides(),
   },
   externals: [
     { prefix: "java.", url: "https://docs.oracle.com/en/java/javase/25/docs/api/{module}/" },

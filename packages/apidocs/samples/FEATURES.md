@@ -49,11 +49,27 @@ doclet's flavor. `kotlin` is `samples/kotlin.ts`, the Dokka plugin's flavor. `re
 | Type aliases | kotlin | `org/example/kgeo/index.html#type-aliases` |
 | Default arguments | kotlin | `org/example/kgeo/Point.html`, `scaled` |
 | Markdown twin, `llms.txt`, `llms-full.txt`, `api.json`, `element-list` | java, kotlin | site root; `<page>.md` beside every page |
+| Guides listed on the overview, ungrouped first, then by group | java, kotlin | `index.html#guides`, `index.md` |
+| Guide ordering: `order` first, guides without one after; a group's second guide listed first in the model | java | `guides/migrating-from-1x.html` (no order, comes third); Advanced: `custom-shapes` (order 1) before `text-format` (order 2) |
+| Guide with an install snippet (Gradle, Maven, module path) and a first example | java, kotlin | `guides/getting-started.html` |
+| Guide sections: h2 sections and h3 subsections in the rail, self-links on headings | java, kotlin | `guides/concepts.html` |
+| Duplicate heading text, deduplicated anchors | java | `guides/concepts.html#example` and `#example-2` |
+| Admonitions: note, tip, important, warning, caution, API note, implementation requirements, implementation note; with and without a title | java, kotlin | `guides/concepts.html` |
+| Table, nested lists and an ordered list in a guide | java, kotlin | `guides/concepts.html#shapes`, `#units` (java), `#lengths` (kotlin) |
+| Guide links to types, members, an overload, a nested type and a package | java, kotlin | `guides/concepts.html#measuring` (java), `#distance` and `#shapes` (kotlin) |
+| Guide links to deprecated declarations | java, kotlin | `guides/migrating-from-1x.html` |
+| Guide link to a section of another guide | java, kotlin | `guides/concepts.html#further-reading` |
+| External link and unresolved links (a declaration and a guide) in a guide | java, kotlin | `guides/concepts.html#further-reading` |
+| Guide in a group, with a nested slug and a source link | java, kotlin | `guides/advanced/text-format.html`, `guides/coroutines/loading.html` |
+| Previous and next guide links | java, kotlin | the foot of every guide page |
+| Doc comment links into guides: module overview, package description, deprecation, `@see` to a section | java, kotlin | `index.html`, `com/example/geo/index.html`, `LegacyShape.html`, `Shapes.html#parse(java.lang.String)`; `org/example/kgeo/index.html` |
+| Guides in `llms.txt` (before the reference pages), `llms-full.txt`, search and Markdown | java, kotlin | site root; `guides/*.md` |
 
 ## Adding a feature
 
 1. Add the declaration to `samples/java.ts` or `samples/kotlin.ts` (or both), with the builders in `samples/build.ts`.
    Write what the doclet or the Dokka plugin would emit; when the model needs a new field, change
-   `schema/apidocs-1.schema.json` first and run `bun run generate`.
+   `schema/apidocs-1.schema.json` first and run `bun run generate`. A guide goes in `module.guides` through the
+   `guide()` builder; `[[guide:slug|label]]` and `[[guide:slug#section|label]]` link to a guide or a section.
 2. Add a row above naming the page that shows it.
 3. Run `bun test`: the samples must validate against the schema and pass the output checker.

@@ -3,9 +3,10 @@
  * doclet (Java) and the Dokka plugin (Kotlin) write: signatures as tokens,
  * documentation as trees. `md` turns a short marked-up string into inlines:
  * `code`, *emphasis*, **strong**, [[id]] or [[id|label]] for a declaration
- * link, [label](url) for a URL link.
+ * link, [[guide:slug|label]] or [[guide:slug#section|label]] for a link to a
+ * guide or one of its sections, [label](url) for a URL link.
  */
-import type { Block, Deprecation, Doc, Inline, Member, Note, Param, Ref, Token, Type, TypeParam } from "../src/model";
+import type { AdmonitionTone, Block, Deprecation, Doc, Guide, Inline, Member, Note, Param, Ref, Token, Type, TypeParam } from "../src/model";
 
 // ---- Tokens.
 
@@ -50,7 +51,11 @@ export function md(text: string): Inline[] {
     if (m[1]) out.push({ kind: "code", text: m[1] });
     else if (m[2]) out.push({ kind: "strong", children: md(m[2]) });
     else if (m[3]) out.push({ kind: "emphasis", children: md(m[3]) });
-    else if (m[4]) {
+    else if (m[4]?.startsWith("guide:")) {
+      // A guide link: prose, not code. The section, if any, follows a #.
+      const [id, section] = m[4].split("#");
+      out.push({ kind: "link", target: { id: id!, ...(section ? { section } : {}) }, children: md(m[5] ?? id!) });
+    } else if (m[4]) {
       const label = m[5] ?? linkLabel(m[4]);
       out.push({ kind: "link", target: { id: m[4] }, code: true, children: [{ kind: "text", text: label }] });
     } else out.push({ kind: "link", url: m[7]!, children: md(m[6]!) });
@@ -79,6 +84,22 @@ export const QUOTE = (text: string): Block => ({ kind: "quote", children: [P(tex
 export const RAW = (html: string, text: string): Block => ({ kind: "raw", html, text });
 export function TABLE(caption: string, head: string[], rows: string[][]): Block {
   return { kind: "table", caption: md(caption), head: [head.map(h => [P(h)])], rows: rows.map(r => r.map(c => [P(c)])) };
+}
+
+/** An admonition: a tone, the text as paragraphs (or blocks), and an optional title. */
+export function ADMON(tone: AdmonitionTone, body: string | Block[], title?: string): Block {
+  return { kind: "admonition", tone, ...(title ? { title: md(title) } : {}), children: typeof body === "string" ? blocks(body) : body };
+}
+
+/** A guide, as an extractor writes it: the id is guide: and the slug. */
+export function guide(spec: { slug: string; title: string; summary: string; body: Block[]; group?: string; order?: number; source?: Guide["source"] }): Guide {
+  return {
+    id: `guide:${spec.slug}`, slug: spec.slug, title: spec.title, summary: md(spec.summary),
+    ...(spec.group ? { group: spec.group } : {}),
+    ...(spec.order !== undefined ? { order: spec.order } : {}),
+    body: spec.body,
+    ...(spec.source ? { source: spec.source } : {}),
+  };
 }
 
 export interface DocSpec {

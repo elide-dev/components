@@ -5,8 +5,8 @@
  * value and enum classes, suspend and inline functions, type aliases, nullable
  * types and default arguments.
  */
-import type { Model, Package, Token, Type } from "../src/model";
-import { an, blocks, CODE, deprecated, doc, kotlinMember, kw, lit, nm, P, prm, tk, tp, ty, type, UL } from "./build";
+import type { Guide, Model, Package, Token, Type } from "../src/model";
+import { ADMON, an, blocks, CODE, deprecated, doc, guide, H, kotlinMember, kw, lit, nm, OL, P, prm, TABLE, tk, tp, ty, type, UL } from "./build";
 
 const K = "org.example.kgeo";
 const KC = "org.example.kgeo.coroutines";
@@ -133,11 +133,105 @@ const experimental: Type = type({
   doc: doc("Marks API that may change without notice. Opt in with `@OptIn(ExperimentalGeometry::class)`."), since: "2.0",
 }, "kotlin");
 
+// ---- Guides.
+
+const fn = (owner: string, name: string, params: string[], receiver = "") => `${owner}/${name}/${receiver}#${params.join("#")}/PointingToDeclaration/`;
+
+function guides(): Guide[] {
+  const gettingStarted = guide({
+    slug: "getting-started", title: "Getting started", order: 1,
+    summary: "Add kgeo to a Gradle build and measure a first shape.",
+    body: [
+      P("kgeo is a small geometry library for Kotlin. This guide adds it to a build and measures two shapes."),
+      H(2, "Install"),
+      P("Add the dependency to `build.gradle.kts`:"),
+      CODE("kotlin", 'dependencies {\n    implementation("org.example:kgeo:2.1.0")\n}'),
+      H(2, "First steps"),
+      P("Shapes are data classes such as [[org.example.kgeo/Circle///PointingToDeclaration/|Circle]] and [[org.example.kgeo/Rectangle///PointingToDeclaration/|Rectangle]]. Top-level functions such as [[" + fn("org.example.kgeo/", "area", ["Shape"]) + "|area]] measure them:"),
+      CODE("kotlin", "fun main() {\n    val shapes = listOf(Circle(2.0), Rectangle(Meters(3.0)))\n    println(shapes.sumOf { area(it) })\n}"),
+      ADMON("tip", "Lengths are [[org.example.kgeo/Meters///PointingToDeclaration/|Meters]], a value class: type safety at no cost at run time. [[guide:concepts#lengths|Lengths]] explains more."),
+      H(2, "Next steps"),
+      UL("[[guide:concepts|Concepts]]: shapes, lengths, distance and extensions.", "[[guide:coroutines/loading|Loading shapes]]: suspending APIs."),
+    ],
+  });
+
+  const concepts = guide({
+    slug: "concepts", title: "Concepts", order: 2,
+    summary: "Shapes, lengths, distance and extensions in kgeo.",
+    source: { path: "docs/guides/concepts.md", line: 1 },
+    body: [
+      P("kgeo leans on Kotlin's type system: sealed classes for shapes, a value class for lengths and extensions for convenience."),
+      H(2, "Shapes"),
+      P("[[org.example.kgeo/Shape///PointingToDeclaration/|Shape]] is a sealed class with these subclasses:"),
+      UL(
+        [P("[[org.example.kgeo/Circle///PointingToDeclaration/|Circle]], a data class."), UL("Its companion object [[org.example.kgeo/Circle.Companion///PointingToDeclaration/|Circle.Companion]] holds factories such as `unit()`.", "A `label` defaults to `null`.")],
+        [P("[[org.example.kgeo/Rectangle///PointingToDeclaration/|Rectangle]], also a data class."), UL("Leave out `height` for a square.")],
+      ),
+      ADMON("note", "A `when` over a shape needs no `else` branch, because the hierarchy is sealed."),
+      H(2, "Lengths"),
+      P("[[org.example.kgeo/Meters///PointingToDeclaration/|Meters]] wraps a `Double`. Its [[" + fn("org.example.kgeo/Meters", "plus", ["Meters"]) + "|plus]] operator adds lengths with `+`."),
+      TABLE("Length units", ["Unit", "Factor", "Status"], [
+        ["[[org.example.kgeo/LengthUnit/METER/#/PointingToDeclaration/|METER]]", "`1.0`", "The base unit"],
+        ["[[org.example.kgeo/LengthUnit/FOOT/#/PointingToDeclaration/|FOOT]]", "`0.3048`", "Deprecated since 1.2"],
+      ]),
+      ADMON("important", "Store lengths as `Meters`, never as a bare `Double`: the compiler then catches unit mix-ups."),
+      ADMON("warning", "Boxing a value class (in a generic collection, for example) allocates. Prefer `DoubleArray` in hot loops.", "Boxing"),
+      H(2, "Distance"),
+      P("[[org.example.kgeo/Geometry///PointingToDeclaration/|Geometry]] has two `distance` overloads: [[" + fn("org.example.kgeo/Geometry", "distance", ["Point", "Point"]) + "|distance(Point, Point)]] and [[" + fn("org.example.kgeo/Geometry", "distance", ["Point", "Point", "Metric"]) + "|distance(Point, Point, Metric)]], which takes a [[org.example.kgeo/Metric///PointingToDeclaration/|Metric]]."),
+      CODE("kotlin", "val manhattan = Metric { a, b -> abs(a.x - b.x) + abs(a.y - b.y) }\nGeometry.distance(Point(), Point(3.0, 4.0), manhattan) // 7.0"),
+      ADMON("tip", "`Metric` is a `fun interface`, so a lambda converts to it."),
+      H(2, "Extensions"),
+      P("[[" + fn("org.example.kgeo/", "scaled", ["Double"], "Shape") + "|scaled]] and [[" + fn("org.example.kgeo/", "isDegenerate", [], "Shape") + "|isDegenerate]] extend `Shape`. Import them from `org.example.kgeo`."),
+      ADMON("caution", "Extensions resolve statically: a `scaled` you declare on a subclass does not override this one."),
+      H(2, "API notes"),
+      ADMON("apiNote", "Every function in `Geometry` is pure."),
+      ADMON("implSpec", "A `Metric` must be symmetric: `measure(a, b) == measure(b, a)`."),
+      ADMON("implNote", "`Meters` compiles to a `double` wherever it is not boxed."),
+      H(2, "Further reading"),
+      UL(
+        "[Sealed classes](https://kotlinlang.org/docs/sealed-classes.html) in the Kotlin documentation.",
+        "[[guide:migrating-from-1x#deprecated-functions|Deprecated functions]], in the migration guide.",
+        "[[org.example.kgeo/Triangle///PointingToDeclaration/|Triangle]] is not in this model, so the link renders as plain text.",
+        "[[guide:faq|FAQ]] does not exist, so this link renders as plain text too.",
+      ),
+    ],
+  });
+
+  const migration = guide({
+    slug: "migrating-from-1x", title: "Migrating from 1.x", order: 3,
+    summary: "Replace the declarations 2.0 deprecates.",
+    body: [
+      P("2.0 deprecates a few 1.x declarations. Each has a replacement."),
+      H(2, "Deprecated functions"),
+      P("[[" + fn("org.example.kgeo/", "totalArea", ["List<Shape>"]) + "|totalArea]] is deprecated. Use `sumOf`:"),
+      CODE("kotlin", "// 1.x\nval total = totalArea(shapes)\n\n// 2.0\nval total = shapes.sumOf { it.area }"),
+      H(2, "Deprecated units"),
+      P("[[org.example.kgeo/LengthUnit/FOOT/#/PointingToDeclaration/|LengthUnit.FOOT]] is deprecated; convert to [[org.example.kgeo/LengthUnit/METER/#/PointingToDeclaration/|METER]] once, at the edge."),
+      H(2, "Nullable parsing"),
+      P("[[" + fn("org.example.kgeo/", "parseShape", ["String"]) + "|parseShape]] now returns `null` for blank text instead of throwing."),
+      ADMON("warning", "Code that caught the exception for blank text must now check for `null`."),
+      OL("Update the dependency.", "Fix each deprecation warning.", "Check callers of `parseShape` for `null`."),
+    ],
+  });
+
+  const loading = guide({
+    slug: "coroutines/loading", title: "Loading shapes", group: "Coroutines", order: 1,
+    summary: "Load and watch shape files without blocking a thread.",
+    body: [
+      P("[[" + fn("org.example.kgeo.coroutines/", "loadShapes", ["String"]) + "|loadShapes]] suspends while it reads a file; [[" + fn("org.example.kgeo.coroutines/", "watchShapes", ["String"]) + "|watchShapes]] returns a `Flow` that emits as the file changes."),
+      CODE("kotlin", 'suspend fun report() {\n    val shapes = loadShapes("shapes.txt")\n    println("${shapes.size} shapes")\n}'),
+      ADMON("note", "Call these from a coroutine, for example inside `runBlocking` or a `viewModelScope`."),
+    ],
+  });
+
+  return [gettingStarted, concepts, migration, loading];
+}
+
 const top = `${K}/`;
 const packages: Package[] = [
   {
     id: K, name: K, since: "1.0",
-    doc: doc({ body: [P("Shapes and measurements in Kotlin."), UL("Shapes: [[org.example.kgeo/Shape///PointingToDeclaration/|Shape]] and its subclasses.", "Extensions on shapes, such as `scaled`.")] }),
+    doc: doc({ body: [P("Shapes and measurements in Kotlin."), UL("Shapes: [[org.example.kgeo/Shape///PointingToDeclaration/|Shape]] and its subclasses.", "Extensions on shapes, such as `scaled`; see [[guide:concepts#extensions|Extensions]]."), P("The [[guide:concepts|Concepts]] guide explains how these fit together.")] }),
     types: [circle, companion, geometry, lengthUnit, meters, metric, point, rect, shape],
     typeAliases: [
       { id: `${K}/ShapeList///PointingToDeclaration/`, name: "ShapeList", signature: tk(kw("typealias"), " ", nm("ShapeList"), " = ", list(t("Shape"))), target: list(t("Shape")), doc: doc("A list of shapes."), since: "1.0" },
@@ -150,7 +244,7 @@ const packages: Package[] = [
         name: "parseShape", annotations: [tk(an("@Throws", dri("kotlin", "Throws"), "https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-throws/"), "(", ty("IOException", "java.io.IOException", "https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/io/IOException.html"), "::", kw("class"), ")")],
         params: [{ name: "text", type: [STRING], doc: "the text form" }], returns: { type: nullable(t("Shape")), nullness: "nullable", doc: "the shape, or `null` when `text` is blank" },
         throws: [{ type: [ty("IOException", "java.io.IOException", "https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/io/IOException.html")], declared: true, doc: "if the text names a file that cannot be read" }],
-        doc: { body: "Parses a shape; blank text gives `null`.", notes: [["apiNote", "Returns `null` for blank input instead of throwing, unlike the Java API."]] },
+        doc: { body: "Parses a shape; blank text gives `null`.", notes: [["apiNote", "Returns `null` for blank input instead of throwing, unlike the Java API."]], see: ["[[guide:migrating-from-1x#nullable-parsing|Nullable parsing]], in the migration guide"] },
       }),
       f(top, { name: "totalArea", params: [{ name: "shapes", type: list(t("Shape")) }], returns: { type: [DOUBLE] }, deprecated: deprecated("Use `shapes.sumOf { it.area }`.", "1.2"), doc: "Sums areas." }),
     ],
@@ -175,7 +269,12 @@ export const kotlinSample: Model = {
   schema: "apidocs/1",
   module: {
     name: "kgeo", version: "2.1.0", languages: ["kotlin"],
-    doc: doc({ body: [P("A small Kotlin geometry library: the Kotlin-flavored sample for `@elide/apidocs`."), P("It shows what the Dokka plugin writes. See `samples/FEATURES.md` for the list.")] }),
+    doc: doc({ body: [
+      P("A small Kotlin geometry library: the Kotlin-flavored sample for `@elide/apidocs`."),
+      P("Start with [[guide:getting-started|Getting started]]."),
+      P("It shows what the Dokka plugin writes. See `samples/FEATURES.md` for the list."),
+    ] }),
+    guides: guides(),
   },
   externals: [
     { prefix: "kotlin", url: "https://kotlinlang.org/api/core/kotlin-stdlib/" },
