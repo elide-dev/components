@@ -1,12 +1,12 @@
 /** The three page kinds: the module overview, a package, and a type. */
 import { usePage } from "./context";
 import type { Member, Package, Token, Type } from "./model";
-import { INDEX, packagePage, refLabel, relative, resolve, typePage } from "./site";
+import { INDEX, overviewGuide, packagePage, refLabel, relative, resolve, typePage } from "./site";
 import { compactTokens, memberGroups, memberTitle, summaryText, typeGroups, typeKindWord } from "./structure";
 import { Badge, Blocks, Inlines, Signature, TokenList } from "./components/doc";
 import type { Crumb, TocItem } from "./components/chrome";
 import { LanguageMark, Shell, kindGlyph, packageLanguages } from "./components/chrome";
-import { GuideIndex } from "./narrative";
+import { GuideIndex, GuidePage } from "./narrative";
 import { DeprecationBanner, MemberDetail, Notes, Params, RefLink, SeeAlso, SourceLink, TypeParams } from "./components/declaration";
 
 function moduleTitle(): string {
@@ -35,11 +35,19 @@ function jsonLd(name: string, description: string, kind: string) {
 export function IndexPage() {
   const { site } = usePage();
   const m = site.model.module;
-  const description = summaryText(m.doc) || `API reference for ${m.name}.`;
+  // A model that names an overview guide shows it here: a guides-only site's introduction, or an API reference's
+  // own overview text, followed by the package and type lists when there are packages.
+  const overview = overviewGuide(site);
+  if (overview) {
+    const extra: TocItem[] = site.packages.length > 0 ? [{ id: "packages", label: "Packages", depth: 1 }, { id: "all-types", label: "All types", depth: 1 }] : [];
+    return <GuidePage entry={overview} extraToc={extra}>{site.packages.length > 0 && <PackageSections />}</GuidePage>;
+  }
+  // Without an overview guide, a guides-only site's overview is the list of guides, with no empty package lists.
+  const guidesOnly = site.packages.length === 0 && site.guides.length > 0;
+  const description = summaryText(m.doc) || `${guidesOnly ? "Documentation" : "API reference"} for ${m.name}.`;
   const toc: TocItem[] = [
     ...(site.guides.length > 0 ? [{ id: "guides", label: "Guides", depth: 1 }] : []),
-    { id: "packages", label: "Packages", depth: 1 },
-    { id: "all-types", label: "All types", depth: 1 },
+    ...(guidesOnly ? [] : [{ id: "packages", label: "Packages", depth: 1 }, { id: "all-types", label: "All types", depth: 1 }]),
   ];
   return (
     <Shell title={`${moduleTitle()} API`} description={description} crumbs={[]} toc={toc} jsonLd={jsonLd(m.name, description, "module")}
@@ -53,6 +61,16 @@ export function IndexPage() {
       </header>
       {m.doc?.body ? <div class="prose"><Blocks nodes={m.doc.body} offset={0} /></div> : <p class="lede">{description}</p>}
       <GuideIndex />
+      {!guidesOnly && <PackageSections />}
+    </Shell>
+  );
+}
+
+/** The overview's package table and its types by package. */
+function PackageSections() {
+  const { site } = usePage();
+  return (
+    <>
       <section id="packages" class="section">
         <h2>Packages</h2>
         <SummaryTable
@@ -73,7 +91,7 @@ export function IndexPage() {
           </div>
         ))}
       </section>
-    </Shell>
+    </>
   );
 }
 

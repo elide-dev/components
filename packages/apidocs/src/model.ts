@@ -24,6 +24,8 @@ export interface Module {
   doc?: Doc;
   /** Narrative guides beside the API reference, in the author's order. Pages list ungrouped guides first, then each group in the order of its first guide; inside each, guides with an order come first, lowest first, and the rest keep this list's order. */
   guides?: Guide[];
+  /** The id of the guide that is the module's overview page (index.html) instead of a page of its own, such as a documentation suite's introduction. A model with guides and no packages is a guides-only site. */
+  overview?: string;
 }
 
 /** A narrative page, such as Getting started or Migrating from 1.x. Its page is guides/<slug>.html. Headings in its body are its sections: each gets an anchor, its own or one derived from its text, and links can target it. */
@@ -34,6 +36,8 @@ export interface Guide {
   slug: string;
   /** The title, as the page and listings show it. */
   title: string;
+  /** A shorter label for the navigator, when the title is too long for it; absent to show the title. */
+  navTitle?: string;
   /** One sentence for listings, search and llms.txt. */
   summary?: Inlines;
   /** The group the guide is listed under, such as Advanced; absent for an ungrouped guide. */
@@ -340,7 +344,7 @@ export interface RawBlock {
   text: string;
 }
 
-export type Inline = Text | Code | Emphasis | Strong | Link | Break | RawInline;
+export type Inline = Text | Code | Emphasis | Strong | Link | Break | RawInline | Strikethrough | Image | TaskCheck;
 
 export interface Text {
   kind: "text";
@@ -380,4 +384,32 @@ export interface RawInline {
   kind: "raw";
   html: string;
   text: string;
+}
+
+/** Text struck through, as Markdown's ~~text~~. */
+export interface Strikethrough {
+  kind: "strikethrough";
+  children?: Inlines;
+}
+
+/** An image, such as a diagram or a screenshot in a guide. A relative src is a path from the site's root; the tool that writes the model also copies the file there. */
+export interface Image {
+  kind: "image";
+  /** An absolute URL, or a path relative to the site's root. */
+  src: string;
+  /** The text that replaces the image for a reader who cannot see it. */
+  alt: string;
+  /** A tooltip, when the author gave one. */
+  title?: string;
+  /** The intrinsic width in pixels, when known, so the page reserves the image's box before it loads. */
+  width?: number;
+  /** The intrinsic height in pixels, when known. */
+  height?: number;
+}
+
+/** The check box that starts a task-list item: done or not. */
+export interface TaskCheck {
+  kind: "check";
+  /** Whether the task is done. */
+  checked?: boolean;
 }

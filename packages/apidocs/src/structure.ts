@@ -65,6 +65,8 @@ export function inlineText(nodes: Inline[] | undefined): string {
       case "code": return node.text;
       case "raw": return node.text;
       case "break": return " ";
+      case "image": return node.alt;
+      case "check": return "";
       default: return inlineText(node.children);
     }
   }).join("");

@@ -28,7 +28,8 @@
         "javaModule": { "type": "string", "description": "The named JPMS module the packages belong to; absent for the unnamed module." },
         "languages": { "type": "array", "items": { "type": "string" }, "description": "The source languages, sorted: java, kotlin." },
         "doc": { "$ref": "#/$defs/Doc" },
-        "guides": { "type": "array", "items": { "$ref": "#/$defs/Guide" }, "description": "Narrative guides beside the API reference, in the author's order. Pages list ungrouped guides first, then each group in the order of its first guide; inside each, guides with an order come first, lowest first, and the rest keep this list's order." }
+        "guides": { "type": "array", "items": { "$ref": "#/$defs/Guide" }, "description": "Narrative guides beside the API reference, in the author's order. Pages list ungrouped guides first, then each group in the order of its first guide; inside each, guides with an order come first, lowest first, and the rest keep this list's order." },
+        "overview": { "type": "string", "description": "The id of the guide that is the module's overview page (index.html) instead of a page of its own, such as a documentation suite's introduction. A model with guides and no packages is a guides-only site." }
       }
     },
     "Guide": {
@@ -40,6 +41,7 @@
         "id": { "type": "string", "description": "The stable id links use as a Ref's id. Distinct from every declaration id; the extractors write guide: and the slug." },
         "slug": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*(/[a-z0-9][a-z0-9-]*)*$", "description": "The page path below guides/, without an extension: lowercase letters, digits and hyphens, with / between segments for nesting." },
         "title": { "type": "string", "description": "The title, as the page and listings show it." },
+        "navTitle": { "type": "string", "description": "A shorter label for the navigator, when the title is too long for it; absent to show the title." },
         "summary": { "$ref": "#/$defs/Inlines", "description": "One sentence for listings, search and llms.txt." },
         "group": { "type": "string", "description": "The group the guide is listed under, such as Advanced; absent for an ungrouped guide." },
         "order": { "type": "integer", "description": "The guide's place in its group: lower first. Guides without one follow those with one." },
@@ -393,7 +395,10 @@
         { "$ref": "#/$defs/Strong" },
         { "$ref": "#/$defs/Link" },
         { "$ref": "#/$defs/Break" },
-        { "$ref": "#/$defs/RawInline" }
+        { "$ref": "#/$defs/RawInline" },
+        { "$ref": "#/$defs/Strikethrough" },
+        { "$ref": "#/$defs/Image" },
+        { "$ref": "#/$defs/TaskCheck" }
       ]
     },
     "Text": {
@@ -444,6 +449,34 @@
       "additionalProperties": false,
       "required": ["kind", "html", "text"],
       "properties": { "kind": { "const": "raw" }, "html": { "type": "string" }, "text": { "type": "string" } }
+    },
+    "Strikethrough": {
+      "description": "Text struck through, as Markdown's ~~text~~.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind"],
+      "properties": { "kind": { "const": "strikethrough" }, "children": { "$ref": "#/$defs/Inlines" } }
+    },
+    "Image": {
+      "description": "An image, such as a diagram or a screenshot in a guide. A relative src is a path from the site's root; the tool that writes the model also copies the file there.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "src", "alt"],
+      "properties": {
+        "kind": { "const": "image" },
+        "src": { "type": "string", "description": "An absolute URL, or a path relative to the site's root." },
+        "alt": { "type": "string", "description": "The text that replaces the image for a reader who cannot see it." },
+        "title": { "type": "string", "description": "A tooltip, when the author gave one." },
+        "width": { "type": "integer", "minimum": 1, "description": "The intrinsic width in pixels, when known, so the page reserves the image's box before it loads." },
+        "height": { "type": "integer", "minimum": 1, "description": "The intrinsic height in pixels, when known." }
+      }
+    },
+    "TaskCheck": {
+      "description": "The check box that starts a task-list item: done or not.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind"],
+      "properties": { "kind": { "const": "check" }, "checked": { "type": "boolean", "description": "Whether the task is done." } }
     }
   }
 }

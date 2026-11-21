@@ -598,6 +598,10 @@ a.tk-t:hover, a.tk-a:hover { text-decoration-color: currentColor; }
 .prose p, .member p { margin: 0.6em 0; }
 .prose ul, .prose ol, .member ul, .member ol { padding-left: 1.4em; margin: 0.6em 0; }
 .prose li + li, .member li + li { margin-top: 0.2em; }
+/* Guide images keep their aspect ratio inside the column; task-list items show their check box instead of a bullet. */
+.prose img, .member img { max-width: 100%; height: auto; }
+.prose li:has(> p:first-child > .task-check:first-child) { list-style: none; margin-left: -1.4em; }
+.task-check { margin: 0 0.45em 0 0; vertical-align: -0.1em; accent-color: var(--apidocs-accent); }
 .doc-heading { margin: 1.4em 0 0.4em; font-size: var(--apidocs-size-lg); font-weight: 650; }
 blockquote { margin: 0.8em 0; padding: 2px 16px; border-left: 3px solid var(--apidocs-rule-strong); color: var(--apidocs-muted); }
 .undocumented { color: var(--apidocs-faint); font-style: italic; }

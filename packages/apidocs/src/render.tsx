@@ -12,7 +12,7 @@ import { deprecatedIndexMarkdown, guideMarkdown, indexAllMarkdown, indexMarkdown
 import type { Model } from "./model";
 import { GuidePage } from "./narrative";
 import { IndexPage, PackagePage, TypePage } from "./pages";
-import { buildSite, DEPRECATED_PAGE, INDEX, INDEX_ALL_PAGE, indexPages, isThrowable, PACKAGES_PAGE, packagePage, type Site, TYPES_PAGE, typePage } from "./site";
+import { buildSite, DEPRECATED_PAGE, INDEX, INDEX_ALL_PAGE, indexPages, isThrowable, overviewGuide, PACKAGES_PAGE, packagePage, type Site, TYPES_PAGE, typePage } from "./site";
 import { inlineText, summaryText, typeKindWord } from "./structure";
 import { type SymbolKey, type SymbolMode, typeSymbolKey, withSym } from "./symbols";
 import { resolveTheme, type Theme, type ThemeLink, themeCss } from "./theme";
@@ -46,10 +46,12 @@ export function render(modelInput: Model | string, themeInput?: Theme | string):
 
   html(INDEX, site.language, <IndexPage />);
   out[`${INDEX}.md`] = indexMarkdown(site, symbols);
-  pages.push({ page: INDEX, title: `${model.module.name} overview`, summary: summaryText(model.module.doc), symbol: "module" });
-  // Guides come right after the overview in llms-full.txt: agents should read them before the reference.
+  pages.push({ page: INDEX, title: `${model.module.name} overview`, summary: overviewSummary(site), symbol: "module" });
+  // Guides come right after the overview in llms-full.txt: agents should read them before the reference. The
+  // overview guide is the index page, already written.
   const guides: ListedPage[] = [];
   for (const entry of site.guides) {
+    if (entry.page === INDEX) continue;
     html(entry.page, site.language, <GuidePage entry={entry} />);
     out[`${entry.page}.md`] = guideMarkdown(site, entry, symbols);
     guides.push({ page: entry.page, title: entry.guide.title, summary: oneLine(inlineText(entry.guide.summary)), symbol: "guide" });
@@ -85,8 +87,9 @@ export function render(modelInput: Model | string, themeInput?: Theme | string):
   out["llms-full.txt"] = [pages[0]!, ...guides, ...pages.slice(1)].map(p => `<!-- ${p.page}.md -->\n${out[`${p.page}.md`]}`).join("\n");
   out["api.json"] = JSON.stringify(model);
   // Javadoc's element-list: a module line first when the packages belong to a named JPMS module, as -link expects.
+  // A guides-only site has no packages for -link to find, so it has no element-list.
   const modulePrefix = model.module.javaModule ? [`module:${model.module.javaModule}`] : [];
-  out["element-list"] = [...modulePrefix, ...site.packages.map(p => p.name).filter(Boolean)].join("\n") + "\n";
+  if (site.packages.length > 0 || !site.guides.length) out["element-list"] = [...modulePrefix, ...site.packages.map(p => p.name).filter(Boolean)].join("\n") + "\n";
   out["assets/search-index.js"] = searchIndex(site);
   out["assets/theme.css"] = themeCss({ ...theme, fonts: (theme.fonts ?? []).map(f => ({ ...f, asset: f.asset })) });
   for (const name of STATIC_ASSETS) out[`assets/${name}`] = { asset: name };
@@ -103,7 +106,7 @@ export function render(modelInput: Model | string, themeInput?: Theme | string):
  * are dropped, and so are a base URL that is not http(s) and a source-link
  * template that would not give a safe URL.
  */
-function safeTheme(theme: Theme): Theme {
+export function safeTheme(theme: Theme): Theme {
   const links = (list: ThemeLink[] | undefined) =>
     list?.flatMap(link => {
       const url = safeUrl(link.url);
@@ -117,32 +120,42 @@ function safeTheme(theme: Theme): Theme {
 /** llms.txt (llmstxt.org): what the module is, the guides, then every reference page, each with its summary. */
 function llms(site: Site, pages: ListedPage[], guides: ListedPage[], symbols: SymbolMode, indexes: ListedPage[] = []): string {
   const m = site.model.module;
-  const entry = (p: ListedPage) => `- [${withSym(symbols, p.symbol, p.title.replace(/([\\[\]<>])/g, "\\$1"))}](${p.page}.md)${p.summary ? `: ${p.summary}` : ""}`;
-  const lines = [`# ${m.name}${m.version ? ` ${m.version}` : ""}`, ""];
-  lines.push(`> ${summaryText(m.doc) || `API reference for ${m.name}.`}`, "");
+  const guidesOnly = site.packages.length === 0 && site.guides.length > 0;
+  // Names and summaries are untrusted text: Markdown escapes keep their angle brackets and brackets literal.
+  const md = (text: string) => text.replace(/([\\[\]<>])/g, "\\$1");
+  const entry = (p: ListedPage) => `- [${withSym(symbols, p.symbol, md(p.title))}](${p.page}.md)${p.summary ? `: ${md(p.summary)}` : ""}`;
+  const lines = [`# ${md(m.name)}${m.version ? ` ${md(m.version)}` : ""}`, ""];
+  lines.push(`> ${md(overviewSummary(site)) || `${guidesOnly ? "Documentation" : "API reference"} for ${md(m.name)}.`}`, "");
   lines.push(
     "Each page below is Markdown; the HTML page of the same name has the same content. llms-full.txt has every page in one file, and api.json is the apidocs/1 model.",
     "",
   );
   lines.push(
     "## Overview", "",
-    `- [${withSym(symbols, "module", m.name)}](index.md): packages and types`,
+    `- [${withSym(symbols, "module", md(m.name))}](index.md): ${guidesOnly ? "the overview" : "packages and types"}`,
     "- [llms-full.txt](llms-full.txt): every page in one file",
     "- [api.json](api.json): the apidocs/1 model",
     "",
   );
   if (guides.length) {
-    lines.push("## Guides", "", "Read these first: they explain the concepts the reference pages assume.", "");
+    lines.push("## Guides", "", ...(guidesOnly ? [] : ["Read these first: they explain the concepts the reference pages assume.", ""]));
     for (const g of guides) lines.push(entry(g));
     lines.push("");
   }
-  lines.push("## Pages", "");
-  for (const p of pages.slice(1)) lines.push(entry(p));
+  if (pages.length > 1 || !guides.length) {
+    lines.push("## Pages", "");
+    for (const p of pages.slice(1)) lines.push(entry(p));
+  }
   if (indexes.length) {
     lines.push("", "## Indexes", "");
     for (const p of indexes) lines.push(`- [${p.title}](${p.page}.md): ${p.summary}`);
   }
-  return lines.join("\n") + "\n";
+  return lines.join("\n").trimEnd() + "\n";
+}
+
+/** The overview's summary: the module documentation's first sentence, else the overview guide's summary. */
+function overviewSummary(site: Site): string {
+  return summaryText(site.model.module.doc) || oneLine(inlineText(overviewGuide(site)?.guide.summary));
 }
 
 /** A page as llms.txt lists it. */
@@ -157,7 +170,7 @@ interface ListedPage {
  * The search index, as a script that assigns a global (browsers block fetch on
  * file://). Entries: [label, kind, path from the root, context, summary].
  */
-function searchIndex(site: Site): string {
+export function searchIndex(site: Site): string {
   const items: string[][] = [];
   for (const entry of site.guides) {
     const file = `${entry.page}.html`;

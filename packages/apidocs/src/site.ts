@@ -78,7 +78,7 @@ export function buildSite(model: Model): Site {
       targets.set(alias.id, { page: packagePage(pkg), anchor: alias.name, label: alias.name });
     }
   }
-  const guides = guideEntries(model.module.guides, targets);
+  const guides = guideEntries(model.module.guides, targets, model.module.overview);
   for (const entry of types.values()) {
     const outer = entry.type.enclosing && types.get(entry.type.enclosing);
     if (outer) outer.nested.push(entry.type);
@@ -97,7 +97,7 @@ export function buildSite(model: Model): Site {
 /** Ids the page shell uses; a guide heading never takes one of them. */
 export const SHELL_IDS = [
   "content", "apidocs-nav", "apidocs-nav-toggle", "apidocs-nav-filter", "apidocs-search", "apidocs-results", "apidocs-toc-filter",
-  "guide-body", "guides",
+  "guide-body", "guides", "packages", "all-types",
 ];
 
 /**
@@ -126,15 +126,19 @@ export function guidePage(guide: Guide): string {
   return `guides/${segments.join("/")}`;
 }
 
-function guideEntries(guides: Guide[] | undefined, targets: Map<string, Target>): GuideEntry[] {
+function guideEntries(guides: Guide[] | undefined, targets: Map<string, Target>, overview: string | undefined): GuideEntry[] {
   if (!guides?.length) return [];
   // Pages already taken, compared without case as a case-insensitive file system would.
   const taken = new Set([...targets.values()].map(t => t.page.toLowerCase()));
   const entries: GuideEntry[] = [];
+  let overviewPlaced = false;
   for (const guide of orderGuides(guides)) {
-    const base = guidePage(guide);
+    // The overview guide is the index page itself; only the first guide with that id takes it.
+    const isOverview: boolean = !overviewPlaced && overview !== undefined && guide.id === overview;
+    overviewPlaced ||= isOverview;
+    const base = isOverview ? INDEX : guidePage(guide);
     let page = base;
-    for (let n = 2; taken.has(page.toLowerCase()); n++) page = `${base}-${n}`;
+    if (!isOverview) for (let n = 2; taken.has(page.toLowerCase()); n++) page = `${base}-${n}`;
     taken.add(page.toLowerCase());
     const { anchors, sections } = guideAnchors(guide.body, SHELL_IDS);
     entries.push({ guide, page, group: guide.group || undefined, sections, anchors });
@@ -144,10 +148,17 @@ function guideEntries(guides: Guide[] | undefined, targets: Map<string, Target>)
   return entries;
 }
 
+/** The guide that is the overview page (index.html), when the model names one. */
+export function overviewGuide(site: Site): GuideEntry | undefined {
+  return site.guides.find(entry => entry.page === INDEX);
+}
+
 /** One guide in a list, linked from a page. */
 export interface GuideLink {
   id: string;
   title: string;
+  /** The navigator's label: the guide's navTitle, else its title. */
+  label: string;
   /** The link from the page the list is on. */
   href: string;
   /** The guide's summary as plain text, or empty. */
@@ -176,6 +187,7 @@ export function guideNav(site: Site, page: string): GuideNav {
   const link = (entry: GuideEntry): GuideLink => ({
     id: entry.guide.id,
     title: entry.guide.title,
+    label: entry.guide.navTitle || entry.guide.title,
     href: relative(page, entry.page, ".html"),
     summary: inlineSummary(entry.guide),
     current: entry.page === page,
@@ -191,6 +203,23 @@ export function guideNav(site: Site, page: string): GuideNav {
   const prev = site.guides[at - 1];
   const next = site.guides[at + 1];
   return { groups, current: link(site.guides[at]!), ...(prev ? { prev: link(prev) } : {}), ...(next ? { next: link(next) } : {}) };
+}
+
+/**
+ * A guide's breadcrumbs: the module, its group, itself. A group crumb links to the group's first guide when that
+ * guide has the group's title (a section's introduction, as a Markdown suite's index.md is); on that guide the
+ * group crumb is left out. Ungrouped guides sit under "Guides" beside an API reference; on a guides-only site
+ * they sit right under the module. The overview guide has none.
+ */
+export function guideCrumbs(site: Site, entry: GuideEntry): { label: string; page?: string }[] {
+  if (entry.page === INDEX) return [];
+  const m = site.model.module;
+  const self = { label: entry.guide.title };
+  if (!entry.group) return site.packages.length > 0 ? [{ label: m.name, page: INDEX }, { label: "Guides" }, self] : [{ label: m.name, page: INDEX }, self];
+  const first = site.guides.find(other => other.group === entry.group);
+  const intro = first && first.guide.title === entry.group ? first : undefined;
+  if (intro === entry) return [{ label: m.name, page: INDEX }, self];
+  return [{ label: m.name, page: INDEX }, intro ? { label: entry.group, page: intro.page } : { label: entry.group }, self];
 }
 
 function inlineSummary(guide: Guide): string {
@@ -299,7 +328,8 @@ export function indexPages(site: Site): { page: string; label: string }[] {
   return [
     ...(site.packages.length > 0 ? [{ page: PACKAGES_PAGE, label: "Packages" }] : []),
     ...(types ? [{ page: TYPES_PAGE, label: "All types" }] : []),
-    ...(declarations || site.guides.length > 0 ? [{ page: INDEX_ALL_PAGE, label: "Index" }] : []),
+    // A guides-only site has no declarations to index: its navigator and search list the guides.
+    ...(declarations || (site.guides.length > 0 && site.packages.length > 0) ? [{ page: INDEX_ALL_PAGE, label: "Index" }] : []),
     ...(hasDeprecated(site) ? [{ page: DEPRECATED_PAGE, label: "Deprecated" }] : []),
   ];
 }

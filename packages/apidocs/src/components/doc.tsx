@@ -7,7 +7,7 @@ import { highlight } from "../highlight";
 import type { Block, Inline, Token } from "../model";
 import { sanitize } from "../sanitize";
 import { safeUrl } from "../url";
-import { resolveRef, resolveToken } from "../site";
+import { resolve, resolveRef, resolveToken } from "../site";
 import { layoutSignature } from "../signature";
 
 export function Inlines({ nodes }: { nodes: Inline[] | undefined }) {
@@ -23,6 +23,14 @@ function InlineNode({ node }: { node: Inline }): JSX.Element {
     case "strong": return <strong><Inlines nodes={node.children} /></strong>;
     case "break": return <br />;
     case "raw": return <span class="raw" dangerouslySetInnerHTML={{ __html: sanitize(node.html) }} />;
+    case "strikethrough": return <del><Inlines nodes={node.children} /></del>;
+    case "check": return <input type="checkbox" class="task-check" disabled checked={!!node.checked} aria-label={node.checked ? "Done" : "Not done"} />;
+    case "image": {
+      // A relative source is a path from the site's root; an unsafe one renders as its alternative text.
+      const src = resolve(ctx.site, ctx.page, ".html", undefined, node.src);
+      if (!src) return <>{node.alt}</>;
+      return <img src={src} alt={node.alt} title={node.title} width={node.width} height={node.height} loading="lazy" decoding="async" />;
+    }
     case "link": {
       const label = node.code ? <code><Inlines nodes={node.children} /></code> : <Inlines nodes={node.children} />;
       const href = node.target ? resolveRef(ctx.site, ctx.page, ".html", node.target) : safeUrl(node.url);

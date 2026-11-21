@@ -14,17 +14,18 @@
  *   a.guide-card-link, .guide-card-title, .guide-card-summary   the overview's list of guides
  * Admonitions render through Callout as .callout.callout-<tone>.
  */
+import type { ComponentChildren } from "preact";
 import { usePage } from "./context";
 import type { Block, Heading } from "./model";
-import { type GuideEntry, type GuideGroup, guideNav, INDEX } from "./site";
+import { type GuideEntry, type GuideGroup, guideCrumbs, guideNav, INDEX } from "./site";
 import { ADMONITION_LABEL, guideHeadingLevel, summaryText } from "./structure";
 import { Callout } from "./components/callout";
-import type { Crumb, PageMeta, TocItem } from "./components/chrome";
+import type { PageMeta, TocItem } from "./components/chrome";
 import { Shell } from "./components/chrome";
 import { SourceLink } from "./components/declaration";
 import { Blocks, Inlines } from "./components/doc";
 
-export { ADMONITION_LABEL, guideNav };
+export { ADMONITION_LABEL, guideCrumbs, guideNav };
 export type { GuideGroup, GuideLink, GuideNav } from "./site";
 
 function moduleTitle(): string {
@@ -37,12 +38,17 @@ export function guideToc(entry: GuideEntry): TocItem[] {
   return entry.sections.map(s => ({ id: s.anchor, label: s.text, depth: s.level === 2 ? 1 : 2 }));
 }
 
-export function GuidePage({ entry }: { entry: GuideEntry }) {
+/**
+ * A guide's page. The overview guide (the module's overview page) has no breadcrumbs or kicker, and `children`
+ * follow its text: the package and type lists when the model also has an API reference.
+ */
+export function GuidePage({ entry, children, extraToc = [] }: { entry: GuideEntry; children?: ComponentChildren; extraToc?: TocItem[] }) {
   const { site, theme, page } = usePage();
   const g = entry.guide;
   const m = site.model.module;
+  const overview = entry.page === INDEX;
   const description = summaryText({ summary: g.summary }) || `${g.title}: a guide to ${m.name}.`;
-  const crumbs: Crumb[] = [{ label: m.name, page: INDEX }, { label: entry.group ?? "Guides" }, { label: g.title }];
+  const crumbs = guideCrumbs(site, entry);
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "TechArticle",
@@ -52,12 +58,13 @@ export function GuidePage({ entry }: { entry: GuideEntry }) {
     isPartOf: { "@type": "SoftwareSourceCode", name: m.name, ...(m.version ? { version: m.version } : {}) },
   };
   const nav = guideNav(site, page);
-  const meta: PageMeta = { kind: "guide", id: g.id, keywords: [g.title, ...(entry.group ? [entry.group] : []), ...entry.sections.map(s => s.text)] };
+  const meta: PageMeta = { kind: overview ? "module" : "guide", id: g.id, keywords: [g.title, ...(entry.group ? [entry.group] : []), ...entry.sections.map(s => s.text)] };
+  const title = overview && g.title === m.name ? moduleTitle() : `${g.title} (${moduleTitle()})`;
   return (
-    <Shell title={`${g.title} (${moduleTitle()})`} description={description} crumbs={crumbs} toc={guideToc(entry)} jsonLd={jsonLd} meta={meta}>
+    <Shell title={title} description={description} crumbs={crumbs} toc={[...guideToc(entry), ...extraToc]} jsonLd={jsonLd} meta={meta}>
       <article class="guide" data-guide-id={g.id} data-reading-progress>
         <header class="page-head guide-head">
-          <p class="guide-kicker">{entry.group ?? "Guide"}</p>
+          {!overview && <p class="guide-kicker">{entry.group ?? "Guide"}</p>}
           <h1>{g.title}</h1>
           {g.summary?.length ? <p class="lede guide-summary"><Inlines nodes={g.summary} /></p> : null}
           {g.source && <p class="page-meta"><SourceLink path={g.source.path} line={g.source.line} /></p>}
@@ -65,6 +72,7 @@ export function GuidePage({ entry }: { entry: GuideEntry }) {
         <div id="guide-body" class="prose guide-body">
           <GuideSections entry={entry} />
         </div>
+        {children}
         {(nav.prev || nav.next) && (
           <nav class="guide-pager" aria-label="Previous and next guides">
             {nav.prev && (

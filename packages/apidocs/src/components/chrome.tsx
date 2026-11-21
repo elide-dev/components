@@ -170,7 +170,7 @@ export function headData(ctx: PageContext, props: Pick<ShellProps, "title" | "de
     full: at("llms-full.txt", true),
     model: at("api.json", true),
   };
-  const keywords = [...new Set([...(meta?.keywords ?? []), m.name, ...(m.languages ?? []).map(languageName), "API reference"])].filter(Boolean);
+  const keywords = [...new Set([...(meta?.keywords ?? []), m.name, ...(m.languages ?? []).map(languageName), ...(site.packages.length ? ["API reference"] : [])])].filter(Boolean);
   const graph = {
     "@context": "https://schema.org",
     "@graph": [
@@ -325,11 +325,11 @@ export function ModuleVersion() {
 }
 
 /** The search field's markup. The static client script and the Astro search island both drive this markup. */
-export function SearchField() {
+export function SearchField({ apiLabel = true }: { apiLabel?: boolean }) {
   return (
     <search class="search" data-search data-js-only>
-      <label class="visually-hidden" for="apidocs-search">Search the API</label>
-      <input id="apidocs-search" type="search" placeholder="Search types and members" autocomplete="off" spellcheck={false}
+      <label class="visually-hidden" for="apidocs-search">{apiLabel ? "Search the API" : "Search the guides"}</label>
+      <input id="apidocs-search" type="search" placeholder={apiLabel ? "Search types and members" : "Search the guides"} autocomplete="off" spellcheck={false}
         role="combobox" list={undefined} aria-expanded="false" aria-controls="apidocs-results" aria-autocomplete="list" />
       <kbd class="search-key" aria-hidden="true">/</kbd>
       <ul id="apidocs-results" class="search-results" role="listbox" aria-label="Search results" hidden />
@@ -372,8 +372,8 @@ export function TopBar() {
         ))}
       </nav>
       <div class="topbar-tools">
-        <a class="search-fallback" href={`${relative(page, INDEX, ".html")}#all-types`}>All types</a>
-        {astro ? <HoleMark name="search" /> : <SearchField />}
+        {site.packages.length > 0 && <a class="search-fallback" href={`${relative(page, INDEX, ".html")}#all-types`}>All types</a>}
+        {astro ? <HoleMark name="search" /> : <SearchField apiLabel={site.packages.length > 0} />}
         {(theme.links?.header ?? []).map(link => <a key={link.url} class="topbar-link" href={link.url}>{link.label}</a>)}
         <button type="button" class="theme-switch" data-theme-switch data-js-only aria-label="Color theme: system">
           {/* The drawn icon everywhere; a sun or a moon where the platform's emoji are good (data-emoji). */}
@@ -568,11 +568,13 @@ export function Navigation() {
   const tops = (currentPkg?.types ?? []).filter(t => !t.enclosing);
   const guides = guideNav(site, page);
   return (
-    <nav class="sidebar" id="apidocs-nav" aria-label="Packages and types" {...persistAttr(useVariant(), "apidocs-nav")}>
-      <div class="nav-filter" data-nav-filter data-js-only>
-        <label class="visually-hidden" for="apidocs-nav-filter">Filter this list</label>
-        <input id="apidocs-nav-filter" type="search" placeholder="Filter" autocomplete="off" spellcheck={false} />
-      </div>
+    <nav class="sidebar" id="apidocs-nav" aria-label={site.packages.length ? "Packages and types" : "Guides"} {...persistAttr(useVariant(), "apidocs-nav")}>
+      {site.packages.length > 0 && (
+        <div class="nav-filter" data-nav-filter data-js-only>
+          <label class="visually-hidden" for="apidocs-nav-filter">Filter this list</label>
+          <input id="apidocs-nav-filter" type="search" placeholder="Filter" autocomplete="off" spellcheck={false} />
+        </div>
+      )}
       {guides.groups.length > 0 && (
         <section class="nav-section nav-guides">
           <h2 class="nav-heading"><span>Guides</span></h2>
@@ -584,7 +586,7 @@ export function Navigation() {
                   <li key={guide.id}>
                     <a class="nav-row" href={guide.href} title={guide.summary || guide.title} aria-current={guide.current ? "page" : undefined}>
                       <span class="glyph" data-tone="guide" aria-hidden="true">{SYMBOLS.guide.utf}</span>
-                      <span class="nav-label">{guide.title}</span>
+                      <span class="nav-label">{guide.label}</span>
                     </a>
                   </li>
                 ))}
@@ -593,7 +595,7 @@ export function Navigation() {
           ))}
         </section>
       )}
-      <section class="nav-section nav-packages">
+      {site.packages.length > 0 && <section class="nav-section nav-packages">
         <h2 class="nav-heading"><span>Packages</span></h2>
         {prefix && (
           <a class="nav-row nav-prefix" href={relative(page, INDEX, ".html")} title={`${prefix}: the prefix every package shares`}>
@@ -616,7 +618,7 @@ export function Navigation() {
             );
           })}
         </ul>
-      </section>
+      </section>}
       {currentPkg && typeGroups(tops).map(group => (
         <section key={group.id} class="nav-section">
           <h2 class="nav-heading"><span>{group.title}</span></h2>

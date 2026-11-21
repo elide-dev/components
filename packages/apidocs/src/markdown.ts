@@ -6,7 +6,7 @@
 import type { AdmonitionTone, Block, Inline, Member, Package, Param, Thrown, Token, Type } from "./model";
 import { deprecatedGroups, guideEntries as guideEntriesForIndex, type IndexEntry, letterGroups, packageRows, typeRows } from "./index-data";
 import { DEPRECATED_PAGE, INDEX_ALL_PAGE, PACKAGES_PAGE, TYPES_PAGE } from "./site";
-import { type GuideEntry, guideNav, INDEX, isThrowable, packagePage, refLabel, relative, resolve, resolveRef, Site, tokenText, typePage } from "./site";
+import { type GuideEntry, guideCrumbs, guideNav, INDEX, isThrowable, overviewGuide, packagePage, refLabel, relative, resolve, resolveRef, Site, tokenText, typePage } from "./site";
 import { type SymbolKey, type SymbolMode, typeSymbolKey, withSym } from "./symbols";
 import { NOTE_LABEL, sortedNotes } from "./components/declaration";
 import { markdownDestination, safeUrl } from "./url";
@@ -46,6 +46,13 @@ function inlines(md: Md, nodes: Inline[] | undefined): string {
       case "strong": return `**${inlines(md, node.children)}**`;
       case "break": return "  \n";
       case "raw": return esc(node.text);
+      case "strikethrough": return `~~${inlines(md, node.children)}~~`;
+      case "check": return node.checked ? "[x] " : "[ ] ";
+      case "image": {
+        // An unsafe source keeps the alternative text, as the HTML page does.
+        const src = resolve(md.site, md.page, ".md", undefined, node.src);
+        return src ? `![${esc(node.alt)}](${markdownDestination(src)})` : esc(node.alt);
+      }
       case "link": {
         const label = node.code
           ? codeSpan(plain(node.children))
@@ -58,7 +65,7 @@ function inlines(md: Md, nodes: Inline[] | undefined): string {
 }
 
 function plain(nodes: Inline[] | undefined): string {
-  return (nodes ?? []).map(n => (n.kind === "text" || n.kind === "code" || n.kind === "raw" ? n.text : n.kind === "break" ? " " : plain(n.children))).join("");
+  return (nodes ?? []).map(n => (n.kind === "text" || n.kind === "code" || n.kind === "raw" ? n.text : n.kind === "break" ? " " : n.kind === "image" ? n.alt : n.kind === "check" ? "" : plain(n.children))).join("");
 }
 
 function blocks(md: Md, nodes: Block[] | undefined, depth = 3): string {
@@ -169,8 +176,13 @@ function join(parts: string[]): string {
 export function indexMarkdown(site: Site, symbols: SymbolMode = "utf"): string {
   const md: Md = { site, page: INDEX, language: site.language, symbols };
   const m = site.model.module;
-  const parts = [`# ${withSym(symbols, "module", `${m.name}${m.version ? ` ${m.version}` : ""}`)}`, location(md, []), m.doc ? blocks(md, m.doc.body) : `API reference for ${esc(m.name)}.`];
-  if (site.guides.length) parts.push(guideListMarkdown(site, INDEX));
+  const overview = overviewGuide(site);
+  // An overview guide is the overview's text, as on the HTML page; the package lists follow when there are any.
+  const parts = overview
+    ? [guideMarkdown(site, overview, symbols).trimEnd()]
+    : [`# ${withSym(symbols, "module", `${m.name}${m.version ? ` ${m.version}` : ""}`)}`, location(md, []), m.doc ? blocks(md, m.doc.body) : `${site.packages.length === 0 && site.guides.length > 0 ? "Documentation" : "API reference"} for ${esc(m.name)}.`];
+  if (site.guides.length && !overview) parts.push(guideListMarkdown(site, INDEX));
+  if (!site.packages.length && site.guides.length) return join(parts);
   parts.push("## Packages\n\n" + site.packages.map(pkg =>
     `- [${codeSpan(pkg.name)}](${dest(relative(INDEX, packagePage(pkg), ".md"))}): ${esc(summaryText(pkg.doc)) || "No description."}`).join("\n"));
   for (const pkg of site.packages) {
@@ -311,8 +323,9 @@ function guideListMarkdown(site: Site, page: string): string {
 export function guideMarkdown(site: Site, entry: GuideEntry, symbols: SymbolMode = "utf"): string {
   const md: Md = { site, page: entry.page, language: site.language, symbols };
   const g = entry.guide;
-  const crumbs = [{ label: site.model.module.name, page: INDEX }, { label: entry.group ?? "Guides" }];
-  const parts = [`# ${withSym(symbols, "guide", esc(g.title))}`, location(md, crumbs), g.summary?.length ? `*${inlines(md, g.summary)}*` : "", blocks(md, g.body, 2)];
+  // The same trail as the HTML page's breadcrumbs, without the page itself.
+  const crumbs = guideCrumbs(site, entry).slice(0, -1);
+  const parts = [`# ${withSym(symbols, entry.page === INDEX ? "module" : "guide", esc(g.title))}`, location(md, crumbs), g.summary?.length ? `*${inlines(md, g.summary)}*` : "", blocks(md, g.body, 2)];
   const nav = guideNav(site, entry.page);
   const pager = [
     nav.prev ? `Previous: [${esc(nav.prev.title)}](${dest(nav.prev.href.replace(/\.html$/, ".md"))})` : "",
