@@ -35,7 +35,7 @@ const sampleSuite = resolve(root, "samples/guides");
 /** The Markdown suites the dev bar offers: the sample, and the --guides directory. */
 const suites: Record<string, string> = { markdown: sampleSuite, ...(guidesPath ? { guides: guidesPath } : {}) };
 /** Files a suite's pages show (images), by model and path in the site: copied from the suite, not rendered. */
-const suiteFiles = new Map<string, Map<string, string>>();
+const suiteFiles = new Map<string, Map<string, Uint8Array>>();
 const require = createRequire(import.meta.url);
 type Output = Record<string, string | { asset: string }>;
 const cache = new Map<string, Output>();
@@ -59,7 +59,7 @@ async function site(server: ViteDevServer, model: string, preset: string): Promi
       links: [{ prefix: "../developer/", target: "https://example.com/developer/" }, { prefix: "../api/", target: "https://example.com/api/" }],
     });
     for (const d of built.diagnostics) console.log(`  ${formatDiagnostic(d, `${suites[model]}/`)}`);
-    suiteFiles.set(key, new Map(built.copies.map((c: { from: string; to: string }) => [c.to, resolve(suites[model]!, c.from)])));
+    suiteFiles.set(key, new Map(built.copies.map((c: { to: string; data: Uint8Array }) => [c.to, c.data])));
     console.log(`  rendered ${model} with ${preset}: ${Object.keys(built.output).length} files in ${Math.round(performance.now() - started)} ms`);
     cache.set(key, built.output);
     return built.output;
@@ -201,7 +201,8 @@ const server = await createServer({
           const copied = suiteFiles.get(`${model}/${preset}`)?.get(path);
           if (file === undefined && copied) {
             res.setHeader("content-type", TYPES[path.slice(path.lastIndexOf(".") + 1).toLowerCase()] ?? "application/octet-stream");
-            res.end(readFileSync(copied));
+            res.setHeader("x-content-type-options", "nosniff");
+            res.end(copied);
             return;
           }
           if (file === undefined) {

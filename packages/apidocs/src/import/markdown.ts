@@ -25,6 +25,7 @@ import { SHELL_IDS } from "../site";
 import { guideAnchors, inlineText, slugify } from "../structure";
 import { safeUrl } from "../url";
 import { imageSize } from "./images";
+import { sanitizeSvg } from "./svg";
 
 /** A Markdown file of the suite. */
 export interface SuiteFile {
@@ -70,10 +71,14 @@ export interface Diagnostic {
   message: string;
 }
 
-/** A file to copy from the suite into the site: `from` below the suite's root, `to` below the site's root. */
+/**
+ * A file to write into the site: `from` below the suite's root, `to` below the site's root, and its contents (an
+ * SVG's sanitized form). Writers use `data`, never a fresh read of `from`.
+ */
 export interface CopiedFile {
   from: string;
   to: string;
+  data: Uint8Array;
 }
 
 export interface ImportResult {
@@ -187,9 +192,8 @@ export function importMarkdown(files: SuiteFile[], options: ImportOptions = {}):
       case "suite": {
         const target = targetPage(at.path, page, line);
         if (target === "asset") {
-          const to = copy(at.path);
+          const to = copy(at.path, page, line);
           if (to) link.url = fromPage(page, to) + (at.fragment !== undefined ? `#${encodeURIComponent(at.fragment)}` : "");
-          else report(page.path, line, "error", `links to ${at.path}, an HTML file, which the site cannot hold beside its own pages`);
           break;
         }
         if (!target) break;
@@ -245,12 +249,31 @@ export function importMarkdown(files: SuiteFile[], options: ImportOptions = {}):
     return null;
   }
 
-  /** Copies an asset into the site; returns its URL from the site's root, or undefined for a file a page cannot be. */
-  function copy(path: string): string | undefined {
-    if (/\.html?$/i.test(path)) return undefined;
-    const to = SUITE_FILES + path;
-    copied.set(path, { from: path, to });
-    return SUITE_FILES + path.split("/").map(encodeURIComponent).join("/");
+  /**
+   * Copies an asset into the site and returns its URL from the site's root; undefined (reported) for a file the site
+   * must not serve. Only the image types in COPYABLE are copied, an SVG rebuilt by sanitizeSvg; the bytes are the
+   * ones read with the suite, never read again.
+   */
+  function copy(path: string, from: Page, line: number): string | undefined {
+    const done = copied.get(path);
+    if (done) return urlOf(path);
+    const refused = refusal(path);
+    if (refused) {
+      report(from.path, line, "error", `${path} is not copied into the site: ${refused}`);
+      return undefined;
+    }
+    const asset = assets.get(path)!;
+    let data = asset.data;
+    if (/\.svg$/i.test(path)) {
+      const clean = sanitizeSvg(new TextDecoder().decode(asset.data));
+      if (!clean.ok) {
+        report(from.path, line, "error", `${path} is not copied into the site: the SVG cannot be made safe, because ${clean.reason}`);
+        return undefined;
+      }
+      data = new TextEncoder().encode(clean.svg);
+    }
+    copied.set(path, { from: path, to: SUITE_FILES + path, data });
+    return urlOf(path);
   }
 
   function image(url: string, alt: string, title: string | null | undefined, line: number, page: Page): Inline {
@@ -274,16 +297,41 @@ export function importMarkdown(files: SuiteFile[], options: ImportOptions = {}):
         return { kind: "text", text };
       }
       case "suite": {
-        const asset = assets.get(at.path);
-        const src = asset ? copy(at.path) : undefined;
-        if (!asset || !src) {
+        if (!assets.has(at.path)) {
           report(page.path, line, "error", `the image ${at.path} is not in the suite`);
           return { kind: "text", text };
         }
-        return node(src, imageSize(asset.data));
+        const src = copy(at.path, page, line);
+        if (!src) return { kind: "text", text };
+        return node(src, imageSize(copied.get(at.path)!.data));
       }
     }
   }
+}
+
+/**
+ * The files a suite may ship beside its pages: images only, since a page shows them and nothing else needs to be
+ * served. Anything else could run on the site's origin when opened directly (HTML, XHTML, XML with a stylesheet,
+ * MHT and the like), so it is never copied. SVG is copied only through sanitizeSvg.
+ */
+export const COPYABLE = new Set(["png", "jpg", "jpeg", "gif", "webp", "avif", "svg"]);
+
+/** Extensions a browser may treat as a document, refused anywhere in a file name: x.html.png is refused. */
+const ACTIVE = /\.(x?html?|shtml|xht|xml|xsl|xslt|mht|mhtml|svgz|php|aspx?|jsp|js|mjs|css|swf)(\.|$)/i;
+
+/** Why a suite file is not copied, or undefined when it may be. */
+function refusal(path: string): string | undefined {
+  const name = path.slice(path.lastIndexOf("/") + 1);
+  if (/[. ]$/.test(name)) return "its name ends with a dot or a space";
+  const ext = /\.([^.]+)$/.exec(name)?.[1]?.toLowerCase();
+  if (!ext || !COPYABLE.has(ext)) return `only images (${[...COPYABLE].join(", ")}) are copied beside the pages`;
+  if (ACTIVE.test(name.slice(0, -ext.length - 1))) return "its name has a second, document-like extension";
+  return undefined;
+}
+
+/** A copied file's URL from the site's root. */
+function urlOf(path: string): string {
+  return SUITE_FILES + path.split("/").map(encodeURIComponent).join("/");
 }
 
 /**

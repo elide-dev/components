@@ -1,7 +1,7 @@
 /** The Markdown importer: each construct, the diagnostics, hostile input, guides-only sites, the CLI and Komodo's suites. */
 import { describe, expect, test } from "bun:test";
 import { spawnSync } from "node:child_process";
-import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -187,11 +187,11 @@ describe("Markdown", () => {
 
 describe("links", () => {
   const files = {
-    "index.md": page("Home", "## Intro\n\n[same](#intro) [up](usage/index.md) [dir](usage/) [section](usage/run.md#Running-a-file) [by id](usage/run.md#flags) [file](usage/notes.txt)"),
+    "index.md": page("Home", "## Intro\n\n[same](#intro) [up](usage/index.md) [dir](usage/) [section](usage/run.md#Running-a-file) [by id](usage/run.md#flags) [file](usage/chart.png)"),
     "usage/index.md": page("Usage", "[home](../index.md#intro) [sibling suite](../../developer/embedding/index.md#setup) [api](../../api/latest/index.html) [web](https://example.com/x?y#z)"),
     "usage/run.md": page("Run", "## Running a file\n\n## Options {#flags}"),
   };
-  const result = imp(files, { suite: "s", assets: [{ path: "usage/notes.txt", data: new TextEncoder().encode("notes") }], links: [{ prefix: "../developer/", target: "../developer/" }, { prefix: "../api/", target: "https://example.com/api/" }] });
+  const result = imp(files, { suite: "s", assets: [{ path: "usage/chart.png", data: new TextEncoder().encode("png") }], links: [{ prefix: "../developer/", target: "../developer/" }, { prefix: "../api/", target: "https://example.com/api/" }] });
   const links = (slug: string) => (result.guides.find(g => g.slug === slug)!.body!.find(b => b.kind === "paragraph") as { children: Inline[] }).children.filter(n => n.kind === "link");
   test("Markdown files become guide references, fragments become sections, checked at import", () => {
     expect(result.diagnostics).toEqual([]);
@@ -201,9 +201,9 @@ describe("links", () => {
       { id: "guide:s/usage/index" },
       { id: "guide:s/usage/run", section: "running-a-file" },
       { id: "guide:s/usage/run", section: "flags" },
-      "guides/usage/notes.txt",
+      "guides/usage/chart.png",
     ]);
-    expect(result.files).toEqual([{ from: "usage/notes.txt", to: "guides/usage/notes.txt" }]);
+    expect(result.files.map(f => [f.from, f.to])).toEqual([["usage/chart.png", "guides/usage/chart.png"]]);
   });
   test("links that leave the suite go through the mapping, relative to their page", () => {
     expect(links("usage/index").map(l => (l.kind === "link" ? l.target ?? l.url : undefined))).toEqual([
@@ -230,7 +230,7 @@ describe("images", () => {
     const result = imp({ "index.md": page("Home", "x"), "a/index.md": page("A", "x"), "a/b.md": page("B", '![A chart of sales](img/chart.png "Sales")') }, { assets: [{ path: "a/img/chart.png", data: png }] });
     expect(result.diagnostics).toEqual([]);
     expect(inlOf(result.guides[2]!)).toEqual([{ kind: "image", src: "guides/a/img/chart.png", alt: "A chart of sales", title: "Sales", width: 300, height: 150 }]);
-    expect(result.files).toEqual([{ from: "a/img/chart.png", to: "guides/a/img/chart.png" }]);
+    expect(result.files).toEqual([{ from: "a/img/chart.png", to: "guides/a/img/chart.png", data: png }]);
     const out = render(guidesModel(result, { name: "S" }));
     expect(out["guides/a/b.html"] as string).toContain('<img src="../../guides/a/img/chart.png" alt="A chart of sales" title="Sales" width="300" height="150" loading="lazy" decoding="async"/>');
     expect(out["guides/a/b.md"] as string).toContain("![A chart of sales](../../guides/a/img/chart.png)");
@@ -261,6 +261,77 @@ describe("images", () => {
 function inlOf(guide: Guide): Inline[] {
   return (guide.body![0] as { children: Inline[] }).children;
 }
+
+describe("copied files", () => {
+  const bytes = (text: string) => new TextEncoder().encode(text);
+  const png = Uint8Array.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 13, 0x49, 0x48, 0x44, 0x52, 0, 0, 0, 8, 0, 0, 0, 8]);
+  test("only images are copied; every other type is an error and stays out of the output", () => {
+    const rejected = ["page.html", "page.HTM", "page.xhtml", "page.shtml", "feed.xml", "archive.mht", "notes.txt", "data.json", "report.pdf", "app.js",
+      "shot.html.png", "shot.png.", "shot.png ", "README"];
+    const body = rejected.map((name, i) => `[f${i}](${encodeURI(name)})`).join("\n\n") + "\n\n![A photo](photo.PNG) ![A sketch](sketch.svg)";
+    const result = imp({ "index.md": page("Home", body) }, {
+      assets: [...rejected.map(path => ({ path, data: bytes("<script>alert(1)</script>") })), { path: "photo.PNG", data: png },
+        { path: "sketch.svg", data: bytes('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><circle cx="5" cy="5" r="4"/></svg>') }],
+    });
+    const messages = result.diagnostics.map(d => formatDiagnostic(d));
+    expect(messages.length).toBe(rejected.length);
+    for (const [i, name] of rejected.entries()) expect(messages[i]).toStartWith(`index.md:${6 + 2 * i}: ${name} is not copied into the site: `);
+    expect(messages.filter(m => m.endsWith("second, document-like extension"))).toEqual(["index.md:26: shot.html.png is not copied into the site: its name has a second, document-like extension"]);
+    expect(messages.filter(m => m.endsWith("a dot or a space")).length).toBe(2);
+    expect(result.files.map(f => f.to)).toEqual(["guides/photo.PNG", "guides/sketch.svg"]);
+    const out = render(guidesModel(result, { name: "S" }));
+    for (const name of rejected) expect(Object.keys(out).some(k => k.includes(name.trim()))).toBe(false);
+    expect(out["index.html"] as string).toContain('<img src="guides/photo.PNG" alt="A photo" width="8" height="8"');
+    expect(out["index.html"] as string).toContain('<img src="guides/sketch.svg" alt="A sketch" width="10" height="10"');
+  });
+  test("a hostile SVG comes out inert; one that cannot be made safe is refused", () => {
+    const hostile = [
+      '<?xml version="1.0"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 10 10" onload="alert(1)">',
+      "<script>alert(2)</script><script xlink:href=\"https://evil.example/x.js\"/>",
+      '<foreignObject><div xmlns="http://www.w3.org/1999/xhtml"><img src="x" onerror="alert(3)"/><iframe src="javascript:alert(4)"></iframe></div></foreignObject>',
+      '<use href="https://evil.example/s.svg#a"/><use xlink:href="data:image/svg+xml,&lt;svg onload=alert(5)&gt;"/><use href="#ok"/>',
+      '<a href="javascript:alert(6)"><text>click</text></a><image href="https://evil.example/t.png"/>',
+      '<style>@import url(https://evil.example/x.css); rect { fill: url(https://evil.example/p) }</style>',
+      '<rect width="10" height="10" fill="url(https://evil.example/p)" stroke="url(#g)" style="background:url(//evil.example)" onclick="alert(7)"/>',
+      '<set attributeName="onmouseover" to="alert(8)"/><animate attributeName="href" to="javascript:alert(9)"/>',
+      "</svg>",
+    ].join("");
+    const result = imp({ "index.md": page("Home", "![Hostile](h.svg) ![Entities](e.svg)") }, {
+      assets: [{ path: "h.svg", data: bytes(hostile) }, { path: "e.svg", data: bytes('<!DOCTYPE svg [<!ENTITY a "&#60;script&#62;">]><svg xmlns="http://www.w3.org/2000/svg">&a;</svg>') }],
+    });
+    expect(result.diagnostics.map(d => formatDiagnostic(d))).toEqual([
+      "index.md:6: e.svg is not copied into the site: the SVG cannot be made safe, because it has a DOCTYPE or CDATA section, which can declare entities or hide markup",
+    ]);
+    const svg = new TextDecoder().decode(result.files.find(f => f.from === "h.svg")!.data);
+    expect(svg).toBe('<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 10 10"><use/><use/><use href="#ok"/><rect width="10" height="10" stroke="url(#g)"/></svg>\n');
+    expect(svg).not.toMatch(/script|foreignObject|onload|onclick|onerror|javascript:|data:|evil|<a\b|<image|<style|<set|<animate/i);
+    expect(result.files.some(f => f.from === "e.svg")).toBe(false);
+  });
+  test("a symbolic link is never followed, so a file outside the suite cannot be copied", () => {
+    const dir = mkdtempSync(join(tmpdir(), "apidocs-symlink-"));
+    try {
+      mkdirSync(join(dir, "suite"));
+      writeFileSync(join(dir, "secret.png"), png);
+      symlinkSync(join(dir, "secret.png"), join(dir, "suite/leak.png"));
+      symlinkSync(dir, join(dir, "suite/up"));
+      writeFileSync(join(dir, "suite/index.md"), page("Home", "![Leak](leak.png) ![Up](up/secret.png)"));
+      const { files, assets } = readSuite(join(dir, "suite"));
+      expect(assets).toEqual([]);
+      const result = importMarkdown(files, { assets });
+      expect(result.files).toEqual([]);
+      expect(result.diagnostics.map(d => d.message)).toEqual(["the image leak.png is not in the suite", "the image up/secret.png is not in the suite"]);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+  test("an ordinary diagram keeps its drawing", () => {
+    const { files, assets } = readSuite(SAMPLE);
+    const result = importMarkdown(files, { assets, links: SAMPLE_LINKS });
+    const svg = new TextDecoder().decode(result.files.find(f => f.from === "concepts/diagram.svg")!.data);
+    for (const part of ['viewBox="0 0 240 240"', "<rect ", "<circle ", "<line ", '<text x="160" y="112"', ">r</text>", 'aria-label="A circle inside a square"']) expect(svg).toContain(part);
+    expect(result.files.find(f => f.from === "concepts/swatch.png")!.data).toEqual(assets.find(a => a.path === "concepts/swatch.png")!.data);
+  });
+});
 
 describe("diagnostics", () => {
   test("the broken fixture reports each problem with its file and line", () => {

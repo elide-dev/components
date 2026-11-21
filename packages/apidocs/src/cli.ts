@@ -154,8 +154,9 @@ function guides(argv: string[]): number {
   for (const file of site.copies) {
     const target = inside(out, file.to);
     mkdirSync(dirname(target), { recursive: true });
-    copyFileSync(inside(src, file.from), target);
-    bytes += statSync(target).size;
+    // The bytes read with the suite (an SVG's sanitized form), never a fresh read through the file system.
+    writeFileSync(target, file.data);
+    bytes += file.data.byteLength;
     count++;
   }
   const pages = Object.keys(site.output).filter(p => p.endsWith(".html")).length;
