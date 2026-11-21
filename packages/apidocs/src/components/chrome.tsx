@@ -1,6 +1,15 @@
-/** The page shell: head, header, navigation, breadcrumbs, table of contents and footer. */
-import type { ComponentChildren } from "preact";
-import { usePage } from "../context";
+/**
+ * The page shell: head, header, navigation, breadcrumbs, table of contents and footer.
+ *
+ * Two renderers compose these parts. The static renderer (src/render.tsx) renders Shell into a whole document
+ * that works from file:// and inside a jar. The Astro integration (src/astro/) renders the same Shell in its
+ * "astro" variant: the same markup, minus what only a static site needs (its stylesheet links, the deferred
+ * client bundle, speculation rules), plus the attributes the client router persists elements by and named holes
+ * where Astro puts its own content (a slot in the top bar, the search island, a notice above the page).
+ */
+import { createContext, type ComponentChildren } from "preact";
+import { useContext } from "preact/hooks";
+import { type PageContext, usePage } from "../context";
 import type { Package, Type } from "../model";
 import { INDEX, guideNav, indexPages, isAbsolute, isThrowable, packagePage, relative, rootOf, typePage } from "../site";
 import { typeGroups } from "../structure";
@@ -20,10 +29,36 @@ export interface TocItem {
 }
 
 /**
+ * Which document Shell renders. "static" (the default) is the static renderer's page. "astro" is the Astro
+ * integration's: `persist` names the elements the client router keeps across navigations within one site.
+ */
+export type ShellVariant = { kind: "static" } | { kind: "astro"; persist: string };
+
+export const ShellVariantContext = createContext<ShellVariant>({ kind: "static" });
+
+function useVariant(): ShellVariant {
+  return useContext(ShellVariantContext);
+}
+
+/** A named place in the astro variant's markup where the Astro component puts its own content. */
+export const HOLES = ["topbar", "search", "notice"] as const;
+export type Hole = (typeof HOLES)[number];
+
+function HoleMark({ name }: { name: Hole }) {
+  const Tag = "apidocs-hole" as "span";
+  return <Tag {...({ name } as object)} />;
+}
+
+/** The attribute Astro's client router keeps an element by (what `transition:persist="id"` compiles to). */
+function persistAttr(variant: ShellVariant, id: string): Record<string, string> {
+  return variant.kind === "astro" ? { "data-astro-transition-persist": `${id}:${variant.persist}` } : {};
+}
+
+/**
  * Runs before first paint: applies a stored theme choice, and marks the page as scripted so the controls that
  * need the script take their space at once instead of appearing (and moving the page) when the bundle loads.
  */
-const THEME_BOOT =
+export const THEME_BOOT =
   'var d=document.documentElement;d.setAttribute("data-js","");' +
   // A page opened from disk cannot read its neighbors, so the controls that need to are left out there.
   'if(location.protocol==="file:")d.setAttribute("data-file","");' +
@@ -90,17 +125,46 @@ export interface PageMeta {
   keywords?: string[];
 }
 
-export function Shell({ title, description, crumbs, toc, jsonLd, meta, children }: ShellProps) {
-  const ctx = usePage();
+/** Where a page's machine-readable versions are: absolute when the site's address is known, else relative to the page. */
+export interface Formats {
+  markdown: string;
+  llms: string;
+  full: string;
+  model: string;
+}
+
+/**
+ * A page's head metadata as data: what HeadMeta renders, and what a program can compare or reuse. URLs are in
+ * the static renderer's form (relative, or under theme.baseUrl, naming .html files); the Astro integration maps
+ * them to its own form after rendering.
+ */
+export interface HeadData {
+  title: string;
+  description: string;
+  keywords: string[];
+  /** The product the pages belong to: the theme's productName, else the module's name. */
+  product: string;
+  canonical?: string;
+  /** name or property, and content, in document order. */
+  meta: { name?: string; property?: string; content: string }[];
+  /** The alternate and index links, in document order. */
+  links: { rel: string; type?: string; href: string; title: string }[];
+  formats: Formats;
+  /** The JSON-LD graph. */
+  jsonLd: object;
+}
+
+/** The head metadata of the page being rendered, from Shell's props. */
+export function headData(ctx: PageContext, props: Pick<ShellProps, "title" | "description" | "crumbs" | "jsonLd" | "meta">): HeadData {
   const { site, theme, page } = ctx;
+  const { title, description, crumbs, jsonLd, meta } = props;
   const root = rootOf(page);
   const name = page.split("/").pop()!;
   const product = theme.productName ?? site.model.module.name;
   const canonical = theme.baseUrl ? `${theme.baseUrl}${page}.html` : undefined;
   const m = site.model.module;
-  // Where the machine-readable versions are: absolute when the site's address is known, else relative to this page.
   const at = (path: string, fromRoot: boolean) => (theme.baseUrl ? `${theme.baseUrl}${fromRoot ? path : `${page.slice(0, page.lastIndexOf("/") + 1)}${path}`}` : `${fromRoot ? root : ""}${path}`);
-  const formats = {
+  const formats: Formats = {
     markdown: at(`${name}.md`, false),
     llms: at("llms.txt", true),
     full: at("llms-full.txt", true),
@@ -142,125 +206,215 @@ export function Shell({ title, description, crumbs, toc, jsonLd, meta, children 
       },
     ],
   };
+  const tags: HeadData["meta"] = [
+    { name: "description", content: description },
+    { name: "keywords", content: keywords.join(", ") },
+    { name: "generator", content: "apidocs" },
+    { name: "color-scheme", content: "light dark" },
+    // What this page documents, for programs that read pages.
+    { name: "apidocs:kind", content: meta?.kind ?? "module" },
+    { name: "apidocs:module", content: m.name },
+    ...(m.version ? [{ name: "apidocs:version", content: m.version }] : []),
+    ...(meta?.id ? [{ name: "apidocs:id", content: meta.id }] : []),
+    ...(meta?.package ? [{ name: "apidocs:package", content: meta.package }] : []),
+    ...(meta?.language ? [{ name: "apidocs:language", content: meta.language }] : []),
+    { property: "og:type", content: meta?.kind === "module" || !meta ? "website" : "article" },
+    { property: "og:title", content: title },
+    { property: "og:description", content: description },
+    { property: "og:site_name", content: product },
+    ...(canonical ? [{ property: "og:url", content: canonical }] : []),
+    { name: "twitter:card", content: "summary" },
+  ];
+  // The same content for programs and AI agents: this page as Markdown, the index, the whole reference, the model.
+  const links: HeadData["links"] = [
+    { rel: "alternate", type: "text/markdown", href: `${name}.md`, title: "This page as Markdown" },
+    { rel: "alternate", type: "text/markdown", href: `${root}llms.txt`, title: "llms.txt: index of every page, as Markdown links" },
+    { rel: "alternate", type: "text/markdown", href: `${root}llms-full.txt`, title: "llms-full.txt: the whole reference in one Markdown file" },
+    { rel: "alternate", type: "application/json", href: `${root}api.json`, title: "api.json: the apidocs/1 model of this module" },
+    { rel: "index", href: `${root}index.html`, title: `${product} API reference` },
+  ];
+  return { title, description, keywords, product, canonical, meta: tags, links, formats, jsonLd: graph };
+}
+
+/** The head's metadata elements: charset and viewport, title, meta tags, canonical, alternates and index. */
+export function HeadMeta({ head }: { head: HeadData }) {
+  return (
+    <>
+      <meta charset="utf-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1" />
+      <title>{head.title}</title>
+      {head.meta.map(tag => <meta key={tag.name ?? tag.property} name={tag.name} property={tag.property} content={tag.content} />)}
+      {head.canonical && <link rel="canonical" href={head.canonical} />}
+      {head.links.map(link => <link key={link.href} rel={link.rel} type={link.type} href={link.href} title={link.title} />)}
+    </>
+  );
+}
+
+/** The JSON-LD graph as a script element; the head's last element. */
+export function JsonLd({ head }: { head: HeadData }) {
+  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(head.jsonLd).replace(/</g, "\\u003c") }} />;
+}
+
+export function Shell({ title, description, crumbs, toc, jsonLd, meta, children }: ShellProps) {
+  const ctx = usePage();
+  const variant = useVariant();
+  const { theme, page } = ctx;
+  const root = rootOf(page);
+  const name = page.split("/").pop()!;
+  const head = headData(ctx, { title, description, crumbs, jsonLd, meta });
+  const astro = variant.kind === "astro";
   return (
     <html lang="en" data-root={root || "./"}>
       <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>{title}</title>
-        <meta name="description" content={description} />
-        <meta name="keywords" content={keywords.join(", ")} />
-        <meta name="generator" content="apidocs" />
-        <meta name="color-scheme" content="light dark" />
-        {/* What this page documents, for programs that read pages. */}
-        <meta name="apidocs:kind" content={meta?.kind ?? "module"} />
-        <meta name="apidocs:module" content={m.name} />
-        {m.version && <meta name="apidocs:version" content={m.version} />}
-        {meta?.id && <meta name="apidocs:id" content={meta.id} />}
-        {meta?.package && <meta name="apidocs:package" content={meta.package} />}
-        {meta?.language && <meta name="apidocs:language" content={meta.language} />}
-        <meta property="og:type" content={meta?.kind === "module" || !meta ? "website" : "article"} />
-        <meta property="og:title" content={title} />
-        <meta property="og:description" content={description} />
-        <meta property="og:site_name" content={product} />
-        {canonical && <meta property="og:url" content={canonical} />}
-        <meta name="twitter:card" content="summary" />
-        {canonical && <link rel="canonical" href={canonical} />}
-        {/* The same content for programs and AI agents: this page as Markdown, the index, the whole reference, the model. */}
-        <link rel="alternate" type="text/markdown" href={`${name}.md`} title="This page as Markdown" />
-        <link rel="alternate" type="text/markdown" href={`${root}llms.txt`} title="llms.txt: index of every page, as Markdown links" />
-        <link rel="alternate" type="text/markdown" href={`${root}llms-full.txt`} title="llms-full.txt: the whole reference in one Markdown file" />
-        <link rel="alternate" type="application/json" href={`${root}api.json`} title="api.json: the apidocs/1 model of this module" />
-        <link rel="index" href={`${root}index.html`} title={`${product} API reference`} />
-        <link rel="stylesheet" href={`${root}assets/apidocs.css`} />
-        <link rel="stylesheet" href={`${root}assets/theme.css`} />
+        <HeadMeta head={head} />
+        {/* Astro bundles the stylesheet and inlines the theme's tokens itself. */}
+        {!astro && <link rel="stylesheet" href={`${root}assets/apidocs.css`} />}
+        {!astro && <link rel="stylesheet" href={`${root}assets/theme.css`} />}
         {theme.favicon && <link rel="icon" type="image/svg+xml" href={`${root}assets/favicon.svg`} />}
-        <script dangerouslySetInnerHTML={{ __html: THEME_BOOT + fontPreload(theme.fonts, root) }} />
-        <script defer src={`${root}assets/apidocs.js`} />
+        {/* Astro preloads the fonts with link elements: its pages are always served. */}
+        <script dangerouslySetInnerHTML={{ __html: astro ? THEME_BOOT : THEME_BOOT + fontPreload(theme.fonts, root) }} />
+        {!astro && <script defer src={`${root}assets/apidocs.js`} />}
         {/* Hold first paint until the content element is parsed, so a page transition starts from real content. */}
         <link rel="expect" href={`${name}.html#content`} {...({ blocking: "render" } as object)} />
-        {/* On a server, start loading and rendering a page of this site when a link to it is hovered or pressed. */}
-        <script type="speculationrules" dangerouslySetInnerHTML={{ __html: SPECULATION }} />
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(graph).replace(/</g, "\\u003c") }} />
+        {/* On a server, start loading and rendering a page of this site when a link to it is hovered or pressed.
+            Astro pages navigate with its client router and prefetch instead. */}
+        {!astro && <script type="speculationrules" dangerouslySetInnerHTML={{ __html: SPECULATION }} />}
+        <JsonLd head={head} />
       </head>
       <body>
         <div class="loadbar" aria-hidden="true" />
         {meta?.kind === "guide" && <div class="readbar" aria-hidden="true" />}
         <a class="skip" href={`${name}.html#content`}>Skip to content</a>
-        {/* One checkbox toggles the navigator with no script: it hides it on a wide screen and shows it on a narrow one. */}
-        <header class="topbar">
-          <input type="checkbox" id="apidocs-nav-toggle" class="nav-toggle visually-hidden" aria-label="Toggle navigation" autocomplete="off" />
-          <script dangerouslySetInnerHTML={{ __html: NAV_STATE_BOOT }} />
-          <label class="nav-button" for="apidocs-nav-toggle" title="Toggle navigation" aria-hidden="true">
-            <svg viewBox="0 0 16 16" width="16" height="16"><rect x="2" y="2.75" width="12" height="10.5" rx="2.25" /><path d="M6.25 2.75v10.5" /></svg>
-          </label>
-          <a class="brand" href={relative(page, INDEX, ".html")}>
-            {theme.logo?.light && (
-              <>
-                <img class="logo logo-light" src={`${root}assets/logo-light.svg`} alt={theme.logo.alt ?? ""} height={22} width={logoWidth(theme.logo.light, 22)} />
-                <img class="logo logo-dark" src={`${root}assets/logo-${theme.logo.dark ? "dark" : "light"}.svg`} alt={theme.logo.alt ?? ""} height={22} width={logoWidth(theme.logo.dark ?? theme.logo.light, 22)} />
-              </>
-            )}
-            <span class="product">{product}</span>
-          </a>
-          <span class="module-version">
-            {site.model.module.name !== product && <span>{site.model.module.name} </span>}
-            {site.model.module.version && <span class="version">{site.model.module.version}</span>}
-          </span>
-          <nav class="topbar-nav" aria-label="Indexes">
-            <a href={relative(page, INDEX, ".html")} aria-current={page === INDEX ? "page" : undefined}>Overview</a>
-            {indexPages(site).map(entry => (
-              <a key={entry.page} href={relative(page, entry.page, ".html")} aria-current={page === entry.page ? "page" : undefined}>{entry.label}</a>
-            ))}
-          </nav>
-          <div class="topbar-tools">
-            <a class="search-fallback" href={`${relative(page, INDEX, ".html")}#all-types`}>All types</a>
-            <search class="search" data-search data-js-only>
-              <label class="visually-hidden" for="apidocs-search">Search the API</label>
-              <input id="apidocs-search" type="search" placeholder="Search types and members" autocomplete="off" spellcheck={false}
-                role="combobox" list={undefined} aria-expanded="false" aria-controls="apidocs-results" aria-autocomplete="list" />
-              <kbd class="search-key" aria-hidden="true">/</kbd>
-              <ul id="apidocs-results" class="search-results" role="listbox" aria-label="Search results" hidden />
-            </search>
-            {(theme.links?.header ?? []).map(link => <a key={link.url} class="topbar-link" href={link.url}>{link.label}</a>)}
-            <button type="button" class="theme-switch" data-theme-switch data-js-only aria-label="Color theme: system">
-              {/* The drawn icon everywhere; a sun or a moon where the platform's emoji are good (data-emoji). */}
-              <span aria-hidden="true" class="theme-icon" />
-              <span aria-hidden="true" class="theme-emoji" />
-            </button>
-          </div>
-        </header>
+        <TopBar />
         <div class="layout">
           <Navigation />
           <script dangerouslySetInnerHTML={{ __html: NAV_BOOT }} />
           <main id="content" class="content">
-            {/* For programs that read the page as text: where the other forms are. Not shown, not read aloud. */}
-            <p class="visually-hidden" aria-hidden="true" data-agent-note>
-              {`Machine-readable versions of this page. Markdown: ${formats.markdown} . Index of every page (llms.txt): ${formats.llms} . The whole reference in one Markdown file: ${formats.full} . The API model as JSON (apidocs/1): ${formats.model} .`}
-            </p>
-            <div class="page-tools">
-              <Breadcrumbs crumbs={crumbs} />
-              <PageActions name={name} root={root} canonical={canonical} title={title} />
-            </div>
+            <AgentNote formats={head.formats} />
+            <PageTools crumbs={crumbs} canonical={head.canonical} title={title} />
+            {astro && <HoleMark name="notice" />}
             {children}
           </main>
           <Toc items={toc} filterLabel={meta?.kind === "guide" ? "Filter sections" : "Filter members"} />
         </div>
-        <footer class="footer">
-          <p>
-            {theme.footer && <span>{theme.footer} </span>}
-            <a href={`${name}.md`}>This page as Markdown</a>
-            {", "}
-            <a href={`${root}llms.txt`}>llms.txt</a>
-            {", "}
-            <a href={`${root}api.json`}>api.json</a>
-          </p>
-          {(theme.links?.footer ?? []).length > 0 && (
-            <p class="footer-links">{theme.links!.footer!.map(link => <a key={link.url} href={link.url}>{link.label}</a>)}</p>
-          )}
-        </footer>
+        <Footer />
       </body>
     </html>
+  );
+}
+
+/** For programs that read the page as text: where the other forms are. Not shown, not read aloud. */
+export function AgentNote({ formats }: { formats: Formats }) {
+  return (
+    <p class="visually-hidden" aria-hidden="true" data-agent-note>
+      {`Machine-readable versions of this page. Markdown: ${formats.markdown} . Index of every page (llms.txt): ${formats.llms} . The whole reference in one Markdown file: ${formats.full} . The API model as JSON (apidocs/1): ${formats.model} .`}
+    </p>
+  );
+}
+
+/** The module's name (when the product has another) and version, beside the brand in the top bar. */
+export function ModuleVersion() {
+  const { site, theme } = usePage();
+  const product = theme.productName ?? site.model.module.name;
+  return (
+    <span class="module-version">
+      {site.model.module.name !== product && <span>{site.model.module.name} </span>}
+      {site.model.module.version && <span class="version">{site.model.module.version}</span>}
+    </span>
+  );
+}
+
+/** The search field's markup. The static client script and the Astro search island both drive this markup. */
+export function SearchField() {
+  return (
+    <search class="search" data-search data-js-only>
+      <label class="visually-hidden" for="apidocs-search">Search the API</label>
+      <input id="apidocs-search" type="search" placeholder="Search types and members" autocomplete="off" spellcheck={false}
+        role="combobox" list={undefined} aria-expanded="false" aria-controls="apidocs-results" aria-autocomplete="list" />
+      <kbd class="search-key" aria-hidden="true">/</kbd>
+      <ul id="apidocs-results" class="search-results" role="listbox" aria-label="Search results" hidden />
+    </search>
+  );
+}
+
+/**
+ * The top bar: the navigator toggle, the brand, the module's version, the index pages, search, the theme's
+ * links and the theme switch. One checkbox toggles the navigator with no script: it hides it on a wide screen
+ * and shows it on a narrow one.
+ */
+export function TopBar() {
+  const { site, theme, page } = usePage();
+  const variant = useVariant();
+  const astro = variant.kind === "astro";
+  const root = rootOf(page);
+  const product = theme.productName ?? site.model.module.name;
+  return (
+    <header class="topbar" {...persistAttr(variant, "apidocs-topbar")}>
+      <input type="checkbox" id="apidocs-nav-toggle" class="nav-toggle visually-hidden" aria-label="Toggle navigation" autocomplete="off" />
+      <script dangerouslySetInnerHTML={{ __html: NAV_STATE_BOOT }} />
+      <label class="nav-button" for="apidocs-nav-toggle" title="Toggle navigation" aria-hidden="true">
+        <svg viewBox="0 0 16 16" width="16" height="16"><rect x="2" y="2.75" width="12" height="10.5" rx="2.25" /><path d="M6.25 2.75v10.5" /></svg>
+      </label>
+      <a class="brand" href={relative(page, INDEX, ".html")}>
+        {theme.logo?.light && (
+          <>
+            <img class="logo logo-light" src={`${root}assets/logo-light.svg`} alt={theme.logo.alt ?? ""} height={22} width={logoWidth(theme.logo.light, 22)} />
+            <img class="logo logo-dark" src={`${root}assets/logo-${theme.logo.dark ? "dark" : "light"}.svg`} alt={theme.logo.alt ?? ""} height={22} width={logoWidth(theme.logo.dark ?? theme.logo.light, 22)} />
+          </>
+        )}
+        <span class="product">{product}</span>
+      </a>
+      {astro ? <HoleMark name="topbar" /> : <ModuleVersion />}
+      <nav class="topbar-nav" aria-label="Indexes">
+        <a href={relative(page, INDEX, ".html")} aria-current={page === INDEX ? "page" : undefined}>Overview</a>
+        {indexPages(site).map(entry => (
+          <a key={entry.page} href={relative(page, entry.page, ".html")} aria-current={page === entry.page ? "page" : undefined}>{entry.label}</a>
+        ))}
+      </nav>
+      <div class="topbar-tools">
+        <a class="search-fallback" href={`${relative(page, INDEX, ".html")}#all-types`}>All types</a>
+        {astro ? <HoleMark name="search" /> : <SearchField />}
+        {(theme.links?.header ?? []).map(link => <a key={link.url} class="topbar-link" href={link.url}>{link.label}</a>)}
+        <button type="button" class="theme-switch" data-theme-switch data-js-only aria-label="Color theme: system">
+          {/* The drawn icon everywhere; a sun or a moon where the platform's emoji are good (data-emoji). */}
+          <span aria-hidden="true" class="theme-icon" />
+          <span aria-hidden="true" class="theme-emoji" />
+        </button>
+      </div>
+    </header>
+  );
+}
+
+/** The row above the page's title: where the page is, and its other forms. */
+export function PageTools({ crumbs, canonical, title }: { crumbs: Crumb[]; canonical: string | undefined; title: string }) {
+  const { page } = usePage();
+  return (
+    <div class="page-tools">
+      <Breadcrumbs crumbs={crumbs} />
+      <PageActions name={page.split("/").pop()!} root={rootOf(page)} canonical={canonical} title={title} />
+    </div>
+  );
+}
+
+/** The foot of every page: the theme's footer text, the machine-readable forms, the theme's footer links. */
+export function Footer() {
+  const { theme, page } = usePage();
+  const root = rootOf(page);
+  const name = page.split("/").pop()!;
+  return (
+    <footer class="footer">
+      <p>
+        {theme.footer && <span>{theme.footer} </span>}
+        <a href={`${name}.md`}>This page as Markdown</a>
+        {", "}
+        <a href={`${root}llms.txt`}>llms.txt</a>
+        {", "}
+        <a href={`${root}api.json`}>api.json</a>
+      </p>
+      {(theme.links?.footer ?? []).length > 0 && (
+        <p class="footer-links">{theme.links!.footer!.map(link => <a key={link.url} href={link.url}>{link.label}</a>)}</p>
+      )}
+    </footer>
   );
 }
 
@@ -318,7 +472,7 @@ export function packageLanguages(pkg: Package, fallback: string[] | undefined): 
  * the script and a server (a page opened from disk cannot read the file beside it); without either, the mark is
  * a plain link to the Markdown file and looks the same.
  */
-function PageActions({ name, root, canonical, title }: { name: string; root: string; canonical: string | undefined; title: string }) {
+export function PageActions({ name, root, canonical, title }: { name: string; root: string; canonical: string | undefined; title: string }) {
   const markdown = canonical ? canonical.replace(/\.html$/, ".md") : undefined;
   const ask = markdown ? encodeURIComponent(`Read ${markdown} so that I can ask questions about ${title}.`) : undefined;
   const out = sym("utf", "external");
@@ -349,7 +503,7 @@ function PageActions({ name, root, canonical, title }: { name: string; root: str
   );
 }
 
-function Breadcrumbs({ crumbs }: { crumbs: Crumb[] }) {
+export function Breadcrumbs({ crumbs }: { crumbs: Crumb[] }) {
   const { page } = usePage();
   if (crumbs.length < 2) return null;
   return (
@@ -404,7 +558,7 @@ export function kindGlyph(type: Type): { letter: string; tone: string } {
  * types appear only along the current page's nesting chain, so a type with
  * hundreds of nested types does not repeat them on every page.
  */
-function Navigation() {
+export function Navigation() {
   const { site, page } = usePage();
   const current = currentType(site.types, page);
   const currentPkg = current ? site.types.get(current.id)!.pkg : site.packages.find(pkg => packagePage(pkg) === page);
@@ -414,7 +568,7 @@ function Navigation() {
   const tops = (currentPkg?.types ?? []).filter(t => !t.enclosing);
   const guides = guideNav(site, page);
   return (
-    <nav class="sidebar" id="apidocs-nav" aria-label="Packages and types">
+    <nav class="sidebar" id="apidocs-nav" aria-label="Packages and types" {...persistAttr(useVariant(), "apidocs-nav")}>
       <div class="nav-filter" data-nav-filter data-js-only>
         <label class="visually-hidden" for="apidocs-nav-filter">Filter this list</label>
         <input id="apidocs-nav-filter" type="search" placeholder="Filter" autocomplete="off" spellcheck={false} />
@@ -513,7 +667,7 @@ const TOC_OPEN_LIMIT = 12;
  * section's entries sit behind a disclosure, so a type with hundreds of members
  * gives a rail of a few lines, not hundreds.
  */
-function Toc({ items, filterLabel }: { items: TocItem[]; filterLabel: string }) {
+export function Toc({ items, filterLabel }: { items: TocItem[]; filterLabel: string }) {
   const name = usePage().page.split("/").pop()!;
   if (items.length === 0) return <div class="toc-spacer" />;
   const sections: { head: TocItem; entries: TocItem[] }[] = [];
