@@ -31,6 +31,19 @@ its file. Scripts are classic. Search reads `assets/search-index.js`, which assi
 With JavaScript off, pages keep all their content; only search, the theme switch, copy buttons and table-of-contents
 tracking go away.
 
+## Guides
+
+A module can carry narrative guides in `module.guides`: `{ id, slug, title, summary?, group?, order?, body?,
+source? }`. The body is the same block tree as a documentation comment, plus `admonition` blocks (`tone`: note, tip,
+important, warning, caution, apiNote, implSpec, implNote; optional `title`). Each guide is `guides/<slug>.html` and
+`.md`. Its headings get readable anchors (the heading's `anchor`, or its text slugified), deduplicated with `-2`,
+`-3`; level-2 and level-3 headings fill "On this page". A link targets a guide with `target: { id }` and a section
+with `target: { id, section }`, from guides and from doc comments; an unresolved one renders as plain text, and the
+output checker reports a link to a section that does not exist. Pages list ungrouped guides first, then each group
+in the order of its first guide; inside each, guides with an `order` come first, lowest first. Guides appear on the
+overview, in the navigator, in search (guides and sections), in `llms.txt` before the reference pages, in
+`llms-full.txt` after the overview, and in `sitemap.xml`.
+
 ## Themes
 
 A theme is JSON:

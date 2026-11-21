@@ -42,8 +42,10 @@ export function checkSite(out: Output, options: CheckOptions): string[] {
       if (/\bimport\s*\(/.test(bare)) errors.push(`${file}: dynamic import`);
     }
     if (!file.endsWith(".html")) continue;
-    for (const tag of content.matchAll(/<[a-zA-Z][^>]*>/g)) {
-      if (/\son[a-z]+\s*=/i.test(tag[0])) errors.push(`${file}: event handler attribute in ${tag[0].slice(0, 80)}`);
+    // A tag runs to the first > outside a quoted value; attribute names are read with the values blanked, so text
+    // such as onerror= inside an escaped value is not mistaken for an attribute.
+    for (const tag of content.matchAll(/<[a-zA-Z](?:[^>"']|"[^"]*"|'[^']*')*>/g)) {
+      if (/\son[a-z]+\s*=/i.test(tag[0].replace(/"[^"]*"|'[^']*'/g, '""'))) errors.push(`${file}: event handler attribute in ${tag[0].slice(0, 80)}`);
     }
     for (const m of content.matchAll(ATTRS)) {
       const url = unescape(m[2]!);
