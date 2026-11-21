@@ -386,6 +386,8 @@ html[data-emoji] .theme-switch[data-mode="dark"] .theme-emoji::before { content:
 .glyph[data-tone="annotation"] { --glyph: var(--apidocs-syn-annotation); }
 .glyph[data-tone="object"] { --glyph: var(--apidocs-syn-keyword); }
 .glyph[data-tone="exception"] { --glyph: var(--apidocs-deprecated); }
+.glyph[data-tone="guide"] { --glyph: var(--apidocs-accent); font-family: var(--apidocs-font-system); }
+.nav-subheading { margin: 8px 0 2px; padding: 0 8px; font-size: var(--apidocs-size-xs); color: var(--apidocs-faint); user-select: none; -webkit-user-select: none; }
 .glyph-large { width: 28px; height: 28px; border-radius: 7px; font-size: var(--apidocs-size-md); }
 
 /* "On this page": sections with counts; long sections fold. */
@@ -614,6 +616,67 @@ th, td { text-align: left; vertical-align: top; padding: 7px 12px 7px 0; border-
 thead th { color: var(--apidocs-muted); font-weight: 600; font-size: var(--apidocs-size-sm); border-bottom-color: var(--apidocs-rule-strong); }
 .doc-table td, .doc-table th { padding-left: 10px; }
 
+/* ---- Guides: prose pages beside the reference ---- */
+
+.guide-kicker {
+  margin: 0 0 6px; font-size: var(--apidocs-size-xs); font-weight: 650; letter-spacing: var(--apidocs-tracking-caps);
+  text-transform: uppercase; color: var(--apidocs-accent); user-select: none; -webkit-user-select: none;
+}
+.guide-head h1 { font-size: var(--apidocs-size-3xl); }
+.guide-summary { margin: 10px 0 0; max-width: 44rem; }
+.guide-body { max-width: 46rem; }
+.guide-body > .guide-intro > :first-child { margin-top: 0; }
+.guide-section { margin-top: 36px; }
+.guide-heading { position: relative; scroll-margin-top: calc(var(--apidocs-topbar) + 16px); }
+h2.guide-heading { font-size: var(--apidocs-size-xl); font-weight: 650; margin: 0 0 10px; padding-bottom: 8px; border-bottom: 1px solid var(--apidocs-rule); }
+h3.guide-heading { font-size: var(--apidocs-size-lg); font-weight: 650; margin: 26px 0 6px; }
+/* The section link sits in the margin and shows when the heading is pointed at or the link has focus. */
+.heading-anchor {
+  position: absolute; right: 100%; top: 0; padding-right: 8px;
+  color: var(--apidocs-faint); font-family: var(--apidocs-font-mono); font-weight: 400;
+  opacity: 0; text-decoration: none !important; user-select: none; -webkit-user-select: none;
+}
+.guide-heading:hover .heading-anchor, .heading-anchor:focus-visible { opacity: 1; }
+.heading-anchor:hover { color: var(--apidocs-accent); }
+.guide-heading:target { color: var(--apidocs-accent); }
+@media (hover: none) { .heading-anchor { position: static; opacity: 1; padding: 0 0 0 8px; } }
+
+/* Previous and next: two quiet cards at the foot of a guide. */
+.guide-pager { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 56px; max-width: 46rem; }
+.guide-pager-link {
+  display: grid; gap: 2px; padding: 12px 16px;
+  border: 1px solid var(--apidocs-rule-strong); border-radius: calc(var(--apidocs-radius) + 4px);
+  color: var(--apidocs-fg);
+}
+.guide-pager-link:hover { border-color: var(--apidocs-accent); background: var(--apidocs-accent-soft); text-decoration: none; }
+.guide-next { grid-column: 2; text-align: right; }
+.guide-pager-dir { font-size: var(--apidocs-size-xs); color: var(--apidocs-faint); user-select: none; -webkit-user-select: none; }
+.guide-pager-title { font-weight: 600; }
+
+/* Guides on the overview: cards. */
+.guide-group-title { font-size: var(--apidocs-size-sm); font-weight: 600; margin: 20px 0 0; color: var(--apidocs-muted); }
+.guide-cards { list-style: none; margin: 12px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: 12px; }
+.guide-card {
+  position: relative; padding: 14px 16px 15px;
+  border: 1px solid var(--apidocs-rule-strong); border-radius: calc(var(--apidocs-radius) + 4px);
+  background: var(--apidocs-surface);
+}
+.guide-card:hover, .guide-card:focus-within { border-color: var(--apidocs-accent); }
+.guide-card-link { color: var(--apidocs-fg); font-weight: 600; text-decoration: none !important; }
+.guide-card-link::after { content: ""; position: absolute; inset: 0; border-radius: inherit; }
+.guide-card-summary { margin: 4px 0 0; font-size: var(--apidocs-size-sm); line-height: 1.5; color: var(--apidocs-muted); }
+
+/* How far through a guide the reader is: a hairline under the top bar, driven by scrolling alone. */
+.readbar { display: none; }
+@supports (animation-timeline: scroll()) {
+  .readbar {
+    display: block; position: fixed; z-index: 11; left: 0; right: 0; top: var(--apidocs-topbar); height: 2px;
+    background: var(--apidocs-accent); transform-origin: 0 50%; transform: scaleX(0); pointer-events: none;
+    animation: apidocs-read linear both; animation-timeline: scroll(root block);
+  }
+}
+@keyframes apidocs-read { to { transform: scaleX(1); } }
+
 /* ---- Sections, summaries and members ---- */
 
 .section { margin-top: 40px; }
@@ -700,7 +763,7 @@ td .badge { margin-right: 6px; }
 /* ---- Print ---- */
 
 @media print {
-  .topbar, .sidebar, .toc, .copy, .skip, .footer, .nav-toggle { display: none !important; }
+  .topbar, .sidebar, .toc, .copy, .skip, .footer, .nav-toggle, .formats, .loadbar, .readbar, .guide-pager, .heading-anchor { display: none !important; }
   .layout { display: block; }
   .content { padding: 0; }
   .content > * { max-width: none; }
@@ -747,6 +810,6 @@ html[data-arriving] .loadbar { animation: apidocs-arrive 420ms ease-out both; }
 
 @media (prefers-reduced-motion: reduce) {
   @view-transition { navigation: none; }
-  .loadbar { display: none; }
+  .loadbar, .readbar { display: none; }
   * { scroll-behavior: auto !important; }
 }

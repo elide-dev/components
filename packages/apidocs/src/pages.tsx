@@ -6,6 +6,7 @@ import { compactTokens, memberGroups, memberTitle, summaryText, typeGroups, type
 import { Badge, Blocks, Inlines, Signature, TokenList } from "./components/doc";
 import type { Crumb, TocItem } from "./components/chrome";
 import { LanguageMark, Shell, kindGlyph, packageLanguages } from "./components/chrome";
+import { GuideIndex } from "./narrative";
 import { DeprecationBanner, MemberDetail, Notes, Params, RefLink, SeeAlso, SourceLink, TypeParams } from "./components/declaration";
 
 function moduleTitle(): string {
@@ -36,6 +37,7 @@ export function IndexPage() {
   const m = site.model.module;
   const description = summaryText(m.doc) || `API reference for ${m.name}.`;
   const toc: TocItem[] = [
+    ...(site.guides.length > 0 ? [{ id: "guides", label: "Guides", depth: 1 }] : []),
     { id: "packages", label: "Packages", depth: 1 },
     { id: "all-types", label: "All types", depth: 1 },
   ];
@@ -50,6 +52,7 @@ export function IndexPage() {
         </p>
       </header>
       {m.doc?.body ? <div class="prose"><Blocks nodes={m.doc.body} offset={0} /></div> : <p class="lede">{description}</p>}
+      <GuideIndex />
       <section id="packages" class="section">
         <h2>Packages</h2>
         <SummaryTable

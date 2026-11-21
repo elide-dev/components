@@ -3,7 +3,8 @@
 /** A search index entry: [label, kind, path from the site root, context, summary]. */
 export type Entry = [label: string, kind: string, path: string, context: string, summary: string];
 
-const KIND_RANK: Record<string, number> = { package: 0, method: 3, function: 3, field: 4, property: 4, constructor: 5, enumConstant: 4, annotationElement: 4 };
+// Guides lead: someone who types a topic wants the page that explains it. Sections rank with members.
+const KIND_RANK: Record<string, number> = { guide: 0, section: 3, package: 0, method: 3, function: 3, field: 4, property: 4, constructor: 5, enumConstant: 4, annotationElement: 4 };
 
 /** Ranks entries: exact name, prefix, word start, substring; types before members; shorter first. */
 export function search(entries: Entry[], query: string, limit = 40): Entry[] {

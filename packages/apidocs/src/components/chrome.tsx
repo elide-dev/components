@@ -2,7 +2,7 @@
 import type { ComponentChildren } from "preact";
 import { usePage } from "../context";
 import type { Package, Type } from "../model";
-import { INDEX, isAbsolute, isThrowable, packagePage, relative, rootOf, typePage } from "../site";
+import { INDEX, guideNav, isAbsolute, isThrowable, packagePage, relative, rootOf, typePage } from "../site";
 import { typeGroups } from "../structure";
 import type { Theme } from "../theme";
 import { SYMBOLS, sym } from "../symbols";
@@ -176,6 +176,7 @@ export function Shell({ title, description, crumbs, toc, jsonLd, meta, children 
       </head>
       <body>
         <div class="loadbar" aria-hidden="true" />
+        {meta?.kind === "guide" && <div class="readbar" aria-hidden="true" />}
         <a class="skip" href={`${name}.html#content`}>Skip to content</a>
         {/* One checkbox toggles the navigator with no script: it hides it on a wide screen and shows it on a narrow one. */}
         <header class="topbar">
@@ -228,7 +229,7 @@ export function Shell({ title, description, crumbs, toc, jsonLd, meta, children 
             </div>
             {children}
           </main>
-          <Toc items={toc} />
+          <Toc items={toc} filterLabel={meta?.kind === "guide" ? "Filter sections" : "Filter members"} />
         </div>
         <footer class="footer">
           <p>
@@ -396,13 +397,34 @@ function Navigation() {
   const chain = new Set<string>();
   for (let t: Type | undefined = current; t; t = t.enclosing ? site.types.get(t.enclosing)?.type : undefined) chain.add(t.id);
   const tops = (currentPkg?.types ?? []).filter(t => !t.enclosing);
+  const guides = guideNav(site, page);
   return (
     <nav class="sidebar" id="apidocs-nav" aria-label="Packages and types">
       <div class="nav-filter" data-nav-filter data-js-only>
         <label class="visually-hidden" for="apidocs-nav-filter">Filter this list</label>
         <input id="apidocs-nav-filter" type="search" placeholder="Filter" autocomplete="off" spellcheck={false} />
       </div>
-      <section class="nav-section">
+      {guides.groups.length > 0 && (
+        <section class="nav-section nav-guides">
+          <h2 class="nav-heading"><span>Guides</span></h2>
+          {guides.groups.map((group, i) => (
+            <div key={i} class="nav-group">
+              {group.title && <p class="nav-subheading">{group.title}</p>}
+              <ul class="nav-list">
+                {group.guides.map(guide => (
+                  <li key={guide.id}>
+                    <a class="nav-row" href={guide.href} title={guide.summary || guide.title} aria-current={guide.current ? "page" : undefined}>
+                      <span class="glyph" data-tone="guide" aria-hidden="true">{SYMBOLS.guide.utf}</span>
+                      <span class="nav-label">{guide.title}</span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </section>
+      )}
+      <section class="nav-section nav-packages">
         <h2 class="nav-heading"><span>Packages</span></h2>
         {prefix && (
           <a class="nav-row nav-prefix" href={relative(page, INDEX, ".html")} title={`${prefix}: the prefix every package shares`}>
@@ -476,7 +498,7 @@ const TOC_OPEN_LIMIT = 12;
  * section's entries sit behind a disclosure, so a type with hundreds of members
  * gives a rail of a few lines, not hundreds.
  */
-function Toc({ items }: { items: TocItem[] }) {
+function Toc({ items, filterLabel }: { items: TocItem[]; filterLabel: string }) {
   const name = usePage().page.split("/").pop()!;
   if (items.length === 0) return <div class="toc-spacer" />;
   const sections: { head: TocItem; entries: TocItem[] }[] = [];
@@ -487,14 +509,15 @@ function Toc({ items }: { items: TocItem[] }) {
   const link = (item: TocItem) => (
     <a href={`${name}.html#${item.id}`} data-toc-target={item.id} title={item.label}>{item.code ? <code>{item.label}</code> : item.label}</a>
   );
-  const hasEntries = sections.some(section => section.entries.length > 0);
+  // A filter earns its place only on a long page.
+  const hasEntries = sections.reduce((n, section) => n + section.entries.length, 0) > 8;
   return (
     <nav class="toc" aria-label="On this page">
       <p class="toc-title">On this page</p>
       {hasEntries && (
         <div class="toc-filter" data-toc-filter data-js-only>
-          <label class="visually-hidden" for="apidocs-toc-filter">Filter members</label>
-          <input id="apidocs-toc-filter" type="search" placeholder="Filter members" autocomplete="off" spellcheck={false} />
+          <label class="visually-hidden" for="apidocs-toc-filter">{filterLabel}</label>
+          <input id="apidocs-toc-filter" type="search" placeholder={filterLabel} autocomplete="off" spellcheck={false} />
         </div>
       )}
       <ol class="toc-list">
