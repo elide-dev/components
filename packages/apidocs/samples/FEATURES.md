@@ -66,6 +66,29 @@ doclet's flavor. `kotlin` is `samples/kotlin.ts`, the Dokka plugin's flavor. `re
 | Doc comment links into guides: module overview, package description, deprecation, `@see` to a section | java, kotlin | `index.html`, `com/example/geo/index.html`, `LegacyShape.html`, `Shapes.html#parse(java.lang.String)`; `org/example/kgeo/index.html` |
 | Guides in `llms.txt` (before the reference pages), `llms-full.txt`, search and Markdown | java, kotlin | site root; `guides/*.md` |
 
+## The Markdown sample suite
+
+`samples/guides` is a Markdown suite for `apidocs guides` (see the README's Markdown suites section). Build it with
+`bun src/cli.ts guides --src samples/guides --id geo --title "Geo user guide" --out <dir> --link
+../developer/=https://example.com/developer/ --link ../api/=https://example.com/api/`, or pick "Markdown sample
+suite" in `bun run dev`. The diagnostics the importer reports live in a separate fixture,
+`test/fixtures/guides-errors`, one per line.
+
+| Feature | Source | Page |
+| --- | --- | --- |
+| Overview page from the root `index.md`, with a table and the sync comment dropped | `index.md` | `index.html` |
+| Guides-only site: guides in the navigator, no package block, no API index pages | every page | `index.html` |
+| Ungrouped page ordered by `sidebar.order` | `getting-started.md` | `guides/getting-started.html` |
+| Fenced code with and without a language, task list, strikethrough, autolinks, `mailto:` | `getting-started.md` | `guides/getting-started.html` |
+| Group titled by its `index.md`, the index first as "Overview" | `concepts/index.md` | `guides/concepts/index.html` |
+| Nested group `Concepts › Advanced topics` | `concepts/advanced/` | `guides/concepts/advanced/custom-shapes.html` |
+| The five GitHub alerts, a plain quote, `{#id}`, raw HTML (`kbd`, `sub`, `sup`, `dl`), a rule | `concepts/alerts.md` | `guides/concepts/alerts.html` |
+| `sidebar.label` as the navigator label | `concepts/alerts.md` | the navigator ("Alerts") |
+| PNG and SVG images with their size, a title, a link to a suite file | `concepts/images.md` | `guides/concepts/images.html` |
+| Links: same page, other page, section by GitHub slug and by `{#id}`, up a directory, mapped to a sibling suite and an API reference, absolute | `index.md`, `getting-started.md`, `concepts/` | throughout |
+| Drafts left out (a whole group) | `reference/` | absent; `--include-drafts` adds it |
+| Breadcrumbs through the group, previous and next across groups | every guide | foot of each guide |
+
 ## Adding a feature
 
 1. Add the declaration to `samples/java.ts` or `samples/kotlin.ts` (or both), with the builders in `samples/build.ts`.
