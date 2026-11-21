@@ -6,6 +6,7 @@
  * file, so the output works from file://, from any path prefix and inside a jar.
  */
 import type { Member, Model, Package, Ref, Token, Type } from "./model";
+import { safeUrl } from "./url";
 
 /** Where an id lands: its page and, for a member, the anchor on that page. */
 export interface Target {
@@ -118,7 +119,8 @@ export function resolve(site: Site, from: string, ext: string, id: string | unde
       return target.anchor ? `${file}#${fragment(target.anchor)}` : file;
     }
   }
-  if (url) return isAbsolute(url) ? url : rootOf(from) + url;
+  const safe = safeUrl(url);
+  if (safe) return isAbsolute(safe) || safe.startsWith("//") ? safe : rootOf(from) + safe;
   return undefined;
 }
 

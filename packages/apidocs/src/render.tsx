@@ -12,7 +12,8 @@ import type { Model } from "./model";
 import { IndexPage, PackagePage, TypePage } from "./pages";
 import { buildSite, INDEX, packagePage, type Site, typePage } from "./site";
 import { summaryText, typeKindWord } from "./structure";
-import { resolveTheme, type Theme, themeCss } from "./theme";
+import { resolveTheme, type Theme, type ThemeLink, themeCss } from "./theme";
+import { safeUrl } from "./url";
 
 export const SCHEMA = "apidocs/1";
 
@@ -29,7 +30,7 @@ const STATIC_ASSETS = ["apidocs.css", "apidocs.js"];
 export function render(modelInput: Model | string, themeInput?: Theme | string): Output {
   const model: Model = typeof modelInput === "string" ? JSON.parse(modelInput) : modelInput;
   if (model.schema !== SCHEMA) throw new Error(`Expected an ${SCHEMA} model, got ${JSON.stringify(model.schema)}`);
-  const theme = resolveTheme(typeof themeInput === "string" ? JSON.parse(themeInput) : themeInput);
+  const theme = safeTheme(resolveTheme(typeof themeInput === "string" ? JSON.parse(themeInput) : themeInput));
   const site = buildSite(model);
   const out: Output = {};
   const pages: { page: string; title: string; summary: string }[] = [];
@@ -68,6 +69,22 @@ export function render(modelInput: Model | string, themeInput?: Theme | string):
   if (theme.favicon) out["assets/favicon.svg"] = theme.favicon;
   if (theme.baseUrl) out["sitemap.xml"] = sitemap(theme.baseUrl, pages.map(p => p.page));
   return out;
+}
+
+/**
+ * The theme with its URLs checked: header and footer links with an unsafe URL
+ * are dropped, and so are a base URL that is not http(s) and a source-link
+ * template that would not give a safe URL.
+ */
+function safeTheme(theme: Theme): Theme {
+  const links = (list: ThemeLink[] | undefined) =>
+    list?.flatMap(link => {
+      const url = safeUrl(link.url);
+      return url ? [{ ...link, url }] : [];
+    });
+  const base = theme.baseUrl && /^https?:\/\//i.test(safeUrl(theme.baseUrl) ?? "") ? theme.baseUrl : undefined;
+  const source = theme.sourceLink && safeUrl(theme.sourceLink.replace(/\{(path|line|ref)\}/g, "x")) ? theme.sourceLink : undefined;
+  return { ...theme, links: { header: links(theme.links?.header), footer: links(theme.links?.footer) }, baseUrl: base, sourceLink: source };
 }
 
 /** llms.txt (llmstxt.org): what the module is, then every Markdown page with its summary. */

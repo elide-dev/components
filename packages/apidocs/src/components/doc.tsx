@@ -4,6 +4,7 @@ import { usePage } from "../context";
 import { highlight } from "../highlight";
 import type { Block, Inline, Token } from "../model";
 import { sanitize } from "../sanitize";
+import { safeUrl } from "../url";
 import { resolveRef, resolveToken } from "../site";
 import { layoutSignature } from "../signature";
 
@@ -22,7 +23,7 @@ function InlineNode({ node }: { node: Inline }): JSX.Element {
     case "raw": return <span class="raw" dangerouslySetInnerHTML={{ __html: sanitize(node.html) }} />;
     case "link": {
       const label = node.code ? <code><Inlines nodes={node.children} /></code> : <Inlines nodes={node.children} />;
-      const href = node.target ? resolveRef(ctx.site, ctx.page, ".html", node.target) : node.url;
+      const href = node.target ? resolveRef(ctx.site, ctx.page, ".html", node.target) : safeUrl(node.url);
       return href ? <a href={href}>{label}</a> : label;
     }
   }

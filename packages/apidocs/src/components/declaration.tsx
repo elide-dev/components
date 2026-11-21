@@ -8,6 +8,7 @@ import { usePage } from "../context";
 import type { Block, Deprecation, Doc, Member, Note, Nullness, Param, Ref, Thrown, Token, TypeParam } from "../model";
 import { refLabel, resolve, resolveRef } from "../site";
 import { sourceUrl } from "../theme";
+import { safeUrl } from "../url";
 import { Badge, Blocks, Cell, Inlines, Signature, TokenList } from "./doc";
 
 export const NOTE_LABEL: Record<Note["kind"], string> = {
@@ -143,7 +144,7 @@ export function RefLink({ refValue, children }: { refValue: Ref; children?: Comp
 
 export function SourceLink({ path, line }: { path: string; line: number }) {
   const { theme } = usePage();
-  const url = sourceUrl(theme, path, line);
+  const url = safeUrl(sourceUrl(theme, path, line));
   return url ? <a class="source-link" href={url}>Source</a> : null;
 }
 

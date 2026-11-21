@@ -2,9 +2,11 @@
  * Checks a rendered site against the portability rules: every link is
  * relative and names its file, and its target file and anchor exist; no
  * absolute URL except the model's externals and the theme's own links; no
- * module scripts and no fetch. Returns every problem found.
+ * module scripts, no fetch, no event-handler attributes and no URL that
+ * safeUrl rejects (javascript:, data:, ...). Returns every problem found.
  */
 import type { Output } from "../src/render";
+import { safeUrl } from "../src/url";
 
 export interface CheckOptions {
   /** URL prefixes allowed as absolute links: the model's externals, theme links, the base URL. */
@@ -34,8 +36,15 @@ export function checkSite(out: Output, options: CheckOptions): string[] {
       if (/\bimport\s*\(/.test(content)) errors.push(`${file}: dynamic import`);
     }
     if (!file.endsWith(".html")) continue;
+    for (const tag of content.matchAll(/<[a-zA-Z][^>]*>/g)) {
+      if (/\son[a-z]+\s*=/i.test(tag[0])) errors.push(`${file}: event handler attribute in ${tag[0].slice(0, 80)}`);
+    }
     for (const m of content.matchAll(ATTRS)) {
       const url = unescape(m[2]!);
+      if (safeUrl(url) === undefined) {
+        errors.push(`${file}: unsafe URL ${url}`);
+        continue;
+      }
       if (/^[a-z][a-z0-9+.-]*:/i.test(url) || url.startsWith("//")) {
         if (!options.allowed.some(prefix => url.startsWith(prefix))) errors.push(`${file}: absolute URL ${url}`);
         continue;

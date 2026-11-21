@@ -6,6 +6,7 @@
 import type { Block, Inline, Member, Package, Param, Thrown, Token, Type } from "./model";
 import { INDEX, packagePage, refLabel, relative, resolve, resolveRef, Site, tokenText, typePage } from "./site";
 import { NOTE_LABEL, sortedNotes } from "./components/declaration";
+import { safeUrl } from "./url";
 import { memberGroups, memberTitle, summaryText, typeGroups, typeKindWord } from "./structure";
 
 interface Md {
@@ -42,7 +43,7 @@ function inlines(md: Md, nodes: Inline[] | undefined): string {
         const label = node.code
           ? codeSpan(plain(node.children))
           : inlines(md, node.children);
-        const href = node.target ? resolveRef(md.site, md.page, ".md", node.target) : node.url;
+        const href = node.target ? resolveRef(md.site, md.page, ".md", node.target) : safeUrl(node.url);
         return href ? `[${label}](${href.replace(/ /g, "%20").replace(/\)/g, "%29")})` : label;
       }
     }
