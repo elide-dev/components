@@ -234,6 +234,12 @@ p, li, dd { text-wrap: pretty; }
 .product { font-family: var(--apidocs-font-mono); font-size: var(--apidocs-size-lg); letter-spacing: 0; }
 .module-version { color: var(--apidocs-muted); font-size: var(--apidocs-size-sm); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .version { font-family: var(--apidocs-font-mono); font-size: var(--apidocs-size-sm); }
+/* The module's indexes, as Javadoc has them: overview, packages, types, A to Z, deprecated. */
+.topbar-nav { display: flex; align-items: center; gap: 2px; margin-left: 10px; min-width: 0; font-size: var(--apidocs-size-sm); user-select: none; -webkit-user-select: none; }
+.topbar-nav a { padding: 5px 9px; border-radius: var(--apidocs-radius); color: var(--apidocs-muted); white-space: nowrap; }
+.topbar-nav a:hover { color: var(--apidocs-fg); background: var(--apidocs-subtle); text-decoration: none; }
+.topbar-nav a[aria-current="page"] { color: var(--apidocs-accent); background: var(--apidocs-accent-soft); font-weight: 600; }
+@media (max-width: 1100px) { .topbar-nav { display: none; } }
 .topbar-tools { margin-left: auto; display: flex; align-items: center; gap: 12px; min-width: 0; }
 .topbar-link { color: var(--apidocs-muted); font-size: var(--apidocs-size-sm); }
 
@@ -681,6 +687,20 @@ h3.guide-heading { font-size: var(--apidocs-size-lg); font-weight: 650; margin: 
   }
 }
 @keyframes apidocs-read { to { transform: scaleX(1); } }
+
+/* ---- Index pages ---- */
+
+.letter-bar { display: flex; flex-wrap: wrap; gap: 2px; margin: 18px 0 4px; font-family: var(--apidocs-font-mono); font-size: var(--apidocs-size-sm); user-select: none; -webkit-user-select: none; }
+.letter-bar a { display: grid; place-items: center; min-width: 28px; height: 28px; border-radius: var(--apidocs-radius); color: var(--apidocs-muted); }
+.letter-bar a:hover { color: var(--apidocs-accent); background: var(--apidocs-accent-soft); text-decoration: none; }
+.index-letter { margin-top: 28px; }
+.index-letter > h2 { font-family: var(--apidocs-font-mono); font-size: var(--apidocs-size-xl); padding-bottom: 6px; border-bottom: 1px solid var(--apidocs-rule-strong); }
+.index-list { list-style: none; margin: 0; padding: 0; font-size: var(--apidocs-size-sm); line-height: 1.5; }
+.index-entry { display: grid; grid-template-columns: minmax(0, 30%) minmax(0, 22%) minmax(0, 1fr); gap: 0 16px; align-items: baseline; padding: 7px 0; border-bottom: 1px solid var(--apidocs-rule); }
+.index-name { font-family: var(--apidocs-font-mono); font-weight: 600; overflow-wrap: anywhere; }
+.index-where { color: var(--apidocs-muted); overflow-wrap: anywhere; }
+.index-summary { color: var(--apidocs-muted); }
+@media (max-width: 860px) { .index-entry { grid-template-columns: minmax(0, 1fr); } }
 
 /* ---- Sections, summaries and members ---- */
 

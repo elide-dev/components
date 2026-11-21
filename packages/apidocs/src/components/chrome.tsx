@@ -2,7 +2,7 @@
 import type { ComponentChildren } from "preact";
 import { usePage } from "../context";
 import type { Package, Type } from "../model";
-import { INDEX, guideNav, isAbsolute, isThrowable, packagePage, relative, rootOf, typePage } from "../site";
+import { INDEX, guideNav, indexPages, isAbsolute, isThrowable, packagePage, relative, rootOf, typePage } from "../site";
 import { typeGroups } from "../structure";
 import type { Theme } from "../theme";
 import { SYMBOLS, sym } from "../symbols";
@@ -207,6 +207,12 @@ export function Shell({ title, description, crumbs, toc, jsonLd, meta, children 
             {site.model.module.name !== product && <span>{site.model.module.name} </span>}
             {site.model.module.version && <span class="version">{site.model.module.version}</span>}
           </span>
+          <nav class="topbar-nav" aria-label="Indexes">
+            <a href={relative(page, INDEX, ".html")} aria-current={page === INDEX ? "page" : undefined}>Overview</a>
+            {indexPages(site).map(entry => (
+              <a key={entry.page} href={relative(page, entry.page, ".html")} aria-current={page === entry.page ? "page" : undefined}>{entry.label}</a>
+            ))}
+          </nav>
           <div class="topbar-tools">
             <a class="search-fallback" href={`${relative(page, INDEX, ".html")}#all-types`}>All types</a>
             <search class="search" data-search data-js-only>

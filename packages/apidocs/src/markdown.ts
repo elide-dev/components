@@ -330,7 +330,8 @@ function indexMd(site: Site, page: string, symbols: SymbolMode): Md {
 
 function entryLine(md: Md, entry: IndexEntry): string {
   const href = entry.page ? relative(md.page, entry.page, ".md") : resolve(md.site, md.page, ".md", entry.id);
-  const name = codeSpan(entry.name);
+  // A declaration's name is code; a guide's title is prose, escaped like any other text.
+  const name = entry.page?.startsWith("guides/") ? esc(entry.name) : codeSpan(entry.name);
   const label = href ? `[${name}](${dest(href)})` : name;
   const removal = entry.deprecation ? (entry.deprecation.forRemoval ? " (deprecated for removal)" : " (deprecated)") : "";
   const summary = entry.summary?.length ? `: ${inlines(md, entry.summary)}` : "";

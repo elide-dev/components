@@ -519,5 +519,12 @@ Each page below is Markdown; the HTML page of the same name has the same content
 - [Units (enum class in fixture.java)](fixture/java/Units.md): Units of length.
 - [Package fixture.java.io](fixture/java/io/index.md): Reading shapes from streams.
 - [ShapeReader (class in fixture.java.io)](fixture/java/io/ShapeReader.md): Reads shapes in their text form, one per line.
+
+## Indexes
+
+- [Packages](packages.md): every package with its summary and type counts
+- [All types](types.md): every type, nested ones too, by name
+- [Index](index-all.md): every declaration from A to Z
+- [Deprecated](deprecated.md): everything deprecated, for removal first
 "
 `;
