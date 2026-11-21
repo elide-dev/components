@@ -23,15 +23,43 @@ export function sortedNotes(notes: Note[] | undefined): Note[] {
   return [...(notes ?? [])].sort((a, b) => order[a.kind] - order[b.kind]);
 }
 
+/** Icons for callouts: 16px line drawings in the callout's tone. */
+const CALLOUT_ICON: Record<string, preact.ComponentChildren> = {
+  // A caller's heads-up.
+  apiNote: <><circle cx="8" cy="8" r="6.25" /><path d="M8 4.6v3.9" /><path d="M8 11.1v.01" /></>,
+  // A requirement an override must meet.
+  implSpec: <><rect x="2.75" y="2.75" width="10.5" height="10.5" rx="2.5" /><path d="M5.4 8.2l1.8 1.8 3.4-3.9" /></>,
+  // A fact about the code.
+  implNote: <path d="M6 4.5 2.75 8 6 11.5M10 4.5 13.25 8 10 11.5" />,
+  deprecated: <><circle cx="8" cy="8" r="6.25" /><path d="M3.7 12.3l8.6-8.6" /></>,
+};
+
+/**
+ * A callout: an icon tile, a label and the text, in a soft panel. Tone and weight come from the kind: an API note
+ * and a deprecation are filled, an implementation note is an outline only.
+ */
+function Callout({ kind, label, children }: { kind: string; label: preact.ComponentChildren; children: preact.ComponentChildren }) {
+  return (
+    <div class={`callout callout-${kind}`} role="note">
+      <span class="callout-icon" aria-hidden="true">
+        <svg viewBox="0 0 16 16" width="16" height="16">{CALLOUT_ICON[kind]}</svg>
+      </span>
+      <div class="callout-body">
+        <p class="callout-label">{label}</p>
+        {children}
+      </div>
+    </div>
+  );
+}
+
 export function Notes({ notes }: { notes: Note[] | undefined }) {
   if (!notes?.length) return null;
   return (
     <>
       {sortedNotes(notes).map((note, i) => (
-        <div key={i} class={`note note-${note.kind}`} role="note">
-          <p class="note-label">{NOTE_LABEL[note.kind]}</p>
+        <Callout key={i} kind={note.kind} label={NOTE_LABEL[note.kind]}>
           <Blocks nodes={note.body} offset={3} />
-        </div>
+        </Callout>
       ))}
     </>
   );
@@ -41,13 +69,9 @@ export function DeprecationBanner({ deprecation }: { deprecation: Deprecation | 
   if (!deprecation) return null;
   const title = deprecation.forRemoval ? "Deprecated for removal" : "Deprecated";
   return (
-    <div class="deprecation" role="note">
-      <p class="deprecation-title">
-        {title}
-        {deprecation.since && <span class="deprecation-since"> since {deprecation.since}</span>}
-      </p>
+    <Callout kind="deprecated" label={<>{title}{deprecation.since && <span class="callout-aside"> since {deprecation.since}</span>}</>}>
       <Blocks nodes={deprecation.doc} offset={3} />
-    </div>
+    </Callout>
   );
 }
 

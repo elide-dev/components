@@ -9,6 +9,7 @@ import type { Model, Token } from "../src/model";
 import { render } from "../src/render";
 import { sanitize } from "../src/sanitize";
 import { layoutSignature } from "../src/signature";
+import { sharedPrefix } from "../src/components/chrome";
 import { checkSite } from "./check";
 import { validate } from "./validate";
 
@@ -85,11 +86,60 @@ describe("render", () => {
   });
   test("notes render as distinct callouts, the API note first", () => {
     const html = out["fixture/java/Geometry.html"] as string;
-    expect(html).toContain('class="note note-implSpec"');
+    expect(html).toContain('class="callout callout-implSpec"');
     const shapes = render(samples.java)["com/example/geo/Shapes.html"] as string;
     const parse = shapes.slice(shapes.indexOf('id="parse(java.lang.String)"'));
-    expect(parse.indexOf("note-apiNote")).toBeLessThan(parse.indexOf("note-implNote"));
+    expect(parse.indexOf("callout-apiNote")).toBeGreaterThan(0);
+    expect(parse.indexOf("callout-apiNote")).toBeLessThan(parse.indexOf("callout-implNote"));
     expect(render(samples.java)["com/example/geo/Shapes.md"]).toContain("> **API note**");
+  });
+});
+
+describe("layout", () => {
+  const java = render(samples.java, { extends: "elide" });
+  const between = (html: string, start: string, end: string) => html.slice(html.indexOf(start), html.indexOf(end, html.indexOf(start)));
+
+  test("sharedPrefix: one package, several, one equal to the prefix, the default package", () => {
+    expect(sharedPrefix(["com.example.geo"])).toBe("com.example");
+    expect(sharedPrefix(["com.example.geo.io", "com.example.geo.spi"])).toBe("com.example.geo");
+    expect(sharedPrefix(["com.example.geo", "com.example.geo.io"])).toBe("com.example");
+    expect(sharedPrefix(["", "org.example.kgeo"])).toBe("org.example");
+    expect(sharedPrefix([""])).toBe("");
+    expect(sharedPrefix(["alpha", "beta"])).toBe("");
+  });
+  test("the navigator has no disclosure widgets", () => {
+    for (const page of ["index.html", "com/example/geo/index.html", "com/example/geo/Shapes.Builder.Option.html"]) {
+      const nav = between(java[page] as string, '<nav class="sidebar"', "</nav>");
+      expect(nav.length).toBeGreaterThan(100);
+      expect(nav).not.toContain("<details");
+    }
+  });
+  test("a rail section with more than 12 entries is folded; a short one is not", () => {
+    const rail = (page: string) => between(java[page] as string, '<nav class="toc"', "</nav>");
+    expect(rail("com/example/geo/registry/ShapeCatalog.html")).toContain('<details class="toc-more">');
+    expect(rail("com/example/geo/Circle.html")).not.toContain('<details class="toc-more">');
+  });
+  test("script-only controls are marked, and the head marks script support before paint", () => {
+    const html = java["com/example/geo/Shapes.html"] as string;
+    for (const control of ["data-search", "data-theme-switch", "data-nav-filter"]) {
+      expect(html).toMatch(new RegExp(`${control}="true"[^>]*data-js-only|data-js-only[^>]*${control}`));
+    }
+    const head = between(html, "<head>", "</head>");
+    expect(head).toContain('setAttribute("data-js","")');
+    expect(head.indexOf('setAttribute("data-js","")')).toBeLessThan(head.indexOf("apidocs.css") < 0 ? Infinity : head.length);
+  });
+  test("the navigator toggle is a checkbox that works without script", () => {
+    const html = java["index.html"] as string;
+    expect(html).toContain('<input type="checkbox" id="apidocs-nav-toggle"');
+    expect(html).toContain('for="apidocs-nav-toggle"');
+  });
+  test("font preloads are added at run time off file://, upright faces only", () => {
+    const head = between(java["com/example/geo/Shapes.html"] as string, "<head>", "</head>");
+    expect(head).not.toContain('<link rel="preload"');
+    expect(head).toContain('if(location.protocol!=="file:")');
+    const urls = JSON.parse(/\(location\.protocol!=="file:"\)(\[[^\]]*\])/.exec(head)![1]!) as string[];
+    expect(urls.map(u => u.split("/").pop())).toEqual(["inter-latin-wght-normal.woff2", "instrument-sans-latin-wght-normal.woff2", "jetbrains-mono-latin-wght-normal.woff2"]);
+    expect(render(fixture)["index.html"]).not.toContain("protocol");
   });
 });
 
@@ -99,6 +149,10 @@ describe("output checker", () => {
       test(`${name} with ${preset} passes`, () => expect(checkSite(render(model, { extends: preset }), { allowed: allowed(model) })).toEqual([]));
     }
   }
+  test("allows inline classic scripts and JSON-LD; rejects module scripts", () => {
+    expect(checkSite({ "a.html": '<script>document.documentElement.setAttribute("data-js","")</script><script type="application/ld+json">{}</script>' }, { allowed: [] })).toEqual([]);
+    expect(checkSite({ "a.html": '<script type="module">x()</script>' }, { allowed: [] })).toEqual(["a.html: module script"]);
+  });
   test("finds what breaks portability", () => {
     const errors = checkSite({
       "a.html": '<a href="https://evil.example/x">x</a><a href="b.html#nope">b</a><a href="missing.html">m</a><a href="#top">t</a><a href="dir/">d</a><script type="module" src="c.js"></script>',
