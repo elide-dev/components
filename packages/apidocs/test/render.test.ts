@@ -153,6 +153,14 @@ describe("output checker", () => {
       test(`${name} with ${preset} passes`, () => expect(checkSite(render(model, { extends: preset }), { allowed: allowed(model) })).toEqual([]));
     }
   }
+  test("reads only script code for fetch and import(), not prose or string data", () => {
+    expect(checkSite({
+      "a.html": "<p>Modules that programs import (the stdlib) and fetch (later).</p><script>var s = \"fetch(x)\";</script>",
+      "b.js": 'window.index = ["programs import (the stdlib)"];',
+    }, { allowed: [] })).toEqual([]);
+    expect(checkSite({ "a.html": "<script>fetch('x')</script>", "b.js": "import('x')" }, { allowed: [] }))
+      .toEqual(["a.html: uses fetch", "b.js: dynamic import"]);
+  });
   test("allows inline classic scripts and JSON-LD; rejects module scripts", () => {
     expect(checkSite({ "a.html": '<script>document.documentElement.setAttribute("data-js","")</script><script type="application/ld+json">{}</script>' }, { allowed: [] })).toEqual([]);
     expect(checkSite({ "a.html": '<script type="module">x()</script>' }, { allowed: [] })).toEqual(["a.html: module script"]);

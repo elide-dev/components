@@ -31,9 +31,15 @@ export function checkSite(out: Output, options: CheckOptions): string[] {
   for (const [file, content] of Object.entries(out)) {
     if (typeof content !== "string") continue;
     if (file.endsWith(".html") || file.endsWith(".js")) {
-      if (/type="module"/.test(content)) errors.push(`${file}: module script`);
-      if (/\bfetch\s*\(/.test(content)) errors.push(`${file}: uses fetch`);
-      if (/\bimport\s*\(/.test(content)) errors.push(`${file}: dynamic import`);
+      if (/<script\b[^>]*\btype="module"/.test(content)) errors.push(`${file}: module script`);
+      // Only code counts: inline scripts (not JSON-LD) and script files, with string literals removed, so prose
+      // ("programs import (the stdlib)") and index data never match.
+      const code = file.endsWith(".js")
+        ? content
+        : [...content.matchAll(/<script\b(?![^>]*application\/ld\+json)[^>]*>([\s\S]*?)<\/script>/g)].map(m => m[1]).join("\n");
+      const bare = code.replace(/"(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*'|`(?:[^`\\]|\\.)*`/g, '""');
+      if (/\bfetch\s*\(/.test(bare)) errors.push(`${file}: uses fetch`);
+      if (/\bimport\s*\(/.test(bare)) errors.push(`${file}: dynamic import`);
     }
     if (!file.endsWith(".html")) continue;
     for (const tag of content.matchAll(/<[a-zA-Z][^>]*>/g)) {
