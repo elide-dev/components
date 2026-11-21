@@ -738,6 +738,9 @@ td .badge { margin-right: 6px; }
 }
 .members-toggle:hover { color: var(--apidocs-fg); background: var(--apidocs-subtle); }
 .members > .member { border-bottom: 1px solid var(--apidocs-rule); content-visibility: auto; contain-intrinsic-size: auto 41px; }
+/* A group's first rows can be in the first viewport, where a placeholder that differs from the real row by a few
+   pixels would shift everything below it once the row is laid out: those render as usual. 24 rows fill any screen. */
+.members > .member:nth-of-type(-n+24) { content-visibility: visible; }
 .member-row {
   display: grid; grid-template-columns: 12px minmax(0, 46%) minmax(0, 1fr) auto; gap: 0 12px; align-items: baseline;
   padding: 9px 4px 9px 0; cursor: pointer; list-style: none;
