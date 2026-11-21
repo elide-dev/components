@@ -100,7 +100,8 @@ export function CopyButton({ label }: { label: string }) {
 }
 
 /** Tokens as code: types link to their pages, or to external documentation. */
-export function TokenList({ tokens }: { tokens: Token[] | undefined }) {
+/** `plain` writes type references as text, for places that must hold no links, such as a disclosure's summary. */
+export function TokenList({ tokens, plain }: { tokens: Token[] | undefined; plain?: boolean }) {
   const ctx = usePage();
   return (
     <>
@@ -109,7 +110,7 @@ export function TokenList({ tokens }: { tokens: Token[] | undefined }) {
           case "punct": return token.text;
           case "type":
           case "annotation": {
-            const href = resolveToken(ctx.site, ctx.page, ".html", token);
+            const href = plain ? undefined : resolveToken(ctx.site, ctx.page, ".html", token);
             const cls = token.kind === "type" ? "tk-t" : "tk-a";
             return href ? <a key={i} class={cls} href={href}>{token.text}</a> : <span key={i} class={cls}>{token.text}</span>;
           }

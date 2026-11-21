@@ -11,6 +11,7 @@ import { sourceUrl } from "../theme";
 import { safeUrl } from "../url";
 import { Badge, Blocks, Cell, Inlines, Signature, TokenList } from "./doc";
 import { Callout } from "./callout";
+import { summaryText } from "../structure";
 
 export { Callout };
 
@@ -166,13 +167,15 @@ export function MemberDetail({ member, summary }: { member: Member; summary?: Co
   const statics = (member.modifiers ?? []).filter(m => SHOWN_MODIFIERS.has(m));
   const open = ctx.theme.memberDetails === "expanded";
   const noted = (doc?.notes ?? []).some(note => note.kind === "apiNote");
+  // Text only: the row is a disclosure's summary, which may hold no links. The entry inside has the linked text.
+  const brief = summaryText(doc);
   return (
     <details class={member.deprecated ? "member is-deprecated" : "member"} data-kind={member.kind} open={open}>
       <summary class="member-row">
         <svg class="member-chevron" viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M6 3.75 10.25 8 6 12.25" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" /></svg>
         <span class="member-sig">{summary ?? <code class="summary-sig">{member.name}</code>}</span>
         <span class="member-brief">
-          {doc?.summary?.length ? <Inlines nodes={doc.summary} /> : !member.implicit && <span class="undocumented">No description.</span>}
+          {brief || (!member.implicit && <span class="undocumented">No description.</span>)}
         </span>
         <span class="member-marks">
           {noted && <span class="member-noted" title="Has an API note"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><circle cx="8" cy="8" r="6.25" /><path d="M8 4.6v3.9" /><path d="M8 11.1v.01" /></svg><span class="visually-hidden">Has an API note</span></span>}

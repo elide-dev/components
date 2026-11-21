@@ -754,7 +754,8 @@ td .badge { margin-right: 6px; }
 .member-marks { display: flex; align-items: center; gap: 8px; user-select: none; -webkit-user-select: none; }
 .member-noted { display: inline-grid; color: var(--apidocs-note-api); }
 .member-noted svg { fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; }
-.member.is-deprecated .member-sig a { text-decoration: line-through; text-decoration-color: var(--apidocs-deprecated); }
+.member-key { font-weight: 650; color: var(--apidocs-link); }
+.member.is-deprecated .member-key { text-decoration: line-through; text-decoration-color: var(--apidocs-deprecated); }
 .member-body { padding: 14px 0 22px 24px; }
 /* Opening fades the entry in: opacity only, so nothing is laid out twice. */
 .member::details-content { opacity: 1; transition: opacity 140ms ease-out; }

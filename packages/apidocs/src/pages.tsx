@@ -324,25 +324,26 @@ function TokenLists({ lists }: { lists: Token[][] }) {
   return <ul class="inline-list">{lists.map((tokens, i) => <li key={i}><code><TokenList tokens={tokens} /></code></li>)}</ul>;
 }
 
-/** A compact signature for a summary row: return type, linked name, parameter types. */
+/**
+ * A compact signature for a member's row: return type, name, parameter types. The row is the summary of a
+ * disclosure, which may hold no links, so everything here is text; the links are in the full signature inside.
+ */
 function MemberSummarySignature({ member }: { member: Member }) {
-  const { site, page } = usePage();
-  const href = resolve(site, page, ".html", member.id);
-  const name = <a href={href}>{member.name}</a>;
+  const name = <span class="member-key">{member.name}</span>;
   const statik = (member.modifiers ?? []).includes("static");
-  const receiver = member.receiver ? <><TokenList tokens={compactTokens(member.receiver.type)} />.</> : null;
+  const receiver = member.receiver ? <><TokenList plain tokens={compactTokens(member.receiver.type)} />.</> : null;
   if (member.kind === "property") {
-    return <code class="summary-sig">{receiver}{name}: <TokenList tokens={compactTokens(member.type)} /></code>;
+    return <code class="summary-sig">{receiver}{name}: <TokenList plain tokens={compactTokens(member.type)} /></code>;
   }
   if (member.kind === "field") {
-    return <code class="summary-sig">{statik && <span class="tk-k">static </span>}<TokenList tokens={compactTokens(member.type)} /> {name}</code>;
+    return <code class="summary-sig">{statik && <span class="tk-k">static </span>}<TokenList plain tokens={compactTokens(member.type)} /> {name}</code>;
   }
   if (member.kind === "function") {
     return (
       <code class="summary-sig">
         {(member.modifiers ?? []).includes("suspend") && <span class="tk-k">suspend </span>}
-        {receiver}{name}({(member.params ?? []).map((p, i) => <span key={i}>{i > 0 && ", "}<TokenList tokens={compactTokens(p.type)} /></span>)})
-        {member.returns && <>: <TokenList tokens={compactTokens(member.returns.type)} /></>}
+        {receiver}{name}({(member.params ?? []).map((p, i) => <span key={i}>{i > 0 && ", "}<TokenList plain tokens={compactTokens(p.type)} /></span>)})
+        {member.returns && <>: <TokenList plain tokens={compactTokens(member.returns.type)} /></>}
       </code>
     );
   }
@@ -350,10 +351,10 @@ function MemberSummarySignature({ member }: { member: Member }) {
   return (
     <code class="summary-sig">
       {statik && <span class="tk-k">static </span>}
-      {member.returns && <><TokenList tokens={compactTokens(member.returns.type)} />{" "}</>}
+      {member.returns && <><TokenList plain tokens={compactTokens(member.returns.type)} />{" "}</>}
       {member.kind === "method" && !member.returns && <span class="tk-k">void </span>}
       {name}(
-      {(member.params ?? []).map((p, i) => <span key={i}>{i > 0 && ", "}<TokenList tokens={compactTokens(p.type)} /></span>)}
+      {(member.params ?? []).map((p, i) => <span key={i}>{i > 0 && ", "}<TokenList plain tokens={compactTokens(p.type)} /></span>)}
       )
     </code>
   );

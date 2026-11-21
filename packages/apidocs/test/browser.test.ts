@@ -75,8 +75,13 @@ describe("from file:// with JavaScript off", () => {
     const { page, requests } = await open("com/example/geo/Shapes.html", { javaScriptEnabled: false });
     expect(await page.getByRole("heading", { level: 1 }).textContent()).toContain("Shapes");
     expect(await page.getByRole("heading", { level: 1, name: "Shapes" }).count()).toBe(1);
-    expect(await page.locator("section.member").count()).toBeGreaterThan(8);
-    expect(await page.locator("#parse\\(java\\.lang\\.String\\) .callout-apiNote").count()).toBe(1);
+    // Members are disclosures: every entry is in the page, and one opens with a click and no script.
+    expect(await page.locator("details.member").count()).toBeGreaterThan(8);
+    const parse = page.locator("details.member", { has: page.locator("#parse\\(java\\.lang\\.String\\)") });
+    expect(await parse.locator(".callout-apiNote").count()).toBe(1);
+    expect(await parse.locator(".callout-apiNote").isVisible()).toBe(false);
+    await parse.locator("summary").click();
+    expect(await parse.locator(".callout-apiNote").isVisible()).toBe(true);
     for (const control of await page.locator("[data-js-only]").all()) expect(await control.isVisible()).toBe(false);
     expect(await page.locator(".search-fallback").isVisible()).toBe(true);
     expect(await page.locator("[data-copy]").first().isVisible()).toBe(false);
