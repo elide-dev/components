@@ -7,7 +7,7 @@
 import type { Model } from "../model";
 import type { Theme } from "../theme";
 import { prepareTheme } from "./text";
-import { pageUrl } from "./urls";
+import { isBaseRelative, pageUrl } from "./urls";
 import { siteOf } from "./pages";
 
 export type Resolved =
@@ -17,7 +17,7 @@ export type Resolved =
   | { kind: "markdown"; page: string }
   /** Another file: renderText(model, name) for text, or a theme font (see assetFile). */
   | { kind: "file"; name: string }
-  /** A permanent redirect to the canonical path, relative to the base. */
+  /** A permanent redirect to the canonical path, relative to the base: never with a scheme, a leading "/" or "\\", a backslash, or a "..". */
   | { kind: "redirect"; to: string }
   | { kind: "missing" };
 
@@ -57,7 +57,9 @@ function decode(path: string): string {
 export function resolvePage(model: Model, rawPath: string, theme?: Theme): Resolved {
   const { pages } = siteOf(model);
   const path = decode(rawPath).replace(/^\/+/, "");
-  const canonical = (page: string): Resolved => ({ kind: "redirect", to: pageUrl(page) });
+  // Names in the model are untrusted, and an app writes base + to into a Location header: a target that could
+  // leave the base (a leading slash, a backslash, a ".." segment, a scheme) is not a page.
+  const canonical = (page: string): Resolved => (isBaseRelative(pageUrl(page)) ? { kind: "redirect", to: pageUrl(page) } : { kind: "missing" });
   if (path === "") return { kind: "page", page: "index" };
   if (textFiles(model, theme).includes(path)) return { kind: "file", name: path };
   if (path.startsWith("assets/fonts/") && /\.woff2$/.test(path)) {

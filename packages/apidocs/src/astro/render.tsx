@@ -10,7 +10,7 @@ import type { Model } from "../model";
 import { type Theme, themeCss } from "../theme";
 import { siteOf } from "./pages";
 import { prepareTheme } from "./text";
-import { rewriteHtml } from "./urls";
+import { assertBase, rewriteHtml } from "./urls";
 
 export interface RenderOptions {
   /** The site's base path, ending with a slash: "/api/komodo/main/". */
@@ -51,6 +51,7 @@ export function renderPage(model: Model, page: string, themeInput: Theme | strin
   const entry = pages.get(page);
   if (!entry) throw new Error(`apidocs: no page ${JSON.stringify(page)} in ${model.module.name}`);
   const base = options.base.endsWith("/") ? options.base : `${options.base}/`;
+  assertBase(base);
   const input = typeof themeInput === "string" ? (JSON.parse(themeInput) as Theme) : (themeInput ?? {});
   const theme = prepareTheme({ ...input, baseUrl: input.baseUrl ?? options.baseUrl });
   const ctx: PageContext = { site, theme, page, language: entry.language };

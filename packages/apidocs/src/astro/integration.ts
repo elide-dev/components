@@ -13,6 +13,7 @@ import { fileURLToPath } from "node:url";
 import preact from "@astrojs/preact";
 import type { AstroIntegration } from "astro";
 import type { Theme } from "../theme";
+import { assertBase } from "./urls";
 
 export interface ApidocsSite {
   /** The site's base path, ending with a slash: "/java/2.0/". */
@@ -38,7 +39,7 @@ const VIRTUAL = "virtual:@elide/apidocs/sites";
 
 export function apidocs(options: ApidocsOptions = {}): AstroIntegration {
   const sites = options.sites ?? [];
-  for (const site of sites) if (!/^\/(.*\/)?$/.test(site.base)) throw new Error(`apidocs: a site's base starts and ends with "/"; got ${JSON.stringify(site.base)}`);
+  for (const site of sites) assertBase(site.base);
   return {
     name: "@elide/apidocs",
     hooks: {

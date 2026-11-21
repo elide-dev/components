@@ -9,7 +9,7 @@ import { samples } from "../samples";
 import { guidesModel, importMarkdown, readSuite } from "../src/import";
 import type { Model } from "../src/model";
 import { render } from "../src/render";
-import { mapUrl, pageUrl, renderPage, renderText, resolvePage, searchEntries, sitePaths, textFiles } from "../src/astro/helpers";
+import { assertBase, isBaseRelative, mapUrl, pageUrl, renderPage, renderText, resolvePage, searchEntries, sitePaths, textFiles } from "../src/astro/helpers";
 
 const fixture: Model = JSON.parse(readFileSync(new URL("fixtures/fixture-java.api.json", import.meta.url), "utf8"));
 const suite = readSuite(fileURLToPath(new URL("../samples/guides", import.meta.url)));
@@ -139,7 +139,7 @@ describe("renderPage", () => {
         const ctx = { page, base, baseUrl: theme.baseUrl };
         const staticHead = (out[file] as string).split("<head>")[1]!.split("</head>")[0]!;
         const astroHead = pageOf(model, page).head;
-        const metadata = (head: string, map: (u: string) => string) => ({
+        const metadata = (head: string, map: (u: string) => string | undefined) => ({
           title: /<title>(.*?)<\/title>/.exec(head)?.[1],
           meta: [...head.matchAll(/<meta (?:name|property)="([^"]*)" content="([^"]*)"\/>/g)].map(m => [m[1], m[1] === "og:url" ? map(m[2]!) : m[2]]),
           links: [...head.matchAll(/<link rel="(canonical|alternate|index)"[^>]*? href="([^"]*)"/g)].map(m => [m[1], map(m[2]!)]),
@@ -167,5 +167,68 @@ describe("renderPage", () => {
 
   test("an unknown page is an error, not an empty page", () => {
     expect(() => pageOf(samples.java, "com/example/geo/Nope")).toThrow("no page");
+  });
+});
+
+describe("untrusted links and paths", () => {
+  // The forms a link in a documentation comment, or a path in a request, can take to try to leave the site.
+  const hostile = ["//host", "/\\host", "\\\\host", "\\/host", "%5C%5Chost", "%2F%2Fhost", "..//host", "....//", "a\tb/../../../\t/host", "\n/host", "/\t/host", "a\\..\\..\\host"];
+  /** Whether a browser on this site would leave it to follow the URL. */
+  const offSite = (url: string) => new URL(url.replace(/[\t\n\r]/g, ""), "https://site.example/docs/com/example/geo/Circle").origin !== "https://site.example";
+
+  for (const base of ["/", "/docs/"]) {
+    test(`with base ${base}, no mapped link leaves the site unless it named another site itself`, () => {
+      const ctx = { page: "com/example/geo/Circle", base, baseUrl: `https://site.example${base}` };
+      for (const url of hostile) {
+        const mapped = mapUrl(url, ctx);
+        if (mapped === undefined) continue;
+        // "//host" names another site in so many words, as https://host would; it is kept as written. Nothing else
+        // may leave the site, start with "//" or "/\\", or keep a backslash.
+        if (url === "//host") continue;
+        expect(mapped).not.toMatch(/^\/[/\\]|\\/);
+        expect(`${JSON.stringify(url)} -> ${offSite(mapped)}`).toBe(`${JSON.stringify(url)} -> false`);
+      }
+      expect(mapUrl("//host", ctx)).toBe("//host");
+      expect(mapUrl("/\\host", ctx)).toBe("/%5Chost");
+      expect(mapUrl("\\\\host", ctx)).toBeUndefined();
+      expect(mapUrl("/\t/host", ctx)).toBeUndefined();
+      expect(mapUrl("%2F%2Fhost", ctx)).toBe(`${base}com/example/geo/%2F%2Fhost`);
+      expect(mapUrl("..//host", ctx)).toBe(`${base}com/example/host`);
+      // A normal relative link still maps.
+      expect(mapUrl("../geo/Shape.html#area()", ctx)).toBe(`${base}com/example/geo/Shape#area()`);
+      expect(mapUrl("../../../index.html", ctx)).toBe(base);
+    });
+
+    test(`with base ${base}, a rewritten page drops a link that safeUrl rejects and keeps every link on the site`, () => {
+      const html = renderPage(samples.java, "com/example/geo/Circle", theme, { base, baseUrl: `https://example.com${base}` });
+      for (const m of (html.head + html.body.join("")).matchAll(/\s(?:href|src)="([^"]*)"/g)) expect(m[1]).not.toMatch(/^\/[/\\]/);
+    });
+  }
+
+  test("a base must be an absolute path with a single leading slash and a trailing one", () => {
+    for (const base of ["/", "/docs/", "/api/komodo/2.0/"]) expect(() => assertBase(base)).not.toThrow();
+    for (const base of ["", "docs/", "/docs", "//", "//host/", "/\\host/", "/a/../", "/a/./", "/a//b/", "/a b/", "/a\n/", "/a?x/"]) {
+      expect(() => assertBase(base)).toThrow("base");
+      // renderPage adds a missing trailing slash, so "" and "/docs" are bases there; nothing else that fails here is.
+      if (base !== "" && base !== "/docs") expect(() => renderPage(samples.java, "index", theme, { base })).toThrow("base");
+    }
+  });
+
+  test("request paths in every hostile form are missing or stay inside the base", () => {
+    for (const path of [...hostile, "%2F%2Fhost.html", "%5C%5Chost.html", "..%2F..%2Findex.html", "/%2e%2e/index.html", "https://host/index.html", "//host/index.html"]) {
+      const resolved = resolvePage(samples.java, path, theme);
+      if (resolved.kind === "redirect") expect(isBaseRelative(resolved.to)).toBe(true);
+    }
+  });
+
+  test("a redirect never leaves the base, even from names in the model", () => {
+    const model: Model = structuredClone(samples.java);
+    model.packages = [{ id: "evil", name: ".host.x", types: [{ ...model.packages![0]!.types![0]!, id: "evil.T", name: "T" }] }];
+    for (const path of ["/host/x/index.html", "host/x/index.html", "/host/x", "/host/x/T.html"]) {
+      const resolved = resolvePage(model, path, theme);
+      if (resolved.kind === "redirect") expect(isBaseRelative(resolved.to)).toBe(true);
+    }
+    for (const to of ["", "a", "a/", "a/b", "packages"]) expect(isBaseRelative(to)).toBe(true);
+    for (const to of ["/a", "//a", "\\a", "a\\b", "a/../b", "../a", "./a", "a//b", "https:x", "a\tb", "a\nb"]) expect(isBaseRelative(to)).toBe(false);
   });
 });
