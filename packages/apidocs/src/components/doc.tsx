@@ -1,6 +1,8 @@
 /** Documentation trees, signatures and code blocks as static markup. */
 import type { ComponentChildren, JSX } from "preact";
 import { usePage } from "../context";
+import { ADMONITION_LABEL } from "../structure";
+import { Callout } from "./callout";
 import { highlight } from "../highlight";
 import type { Block, Inline, Token } from "../model";
 import { sanitize } from "../sanitize";
@@ -43,6 +45,12 @@ function BlockNode({ node, offset }: { node: Block; offset: number }): JSX.Eleme
       return node.ordered ? <ol>{items}</ol> : <ul>{items}</ul>;
     }
     case "code": return <CodeBlock code={node.text} language={node.language ?? ctx.language} />;
+    case "admonition":
+      return (
+        <Callout kind={node.tone} label={node.title?.length ? <Inlines nodes={node.title} /> : ADMONITION_LABEL[node.tone]}>
+          <Blocks nodes={node.children} offset={offset + 1} />
+        </Callout>
+      );
     case "heading": {
       const Tag = `h${Math.min(6, Math.max(2, node.level) + offset)}` as "h3";
       return <Tag class="doc-heading"><Inlines nodes={node.children} /></Tag>;

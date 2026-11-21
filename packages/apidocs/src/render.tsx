@@ -7,11 +7,13 @@
  */
 import { renderToString } from "preact-render-to-string";
 import { Ctx, type PageContext } from "./context";
-import { indexMarkdown, packageMarkdown, typeMarkdown } from "./markdown";
+import { guideMarkdown, indexMarkdown, packageMarkdown, typeMarkdown } from "./markdown";
 import type { Model } from "./model";
+import { GuidePage } from "./narrative";
 import { IndexPage, PackagePage, TypePage } from "./pages";
 import { buildSite, INDEX, packagePage, type Site, typePage } from "./site";
-import { summaryText, typeKindWord } from "./structure";
+import { inlineText, summaryText, typeKindWord } from "./structure";
+import { withSym } from "./symbols";
 import { resolveTheme, type Theme, type ThemeLink, themeCss } from "./theme";
 import { safeUrl } from "./url";
 
@@ -43,6 +45,13 @@ export function render(modelInput: Model | string, themeInput?: Theme | string):
   html(INDEX, site.language, <IndexPage />);
   out[`${INDEX}.md`] = indexMarkdown(site);
   pages.push({ page: INDEX, title: `${model.module.name} overview`, summary: summaryText(model.module.doc) });
+  // Guides come right after the overview in llms-full.txt: agents should read them before the reference.
+  const guides: { page: string; title: string; summary: string }[] = [];
+  for (const entry of site.guides) {
+    html(entry.page, site.language, <GuidePage entry={entry} />);
+    out[`${entry.page}.md`] = guideMarkdown(site, entry, theme.symbols);
+    guides.push({ page: entry.page, title: entry.guide.title, summary: oneLine(inlineText(entry.guide.summary)) });
+  }
   for (const pkg of site.packages) {
     const page = packagePage(pkg);
     html(page, site.language, <PackagePage pkg={pkg} />);
@@ -56,8 +65,8 @@ export function render(modelInput: Model | string, themeInput?: Theme | string):
     }
   }
 
-  out["llms.txt"] = llms(site, pages);
-  out["llms-full.txt"] = pages.map(p => `<!-- ${p.page}.md -->\n${out[`${p.page}.md`]}`).join("\n");
+  out["llms.txt"] = llms(site, pages, guides, theme);
+  out["llms-full.txt"] = [pages[0]!, ...guides, ...pages.slice(1)].map(p => `<!-- ${p.page}.md -->\n${out[`${p.page}.md`]}`).join("\n");
   out["api.json"] = JSON.stringify(model);
   // Javadoc's element-list: a module line first when the packages belong to a named JPMS module, as -link expects.
   const modulePrefix = model.module.javaModule ? [`module:${model.module.javaModule}`] : [];
@@ -69,7 +78,7 @@ export function render(modelInput: Model | string, themeInput?: Theme | string):
   if (theme.logo?.light) out["assets/logo-light.svg"] = theme.logo.light;
   if (theme.logo?.dark) out["assets/logo-dark.svg"] = theme.logo.dark;
   if (theme.favicon) out["assets/favicon.svg"] = theme.favicon;
-  if (theme.baseUrl) out["sitemap.xml"] = sitemap(theme.baseUrl, pages.map(p => p.page));
+  if (theme.baseUrl) out["sitemap.xml"] = sitemap(theme.baseUrl, [pages[0]!, ...guides, ...pages.slice(1)].map(p => p.page));
   return out;
 }
 
@@ -89,13 +98,18 @@ function safeTheme(theme: Theme): Theme {
   return { ...theme, links: { header: links(theme.links?.header), footer: links(theme.links?.footer) }, baseUrl: base, sourceLink: source };
 }
 
-/** llms.txt (llmstxt.org): what the module is, then every Markdown page with its summary. */
-function llms(site: Site, pages: { page: string; title: string; summary: string }[]): string {
+/** llms.txt (llmstxt.org): what the module is, the guides, then every reference page, each with its summary. */
+function llms(site: Site, pages: { page: string; title: string; summary: string }[], guides: { page: string; title: string; summary: string }[], theme: Theme): string {
   const m = site.model.module;
   const lines = [`# ${m.name}${m.version ? ` ${m.version}` : ""}`, ""];
   lines.push(`> ${summaryText(m.doc) || `API reference for ${m.name}.`}`, "");
   lines.push("Each page below is Markdown; the HTML page of the same name has the same content. api.json is the full model.", "");
   lines.push("## Overview", "", `- [${m.name}](index.md): packages and types`, `- [api.json](api.json): the apidocs/1 model`, "");
+  if (guides.length) {
+    lines.push(`## ${withSym(theme.symbols, "guide", "Guides")}`, "", "Read these first: they explain the concepts the reference pages assume.", "");
+    for (const g of guides) lines.push(`- [${g.title.replace(/([\\[\]])/g, "\\$1")}](${g.page}.md)${g.summary ? `: ${g.summary}` : ""}`);
+    lines.push("");
+  }
   lines.push("## Pages", "");
   for (const p of pages.slice(1)) lines.push(`- [${p.title}](${p.page}.md)${p.summary ? `: ${p.summary}` : ""}`);
   return lines.join("\n") + "\n";
@@ -107,6 +121,11 @@ function llms(site: Site, pages: { page: string; title: string; summary: string 
  */
 function searchIndex(site: Site): string {
   const items: string[][] = [];
+  for (const entry of site.guides) {
+    const file = `${entry.page}.html`;
+    items.push([entry.guide.title, "guide", file, entry.group ?? "Guides", oneLine(inlineText(entry.guide.summary))]);
+    for (const section of entry.sections) items.push([section.text, "section", `${file}#${section.anchor}`, entry.guide.title, ""]);
+  }
   for (const pkg of site.packages) {
     items.push([pkg.name, "package", `${packagePage(pkg)}.html`, "", summaryText(pkg.doc)]);
     for (const type of pkg.types ?? []) {
@@ -129,4 +148,8 @@ function sitemap(base: string, pages: string[]): string {
 
 function escapeXml(s: string): string {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+function oneLine(text: string): string {
+  return text.replace(/\s+/g, " ").trim();
 }

@@ -5,7 +5,8 @@
  * ".html" and its Markdown twin ".md". Every link is relative and names its
  * file, so the output works from file://, from any path prefix and inside a jar.
  */
-import type { Member, Model, Package, Ref, Token, Type } from "./model";
+import type { Guide, Heading, Member, Model, Package, Ref, Token, Type } from "./model";
+import { guideAnchors, type GuideSection, inlineText, slugify } from "./structure";
 import { safeUrl } from "./url";
 
 /** Where an id lands: its page and, for a member, the anchor on that page. */
@@ -25,11 +26,23 @@ export interface TypeEntry {
   subtypes: Type[];
 }
 
+/** A guide with its page, its sections and the anchors of its headings. */
+export interface GuideEntry {
+  guide: Guide;
+  page: string;
+  /** The group it is listed under, or undefined. */
+  group: string | undefined;
+  sections: GuideSection[];
+  anchors: Map<Heading, string>;
+}
+
 export interface Site {
   model: Model;
   packages: Package[];
   types: Map<string, TypeEntry>;
   targets: Map<string, Target>;
+  /** Guides in reading order: ungrouped first, then by group (see orderGuides). */
+  guides: GuideEntry[];
   /** The default language for code blocks: the module's first. */
   language: string;
 }
@@ -65,6 +78,7 @@ export function buildSite(model: Model): Site {
       targets.set(alias.id, { page: packagePage(pkg), anchor: alias.name, label: alias.name });
     }
   }
+  const guides = guideEntries(model.module.guides, targets);
   for (const entry of types.values()) {
     const outer = entry.type.enclosing && types.get(entry.type.enclosing);
     if (outer) outer.nested.push(entry.type);
@@ -75,7 +89,112 @@ export function buildSite(model: Model): Site {
       if (parent) parent.subtypes.push(entry.type);
     }
   }
-  return { model, packages, types, targets, language: model.module.languages?.[0] ?? "java" };
+  return { model, packages, types, targets, guides, language: model.module.languages?.[0] ?? "java" };
+}
+
+// ---- Guides.
+
+/** Ids the page shell uses; a guide heading never takes one of them. */
+export const SHELL_IDS = [
+  "content", "apidocs-nav", "apidocs-nav-toggle", "apidocs-nav-filter", "apidocs-search", "apidocs-results", "apidocs-toc-filter",
+  "guide-body", "guides",
+];
+
+/**
+ * Guides in reading order: ungrouped guides first, then each group in the order of its first guide in the
+ * model. Inside each, guides with an order come first, lowest first; the rest keep the model's order.
+ */
+export function orderGuides(guides: Guide[] | undefined): Guide[] {
+  const groups = new Map<string | undefined, Guide[]>([[undefined, []]]);
+  for (const guide of guides ?? []) {
+    const key = guide.group || undefined;
+    let list = groups.get(key);
+    if (!list) groups.set(key, (list = []));
+    list.push(guide);
+  }
+  const rank = (g: Guide) => (typeof g.order === "number" && Number.isFinite(g.order) ? g.order : Infinity);
+  return [...groups.values()].flatMap(list => list.map((g, i) => [g, i] as const).sort((a, b) => rank(a[0]) - rank(b[0]) || a[1] - b[1]).map(([g]) => g));
+}
+
+/**
+ * The page path of a guide. The slug is untrusted (it becomes a file path), so each segment is slugified,
+ * empty and dot segments are dropped, and a slug with nothing left falls back to the id.
+ */
+export function guidePage(guide: Guide): string {
+  const segments = guide.slug.split("/").map(slugify).filter(Boolean);
+  if (!segments.length) segments.push(slugify(guide.id) || "guide");
+  return `guides/${segments.join("/")}`;
+}
+
+function guideEntries(guides: Guide[] | undefined, targets: Map<string, Target>): GuideEntry[] {
+  if (!guides?.length) return [];
+  // Pages already taken, compared without case as a case-insensitive file system would.
+  const taken = new Set([...targets.values()].map(t => t.page.toLowerCase()));
+  const entries: GuideEntry[] = [];
+  for (const guide of orderGuides(guides)) {
+    const base = guidePage(guide);
+    let page = base;
+    for (let n = 2; taken.has(page.toLowerCase()); n++) page = `${base}-${n}`;
+    taken.add(page.toLowerCase());
+    const { anchors, sections } = guideAnchors(guide.body, SHELL_IDS);
+    entries.push({ guide, page, group: guide.group || undefined, sections, anchors });
+    // A declaration with the same id keeps it, and so does an earlier guide.
+    if (!targets.has(guide.id)) targets.set(guide.id, { page, label: guide.title });
+  }
+  return entries;
+}
+
+/** One guide in a list, linked from a page. */
+export interface GuideLink {
+  id: string;
+  title: string;
+  /** The link from the page the list is on. */
+  href: string;
+  /** The guide's summary as plain text, or empty. */
+  summary: string;
+  /** Whether this is the page being rendered. */
+  current: boolean;
+}
+
+export interface GuideGroup {
+  /** The group's name; undefined for the ungrouped guides, which come first. */
+  title: string | undefined;
+  guides: GuideLink[];
+}
+
+/** What a navigator or an overview shows of the guides, from a page: groups in reading order, and the neighbors of the current guide. */
+export interface GuideNav {
+  groups: GuideGroup[];
+  /** The current page's guide, when the page is a guide. */
+  current?: GuideLink;
+  prev?: GuideLink;
+  next?: GuideLink;
+}
+
+/** The guides as seen from a page, for the navigator, the overview and the previous and next links. Empty groups when the model has no guides. */
+export function guideNav(site: Site, page: string): GuideNav {
+  const link = (entry: GuideEntry): GuideLink => ({
+    id: entry.guide.id,
+    title: entry.guide.title,
+    href: relative(page, entry.page, ".html"),
+    summary: inlineSummary(entry.guide),
+    current: entry.page === page,
+  });
+  const groups: GuideGroup[] = [];
+  for (const entry of site.guides) {
+    const last = groups[groups.length - 1];
+    if (last && last.title === entry.group) last.guides.push(link(entry));
+    else groups.push({ title: entry.group, guides: [link(entry)] });
+  }
+  const at = site.guides.findIndex(entry => entry.page === page);
+  if (at < 0) return { groups };
+  const prev = site.guides[at - 1];
+  const next = site.guides[at + 1];
+  return { groups, current: link(site.guides[at]!), ...(prev ? { prev: link(prev) } : {}), ...(next ? { next: link(next) } : {}) };
+}
+
+function inlineSummary(guide: Guide): string {
+  return inlineText(guide.summary).replace(/\s+/g, " ").trim();
 }
 
 function memberLabel(member: Member): string {
@@ -111,11 +230,12 @@ export function isAbsolute(url: string): boolean {
  * Where a reference to id (with an external url) points from a page, or
  * undefined when it resolves nowhere and should render as plain code.
  */
-export function resolve(site: Site, from: string, ext: string, id: string | undefined, url?: string): string | undefined {
+export function resolve(site: Site, from: string, ext: string, id: string | undefined, url?: string, section?: string): string | undefined {
   if (id) {
     const target = site.targets.get(id);
     if (target) {
       const file = relative(from, target.page, ext);
+      if (section) return `${file}#${encodeURIComponent(section)}`;
       return target.anchor ? `${file}#${fragment(target.anchor)}` : file;
     }
   }
@@ -125,7 +245,7 @@ export function resolve(site: Site, from: string, ext: string, id: string | unde
 }
 
 export function resolveRef(site: Site, from: string, ext: string, ref: Ref): string | undefined {
-  return resolve(site, from, ext, ref.id, ref.url);
+  return resolve(site, from, ext, ref.id, ref.url, ref.section);
 }
 
 export function resolveToken(site: Site, from: string, ext: string, token: Token): string | undefined {
@@ -136,6 +256,10 @@ export function resolveToken(site: Site, from: string, ext: string, token: Token
 export function refLabel(site: Site, ref: Ref): string {
   if (ref.text) return ref.text;
   const target = site.targets.get(ref.id);
+  if (target && ref.section) {
+    const section = site.guides.find(g => g.page === target.page)?.sections.find(s => s.anchor === ref.section);
+    if (section) return section.text;
+  }
   if (target) return target.label;
   const tail = ref.id.split("#").pop()!;
   return tail.slice(tail.lastIndexOf(".", tail.indexOf("(") < 0 ? tail.length : tail.indexOf("(")) + 1).replace(/\$/g, ".");

@@ -3,11 +3,12 @@
  * (signature, description, parameters, returns, throws, notes, see also), with
  * links to the other Markdown files. Written for agents and plain-text readers.
  */
-import type { Block, Inline, Member, Package, Param, Thrown, Token, Type } from "./model";
-import { INDEX, packagePage, refLabel, relative, resolve, resolveRef, Site, tokenText, typePage } from "./site";
+import type { AdmonitionTone, Block, Inline, Member, Package, Param, Thrown, Token, Type } from "./model";
+import { type GuideEntry, guideNav, INDEX, packagePage, refLabel, relative, resolve, resolveRef, Site, tokenText, typePage } from "./site";
+import { type SymbolMode, withSym } from "./symbols";
 import { NOTE_LABEL, sortedNotes } from "./components/declaration";
 import { markdownDestination, safeUrl } from "./url";
-import { memberGroups, memberTitle, summaryText, typeGroups, typeKindWord } from "./structure";
+import { ADMONITION_LABEL, inlineText, memberGroups, memberTitle, summaryText, typeGroups, typeKindWord } from "./structure";
 
 interface Md {
   site: Site;
@@ -67,6 +68,14 @@ function block(md: Md, node: Block, depth: number): string {
     case "code": return fence(node.text, node.language ?? md.language);
     case "raw": return esc(node.text);
     case "quote": return blocks(md, node.children, depth).split("\n").map(l => `> ${l}`).join("\n");
+    case "admonition": {
+      // GitHub's alert syntax for the five general tones; a bold label for the API note kinds.
+      const alert = GITHUB_ALERT[node.tone];
+      const title = node.title?.length ? `**${inlines(md, node.title)}**` : "";
+      const label = title || (alert ? "" : `**${ADMONITION_LABEL[node.tone]}**`);
+      const text = [label, blocks(md, node.children, depth)].filter(Boolean).join("\n\n");
+      return (alert ? `[!${alert}]\n${text}` : text).split("\n").map(l => (l ? `> ${l}` : ">")).join("\n");
+    }
     case "list": return (node.items ?? []).map((item, i) => {
       const bullet = node.ordered ? `${i + 1}. ` : "- ";
       return bullet + blocks(md, item, depth).split("\n").join("\n" + " ".repeat(bullet.length));
@@ -81,6 +90,10 @@ function block(md: Md, node: Block, depth: number): string {
     }
   }
 }
+
+const GITHUB_ALERT: Partial<Record<AdmonitionTone, string>> = {
+  note: "NOTE", tip: "TIP", important: "IMPORTANT", warning: "WARNING", caution: "CAUTION",
+};
 
 function tokens(md: Md, list: Token[] | undefined): string {
   // Type names link inside code spans as separate spans: [`List`](..)`<`[`String`](..)`>`.
@@ -153,6 +166,7 @@ export function indexMarkdown(site: Site): string {
   const md: Md = { site, page: INDEX, language: site.language };
   const m = site.model.module;
   const parts = [`# ${m.name}${m.version ? ` ${m.version}` : ""}`, m.doc ? blocks(md, m.doc.body) : `API reference for ${esc(m.name)}.`];
+  if (site.guides.length) parts.push(guideListMarkdown(site, INDEX));
   parts.push("## Packages\n\n" + site.packages.map(pkg =>
     `- [${codeSpan(pkg.name)}](${dest(relative(INDEX, packagePage(pkg), ".md"))}): ${esc(summaryText(pkg.doc)) || "No description."}`).join("\n"));
   for (const pkg of site.packages) {
@@ -257,4 +271,35 @@ function link(md: Md, ref: import("./model").Ref): string {
 
 function capitalize(s: string): string {
   return s[0]!.toUpperCase() + s.slice(1);
+}
+
+// ---- Guides.
+
+/** The guides as a Markdown list from a page, grouped as the navigator groups them. */
+function guideListMarkdown(site: Site, page: string): string {
+  const lines = ["## Guides"];
+  for (const group of guideNav(site, page).groups) {
+    lines.push("", ...(group.title ? [`### ${esc(group.title)}`, ""] : []));
+    for (const guide of site.guides.filter(g => g.group === group.title)) {
+      const summary = esc(inlineText(guide.guide.summary).replace(/\s+/g, " ").trim());
+      lines.push(`- [${esc(guide.guide.title)}](${dest(relative(page, guide.page, ".md"))})${summary ? `: ${summary}` : ""}`);
+    }
+  }
+  return lines.join("\n");
+}
+
+/** A guide's Markdown twin: the title, where it belongs, the summary, the body, then the previous and next guides. */
+export function guideMarkdown(site: Site, entry: GuideEntry, symbols?: SymbolMode): string {
+  const md: Md = { site, page: entry.page, language: site.language };
+  const g = entry.guide;
+  const home = `[${esc(site.model.module.name)}](${dest(relative(entry.page, INDEX, ".md"))})`;
+  const facts = withSym(symbols, "guide", `Guide in ${home}${entry.group ? `, under ${esc(entry.group)}` : ""}.`);
+  const parts = [`# ${esc(g.title)}`, facts, g.summary?.length ? `*${inlines(md, g.summary)}*` : "", blocks(md, g.body, 2)];
+  const nav = guideNav(site, entry.page);
+  const pager = [
+    nav.prev ? `Previous: [${esc(nav.prev.title)}](${dest(nav.prev.href.replace(/\.html$/, ".md"))})` : "",
+    nav.next ? `Next: [${esc(nav.next.title)}](${dest(nav.next.href.replace(/\.html$/, ".md"))})` : "",
+  ].filter(Boolean);
+  if (pager.length) parts.push("---", pager.join("  \n"));
+  return join(parts);
 }

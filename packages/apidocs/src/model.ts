@@ -22,6 +22,28 @@ export interface Module {
   /** The source languages, sorted: java, kotlin. */
   languages?: string[];
   doc?: Doc;
+  /** Narrative guides beside the API reference, in the author's order. Pages list ungrouped guides first, then each group in the order of its first guide; inside each, guides with an order come first, lowest first, and the rest keep this list's order. */
+  guides?: Guide[];
+}
+
+/** A narrative page, such as Getting started or Migrating from 1.x. Its page is guides/<slug>.html. Headings in its body are its sections: each gets an anchor, its own or one derived from its text, and links can target it. */
+export interface Guide {
+  /** The stable id links use as a Ref's id. Distinct from every declaration id; the extractors write guide: and the slug. */
+  id: string;
+  /** The page path below guides/, without an extension: lowercase letters, digits and hyphens, with / between segments for nesting. */
+  slug: string;
+  /** The title, as the page and listings show it. */
+  title: string;
+  /** One sentence for listings, search and llms.txt. */
+  summary?: Inlines;
+  /** The group the guide is listed under, such as Advanced; absent for an ungrouped guide. */
+  group?: string;
+  /** The guide's place in its group: lower first. Guides without one follow those with one. */
+  order?: number;
+  /** The guide's text. A heading of level 2 starts a section, level 3 a subsection; level 1 counts as 2. */
+  body?: Blocks;
+  /** Where the guide's text comes from, for a source link. */
+  source?: Source;
 }
 
 /** Documentation outside this model: a reference whose id starts with prefix links below url. */
@@ -215,6 +237,8 @@ export interface Ref {
   text?: string;
   /** The target's URL, when outside this model and an external covers it. */
   url?: string;
+  /** An anchor on the target's page to link to instead of the target itself: a guide section's anchor. */
+  section?: string;
 }
 
 /** What a signature token is. */
@@ -256,7 +280,7 @@ export type Blocks = Block[];
 
 export type Inlines = Inline[];
 
-export type Block = Paragraph | ListBlock | CodeBlock | Table | Heading | Quote | RawBlock;
+export type Block = Paragraph | ListBlock | CodeBlock | Table | Heading | Quote | Admonition | RawBlock;
 
 export interface Paragraph {
   kind: "paragraph";
@@ -289,10 +313,24 @@ export interface Heading {
   kind: "heading";
   level: number;
   children?: Inlines;
+  /** The heading's anchor in a guide, when the author set one; otherwise the renderer derives it from the text. */
+  anchor?: string;
 }
 
 export interface Quote {
   kind: "quote";
+  children?: Blocks;
+}
+
+/** What an admonition is: the five general tones, or one of the API note kinds. */
+export type AdmonitionTone = "note" | "tip" | "important" | "warning" | "caution" | "apiNote" | "implSpec" | "implNote";
+
+/** A callout set apart from the text: a note, tip, warning and so on. */
+export interface Admonition {
+  kind: "admonition";
+  tone: AdmonitionTone;
+  /** A title; absent for the tone's own label. */
+  title?: Inlines;
   children?: Blocks;
 }
 

@@ -27,7 +27,24 @@
         "version": { "type": "string", "description": "The module's version." },
         "javaModule": { "type": "string", "description": "The named JPMS module the packages belong to; absent for the unnamed module." },
         "languages": { "type": "array", "items": { "type": "string" }, "description": "The source languages, sorted: java, kotlin." },
-        "doc": { "$ref": "#/$defs/Doc" }
+        "doc": { "$ref": "#/$defs/Doc" },
+        "guides": { "type": "array", "items": { "$ref": "#/$defs/Guide" }, "description": "Narrative guides beside the API reference, in the author's order. Pages list ungrouped guides first, then each group in the order of its first guide; inside each, guides with an order come first, lowest first, and the rest keep this list's order." }
+      }
+    },
+    "Guide": {
+      "description": "A narrative page, such as Getting started or Migrating from 1.x. Its page is guides/<slug>.html. Headings in its body are its sections: each gets an anchor, its own or one derived from its text, and links can target it.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "slug", "title"],
+      "properties": {
+        "id": { "type": "string", "description": "The stable id links use as a Ref's id. Distinct from every declaration id; the extractors write guide: and the slug." },
+        "slug": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*(/[a-z0-9][a-z0-9-]*)*$", "description": "The page path below guides/, without an extension: lowercase letters, digits and hyphens, with / between segments for nesting." },
+        "title": { "type": "string", "description": "The title, as the page and listings show it." },
+        "summary": { "$ref": "#/$defs/Inlines", "description": "One sentence for listings, search and llms.txt." },
+        "group": { "type": "string", "description": "The group the guide is listed under, such as Advanced; absent for an ungrouped guide." },
+        "order": { "type": "integer", "description": "The guide's place in its group: lower first. Guides without one follow those with one." },
+        "body": { "$ref": "#/$defs/Blocks", "description": "The guide's text. A heading of level 2 starts a section, level 3 a subsection; level 1 counts as 2." },
+        "source": { "$ref": "#/$defs/Source", "description": "Where the guide's text comes from, for a source link." }
       }
     },
     "External": {
@@ -233,7 +250,8 @@
       "properties": {
         "id": { "type": "string" },
         "text": { "type": "string", "description": "The text to show, when not the target's own name." },
-        "url": { "type": "string", "description": "The target's URL, when outside this model and an external covers it." }
+        "url": { "type": "string", "description": "The target's URL, when outside this model and an external covers it." },
+        "section": { "type": "string", "description": "An anchor on the target's page to link to instead of the target itself: a guide section's anchor." }
       }
     },
     "TokenKind": {
@@ -286,6 +304,7 @@
         { "$ref": "#/$defs/Table" },
         { "$ref": "#/$defs/Heading" },
         { "$ref": "#/$defs/Quote" },
+        { "$ref": "#/$defs/Admonition" },
         { "$ref": "#/$defs/RawBlock" }
       ]
     },
@@ -334,7 +353,8 @@
       "properties": {
         "kind": { "const": "heading" },
         "level": { "type": "integer", "minimum": 1 },
-        "children": { "$ref": "#/$defs/Inlines" }
+        "children": { "$ref": "#/$defs/Inlines" },
+        "anchor": { "type": "string", "description": "The heading's anchor in a guide, when the author set one; otherwise the renderer derives it from the text." }
       }
     },
     "Quote": {
@@ -342,6 +362,22 @@
       "additionalProperties": false,
       "required": ["kind"],
       "properties": { "kind": { "const": "quote" }, "children": { "$ref": "#/$defs/Blocks" } }
+    },
+    "AdmonitionTone": {
+      "description": "What an admonition is: the five general tones, or one of the API note kinds.",
+      "enum": ["note", "tip", "important", "warning", "caution", "apiNote", "implSpec", "implNote"]
+    },
+    "Admonition": {
+      "description": "A callout set apart from the text: a note, tip, warning and so on.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "tone"],
+      "properties": {
+        "kind": { "const": "admonition" },
+        "tone": { "$ref": "#/$defs/AdmonitionTone" },
+        "title": { "$ref": "#/$defs/Inlines", "description": "A title; absent for the tone's own label." },
+        "children": { "$ref": "#/$defs/Blocks" }
+      }
     },
     "RawBlock": {
       "type": "object",

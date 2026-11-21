@@ -1,5 +1,5 @@
 /** Groupings and text the HTML and Markdown pages share, so both have the same sections in the same order. */
-import type { Block, Doc, Inline, Member, Token, Type } from "./model";
+import type { AdmonitionTone, Block, Doc, Heading, Inline, Member, Token, Type } from "./model";
 import { isThrowable, tokenText } from "./site";
 
 export interface TypeGroup {
@@ -78,6 +78,7 @@ export function blockText(nodes: Block[] | undefined): string {
       case "code":
       case "raw": return node.text;
       case "quote": return blockText(node.children);
+      case "admonition": return `${inlineText(node.title)} ${blockText(node.children)}`.trim();
       case "list": return (node.items ?? []).map(blockText).join(" ");
       case "table": return (node.rows ?? []).map(r => r.map(blockText).join(" ")).join(" ");
     }
@@ -133,4 +134,75 @@ export function memberTitle(member: Member): string {
   const params = (member.params ?? []).map(p => tokenText(compactTokens(p.type)).trim());
   const shown = params.length > 3 ? [...params.slice(0, 2), "\u2026"] : params;
   return `${receiver}${member.name}(${shown.join(", ")})`;
+}
+
+// ---- Guides.
+
+/** The label an admonition shows when it has no title of its own. */
+export const ADMONITION_LABEL: Record<AdmonitionTone, string> = {
+  note: "Note",
+  tip: "Tip",
+  important: "Important",
+  warning: "Warning",
+  caution: "Caution",
+  apiNote: "API note",
+  implSpec: "Implementation requirements",
+  implNote: "Implementation note",
+};
+
+/**
+ * A readable anchor or path segment from text: accents dropped, lowercase ASCII letters and digits, runs of
+ * anything else as one hyphen, no hyphen at either end. Empty when the text has no letter or digit.
+ */
+export function slugify(text: string): string {
+  return text.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+}
+
+/** A guide section: a heading of level 2 or 3 at the top of the guide's body. */
+export interface GuideSection {
+  anchor: string;
+  /** 2 for a section, 3 for a subsection. */
+  level: number;
+  text: string;
+  heading: Heading;
+}
+
+/** The HTML level of a guide heading: level 1 counts as 2, and nothing goes below h6. */
+export function guideHeadingLevel(heading: Heading): number {
+  return Math.min(6, Math.max(2, heading.level));
+}
+
+/**
+ * Anchors for every heading in a guide's body, in document order, headings inside admonitions, lists and
+ * quotes included. A heading's own anchor wins over its text; either is slugified, and a repeat takes the next
+ * free "-2", "-3" suffix. `reserved` holds ids the page already uses. Also returns the guide's sections: its
+ * top-level headings of level 3 or less.
+ */
+export function guideAnchors(body: Block[] | undefined, reserved: Iterable<string>): { anchors: Map<Heading, string>; sections: GuideSection[] } {
+  const used = new Set(reserved);
+  const anchors = new Map<Heading, string>();
+  const sections: GuideSection[] = [];
+  const visit = (nodes: Block[] | undefined, top: boolean) => {
+    for (const node of nodes ?? []) {
+      switch (node.kind) {
+        case "heading": {
+          const text = inlineText(node.children).replace(/\s+/g, " ").trim();
+          const base = slugify(node.anchor ?? "") || slugify(text) || "section";
+          let anchor = base;
+          for (let n = 2; used.has(anchor); n++) anchor = `${base}-${n}`;
+          used.add(anchor);
+          anchors.set(node, anchor);
+          const level = guideHeadingLevel(node);
+          if (top && level <= 3) sections.push({ anchor, level, text, heading: node });
+          break;
+        }
+        case "admonition":
+        case "quote": visit(node.children, false); break;
+        case "list": for (const item of node.items ?? []) visit(item, false); break;
+        default: break;
+      }
+    }
+  };
+  visit(body, true);
+  return { anchors, sections };
 }
