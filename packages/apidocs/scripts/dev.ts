@@ -3,7 +3,10 @@
  * real api.json) with the production render() and reloads the page when a
  * component, the stylesheet, a theme, a sample or the model file changes.
  *
- *   bun run dev [--port 5180] [--model path/to/api.json] [--no-open]
+ *   bun run dev [--port 5180] [--model path/to/api.json] [--guides path/to/suite] [--no-open]
+ *
+ * --guides serves a Markdown suite through the importer (src/import/markdown.ts) as a guides-only site; editing a
+ * .md file or an image in it reloads the page. The Markdown sample suite (samples/guides) is always available.
  *
  * Pages are served under /site/<model>/<preset>/; / is a dev-only shell with
  * controls for the theme preset, light or dark, the model and the viewport
@@ -24,9 +27,15 @@ const flag = (name: string) => {
 const port = Number(flag("port") ?? 5180);
 const host = flag("host") ?? "127.0.0.1";
 const modelPath = flag("model") ? resolve(process.env.INIT_CWD ?? process.cwd(), flag("model")!) : undefined;
+const guidesPath = flag("guides") ? resolve(process.env.INIT_CWD ?? process.cwd(), flag("guides")!) : undefined;
 const open = !args.includes("--no-open");
 
 const root = fileURLToPath(new URL("..", import.meta.url));
+const sampleSuite = resolve(root, "samples/guides");
+/** The Markdown suites the dev bar offers: the sample, and the --guides directory. */
+const suites: Record<string, string> = { markdown: sampleSuite, ...(guidesPath ? { guides: guidesPath } : {}) };
+/** Files a suite's pages show (images), by model and path in the site: copied from the suite, not rendered. */
+const suiteFiles = new Map<string, Map<string, string>>();
 const require = createRequire(import.meta.url);
 type Output = Record<string, string | { asset: string }>;
 const cache = new Map<string, Output>();
@@ -36,6 +45,25 @@ async function site(server: ViteDevServer, model: string, preset: string): Promi
   const cached = cache.get(key);
   if (cached) return cached;
   const { render } = await server.ssrLoadModule("/src/render.tsx");
+  const theme = { extends: preset === "elide" ? "elide" : "neutral" };
+  if (suites[model]) {
+    const { suiteSite } = await server.ssrLoadModule("/src/import/suite.ts");
+    const { formatDiagnostic } = await server.ssrLoadModule("/src/import/markdown.ts");
+    const started = performance.now();
+    const built = suiteSite(suites[model], {
+      id: model,
+      title: model === "markdown" ? "Geo user guide" : (guidesPath!.split("/").filter(Boolean).pop() ?? "Guides"),
+      theme,
+      includeDrafts: args.includes("--include-drafts"),
+      // The sample suite links to a sibling suite and an API reference; both live on example.com.
+      links: [{ prefix: "../developer/", target: "https://example.com/developer/" }, { prefix: "../api/", target: "https://example.com/api/" }],
+    });
+    for (const d of built.diagnostics) console.log(`  ${formatDiagnostic(d, `${suites[model]}/`)}`);
+    suiteFiles.set(key, new Map(built.copies.map((c: { from: string; to: string }) => [c.to, resolve(suites[model]!, c.from)])));
+    console.log(`  rendered ${model} with ${preset}: ${Object.keys(built.output).length} files in ${Math.round(performance.now() - started)} ms`);
+    cache.set(key, built.output);
+    return built.output;
+  }
   let input: unknown;
   if (model === "model") {
     if (!modelPath) throw new Error("Start the server with --model <api.json> to browse a real model");
@@ -46,7 +74,7 @@ async function site(server: ViteDevServer, model: string, preset: string): Promi
     if (!input) throw new Error(`No sample named ${model}`);
   }
   const started = performance.now();
-  const out = render(input, { extends: preset === "elide" ? "elide" : "neutral" }) as Output;
+  const out = render(input, theme) as Output;
   console.log(`  rendered ${model} with ${preset}: ${Object.keys(out).length} files in ${Math.round(performance.now() - started)} ms`);
   cache.set(key, out);
   return out;
@@ -67,11 +95,13 @@ function asset(name: string): { body: Buffer | string; type: string } {
 const TYPES: Record<string, string> = {
   html: "text/html; charset=utf-8", md: "text/markdown; charset=utf-8", txt: "text/plain; charset=utf-8",
   js: "text/javascript; charset=utf-8", css: "text/css; charset=utf-8", json: "application/json",
-  svg: "image/svg+xml", xml: "application/xml",
+  svg: "image/svg+xml", xml: "application/xml", png: "image/png", jpg: "image/jpeg", jpeg: "image/jpeg", gif: "image/gif",
+  webp: "image/webp",
 };
 
 function shell(): string {
-  const models = ["java", "kotlin", ...(modelPath ? ["model"] : [])];
+  const models = ["java", "kotlin", "markdown", ...(guidesPath ? ["guides"] : []), ...(modelPath ? ["model"] : [])];
+  const label = (m: string) => (m === "model" ? modelPath : m === "guides" ? `${guidesPath} (Markdown)` : m === "markdown" ? "Markdown sample suite" : `${m} sample`);
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><title>apidocs dev</title>
 <style>
@@ -85,7 +115,7 @@ function shell(): string {
 </style></head><body>
 <div class="bar">
   <strong>@elide/apidocs dev</strong>
-  <label>Model <select id="model">${models.map(m => `<option value="${m}">${m === "model" ? modelPath : `${m} sample`}</option>`).join("")}</select></label>
+  <label>Model <select id="model">${models.map(m => `<option value="${m}">${label(m)}</option>`).join("")}</select></label>
   <label>Theme <select id="preset"><option value="neutral">neutral (default)</option><option value="elide">elide</option></select></label>
   <label>Mode <select id="mode"><option value="system">system</option><option value="light">light</option><option value="dark">dark</option></select></label>
   <label>Width <select id="width"><option value="100%">full</option><option value="1440px">1440</option><option value="1180px">1180</option><option value="1024px">1024</option><option value="820px">820</option><option value="390px">390 (phone)</option></select></label>
@@ -144,13 +174,16 @@ const server = await createServer({
     name: "apidocs-dev",
     configureServer(dev) {
       if (modelPath) dev.watcher.add(modelPath);
-      dev.watcher.on("change", file => {
-        if (file === modelPath || /\/(src|samples)\//.test(file)) {
+      if (guidesPath) dev.watcher.add(guidesPath);
+      const reload = (file: string) => {
+        if (file === modelPath || /\/(src|samples)\//.test(file) || (guidesPath && file.startsWith(`${guidesPath}/`))) {
           cache.clear();
           dev.moduleGraph.invalidateAll();
           dev.ws.send({ type: "full-reload" });
         }
-      });
+      };
+      // A new or removed page changes the navigator of every page, so they reload too.
+      for (const event of ["change", "add", "unlink"] as const) dev.watcher.on(event, reload);
       dev.middlewares.use(async (req, res, next) => {
         const url = new URL(req.url ?? "/", "http://localhost");
         if (url.pathname === "/") {
@@ -165,6 +198,12 @@ const server = await createServer({
         try {
           const out = await site(dev, model!, preset!);
           const file = out[path];
+          const copied = suiteFiles.get(`${model}/${preset}`)?.get(path);
+          if (file === undefined && copied) {
+            res.setHeader("content-type", TYPES[path.slice(path.lastIndexOf(".") + 1).toLowerCase()] ?? "application/octet-stream");
+            res.end(readFileSync(copied));
+            return;
+          }
           if (file === undefined) {
             res.statusCode = 404;
             res.end(`Not in the rendered site: ${path}`);

@@ -13,6 +13,7 @@
     "dev": "turbo run dev",
     "apidocs:audit": "bun run --cwd packages/apidocs audit",
     "apidocs:dev": "bun run --cwd packages/apidocs dev",
+    "apidocs:guides": "bun run --cwd packages/apidocs guides",
     "apidocs:sample": "bun run --cwd packages/apidocs sample",
     "lint": "turbo run lint",
     "test": "turbo run test",
