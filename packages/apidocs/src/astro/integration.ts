@@ -36,6 +36,7 @@ export interface ApidocsOptions {
 }
 
 const VIRTUAL = "virtual:@elide/apidocs/sites";
+const PREACT = ["preact", "preact/hooks", "preact/jsx-runtime", "preact/jsx-dev-runtime", "preact/devtools", "preact-render-to-string"];
 
 export function apidocs(options: ApidocsOptions = {}): AstroIntegration {
   const sites = options.sites ?? [];
@@ -54,8 +55,12 @@ export function apidocs(options: ApidocsOptions = {}): AstroIntegration {
         }
         updateConfig({
           vite: {
-            // One Preact: the pages render with this package's copy, and the search island with the renderer's.
+            // One Preact: the pages render with this package's copy, and the search island with the renderer's. Listing
+            // its entry points up front keeps the dev server from finding them at the first request and optimizing
+            // again, which serves that request with two copies (a "reading '__H'" error from Preact's hooks).
             resolve: { dedupe: ["preact", "preact-render-to-string"] },
+            optimizeDeps: { include: PREACT },
+            ssr: { optimizeDeps: { include: PREACT } },
             plugins: [{
               name: "apidocs-sites",
               resolveId: id => (id === VIRTUAL ? `\0${VIRTUAL}` : undefined),
