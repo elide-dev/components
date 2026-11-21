@@ -5,7 +5,11 @@
   "description": "Static API reference pages (HTML and Markdown) from the apidocs/1 model that Elide's Javadoc doclet and Dokka plugin write. Prerendered with Preact; works from file:// and inside a -javadoc.jar.",
   "license": "UNLICENSED",
   "type": "module",
-  "sideEffects": false,
+  "sideEffects": [
+    "*.css",
+    "./src/astro/client.ts",
+    "./src/client/islands.tsx"
+  ],
   "exports": {
     ".": "./src/index.ts",
     "./import": "./src/import/index.ts",
