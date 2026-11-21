@@ -163,6 +163,192 @@ The stylesheet reads only `--apidocs-*` custom properties; `tokens` sets them wi
 `elide` maps the tokens to `@elide/tokens` and takes its logo from `@elide/brand`. A theme can also set `logo`
 (SVG markup for light and dark), `favicon`, `fonts` and `footer`.
 
+## Astro
+
+`@elide/apidocs/astro` serves the same pages from an Astro app (Astro 7), rendered on request or from models the app
+has when it builds, with the same components and stylesheet.
+
+Use the static renderer for output that must work anywhere: a `-javadoc.jar`, `file://`, any static host. Use the
+Astro integration for a docs site you run: pages render on demand from models in storage, navigation goes through
+Astro's client router (the top bar and the navigator stay put while the content cross-fades), and parts that change
+more often than the pages, such as a version menu, come from server islands so the pages stay cacheable.
+
+### URLs
+
+A site lives under a base path that starts and ends with `/` (`/api/komodo/main/`; `/` itself is allowed). Under it:
+
+| Page | Static file | Astro URL |
+| --- | --- | --- |
+| Overview | `index.html` | the base itself |
+| Package | `com/example/geo/index.html` | `com/example/geo/` |
+| Type, guide, index page | `com/example/geo/Circle.html` | `com/example/geo/Circle` |
+| Anything else | `Circle.md`, `llms.txt`, `api.json`, ... | the same path |
+
+The static paths redirect (301) to the Astro URLs, and so do `com/example/geo` (a package without its slash) and
+`com/example/geo/Circle/`. Keep Astro's `trailingSlash` at `"ignore"`. Every link in a page is root-absolute in this
+form.
+
+### The contract
+
+From `@elide/apidocs/astro` (`.astro` files and TypeScript; plain code outside Astro's Vite pipeline imports the
+same functions from `@elide/apidocs/astro/helpers`):
+
+- `resolvePage(model, path, theme?)`: what `path` (relative to the base, no leading slash) is.
+  `{ kind: "page", page }`, `{ kind: "markdown", page }`, `{ kind: "file", name }`, `{ kind: "redirect", to }` or
+  `{ kind: "missing" }`. `to` is relative to the base and never leaves it: no scheme, leading `/`, backslash or `..`.
+- `<ApidocsPage model page theme base site? />`: the whole document for a page. Slots: `topbar` (replaces the module's
+  version, beside the brand), `notice` (one line above the page) and `head`. Canonical URLs use `site`, else
+  `Astro.site`, else the request's origin; a theme's `baseUrl` wins.
+- `renderText(model, path, theme?)`: `{ body, contentType }` for a Markdown twin (`${page}.md`), `llms.txt`,
+  `llms-full.txt`, `api.json`, `element-list`, `sitemap.xml` (when the theme has a `baseUrl`), the search index
+  (`assets/search-index.js`, and `assets/search-index.json` in the Astro form), `assets/theme.css` and the theme's
+  artwork. `llms.txt`, `llms-full.txt` and `element-list` render the whole site once per model object and keep only
+  those three; everything else renders alone.
+- `prefersMarkdown(accept)`, `linkHeader(base, page)` and `notFound(base, title, accept)`: serve a page's Markdown
+  twin at its URL to a client that asks for Markdown, point at the other forms in a `Link` header, and answer a
+  missing page with directions.
+- `<VersionSelect versions current path />` and `<VersionNotice versions current path />`: a version menu for the top
+  bar and a "not the latest release" line, each a fixed box (see "Server islands"). A `Version` is
+  `{ id, label?, base, channel?: "release" | "prerelease" | "development", latest? }`.
+- `apidocs(options)`, from `@elide/apidocs/astro/integration` in `astro.config`: routes for sites whose models the app
+  has at build time.
+- `assertBase(base)`: throws for a base that is not an absolute path with a single leading `/` and a trailing `/`.
+
+The search island is Preact: the app needs `@astrojs/preact`. `apidocs()` adds it (and keeps one copy of Preact), so an
+app that renders on request adds `apidocs()` with no sites. An app that also uses React gives each renderer `include`
+patterns. Astro bundles the stylesheet, the client script and the Elide preset's fonts as hashed files under
+`/_astro/`; a theme's tokens are inlined. Nothing under `assets/` needs copying unless a theme names its own fonts,
+which resolve to `assets/fonts/...` under the base.
+
+Keep the parsed model object between requests (per version, say): the site structure and each page's data are
+cached in `WeakMap`s keyed by it.
+
+### On request
+
+The models live in storage; the app's own catch-all route does what `apidocs()` would:
+
+```astro
+---
+// src/pages/api/[version]/[...path].astro
+import { ApidocsPage, assertBase, linkHeader, notFound, prefersMarkdown, renderText, resolvePage } from "@elide/apidocs/astro";
+import { loadModel } from "../../../models"; // the app's: api.json from R2, parsed once per version and kept
+
+const { version } = Astro.params;
+const base = `/api/${version}/`;
+assertBase(base);
+const model = await loadModel(version);
+if (!model) return notFound("/api/", "API reference", Astro.request.headers.get("accept"));
+const theme = { extends: "elide" as const, productName: "Komodo" };
+const path = Astro.url.pathname.slice(base.length);
+const resolved = resolvePage(model, path, theme);
+if (resolved.kind === "redirect") return Astro.redirect(base + resolved.to + Astro.url.search, 301);
+if (resolved.kind === "missing") return notFound(base, model.module.name, Astro.request.headers.get("accept"));
+if (resolved.kind !== "page" || prefersMarkdown(Astro.request.headers.get("accept"))) {
+  const text = renderText(model, resolved.kind === "file" ? resolved.name : `${resolved.page}.md`, theme);
+  if (!text) return notFound(base, model.module.name, null);
+  return new Response(text.body, { headers: { "content-type": text.contentType, vary: "Accept" } });
+}
+Astro.response.headers.set("vary", "Accept");
+Astro.response.headers.set("link", linkHeader(base, resolved.page));
+---
+<ApidocsPage model={model} page={resolved.page} theme={theme} base={base} />
+```
+
+### At build time
+
+```js
+// astro.config.mjs
+import cloudflare from "@astrojs/cloudflare";
+import { apidocs } from "@elide/apidocs/astro/integration";
+import { defineConfig } from "astro/config";
+
+export default defineConfig({
+  adapter: cloudflare(),
+  integrations: [
+    apidocs({
+      sites: [
+        { base: "/java/2.0/", model: "./models/java-2.0.json", theme: { extends: "elide" }, version: "2.0" },
+        { base: "/java/main/", model: "./models/java-main.json", theme: { extends: "elide" }, version: "main" },
+      ],
+      versions: "./src/versions.ts", // exports `versions`, and optionally `loadVersions(request)`
+    }),
+  ],
+});
+```
+
+`model` is a path from the project root to an `api.json`, or to a module whose default export is the model. Each site
+gets a route at `${base}[...path]` that resolves, redirects, serves text (with Markdown negotiation and `Link`
+headers) and renders pages, on request. With `versions`, the route puts the version menu and, on versions that are
+not the latest release, the notice in server islands. `astro dev` reloads when a model, a component or a sample
+changes, and updates the stylesheet in place.
+
+### Server islands
+
+A server island renders after the page, from its own request, so the page can be cached while the island shows
+something newer. The pattern, as the integration uses it:
+
+```astro
+---
+// VersionIsland.astro, the app's own: reads the newest versions.json on each request.
+import { VersionSelect } from "@elide/apidocs/astro";
+const { current, path } = Astro.props;
+const versions = await loadVersionsFromR2(); // the app's
+Astro.response.headers.set("cache-control", "public, max-age=60, stale-while-revalidate=600");
+---
+<VersionSelect versions={versions} current={current} path={path} />
+```
+
+```astro
+<ApidocsPage model={model} page={page} theme={theme} base={base}>
+  <VersionIsland server:defer slot="topbar" current={id} path={path}>
+    <VersionSelect slot="fallback" versions={versionsWhenRendered} current={id} path={path} />
+  </VersionIsland>
+</ApidocsPage>
+```
+
+The fallback is the same component rendered from the versions known when the page rendered: a working menu with
+JavaScript off, and the same closed box (the current version's label) as the island's, so the swap moves nothing.
+`<VersionNotice>` goes in the `notice` slot the same way; render it only on versions that are not the latest release.
+Island props travel encrypted in the island's URL, so set `ASTRO_KEY` (`astro create-key`) when pages outlive a
+deploy, or cached pages will ask for islands with a key the new deploy cannot read.
+
+### Caching
+
+A page's HTML depends only on the model, the theme, the base and the site's origin: cache it per URL for as long as
+the version's model does not change (a released version's never does), and vary it on `Accept` when Markdown
+negotiation is on. What changes more often goes in server islands, which have their own `Cache-Control` (the
+integration's: one minute, then stale while revalidating). The `/_astro/` files are named by their content and can be
+cached for a year.
+
+### Behaviors
+
+| Behavior | How it runs on an Astro page |
+| --- | --- |
+| Search | A Preact island, `client:idle`, in the top bar. Loads `assets/search-index.json` on first focus or keystroke; opens results through the router. The top bar persists, so it hydrates once per site. |
+| Theme switch, navigator toggle and `[`, copy buttons, copy as Markdown, member expand and collapse, open-on-hash, list filters, "On this page" tracking, menus | The static page's functions (`src/client/behaviors.tsx`), started on `astro:page-load` and stopped on `astro:before-swap` through one `AbortController` per page: no listener outlives its page. |
+| Top bar and navigator | `transition:persist`, keyed by the site's base: across pages of one site they are the same elements, so the navigator keeps its scroll position and filter text without a script restoring them. Before each swap the client moves the new page's index links and navigator rows into them. |
+| Theme and `data-js` | The head script sets them on first load; the client carries them to each new page's `<html>`, whose attributes the router replaces. |
+| Load bar | Starts on `astro:before-preparation`, finishes on arrival, clears if the navigation is aborted. |
+| Page transition | The router's view transition, with the static stylesheet's `::view-transition` rules: the content fades and rises 6px, the top bar and navigator do not move. The browser's cross-document transitions are off on Astro pages, so the two never both run. With reduced motion nothing animates. |
+| Prefetch | The router's, on hover, for same-site links. The static pages' speculation rules are not on Astro pages. |
+| Version menu and notice | Server islands; the client keeps their links on the page being read. |
+
+The router announces each new page (its title) to assistive technology and restores scroll on back and forward;
+focus starts from the top of the new page, except that a keyboard user who followed a navigator row stays on it.
+
+The sample app, `apps/apidocs-astro`, serves the Java sample at `/java/2.0/` and `/java/main/`, the Kotlin sample at
+`/kotlin/` and the Markdown sample suite at `/guides/`, on the Cloudflare adapter:
+
+```sh
+bun run apidocs:astro:dev            # astro dev on http://127.0.0.1:5190/
+bun run apidocs:astro:build
+bun run apidocs:astro:preview        # wrangler dev on http://127.0.0.1:5190/
+bun run --cwd apps/apidocs-astro test   # builds, serves on 5191, and drives it in Chromium
+```
+
+Astro 7 runs `astro dev` in the background when it detects an AI agent; set `ASTRO_DEV_BACKGROUND=1` to keep it in the
+foreground.
+
 ## Development
 
 From this directory (or from the repository root with `bun run apidocs:dev` and `bun run apidocs:sample`):
@@ -212,3 +398,6 @@ page that shows it, and says how to add one.
   page shell in light and dark; the same for the Markdown sample suite built with `apidocs guides`
   (`test/guides-browser.test.ts`). Locally, point `PLAYWRIGHT_BROWSERS_PATH` at a Playwright 1.65 browser directory, or
   install one with `bunx playwright install chromium`.
+- the Astro helpers (`test/astro.test.ts`): every page and text file of every sample resolves in both URL forms and
+  renders as the static renderer does, head metadata equals the static page's apart from the URL form, and hostile
+  links and paths never leave the site's base. The sample app's own suite drives the Astro pages in Chromium.
