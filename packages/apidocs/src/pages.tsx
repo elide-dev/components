@@ -152,16 +152,8 @@ export function PackagePage({ pkg }: { pkg: Package }) {
       ) : null}
       {sections.map(section => (
         <section key={section.id} id={section.id} class="section members">
-          <h2>{section.title}</h2>
-          <SummaryTable
-            rows={section.members.map(member => ({
-              key: member.id,
-              name: <MemberSummarySignature member={member} />,
-              summary: member.doc?.summary,
-              deprecated: !!member.deprecated,
-            }))}
-          />
-          {section.members.map(member => <MemberDetail key={member.id} member={member} />)}
+          <MembersHeading title={section.title} count={section.members.length} />
+          {section.members.map(member => <MemberDetail key={member.id} member={member} summary={<MemberSummarySignature member={member} />} />)}
         </section>
       ))}
       {empty && <p class="empty">This package declares nothing public.</p>}
@@ -188,7 +180,6 @@ export function TypePage({ type }: { type: Type }) {
   const toc: TocItem[] = [{ id: "doc-description", label: "Description", depth: 1 }];
   if (type.components?.length) toc.push({ id: "record-components", label: "Record components", depth: 1 });
   if (entry.nested.length) toc.push({ id: "nested-types", label: "Nested types", depth: 1 });
-  if (groups.length) toc.push({ id: "member-summary", label: "Member summary", depth: 1 });
   for (const group of groups) {
     toc.push({ id: group.id, label: group.title, depth: 1 });
     for (const member of group.members) toc.push({ id: member.anchor, label: memberTitle(member), depth: 2, code: true });
@@ -233,29 +224,10 @@ export function TypePage({ type }: { type: Type }) {
         </section>
       )}
 
-      {groups.length > 0 && (
-        <section id="member-summary" class="section">
-          <h2>Member summary</h2>
-          {groups.map(group => (
-            <div key={group.id} class="summary-group">
-              <h3>{group.title}</h3>
-              <SummaryTable
-                rows={group.members.map(member => ({
-                  key: member.id,
-                  name: <MemberSummarySignature member={member} />,
-                  summary: member.doc?.summary,
-                  deprecated: !!member.deprecated,
-                }))}
-              />
-            </div>
-          ))}
-        </section>
-      )}
-
       {groups.map(group => (
         <section key={group.id} id={group.id} class="section members">
-          <h2>{group.title}</h2>
-          {group.members.map(member => <MemberDetail key={member.id} member={member} />)}
+          <MembersHeading title={group.title} count={group.members.length} />
+          {group.members.map(member => <MemberDetail key={member.id} member={member} summary={<MemberSummarySignature member={member} />} />)}
         </section>
       ))}
 
@@ -275,6 +247,17 @@ export function TypePage({ type }: { type: Type }) {
         </section>
       ) : null}
     </Shell>
+  );
+}
+
+/** A member group's heading: its title, how many it holds, and a control that opens or folds them all. */
+function MembersHeading({ title, count }: { title: string; count: number }) {
+  return (
+    <h2 class="members-heading">
+      <span>{title}</span>
+      <span class="members-count">{count}</span>
+      <button type="button" class="members-toggle" data-expand-all data-js-only aria-expanded="false">Expand all</button>
+    </h2>
   );
 }
 

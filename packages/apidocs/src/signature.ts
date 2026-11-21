@@ -10,6 +10,8 @@ export const WIDTH = 80;
 const INDENT = "    ";
 
 export function layoutSignature(tokens: Token[]): Token[] {
+  // A signature that already has line breaks was laid out by the source formatter: it is shown as it came.
+  if (tokens.some(t => t.text.includes("\n"))) return tokens;
   const length = tokens.reduce((n, t) => n + t.text.length, 0);
   if (length <= WIDTH) return tokens;
   const name = tokens.findIndex(t => t.kind === "name");

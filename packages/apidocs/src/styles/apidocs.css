@@ -237,7 +237,7 @@ p, li, dd { text-wrap: pretty; }
 .topbar-tools { margin-left: auto; display: flex; align-items: center; gap: 12px; min-width: 0; }
 .topbar-link { color: var(--apidocs-muted); font-size: var(--apidocs-size-sm); }
 
-.search { position: relative; }
+.search { position: relative; display: block; }
 .search input {
   width: 19rem; max-width: 46vw;
   font: inherit; font-size: var(--apidocs-size-sm);
@@ -247,7 +247,7 @@ p, li, dd { text-wrap: pretty; }
   border-radius: var(--apidocs-radius);
   padding: 6px 30px 6px 10px;
 }
-.search input:focus { outline: 2px solid var(--apidocs-focus); outline-offset: 0; border-color: transparent; }
+.search input:focus-visible { outline: 2px solid var(--apidocs-focus); outline-offset: 0; border-color: transparent; }
 .search-key {
   position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
   font-size: var(--apidocs-size-xs); color: var(--apidocs-faint);
@@ -369,7 +369,7 @@ html[data-emoji] .theme-switch[data-mode="dark"] .theme-emoji::before { content:
   background: var(--apidocs-surface); border: 1px solid var(--apidocs-rule-strong);
   border-radius: var(--apidocs-radius); padding: 5px 9px;
 }
-.nav-filter input:focus, .toc-filter input:focus { outline: 2px solid var(--apidocs-focus); outline-offset: 0; border-color: transparent; }
+.nav-filter input:focus-visible, .toc-filter input:focus-visible { outline: 2px solid var(--apidocs-focus); outline-offset: 0; border-color: transparent; }
 [data-filtered-out] { display: none !important; }
 
 /* Kind glyphs: one letter in a small tile, colored by kind. */
@@ -424,7 +424,7 @@ html[data-emoji] .theme-switch[data-mode="dark"] .theme-emoji::before { content:
 .page-tools .crumbs ol { margin: 0; }
 /* The formats control: a mark and an arrow in one quiet pill. */
 .formats {
-  display: flex; align-items: stretch; flex: none; margin-left: auto; position: relative; height: 28px;
+  display: flex; align-items: stretch; flex: none; margin-left: auto; position: relative; height: 30px;
   border: 1px solid var(--apidocs-rule-strong); border-radius: var(--apidocs-radius);
   background: var(--apidocs-surface); color: var(--apidocs-muted);
   user-select: none; -webkit-user-select: none;
@@ -433,7 +433,7 @@ html[data-emoji] .theme-switch[data-mode="dark"] .theme-emoji::before { content:
   display: grid; place-items: center; color: inherit; background: none; border: 0; padding: 0; cursor: pointer;
 }
 .formats-main { width: 36px; border-radius: calc(var(--apidocs-radius) - 1px) 0 0 calc(var(--apidocs-radius) - 1px); }
-.formats-menu > summary { width: 22px; height: 100%; list-style: none; border-left: 1px solid var(--apidocs-rule); border-radius: 0 calc(var(--apidocs-radius) - 1px) calc(var(--apidocs-radius) - 1px) 0; }
+.formats-menu > summary { width: 28px; height: 100%; list-style: none; border-left: 1px solid var(--apidocs-rule); border-radius: 0 calc(var(--apidocs-radius) - 1px) calc(var(--apidocs-radius) - 1px) 0; }
 .formats-menu > summary::-webkit-details-marker { display: none; }
 .formats-main:hover, .formats-menu > summary:hover, .formats-menu[open] > summary { color: var(--apidocs-fg); background: var(--apidocs-subtle); }
 .formats-main .formats-done { display: none; color: var(--apidocs-non-null); }
@@ -479,6 +479,11 @@ html[data-emoji] .theme-switch[data-mode="dark"] .theme-emoji::before { content:
 .page-head h1 { font-size: var(--apidocs-size-3xl); font-weight: 650; letter-spacing: var(--apidocs-tracking-display); overflow-wrap: anywhere; }
 /* The tile and the name share one line box and one center line, whatever fonts they come from. */
 .page-head h1[data-kind] { display: flex; align-items: center; gap: 12px; font-family: var(--apidocs-font-mono); letter-spacing: 0; font-weight: 700; line-height: 36px; }
+@supports (text-box: trim-both cap alphabetic) {
+  .page-head h1 { text-box: trim-both cap alphabetic; }
+  .page-head h1[data-kind] { line-height: 1; }
+  .page-head .page-meta { margin-top: 14px; }
+}
 .page-head h1 code { background: none; padding: 0; font-size: calc(var(--apidocs-code-scale) * 0.92); }
 .page-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin: 8px 0 0; color: var(--apidocs-muted); font-size: var(--apidocs-size-sm); }
 .kind-word { font-weight: 600; color: var(--apidocs-fg); }
@@ -699,11 +704,37 @@ table.summary tbody tr:hover { background: color-mix(in srgb, var(--apidocs-subt
 tr.is-deprecated .summary-sig a { text-decoration: line-through; text-decoration-color: var(--apidocs-deprecated); }
 td .badge { margin-right: 6px; }
 
-.member { padding-top: 22px; margin-top: 22px; border-top: 1px solid var(--apidocs-rule); }
-/* Members far from the viewport are not laid out or painted until they come near it; the browser remembers
-   each one's size once seen. A type with hundreds of members then costs little to open and to scroll. */
-.members > .member { content-visibility: auto; contain-intrinsic-size: auto 260px; }
-.section > h2 + .member { border-top: 0; margin-top: 0; padding-top: 10px; }
+/* A member is a disclosure: a row when closed, the full entry when open. Rows far from the viewport are not
+   laid out or painted until they come near; find-in-page still searches them and opens the one it matches. */
+.members-heading { display: flex; align-items: baseline; gap: 10px; }
+.members-count { font-size: var(--apidocs-size-sm); font-weight: 400; color: var(--apidocs-faint); user-select: none; -webkit-user-select: none; }
+.members-toggle {
+  margin-left: auto; font: inherit; font-size: var(--apidocs-size-xs); font-weight: 400; color: var(--apidocs-muted);
+  background: none; border: 0; padding: 2px 4px; border-radius: 4px; cursor: pointer; user-select: none; -webkit-user-select: none;
+}
+.members-toggle:hover { color: var(--apidocs-fg); background: var(--apidocs-subtle); }
+.members > .member { border-bottom: 1px solid var(--apidocs-rule); content-visibility: auto; contain-intrinsic-size: auto 41px; }
+.member-row {
+  display: grid; grid-template-columns: 12px minmax(0, 46%) minmax(0, 1fr) auto; gap: 0 12px; align-items: baseline;
+  padding: 9px 4px 9px 0; cursor: pointer; list-style: none;
+  font-size: var(--apidocs-size-sm); line-height: 1.5;
+}
+.member-row::-webkit-details-marker { display: none; }
+.member-row:hover { background: color-mix(in srgb, var(--apidocs-subtle) 60%, transparent); }
+.member-chevron { align-self: center; color: var(--apidocs-faint); }
+.member[open] > .member-row .member-chevron { transform: rotate(90deg); }
+.member[open] > .member-row { background: color-mix(in srgb, var(--apidocs-subtle) 60%, transparent); }
+.member[open] > .member-row .member-brief { visibility: hidden; }
+.member-sig { min-width: 0; }
+.member-brief { min-width: 0; color: var(--apidocs-muted); display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; }
+.member-marks { display: flex; align-items: center; gap: 8px; user-select: none; -webkit-user-select: none; }
+.member-noted { display: inline-grid; color: var(--apidocs-note-api); }
+.member-noted svg { fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; }
+.member.is-deprecated .member-sig a { text-decoration: line-through; text-decoration-color: var(--apidocs-deprecated); }
+.member-body { padding: 14px 0 22px 24px; }
+/* Opening fades the entry in: opacity only, so nothing is laid out twice. */
+.member::details-content { opacity: 1; transition: opacity 140ms ease-out; }
+@starting-style { .member[open]::details-content { opacity: 0; } }
 .member-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
 .member-name { font-family: var(--apidocs-font-mono); font-size: var(--apidocs-size-lg); font-weight: 700; overflow-wrap: anywhere; }
 .member-name .anchor { color: var(--apidocs-fg); }
@@ -730,7 +761,8 @@ td .badge { margin-right: 6px; }
 .see-list { margin: 0; padding-left: 1.2em; }
 
 .inherited-list { margin: 2px 0 0; line-height: 1.9; font-size: var(--apidocs-size-sm); }
-.member:target .member-name .anchor { color: var(--apidocs-accent); }
+.member-head:target .member-name .anchor { color: var(--apidocs-accent); }
+.member-head { scroll-margin-top: calc(var(--apidocs-topbar) + 56px); }
 
 /* ---- Small screens ---- */
 
@@ -768,6 +800,8 @@ td .badge { margin-right: 6px; }
   .content { padding: 0; }
   .content > * { max-width: none; }
   .sig pre, .code-block pre { white-space: pre-wrap; border: 1px solid #ccc; }
+  .member::details-content { content-visibility: visible; display: block; }
+  .members-toggle, .member-chevron { display: none; }
   .member { break-inside: avoid-page; }
   a { color: inherit; }
 }
@@ -785,8 +819,10 @@ td .badge { margin-right: 6px; }
   background: linear-gradient(90deg, transparent, var(--apidocs-loadbar-head, var(--apidocs-accent)));
   filter: blur(3px); opacity: 0.9;
 }
-html[data-leaving] .loadbar { opacity: 1; animation: apidocs-leave 6s cubic-bezier(0.08, 0.82, 0.17, 1) forwards; }
-html[data-arriving] .loadbar { animation: apidocs-arrive 420ms ease-out both; }
+@media (prefers-reduced-motion: no-preference) {
+  html[data-leaving] .loadbar { opacity: 1; animation: apidocs-leave 6s cubic-bezier(0.08, 0.82, 0.17, 1) forwards; }
+  html[data-arriving] .loadbar { animation: apidocs-arrive 420ms ease-out both; }
+}
 @keyframes apidocs-leave { from { transform: translateX(-101%); } to { transform: translateX(-12%); } }
 @keyframes apidocs-arrive {
   0% { transform: translateX(-35%); opacity: 1; }
@@ -803,7 +839,7 @@ html[data-arriving] .loadbar { animation: apidocs-arrive 420ms ease-out both; }
 ::view-transition-old(root), ::view-transition-new(root) { animation-duration: 120ms; }
 ::view-transition-old(apidocs-topbar), ::view-transition-old(apidocs-sidebar), ::view-transition-old(apidocs-loadbar) { display: none; }
 ::view-transition-new(apidocs-topbar), ::view-transition-new(apidocs-sidebar), ::view-transition-new(apidocs-loadbar) { animation: none; }
-::view-transition-old(apidocs-content) { animation: apidocs-out 90ms ease-in both; }
+::view-transition-old(apidocs-content) { animation: apidocs-out 90ms ease-out both; }
 ::view-transition-new(apidocs-content) { animation: apidocs-in 180ms 40ms ease-out both; }
 @keyframes apidocs-out { to { opacity: 0; } }
 @keyframes apidocs-in { from { opacity: 0; transform: translateY(6px); } }

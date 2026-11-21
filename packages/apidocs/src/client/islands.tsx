@@ -281,7 +281,7 @@ function listFilter(boxSelector: string, rowSelector: string, also?: string) {
     }
     if (also) {
       for (const row of doc.querySelectorAll<HTMLElement>(also)) {
-        const hit = !query || (row.querySelector("th")?.textContent ?? "").toLowerCase().includes(query);
+        const hit = !query || (row.querySelector("summary, th")?.textContent ?? "").toLowerCase().includes(query);
         row.toggleAttribute("data-filtered-out", !hit);
       }
     }
@@ -365,6 +365,30 @@ function leaving() {
   window.addEventListener("pageshow", () => doc.documentElement.removeAttribute("data-leaving"));
 }
 
+// ---- Folded members: open or fold a whole group; open the member a link points at.
+
+function members() {
+  for (const button of doc.querySelectorAll<HTMLButtonElement>("[data-expand-all]")) {
+    button.addEventListener("click", () => {
+      const open = button.getAttribute("aria-expanded") !== "true";
+      for (const member of button.closest("section")!.querySelectorAll<HTMLDetailsElement>("details.member")) member.open = open;
+      button.setAttribute("aria-expanded", String(open));
+      button.textContent = open ? "Collapse all" : "Expand all";
+    });
+  }
+  // Browsers open a closed disclosure when a link lands inside it; this covers the ones that do not.
+  const reveal = () => {
+    const id = decodeURIComponent(window.location.hash.slice(1));
+    const fold = id ? doc.getElementById(id)?.closest("details") : null;
+    if (fold && !fold.open) {
+      fold.open = true;
+      doc.getElementById(id)?.scrollIntoView();
+    }
+  };
+  window.addEventListener("hashchange", reveal);
+  reveal();
+}
+
 // ---- The navigator toggle: remember "hidden" on wide screens; "[" toggles it.
 
 function navigatorToggle() {
@@ -406,11 +430,12 @@ function start() {
   tableOfContents();
   navigatorToggle();
   copyMarkdown();
+  members();
   menus();
   leaving();
   // Types only: packages stay, so the way to another package is never filtered away.
   listFilter("[data-nav-filter]", ".nav-section:not(:first-of-type) .nav-list > li");
-  listFilter("[data-toc-filter]", ".toc-entries > li", "#member-summary table.summary tbody tr");
+  listFilter("[data-toc-filter]", ".toc-entries > li", ".members > details.member");
 }
 
 if (doc.readyState === "loading") doc.addEventListener("DOMContentLoaded", start);

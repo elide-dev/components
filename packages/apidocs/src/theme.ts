@@ -53,6 +53,8 @@ export interface Theme {
    * Markdown pages and llms.txt use the set as text; HTML pages draw icons and offer the set where it reads well.
    */
   symbols?: SymbolMode;
+  /** Whether a member's full documentation starts folded under its summary row ("collapsed", the default) or open. */
+  memberDetails?: "collapsed" | "expanded";
   /** Extra CSS appended to the theme stylesheet. */
   css?: string;
 }

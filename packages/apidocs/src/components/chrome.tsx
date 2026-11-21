@@ -60,6 +60,11 @@ function fontPreload(fonts: Theme["fonts"], root: string): string {
   return `;if(location.protocol!=="file:")${list}.forEach(function(h){var l=document.createElement("link");l.rel="preload";l.as="font";l.type="font/woff2";l.crossOrigin="anonymous";l.href=h;document.head.appendChild(l)})`;
 }
 
+/** Pages of this site only: relative links to .html files. Other sites are never preloaded. */
+const SPECULATION = JSON.stringify({
+  prerender: [{ where: { selector_matches: "a[href$='.html']:not([href*='://']), a[href*='.html#']:not([href*='://'])" }, eagerness: "moderate" }],
+});
+
 /** Applies a stored "navigator hidden" choice on a wide screen, before the navigator is painted. */
 const NAV_STATE_BOOT =
   'try{if(matchMedia("(min-width:861px)").matches&&localStorage.getItem("apidocs-nav")==="closed")document.getElementById("apidocs-nav-toggle").checked=true}catch(e){}';
@@ -172,6 +177,10 @@ export function Shell({ title, description, crumbs, toc, jsonLd, meta, children 
         {theme.favicon && <link rel="icon" type="image/svg+xml" href={`${root}assets/favicon.svg`} />}
         <script dangerouslySetInnerHTML={{ __html: THEME_BOOT + fontPreload(theme.fonts, root) }} />
         <script defer src={`${root}assets/apidocs.js`} />
+        {/* Hold first paint until the content element is parsed, so a page transition starts from real content. */}
+        <link rel="expect" href={`${name}.html#content`} {...({ blocking: "render" } as object)} />
+        {/* On a server, start loading and rendering a page of this site when a link to it is hovered or pressed. */}
+        <script type="speculationrules" dangerouslySetInnerHTML={{ __html: SPECULATION }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(graph).replace(/</g, "\\u003c") }} />
       </head>
       <body>
@@ -200,13 +209,13 @@ export function Shell({ title, description, crumbs, toc, jsonLd, meta, children 
           </span>
           <div class="topbar-tools">
             <a class="search-fallback" href={`${relative(page, INDEX, ".html")}#all-types`}>All types</a>
-            <div class="search" data-search data-js-only>
+            <search class="search" data-search data-js-only>
               <label class="visually-hidden" for="apidocs-search">Search the API</label>
               <input id="apidocs-search" type="search" placeholder="Search types and members" autocomplete="off" spellcheck={false}
                 role="combobox" list={undefined} aria-expanded="false" aria-controls="apidocs-results" aria-autocomplete="list" />
               <kbd class="search-key" aria-hidden="true">/</kbd>
               <ul id="apidocs-results" class="search-results" role="listbox" aria-label="Search results" hidden />
-            </div>
+            </search>
             {(theme.links?.header ?? []).map(link => <a key={link.url} class="topbar-link" href={link.url}>{link.label}</a>)}
             <button type="button" class="theme-switch" data-theme-switch data-js-only aria-label="Color theme: system">
               {/* The drawn icon everywhere; a sun or a moon where the platform's emoji are good (data-emoji). */}

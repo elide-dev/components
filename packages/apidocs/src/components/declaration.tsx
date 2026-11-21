@@ -155,13 +155,32 @@ const KIND_WORD: Record<Member["kind"], string> = {
 const SHOWN_MODIFIERS = new Set(["static", "abstract", "default", "suspend", "inline", "operator", "infix", "override", "const", "lateinit", "open", "external", "tailrec"]);
 
 /** One member, in full: what a reader opens the page for. */
-export function MemberDetail({ member }: { member: Member }) {
+/**
+ * A member: one disclosure. Closed, it is a row of the compact signature and the summary sentence, so a type
+ * reads as a list. Open, it shows everything. The anchor sits inside the folded part, so a link to the member,
+ * and the browser's find-in-page when it matches text in there, open it without any script.
+ */
+export function MemberDetail({ member, summary }: { member: Member; summary?: ComponentChildren }) {
   const ctx = usePage();
   const doc = member.doc;
   const statics = (member.modifiers ?? []).filter(m => SHOWN_MODIFIERS.has(m));
+  const open = ctx.theme.memberDetails === "expanded";
+  const noted = (doc?.notes ?? []).some(note => note.kind === "apiNote");
   return (
-    <section class="member" id={member.anchor} data-kind={member.kind}>
-      <header class="member-head">
+    <details class={member.deprecated ? "member is-deprecated" : "member"} data-kind={member.kind} open={open}>
+      <summary class="member-row">
+        <svg class="member-chevron" viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M6 3.75 10.25 8 6 12.25" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" /></svg>
+        <span class="member-sig">{summary ?? <code class="summary-sig">{member.name}</code>}</span>
+        <span class="member-brief">
+          {doc?.summary?.length ? <Inlines nodes={doc.summary} /> : !member.implicit && <span class="undocumented">No description.</span>}
+        </span>
+        <span class="member-marks">
+          {noted && <span class="member-noted" title="Has an API note"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><circle cx="8" cy="8" r="6.25" /><path d="M8 4.6v3.9" /><path d="M8 11.1v.01" /></svg><span class="visually-hidden">Has an API note</span></span>}
+          {member.deprecated && <Badge tone="deprecated">{member.deprecated.forRemoval ? "for removal" : "deprecated"}</Badge>}
+        </span>
+      </summary>
+      <div class="member-body">
+      <header class="member-head" id={member.anchor}>
         <h3 class="member-name">
           <a class="anchor" href={resolve(ctx.site, ctx.page, ".html", member.id)} aria-label={`${KIND_WORD[member.kind]} ${member.name}`}>
             {member.name}
@@ -170,7 +189,6 @@ export function MemberDetail({ member }: { member: Member }) {
         <span class="member-badges">
           {statics.map(m => <Badge key={m}>{m}</Badge>)}
           {member.implicit && <Badge title="Declared by the compiler">implicit</Badge>}
-          {member.deprecated && <Badge tone="deprecated">{member.deprecated.forRemoval ? "deprecated for removal" : "deprecated"}</Badge>}
           {member.since && <Badge tone="since" title={`Since ${member.since}`}>since {member.since}</Badge>}
           {member.source && <SourceLink path={member.source.path} line={member.source.line} />}
         </span>
@@ -211,6 +229,7 @@ export function MemberDetail({ member }: { member: Member }) {
       <Notes notes={doc?.notes} />
       {member.overrides && <p class="overrides">Overrides <RefLink refValue={member.overrides} />.</p>}
       <SeeAlso doc={doc} />
-    </section>
+      </div>
+    </details>
   );
 }
