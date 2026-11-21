@@ -11,6 +11,8 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
+    "apidocs:dev": "bun run --cwd packages/apidocs dev",
+    "apidocs:sample": "bun run --cwd packages/apidocs sample",
     "lint": "turbo run lint",
     "test": "turbo run test",
     "test:preact": "turbo run test --filter=@elide/preact",

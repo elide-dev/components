@@ -40,6 +40,15 @@
         "^build"
       ]
     },
+    "@elide/apidocs#build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**"]
+    },
+    "@elide/apidocs#test": {
+      "dependsOn": ["build"],
+      "cache": false,
+      "passThroughEnv": ["PLAYWRIGHT_BROWSERS_PATH"]
+    },
     "@elide/elements#test": {
       "dependsOn": ["build"],
       "cache": false

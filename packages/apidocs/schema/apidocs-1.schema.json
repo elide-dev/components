@@ -1,0 +1,412 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://elide.dev/schemas/apidocs-1.schema.json",
+  "title": "Model",
+  "description": "The apidocs/1 model of one module's public API, as the Javadoc doclet and the Dokka plugin write it. A null value, false and an empty list are left out, so each is the default when a property is absent. Lists keep the extractor's order.",
+  "$ref": "#/$defs/Model",
+  "$defs": {
+    "Model": {
+      "description": "One module's model.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema", "module"],
+      "properties": {
+        "schema": { "const": "apidocs/1", "description": "The schema name." },
+        "module": { "$ref": "#/$defs/Module" },
+        "externals": { "type": "array", "items": { "$ref": "#/$defs/External" }, "description": "Where references outside this model point, by name prefix; the first match wins." },
+        "packages": { "type": "array", "items": { "$ref": "#/$defs/Package" }, "description": "The documented packages, sorted by name." }
+      }
+    },
+    "Module": {
+      "description": "The documented module.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name"],
+      "properties": {
+        "name": { "type": "string", "description": "The module's name, as pages show it." },
+        "version": { "type": "string", "description": "The module's version." },
+        "languages": { "type": "array", "items": { "type": "string" }, "description": "The source languages, sorted: java, kotlin." },
+        "doc": { "$ref": "#/$defs/Doc" }
+      }
+    },
+    "External": {
+      "description": "Documentation outside this model: a reference whose id starts with prefix links below url.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["prefix", "url"],
+      "properties": {
+        "prefix": { "type": "string", "description": "A package or name prefix, such as java." },
+        "url": { "type": "string", "description": "The base URL (absolute) or path (relative to the model's root); {module} stands for a target's module." }
+      }
+    },
+    "Package": {
+      "description": "A package (Java) or a package's top-level declarations (Kotlin).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name"],
+      "properties": {
+        "id": { "type": "string", "description": "The package's id: its qualified name." },
+        "name": { "type": "string", "description": "The qualified name; empty for the unnamed package." },
+        "doc": { "$ref": "#/$defs/Doc" },
+        "since": { "type": "string" },
+        "deprecated": { "$ref": "#/$defs/Deprecation" },
+        "nullMarked": { "type": "boolean", "description": "Whether the package is JSpecify @NullMarked." },
+        "types": { "type": "array", "items": { "$ref": "#/$defs/Type" }, "description": "The package's types, nested types included, sorted by name." },
+        "functions": { "type": "array", "items": { "$ref": "#/$defs/Member" }, "description": "Top-level functions (Kotlin)." },
+        "properties": { "type": "array", "items": { "$ref": "#/$defs/Member" }, "description": "Top-level properties (Kotlin)." },
+        "typeAliases": { "type": "array", "items": { "$ref": "#/$defs/TypeAlias" }, "description": "Type aliases (Kotlin)." }
+      }
+    },
+    "TypeKind": {
+      "description": "What a type declaration is.",
+      "enum": ["class", "interface", "record", "enum", "annotation", "object"]
+    },
+    "Type": {
+      "description": "A type declaration. Its page is <package path>/<name>.html.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "kind", "language", "signature"],
+      "properties": {
+        "id": { "type": "string", "description": "The stable id: the binary name (p.Outer$Inner) for Java, Dokka's DRI for Kotlin." },
+        "name": { "type": "string", "description": "The name inside its package, nesting joined with dots (Outer.Inner)." },
+        "kind": { "$ref": "#/$defs/TypeKind" },
+        "language": { "type": "string", "description": "java or kotlin." },
+        "modifiers": { "type": "array", "items": { "type": "string" }, "description": "Modifiers in canonical order, without implied ones." },
+        "annotations": { "type": "array", "items": { "$ref": "#/$defs/Tokens" }, "description": "Documented annotations, each as tokens." },
+        "typeParams": { "type": "array", "items": { "$ref": "#/$defs/TypeParam" } },
+        "signature": { "$ref": "#/$defs/Tokens", "description": "The declaration line as tokens." },
+        "superclass": { "$ref": "#/$defs/Tokens", "description": "The direct superclass as tokens; absent for interfaces." },
+        "interfaces": { "type": "array", "items": { "$ref": "#/$defs/Tokens" }, "description": "Implemented or extended interfaces." },
+        "ancestors": { "type": "array", "items": { "$ref": "#/$defs/Ref" }, "description": "The superclass chain, nearest first." },
+        "permits": { "type": "array", "items": { "$ref": "#/$defs/Ref" }, "description": "Permitted subtypes of a sealed type." },
+        "enclosing": { "type": "string", "description": "The enclosing type's id." },
+        "components": { "type": "array", "items": { "$ref": "#/$defs/Param" }, "description": "Record components with their @param documentation." },
+        "members": { "type": "array", "items": { "$ref": "#/$defs/Member" }, "description": "Declared members, in declaration order." },
+        "inherited": { "type": "array", "items": { "$ref": "#/$defs/Inherited" }, "description": "Members inherited from supertypes, grouped by declaring type." },
+        "doc": { "$ref": "#/$defs/Doc" },
+        "deprecated": { "$ref": "#/$defs/Deprecation" },
+        "since": { "type": "string" },
+        "nullMarked": { "type": "boolean", "description": "Whether the declaration is in a JSpecify @NullMarked scope." },
+        "source": { "$ref": "#/$defs/Source" }
+      }
+    },
+    "MemberKind": {
+      "description": "What a member is.",
+      "enum": ["constructor", "method", "field", "enumConstant", "annotationElement", "function", "property"]
+    },
+    "Member": {
+      "description": "A member of a type, or a Kotlin top-level function or property.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "anchor", "kind", "name", "signature"],
+      "properties": {
+        "id": { "type": "string", "description": "<type id>#<anchor> for Java, Dokka's DRI for Kotlin." },
+        "anchor": { "type": "string", "description": "The fragment on its page; for Java the JDK doclet's, such as read(java.io.InputStream)." },
+        "kind": { "$ref": "#/$defs/MemberKind" },
+        "name": { "type": "string", "description": "The simple name; a constructor is named after its type." },
+        "modifiers": { "type": "array", "items": { "type": "string" } },
+        "annotations": { "type": "array", "items": { "$ref": "#/$defs/Tokens" } },
+        "typeParams": { "type": "array", "items": { "$ref": "#/$defs/TypeParam" } },
+        "receiver": { "$ref": "#/$defs/Param", "description": "The receiver of a Kotlin extension function or property." },
+        "signature": { "$ref": "#/$defs/Tokens", "description": "The declaration as tokens, on one line." },
+        "params": { "type": "array", "items": { "$ref": "#/$defs/Param" } },
+        "returns": { "$ref": "#/$defs/Returns" },
+        "type": { "$ref": "#/$defs/Tokens", "description": "The type of a field, property or enum constant." },
+        "nullness": { "$ref": "#/$defs/Nullness" },
+        "throws": { "type": "array", "items": { "$ref": "#/$defs/Thrown" }, "description": "Declared and documented exceptions, merged." },
+        "constant": { "type": "string", "description": "A compile-time constant's value as a source literal." },
+        "defaultValue": { "type": "string", "description": "An annotation element's default as source text." },
+        "overrides": { "$ref": "#/$defs/Ref", "description": "The member this one overrides or implements." },
+        "implicit": { "type": "boolean", "description": "Whether the compiler declares it (a record's accessors, an enum's values())." },
+        "doc": { "$ref": "#/$defs/Doc" },
+        "deprecated": { "$ref": "#/$defs/Deprecation" },
+        "since": { "type": "string" },
+        "source": { "$ref": "#/$defs/Source" }
+      }
+    },
+    "TypeAlias": {
+      "description": "A Kotlin type alias.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "signature", "target"],
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "typeParams": { "type": "array", "items": { "$ref": "#/$defs/TypeParam" } },
+        "signature": { "$ref": "#/$defs/Tokens" },
+        "target": { "$ref": "#/$defs/Tokens" },
+        "doc": { "$ref": "#/$defs/Doc" },
+        "deprecated": { "$ref": "#/$defs/Deprecation" },
+        "since": { "type": "string" },
+        "source": { "$ref": "#/$defs/Source" }
+      }
+    },
+    "Nullness": {
+      "description": "Whether a reference type admits null; absent when unknown or not applicable.",
+      "enum": ["nullable", "nonNull"]
+    },
+    "Param": {
+      "description": "A value parameter or record component.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "type"],
+      "properties": {
+        "name": { "type": "string" },
+        "type": { "$ref": "#/$defs/Tokens" },
+        "varargs": { "type": "boolean" },
+        "defaultValue": { "type": "string", "description": "A Kotlin default argument as source text." },
+        "nullness": { "$ref": "#/$defs/Nullness" },
+        "annotations": { "type": "array", "items": { "$ref": "#/$defs/Tokens" } },
+        "doc": { "$ref": "#/$defs/Blocks" }
+      }
+    },
+    "TypeParam": {
+      "description": "A type parameter.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name"],
+      "properties": {
+        "name": { "type": "string" },
+        "bounds": { "type": "array", "items": { "$ref": "#/$defs/Tokens" } },
+        "doc": { "$ref": "#/$defs/Blocks" }
+      }
+    },
+    "Returns": {
+      "description": "A return value.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": {
+        "type": { "$ref": "#/$defs/Tokens" },
+        "nullness": { "$ref": "#/$defs/Nullness" },
+        "doc": { "$ref": "#/$defs/Blocks" }
+      }
+    },
+    "Thrown": {
+      "description": "An exception a member throws.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": {
+        "type": { "$ref": "#/$defs/Tokens" },
+        "declared": { "type": "boolean", "description": "Whether the throws clause names it." },
+        "doc": { "$ref": "#/$defs/Blocks" }
+      }
+    },
+    "Deprecation": {
+      "description": "A deprecation.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "doc": { "$ref": "#/$defs/Blocks" },
+        "since": { "type": "string" },
+        "forRemoval": { "type": "boolean" }
+      }
+    },
+    "Inherited": {
+      "description": "Members a type inherits from one supertype.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["from", "kind"],
+      "properties": {
+        "from": { "$ref": "#/$defs/Ref" },
+        "kind": { "type": "string", "description": "class or interface." },
+        "members": { "type": "array", "items": { "$ref": "#/$defs/Ref" } }
+      }
+    },
+    "Source": {
+      "description": "A declaration's place in its source.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "line"],
+      "properties": {
+        "path": { "type": "string", "description": "The file's path below its source root." },
+        "line": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "Ref": {
+      "description": "A reference to a declaration. It links locally when the model has the id, else through url, else not at all.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id"],
+      "properties": {
+        "id": { "type": "string" },
+        "text": { "type": "string", "description": "The text to show, when not the target's own name." },
+        "url": { "type": "string", "description": "The target's URL, when outside this model and an external covers it." }
+      }
+    },
+    "TokenKind": {
+      "description": "What a signature token is.",
+      "enum": ["keyword", "name", "type", "typeParam", "annotation", "literal", "punct", "param"]
+    },
+    "Token": {
+      "description": "One token of a signature.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "text"],
+      "properties": {
+        "kind": { "$ref": "#/$defs/TokenKind" },
+        "text": { "type": "string" },
+        "ref": { "type": "string", "description": "The target's model id, for a type or annotation." },
+        "url": { "type": "string", "description": "The target's URL when outside the model." }
+      }
+    },
+    "Tokens": { "type": "array", "items": { "$ref": "#/$defs/Token" } },
+    "Doc": {
+      "description": "Documentation as a tree. Parameter, return and exception documentation live on those parts.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "summary": { "$ref": "#/$defs/Inlines", "description": "The first sentence." },
+        "body": { "$ref": "#/$defs/Blocks", "description": "The full description, first sentence included." },
+        "notes": { "type": "array", "items": { "$ref": "#/$defs/Note" } },
+        "see": { "type": "array", "items": { "$ref": "#/$defs/Inlines" } },
+        "inheritedFrom": { "$ref": "#/$defs/Ref", "description": "The member whose documentation this is, when inherited." }
+      }
+    },
+    "NoteKind": { "enum": ["apiNote", "implSpec", "implNote"] },
+    "Note": {
+      "description": "An @apiNote, @implSpec or @implNote section.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind"],
+      "properties": {
+        "kind": { "$ref": "#/$defs/NoteKind" },
+        "body": { "$ref": "#/$defs/Blocks" }
+      }
+    },
+    "Blocks": { "type": "array", "items": { "$ref": "#/$defs/Block" } },
+    "Inlines": { "type": "array", "items": { "$ref": "#/$defs/Inline" } },
+    "Block": {
+      "oneOf": [
+        { "$ref": "#/$defs/Paragraph" },
+        { "$ref": "#/$defs/ListBlock" },
+        { "$ref": "#/$defs/CodeBlock" },
+        { "$ref": "#/$defs/Table" },
+        { "$ref": "#/$defs/Heading" },
+        { "$ref": "#/$defs/Quote" },
+        { "$ref": "#/$defs/RawBlock" }
+      ]
+    },
+    "Paragraph": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind"],
+      "properties": { "kind": { "const": "paragraph" }, "children": { "$ref": "#/$defs/Inlines" } }
+    },
+    "ListBlock": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind"],
+      "properties": {
+        "kind": { "const": "list" },
+        "ordered": { "type": "boolean" },
+        "items": { "type": "array", "items": { "$ref": "#/$defs/Blocks" } }
+      }
+    },
+    "CodeBlock": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "text"],
+      "properties": {
+        "kind": { "const": "code" },
+        "language": { "type": "string", "description": "Absent for the declaration's own language." },
+        "text": { "type": "string" }
+      }
+    },
+    "Table": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind"],
+      "properties": {
+        "kind": { "const": "table" },
+        "caption": { "$ref": "#/$defs/Inlines" },
+        "head": { "type": "array", "items": { "$ref": "#/$defs/Row" } },
+        "rows": { "type": "array", "items": { "$ref": "#/$defs/Row" } }
+      }
+    },
+    "Row": { "type": "array", "items": { "$ref": "#/$defs/Blocks" } },
+    "Heading": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "level"],
+      "properties": {
+        "kind": { "const": "heading" },
+        "level": { "type": "integer", "minimum": 1 },
+        "children": { "$ref": "#/$defs/Inlines" }
+      }
+    },
+    "Quote": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind"],
+      "properties": { "kind": { "const": "quote" }, "children": { "$ref": "#/$defs/Blocks" } }
+    },
+    "RawBlock": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "html", "text"],
+      "properties": { "kind": { "const": "raw" }, "html": { "type": "string" }, "text": { "type": "string" } }
+    },
+    "Inline": {
+      "oneOf": [
+        { "$ref": "#/$defs/Text" },
+        { "$ref": "#/$defs/Code" },
+        { "$ref": "#/$defs/Emphasis" },
+        { "$ref": "#/$defs/Strong" },
+        { "$ref": "#/$defs/Link" },
+        { "$ref": "#/$defs/Break" },
+        { "$ref": "#/$defs/RawInline" }
+      ]
+    },
+    "Text": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "text"],
+      "properties": { "kind": { "const": "text" }, "text": { "type": "string" } }
+    },
+    "Code": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "text"],
+      "properties": { "kind": { "const": "code" }, "text": { "type": "string" } }
+    },
+    "Emphasis": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind"],
+      "properties": { "kind": { "const": "emphasis" }, "children": { "$ref": "#/$defs/Inlines" } }
+    },
+    "Strong": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind"],
+      "properties": { "kind": { "const": "strong" }, "children": { "$ref": "#/$defs/Inlines" } }
+    },
+    "Link": {
+      "description": "A link to a declaration (target) or a URL. An unresolved declaration link renders as its label.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind"],
+      "properties": {
+        "kind": { "const": "link" },
+        "target": { "$ref": "#/$defs/Ref" },
+        "url": { "type": "string" },
+        "code": { "type": "boolean", "description": "Whether the label is code ({@link}) rather than prose ({@linkplain})." },
+        "children": { "$ref": "#/$defs/Inlines" }
+      }
+    },
+    "Break": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind"],
+      "properties": { "kind": { "const": "break" } }
+    },
+    "RawInline": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "html", "text"],
+      "properties": { "kind": { "const": "raw" }, "html": { "type": "string" }, "text": { "type": "string" } }
+    }
+  }
+}
