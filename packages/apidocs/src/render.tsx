@@ -6,12 +6,13 @@
  * copies: { asset: "apidocs.css" } means <assets>/apidocs.css.
  */
 import { renderToString } from "preact-render-to-string";
+import { DeprecatedPage, IndexAllPage, PackagesIndexPage, TypesIndexPage } from "./indexes";
 import { Ctx, type PageContext } from "./context";
-import { guideMarkdown, indexMarkdown, packageMarkdown, typeMarkdown } from "./markdown";
+import { deprecatedIndexMarkdown, guideMarkdown, indexAllMarkdown, indexMarkdown, packageMarkdown, packagesIndexMarkdown, typeMarkdown, typesIndexMarkdown } from "./markdown";
 import type { Model } from "./model";
 import { GuidePage } from "./narrative";
 import { IndexPage, PackagePage, TypePage } from "./pages";
-import { buildSite, INDEX, isThrowable, packagePage, type Site, typePage } from "./site";
+import { buildSite, DEPRECATED_PAGE, INDEX, INDEX_ALL_PAGE, indexPages, isThrowable, PACKAGES_PAGE, packagePage, type Site, TYPES_PAGE, typePage } from "./site";
 import { inlineText, summaryText, typeKindWord } from "./structure";
 import { type SymbolKey, type SymbolMode, typeSymbolKey, withSym } from "./symbols";
 import { resolveTheme, type Theme, type ThemeLink, themeCss } from "./theme";
@@ -66,7 +67,21 @@ export function render(modelInput: Model | string, themeInput?: Theme | string):
     }
   }
 
-  out["llms.txt"] = llms(site, pages, guides, symbols);
+  // Javadoc's index pages, each only when it has content.
+  const indexes: ListedPage[] = [];
+  const indexPage = (page: string, title: string, summary: string, node: preact.VNode, markdown: string) => {
+    html(page, site.language, node);
+    out[`${page}.md`] = markdown;
+    indexes.push({ page, title, summary, symbol: "module" });
+  };
+  for (const { page } of indexPages(site)) {
+    if (page === PACKAGES_PAGE) indexPage(page, "Packages", "every package with its summary and type counts", <PackagesIndexPage />, packagesIndexMarkdown(site, symbols));
+    if (page === TYPES_PAGE) indexPage(page, "All types", "every type, nested ones too, by name", <TypesIndexPage />, typesIndexMarkdown(site, symbols));
+    if (page === INDEX_ALL_PAGE) indexPage(page, "Index", "every declaration from A to Z", <IndexAllPage />, indexAllMarkdown(site, symbols));
+    if (page === DEPRECATED_PAGE) indexPage(page, "Deprecated", "everything deprecated, for removal first", <DeprecatedPage />, deprecatedIndexMarkdown(site, symbols));
+  }
+
+  out["llms.txt"] = llms(site, pages, guides, symbols, indexes);
   out["llms-full.txt"] = [pages[0]!, ...guides, ...pages.slice(1)].map(p => `<!-- ${p.page}.md -->\n${out[`${p.page}.md`]}`).join("\n");
   out["api.json"] = JSON.stringify(model);
   // Javadoc's element-list: a module line first when the packages belong to a named JPMS module, as -link expects.
@@ -79,7 +94,7 @@ export function render(modelInput: Model | string, themeInput?: Theme | string):
   if (theme.logo?.light) out["assets/logo-light.svg"] = theme.logo.light;
   if (theme.logo?.dark) out["assets/logo-dark.svg"] = theme.logo.dark;
   if (theme.favicon) out["assets/favicon.svg"] = theme.favicon;
-  if (theme.baseUrl) out["sitemap.xml"] = sitemap(theme.baseUrl, [pages[0]!, ...guides, ...pages.slice(1)].map(p => p.page));
+  if (theme.baseUrl) out["sitemap.xml"] = sitemap(theme.baseUrl, [pages[0]!, ...guides, ...pages.slice(1), ...indexes].map(p => p.page));
   return out;
 }
 
@@ -100,7 +115,7 @@ function safeTheme(theme: Theme): Theme {
 }
 
 /** llms.txt (llmstxt.org): what the module is, the guides, then every reference page, each with its summary. */
-function llms(site: Site, pages: ListedPage[], guides: ListedPage[], symbols: SymbolMode): string {
+function llms(site: Site, pages: ListedPage[], guides: ListedPage[], symbols: SymbolMode, indexes: ListedPage[] = []): string {
   const m = site.model.module;
   const entry = (p: ListedPage) => `- [${withSym(symbols, p.symbol, p.title.replace(/([\\[\]<>])/g, "\\$1"))}](${p.page}.md)${p.summary ? `: ${p.summary}` : ""}`;
   const lines = [`# ${m.name}${m.version ? ` ${m.version}` : ""}`, ""];
@@ -123,6 +138,10 @@ function llms(site: Site, pages: ListedPage[], guides: ListedPage[], symbols: Sy
   }
   lines.push("## Pages", "");
   for (const p of pages.slice(1)) lines.push(entry(p));
+  if (indexes.length) {
+    lines.push("", "## Indexes", "");
+    for (const p of indexes) lines.push(`- [${p.title}](${p.page}.md): ${p.summary}`);
+  }
   return lines.join("\n") + "\n";
 }
 

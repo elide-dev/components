@@ -4,6 +4,8 @@
  * links to the other Markdown files. Written for agents and plain-text readers.
  */
 import type { AdmonitionTone, Block, Inline, Member, Package, Param, Thrown, Token, Type } from "./model";
+import { deprecatedGroups, guideEntries as guideEntriesForIndex, type IndexEntry, letterGroups, packageRows, typeRows } from "./index-data";
+import { DEPRECATED_PAGE, INDEX_ALL_PAGE, PACKAGES_PAGE, TYPES_PAGE } from "./site";
 import { type GuideEntry, guideNav, INDEX, isThrowable, packagePage, refLabel, relative, resolve, resolveRef, Site, tokenText, typePage } from "./site";
 import { type SymbolKey, type SymbolMode, typeSymbolKey, withSym } from "./symbols";
 import { NOTE_LABEL, sortedNotes } from "./components/declaration";
@@ -317,5 +319,53 @@ export function guideMarkdown(site: Site, entry: GuideEntry, symbols: SymbolMode
     nav.next ? `Next: [${esc(nav.next.title)}](${dest(nav.next.href.replace(/\.html$/, ".md"))})` : "",
   ].filter(Boolean);
   if (pager.length) parts.push("---", pager.join("  \n"));
+  return join(parts);
+}
+
+// ---- Index pages (src/indexes.tsx): the same lists as their HTML twins.
+
+function indexMd(site: Site, page: string, symbols: SymbolMode): Md {
+  return { site, page, language: site.language, symbols };
+}
+
+function entryLine(md: Md, entry: IndexEntry): string {
+  const href = entry.page ? relative(md.page, entry.page, ".md") : resolve(md.site, md.page, ".md", entry.id);
+  const name = codeSpan(entry.name);
+  const label = href ? `[${name}](${dest(href)})` : name;
+  const removal = entry.deprecation ? (entry.deprecation.forRemoval ? " (deprecated for removal)" : " (deprecated)") : "";
+  const summary = entry.summary?.length ? `: ${inlines(md, entry.summary)}` : "";
+  return `- ${label}, ${esc(entry.where)}${removal}${summary}`;
+}
+
+export function packagesIndexMarkdown(site: Site, symbols: SymbolMode = "utf"): string {
+  const md = indexMd(site, PACKAGES_PAGE, symbols);
+  const lines = packageRows(site).map(({ pkg, counts }) =>
+    `- [${codeSpan(pkg.name || "(default package)")}](${dest(relative(PACKAGES_PAGE, packagePage(pkg), ".md"))}) (${counts.map(c => `${c.count} ${c.word}`).join(", ") || "no types"})${pkg.doc?.summary?.length ? `: ${inlines(md, pkg.doc.summary)}` : ""}`);
+  return join([`# Packages`, `Every package of ${esc(site.model.module.name)}.`, lines.join("\n")]);
+}
+
+export function typesIndexMarkdown(site: Site, symbols: SymbolMode = "utf"): string {
+  const md = indexMd(site, TYPES_PAGE, symbols);
+  return join([`# All types`, `Every type of ${esc(site.model.module.name)}, nested ones too, by name.`, typeRows(site).map(e => entryLine(md, e)).join("\n")]);
+}
+
+export function indexAllMarkdown(site: Site, symbols: SymbolMode = "utf"): string {
+  const md = indexMd(site, INDEX_ALL_PAGE, symbols);
+  const parts = [`# Index`, `Every declaration of ${esc(site.model.module.name)}, from A to Z.`];
+  const guides = guideEntriesForIndex(site);
+  if (guides.length) parts.push(`## Guides\n\n${guides.map(e => entryLine(md, e)).join("\n")}`);
+  for (const group of letterGroups(site)) parts.push(`## ${group.letter}\n\n${group.entries.map(e => entryLine(md, e)).join("\n")}`);
+  return join(parts);
+}
+
+export function deprecatedIndexMarkdown(site: Site, symbols: SymbolMode = "utf"): string {
+  const md = indexMd(site, DEPRECATED_PAGE, symbols);
+  const parts = [`# Deprecated`, `Everything deprecated in ${esc(site.model.module.name)}; what will be removed comes first.`];
+  for (const group of deprecatedGroups(site)) {
+    parts.push(`## ${group.title}\n\n` + group.entries.map(e => {
+      const text = blocks(md, e.deprecation?.doc, 4).replace(/\n+/g, " ");
+      return entryLine({ ...md }, { ...e, summary: undefined }) + (e.deprecation?.since ? ` Since ${esc(e.deprecation.since)}.` : "") + (text ? ` ${text}` : "");
+    }).join("\n"));
+  }
   return join(parts);
 }

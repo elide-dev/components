@@ -274,3 +274,32 @@ export function isThrowable(type: Type): boolean {
 export function tokenText(tokens: Token[] | undefined): string {
   return (tokens ?? []).map(t => t.text).join("");
 }
+
+// ---- Index pages (src/indexes.tsx): Javadoc's package, all-types, A-Z and deprecated lists, each written only when
+// it has content.
+
+export const PACKAGES_PAGE = "packages";
+export const TYPES_PAGE = "types";
+export const INDEX_ALL_PAGE = "index-all";
+export const DEPRECATED_PAGE = "deprecated";
+
+/** Whether anything in the model is deprecated: a package, a type, a member or a top-level declaration. */
+export function hasDeprecated(site: Site): boolean {
+  return site.packages.some(pkg =>
+    !!pkg.deprecated ||
+    (pkg.types ?? []).some(t => !!t.deprecated || (t.members ?? []).some(m => !!m.deprecated)) ||
+    [...(pkg.functions ?? []), ...(pkg.properties ?? [])].some(m => !!m.deprecated) ||
+    (pkg.typeAliases ?? []).some(a => !!a.deprecated));
+}
+
+/** The index pages this site has, in the order a top bar lists them. */
+export function indexPages(site: Site): { page: string; label: string }[] {
+  const types = site.types.size > 0;
+  const declarations = types || site.packages.some(p => (p.functions?.length ?? 0) + (p.properties?.length ?? 0) + (p.typeAliases?.length ?? 0) > 0);
+  return [
+    ...(site.packages.length > 0 ? [{ page: PACKAGES_PAGE, label: "Packages" }] : []),
+    ...(types ? [{ page: TYPES_PAGE, label: "All types" }] : []),
+    ...(declarations || site.guides.length > 0 ? [{ page: INDEX_ALL_PAGE, label: "Index" }] : []),
+    ...(hasDeprecated(site) ? [{ page: DEPRECATED_PAGE, label: "Deprecated" }] : []),
+  ];
+}
