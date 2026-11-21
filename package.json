@@ -11,6 +11,7 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
+    "apidocs:audit": "bun run --cwd packages/apidocs audit",
     "apidocs:dev": "bun run --cwd packages/apidocs dev",
     "apidocs:sample": "bun run --cwd packages/apidocs sample",
     "lint": "turbo run lint",

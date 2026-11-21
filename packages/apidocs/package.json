@@ -22,6 +22,7 @@
     "README.md"
   ],
   "scripts": {
+    "audit": "bun scripts/audit.ts",
     "build": "bun scripts/gen-types.ts --check && bun scripts/gen-artwork.ts --check && vite build --config vite.render.config.ts && vite build --config vite.client.config.ts && bun scripts/assets.ts",
     "dev": "bun scripts/dev.ts",
     "sample": "bun scripts/sample.ts",
@@ -41,7 +42,11 @@
   "devDependencies": {
     "@types/bun": "^1.3.0",
     "axe-core": "4.14.0",
+    "chrome-launcher": "1.2.3",
+    "lighthouse": "13.6.0",
+    "node-html-parser": "6.1.13",
     "playwright": "^1.65.0",
+    "postcss": "8.5.32",
     "typescript": "^7.0.2",
     "vite": "^8.3.6"
   },
