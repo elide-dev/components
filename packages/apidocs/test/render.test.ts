@@ -387,7 +387,7 @@ describe("parts", () => {
   });
   test("an override with no description of its own says where it is described, with the link", () => {
     const model = structuredClone(samples.java);
-    const type = model.packages.flatMap(p => p.types ?? []).find(t => (t.members ?? []).some(m => m.kind === "method"))!;
+    const type = (model.packages ?? []).flatMap(p => p.types ?? []).find(t => (t.members ?? []).some(m => m.kind === "method"))!;
     const member = type.members!.find(m => m.kind === "method")!;
     member.doc = undefined;
     member.overrides = { id: "com.example.Other#run()", text: "Other.run", url: "https://example.com/Other.html#run()" };

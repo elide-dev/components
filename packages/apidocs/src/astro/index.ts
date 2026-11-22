@@ -5,6 +5,7 @@
 export { default as ApidocsPage } from "./ApidocsPage.astro";
 export { default as VersionNotice } from "./VersionNotice.astro";
 export { default as VersionSelect } from "./VersionSelect.astro";
+export type { HostedSearch } from "./Search";
 export { type ApidocsOptions, type ApidocsSite, apidocs } from "./integration";
 export { renderPage, type PageParts, type RenderOptions } from "./render";
 export { type Resolved, resolvePage, sitePaths, textFiles } from "./resolve";

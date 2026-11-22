@@ -17,7 +17,7 @@ import type { Model } from "../model";
 import type { Theme } from "../theme";
 import { bundledAssets, bundledFonts } from "./fonts";
 import { renderPage } from "./render";
-import Search from "./Search";
+import Search, { type HostedSearch } from "./Search";
 import scriptsDone from "./scripts-done.js?url&no-inline";
 
 interface Props {
@@ -28,6 +28,8 @@ interface Props {
   base: string;
   /** The site's origin for canonical URLs; defaults to Astro.site, then the request's origin. theme.baseUrl wins. */
   site?: string | URL;
+  /** A search service the search field races against the site's own index (Search.tsx). */
+  search?: HostedSearch;
 }
 
 const { model, page, theme, site } = Astro.props;
@@ -47,7 +49,7 @@ const parts = renderPage(model, page, theme, { base, baseUrl, fontUrl: asset => 
     <Fragment set:html={parts.body[0]} />
     {Astro.slots.has("topbar") ? <slot name="topbar" /> : <Fragment set:html={parts.moduleVersion} />}
     <Fragment set:html={parts.body[1]} />
-    <Search client:idle api={parts.api} />
+    <Search client:idle api={parts.api} hosted={Astro.props.search} />
     <Fragment set:html={parts.body[2]} />
     <slot name="notice" />
     <Fragment set:html={parts.body[3]} />

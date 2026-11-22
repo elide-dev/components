@@ -64,3 +64,45 @@ details.version-menu > .version-current:active, .version-list a:active { backgro
 @media (max-width: 360px) {
   .topbar .version-menu { display: none; }
 }
+
+/* ---- Search with a service (Search.tsx): a panel under the field with the scope switch, the results and their groups ---- */
+
+.search-panel {
+  position: absolute; inset-inline-end: 0; inset-block-start: calc(100% + 6px); z-index: 12;
+  inline-size: min(36rem, 92vw);
+  background: var(--apidocs-surface); border: 1px solid var(--apidocs-rule-strong); border-radius: var(--apidocs-radius);
+  box-shadow: 0 12px 32px -12px oklch(0% 0 none / 0.28);
+}
+.search-panel > .search-results {
+  position: static; inline-size: auto; max-block-size: min(64vh, 32rem);
+  border: 0; border-radius: 0; box-shadow: none;
+}
+.search-scopes {
+  display: flex; align-items: center; gap: 4px; padding-block: 6px 4px; padding-inline: 6px;
+  border-block-end: 1px solid var(--apidocs-rule); font-size: var(--apidocs-size-sm);
+}
+.search-scopes button {
+  padding-block: 3px; padding-inline: 9px; border: 1px solid transparent; border-radius: 999px;
+  background: none; color: var(--apidocs-muted); font: inherit; cursor: pointer;
+}
+.search-scopes button[aria-pressed="true"] { color: var(--apidocs-accent); background: var(--apidocs-accent-soft); font-weight: 600; }
+@media (hover: hover) and (pointer: fine) { .search-scopes button:hover { color: var(--apidocs-fg); } }
+.search-pending { margin-inline-start: auto; color: var(--apidocs-faint); font-size: var(--apidocs-size-xs); }
+.search-group { padding-block: 8px 2px; padding-inline: 10px; color: var(--apidocs-muted); font-size: var(--apidocs-size-sm); }
+/* The regular-expression switch sits in the field, before the "/" key. */
+.search-mode {
+  position: absolute; inset-inline-end: 30px; inset-block-start: 50%; transform: translateY(-50%);
+  padding-block: 0; padding-inline: 5px; border: 1px solid transparent; border-radius: 4px;
+  background: none; color: var(--apidocs-faint); font-family: var(--apidocs-font-mono); font-size: var(--apidocs-size-xs); line-height: 1.5; cursor: pointer;
+}
+.search-mode[aria-pressed="true"] { color: var(--apidocs-accent); background: var(--apidocs-accent-soft); border-color: color-mix(in srgb, var(--apidocs-accent) 30%, transparent); }
+.search:has(.search-mode) input { padding-inline-end: 58px; }
+.search-regex input { font-family: var(--apidocs-font-mono); }
+@media (max-width: 860px) {
+  .search-mode { inset-inline-end: 6px; }
+  .search:has(.search-mode) input { padding-inline-end: 34px; }
+}
+@media (pointer: coarse) {
+  .search-scopes button { min-block-size: 36px; }
+  .search-panel > .search-results li a { padding-block: 11px; }
+}
