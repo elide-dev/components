@@ -1,0 +1,173 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`outputs guide page snapshots, HTML and Markdown: guides/concepts.md 1`] = `
+"# ¶ Concepts
+
+[geo](../index.md) › Guides · Every page: [llms.txt](../llms.txt)
+
+*Shapes, measuring and units: the ideas the reference pages assume.*
+
+Three ideas carry the whole library: a closed set of shapes, pure functions that measure them, and one unit of length. Each section below links to the declarations it describes.
+
+## Shapes
+
+Every shape implements the sealed interface [\`Shape\`](../com/example/geo/Shape.md). Two classes implement it:
+
+- [\`Circle\`](../com/example/geo/Circle.md), a record of a radius and an optional label.
+  
+  - Create one with [\`Circle.of(double)\`](../com/example/geo/Circle.md#of%28double%29).
+  - Its [\`area()\`](../com/example/geo/Circle.md#area%28%29) is \`π r²\`.
+- [\`Polygon\`](../com/example/geo/Polygon.md), a regular polygon built from its sides.
+  
+  - It extends [\`AbstractShape\`](../com/example/geo/AbstractShape.md), which adds [\`perimeter()\`](../com/example/geo/AbstractShape.md#perimeter%28%29).
+  - It is not sealed: [Custom shapes](advanced/custom-shapes.md) shows how to extend it.
+
+> [!NOTE]
+> Because the hierarchy is sealed, a \`switch\` over a shape needs no \`default\` branch, and the compiler tells you when a new shape appears.
+
+### Example
+
+\`\`\`java
+String describe(Shape shape) {
+    return switch (shape) {
+        case Circle c -> "circle of radius " + c.radius();
+        case Polygon p -> "polygon with perimeter " + p.perimeter();
+    };
+}
+\`\`\`
+
+## Measuring
+
+[\`Shapes\`](../com/example/geo/Shapes.md) holds the operations. They are pure: none modifies its arguments. \`area\` is overloaded, so the compiler picks [\`area(Circle)\`](../com/example/geo/Shapes.md#area%28com.example.geo.Circle%29) or [\`area(Polygon)\`](../com/example/geo/Shapes.md#area%28com.example.geo.Polygon%29) from the argument's static type.
+
+1. Build the shapes.
+2. Measure each one, or sum them with [\`total(Shape...)\`](../com/example/geo/Shapes.md#total%28com.example.geo.Shape...%29).
+3. Compare the results: shapes order by area.
+
+> [!TIP]
+> **Collecting shapes**
+>
+> To collect shapes as you go, use [\`Shapes.Builder\`](../com/example/geo/Shapes.Builder.md) with the options of its nested enum [\`Shapes.Builder.Option\`](../com/example/geo/Shapes.Builder.Option.md), such as [\`SORTED\`](../com/example/geo/Shapes.Builder.Option.md#SORTED).
+
+### Example
+
+\`\`\`java
+double small = Shapes.area(Circle.of(1));
+double large = Shapes.area(new Polygon(4, 4, 4, 4));
+assert small < large;
+\`\`\`
+
+## Units
+
+Every length is in meters, and every area in square meters. [\`Units\`](../com/example/geo/Units.md) converts other units at the edges of a program:
+
+Units of length
+
+| Unit | Meters per unit | Status |
+| --- | --- | --- |
+| [\`Units.METERS\`](../com/example/geo/Units.md#METERS) | \`1.0\` | The base unit |
+| [\`Units.FEET\`](../com/example/geo/Units.md#FEET) | \`0.3048\` | Deprecated since 1.2 |
+
+> [!IMPORTANT]
+> Methods take and return meters. Convert once, when a value enters the program, with [\`toMeters(double)\`](../com/example/geo/Units.md#toMeters%28double%29).
+
+> [!WARNING]
+> **Round trips lose precision**
+>
+> Converting back and forth between units loses precision. Keep lengths in meters until you show them.
+
+## Parsing
+
+[\`Shapes.parse\`](../com/example/geo/Shapes.md#parse%28java.lang.String%29) reads the text form of one shape. The [text format guide](advanced/text-format.md#grammar) has the grammar.
+
+> [!CAUTION]
+> The text form is not stable across releases. Store shapes some other way, and never parse text you do not trust without a size limit.
+
+## Threads
+
+> **⚠︎ API note**
+>
+> Every method of [\`Shapes\`](../com/example/geo/Shapes.md) is safe to call from several threads at once.
+
+> **☑︎ Implementation requirements**
+>
+> A subclass of [\`Polygon\`](../com/example/geo/Polygon.md) must keep \`area()\` free of side effects, so that callers may cache it.
+
+> **✎ Implementation note**
+>
+> The library keeps no caches and allocates only the results it returns.
+
+## Further reading
+
+- [Polygon](https://en.wikipedia.org/wiki/Polygon) on Wikipedia.
+- [Classes to replace](migrating-from-1x.md#classes-to-replace), in the migration guide.
+- \`Ellipse\` is planned for a later release. This model does not contain it, so the link renders as plain text.
+- Recipes is a guide that does not exist yet, so this link renders as plain text too.
+
+---
+
+Previous: [Getting started](getting-started.md)  
+Next: [Migrating from 1.x](migrating-from-1x.md)
+"
+`;
+
+exports[`outputs guide page snapshots, HTML and Markdown: guides/advanced/text-format.md 1`] = `
+"# ¶ The text format
+
+[geo](../../index.md) › Advanced · Every page: [llms.txt](../../llms.txt)
+
+*The grammar \`Shapes.parse\` reads, and how to read files of shapes.*
+
+Shapes have a one-line text form, for logs and test fixtures. [\`Shapes.parse\`](../../com/example/geo/Shapes.md#parse%28java.lang.String%29) reads one; [\`ShapeReader\`](../../com/example/geo/io/ShapeReader.md) reads a stream of them.
+
+## Grammar
+
+\`\`\`text
+shape   = circle | polygon
+circle  = "circle" number
+polygon = "polygon" number number number { number }
+number  = digit { digit } [ "." digit { digit } ]
+\`\`\`
+
+Numbers are lengths in meters. Blank lines and lines starting with \`#\` are skipped.
+
+## Reading files
+
+[\`read(InputStream)\`](../../com/example/geo/io/ShapeReader.md#read%28java.io.InputStream%29) reads UTF-8 text; the [\`read(Reader, Charset)\`](../../com/example/geo/io/ShapeReader.md#read%28java.io.Reader,java.nio.charset.Charset%29) overload reads text you have already decoded.
+
+\`\`\`java
+try (var in = Files.newInputStream(Path.of("shapes.txt"))) {
+    List<Shape> shapes = ShapeReader.read(in);
+}
+\`\`\`
+
+> [!WARNING]
+> A malformed line throws [\`GeometryException\`](../../com/example/geo/GeometryException.md) and stops the read. Validate files from users before you read them.
+
+---
+
+Previous: [Custom shapes](custom-shapes.md)
+"
+`;
+
+exports[`outputs guide page snapshots, HTML and Markdown: guides/getting-started.html 1`] = `
+"<!doctype html>
+<html lang="en" data-root="../"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><title>Getting started (geo 2.1.0)</title><meta name="description" content="Add geo to a build and measure a first shape."/><meta name="keywords" content="Getting started, Install, Your first shape, Next steps, geo, Java, API reference"/><meta name="generator" content="apidocs"/><meta name="color-scheme" content="light dark"/><meta name="apidocs:kind" content="guide"/><meta name="apidocs:module" content="geo"/><meta name="apidocs:version" content="2.1.0"/><meta name="apidocs:id" content="guide:getting-started"/><meta property="og:type" content="article"/><meta property="og:title" content="Getting started (geo 2.1.0)"/><meta property="og:description" content="Add geo to a build and measure a first shape."/><meta property="og:site_name" content="geo"/><meta property="og:url" content="https://docs.example.com/guides/getting-started.html"/><meta name="twitter:card" content="summary"/><link rel="canonical" href="https://docs.example.com/guides/getting-started.html"/><link rel="alternate" type="text/markdown" href="getting-started.md" title="This page as Markdown"/><link rel="alternate" type="text/markdown" href="../llms.txt" title="llms.txt: index of every page, as Markdown links"/><link rel="alternate" type="text/markdown" href="../llms-full.txt" title="llms-full.txt: the whole reference in one Markdown file"/><link rel="alternate" type="application/json" href="../api.json" title="api.json: the apidocs/1 model of this module"/><link rel="index" href="../index.html" title="geo API reference"/><link rel="stylesheet" href="../assets/apidocs.css"/><link rel="stylesheet" href="../assets/theme.css"/><script>var d=document.documentElement;d.setAttribute("data-js","");if(location.protocol==="file:")d.setAttribute("data-file","");try{if(!/Win/.test((navigator.userAgentData&&navigator.userAgentData.platform)||navigator.platform||""))d.setAttribute("data-emoji","")}catch(e){}try{if(sessionStorage.getItem("apidocs-load")){sessionStorage.removeItem("apidocs-load");d.setAttribute("data-arriving","")}}catch(e){}try{var t=localStorage.getItem("apidocs-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t)}catch(e){}</script><script defer src="../assets/apidocs.js"></script><link rel="expect" href="getting-started.html#content" blocking="render"/><script type="speculationrules">{"prerender":[{"where":{"selector_matches":"a[href$='.html']:not([href*='://']), a[href*='.html#']:not([href*='://'])"},"eagerness":"moderate"}]}</script><script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"Getting started (geo 2.1.0)","description":"Add geo to a build and measure a first shape.","url":"https://docs.example.com/guides/getting-started.html","isPartOf":{"@type":"SoftwareSourceCode","name":"geo","version":"2.1.0"},"inLanguage":"en","keywords":"Getting started, Install, Your first shape, Next steps, geo, Java, API reference","encoding":[{"@type":"MediaObject","encodingFormat":"text/markdown","contentUrl":"https://docs.example.com/guides/getting-started.md","name":"This page as Markdown"}],"version":"2.1.0"},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"geo","item":"https://docs.example.com/index.html"},{"@type":"ListItem","position":2,"name":"Guides","item":"https://docs.example.com/guides/getting-started.html"},{"@type":"ListItem","position":3,"name":"Getting started","item":"https://docs.example.com/guides/getting-started.html"}]},{"@type":"DataCatalog","name":"geo machine-readable reference","description":"The same reference as Markdown and JSON, for programs and AI agents.","dataset":[{"@type":"Dataset","name":"llms.txt","description":"Index of every page as Markdown links.","encodingFormat":"text/markdown","url":"https://docs.example.com/llms.txt"},{"@type":"Dataset","name":"llms-full.txt","description":"The whole reference in one Markdown file.","encodingFormat":"text/markdown","url":"https://docs.example.com/llms-full.txt"},{"@type":"Dataset","name":"api.json","description":"The apidocs/1 model of the module.","encodingFormat":"application/json","url":"https://docs.example.com/api.json"}]}]}</script></head><body><div class="loadbar" aria-hidden="true"></div><div class="readbar" aria-hidden="true"></div><a class="skip" href="getting-started.html#content">Skip to content</a><header class="topbar"><input type="checkbox" id="apidocs-nav-toggle" class="nav-toggle visually-hidden" aria-label="Toggle navigation" autocomplete="off"/><script>try{if(matchMedia("(min-width:861px)").matches&&localStorage.getItem("apidocs-nav")==="closed")document.getElementById("apidocs-nav-toggle").checked=true}catch(e){}</script><label class="nav-button" for="apidocs-nav-toggle" title="Toggle navigation" aria-hidden="true"><svg viewBox="0 0 16 16" width="16" height="16"><rect x="2" y="2.75" width="12" height="10.5" rx="2.25"></rect><path d="M6.25 2.75v10.5"></path></svg></label><a class="brand" href="../index.html"><span class="product">geo</span></a><span class="module-version"><span class="version">2.1.0</span></span><nav class="topbar-nav" aria-label="Indexes"><a href="../index.html">Overview</a><a href="../packages.html">Packages</a><a href="../types.html">All types</a><a href="../index-all.html">Index</a><a href="../deprecated.html">Deprecated</a></nav><div class="topbar-tools"><a class="search-fallback" href="../index.html#all-types">All types</a><search class="search" data-search="true" data-js-only="true"><label class="visually-hidden" for="apidocs-search">Search the API</label><input id="apidocs-search" type="search" placeholder="Search types and members" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="false" aria-controls="apidocs-results" aria-autocomplete="list"/><kbd class="search-key" aria-hidden="true">/</kbd><ul id="apidocs-results" class="search-results" role="listbox" aria-label="Search results" hidden></ul></search><button type="button" class="theme-switch" data-theme-switch="true" data-js-only="true" aria-label="Color theme: system"><span aria-hidden="true" class="theme-icon"></span><span aria-hidden="true" class="theme-emoji"></span></button></div></header><div class="layout"><nav class="sidebar" id="apidocs-nav" aria-label="Packages and types"><div class="nav-filter" data-nav-filter="true" data-js-only="true"><label class="visually-hidden" for="apidocs-nav-filter">Filter this list</label><input id="apidocs-nav-filter" type="search" placeholder="Filter" autocomplete="off" spellcheck="false"/></div><section class="nav-section nav-guides"><h2 class="nav-heading"><span>Guides</span></h2><div class="nav-group"><ul class="nav-list"><li><a class="nav-row" href="getting-started.html" title="Add geo to a build and measure a first shape." aria-current="page"><span class="glyph" data-tone="guide" aria-hidden="true">¶</span><span class="nav-label">Getting started</span></a></li><li><a class="nav-row" href="concepts.html" title="Shapes, measuring and units: the ideas the reference pages assume."><span class="glyph" data-tone="guide" aria-hidden="true">¶</span><span class="nav-label">Concepts</span></a></li><li><a class="nav-row" href="migrating-from-1x.html" title="What changed in 2.0, and how to update code written for 1.x."><span class="glyph" data-tone="guide" aria-hidden="true">¶</span><span class="nav-label">Migrating from 1.x</span></a></li></ul></div><div class="nav-group"><p class="nav-subheading">Advanced</p><ul class="nav-list"><li><a class="nav-row" href="advanced/custom-shapes.html" title="Extend Polygon to add a shape of your own."><span class="glyph" data-tone="guide" aria-hidden="true">¶</span><span class="nav-label">Custom shapes</span></a></li><li><a class="nav-row" href="advanced/text-format.html" title="The grammar Shapes.parse reads, and how to read files of shapes."><span class="glyph" data-tone="guide" aria-hidden="true">¶</span><span class="nav-label">The text format</span></a></li></ul></div></section><section class="nav-section nav-packages"><h2 class="nav-heading"><span>Packages</span></h2><a class="nav-row nav-prefix" href="../index.html" title="com.example: the prefix every package shares"><span class="nav-label">com.example</span></a><ul class="nav-list nav-suffixes"><li><a class="nav-row nav-package" href="../com/example/geo/index.html" title="com.example.geo"><span class="nav-label"><span class="nav-dot" aria-hidden="true">.</span>geo</span><span class="nav-count">9</span></a></li><li><a class="nav-row nav-package" href="../com/example/geo/io/index.html" title="com.example.geo.io"><span class="nav-label"><span class="nav-dot" aria-hidden="true">.</span>geo.io</span><span class="nav-count">1</span></a></li><li><a class="nav-row nav-package" href="../com/example/geo/registry/index.html" title="com.example.geo.registry"><span class="nav-label"><span class="nav-dot" aria-hidden="true">.</span>geo.registry</span><span class="nav-count">1</span></a></li><li><a class="nav-row nav-package" href="../com/example/geo/spi/index.html" title="com.example.geo.spi"><span class="nav-label"><span class="nav-dot" aria-hidden="true">.</span>geo.spi</span></a></li></ul></section></nav><script>(function(){var n=document.getElementById("apidocs-nav");if(!n)return;try{var k="apidocs-nav:"+new URL(document.documentElement.getAttribute("data-root")||"./",location.href).pathname;var s=sessionStorage.getItem(k);if(s)n.scrollTop=+s}catch(e){}var c=n.querySelector('[aria-current="page"]');if(c&&(c.offsetTop<n.scrollTop||c.offsetTop>n.scrollTop+n.clientHeight-40))n.scrollTop=Math.max(0,c.offsetTop-n.clientHeight/3)})()</script><main id="content" class="content"><p class="visually-hidden" aria-hidden="true" data-agent-note="true">Machine-readable versions of this page. Markdown: https://docs.example.com/guides/getting-started.md . Index of every page (llms.txt): https://docs.example.com/llms.txt . The whole reference in one Markdown file: https://docs.example.com/llms-full.txt . The API model as JSON (apidocs/1): https://docs.example.com/api.json .</p><div class="page-tools"><nav class="crumbs" aria-label="Breadcrumbs"><ol><li><a href="../index.html">geo</a></li><li><span>Guides</span></li><li><span aria-current="page">Getting started</span></li></ol></nav><div class="formats"><button type="button" class="formats-main" data-copy-markdown="getting-started.md" data-js-only="true" data-served-only="true" aria-label="Copy this page as Markdown" title="Copy this page as Markdown"><svg class="icon icon-markdown" viewBox="0 0 208 128" width="19" height="12" aria-hidden="true"><rect x="5" y="5" width="198" height="118" rx="14" fill="none" stroke="currentColor" stroke-width="10"></rect><path fill="currentColor" d="M30 98V30h20l20 25 20-25h20v68H90V59L70 84 50 59v39zm125 0l-30-33h20V30h20v35h20z"></path></svg><svg class="icon formats-done" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M3.5 8.5 6.5 11.5 12.5 5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg></button><a class="formats-main" href="getting-started.md" data-static-only="true" aria-label="This page as Markdown" title="This page as Markdown"><svg class="icon icon-markdown" viewBox="0 0 208 128" width="19" height="12" aria-hidden="true"><rect x="5" y="5" width="198" height="118" rx="14" fill="none" stroke="currentColor" stroke-width="10"></rect><path fill="currentColor" d="M30 98V30h20l20 25 20-25h20v68H90V59L70 84 50 59v39zm125 0l-30-33h20V30h20v35h20z"></path></svg></a><details class="formats-menu"><summary aria-label="Other formats of this page" title="Other formats"><svg class="icon" viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M4 6.25 8 10.25l4-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg></summary><ul class="formats-list"><li><a href="getting-started.md"><code>getting-started.md</code><small>this page as Markdown</small></a></li><li><a href="../llms.txt"><code>llms.txt</code><small>index of every page</small></a></li><li><a href="../llms-full.txt"><code>llms-full.txt</code><small>the whole reference</small></a></li><li><a href="../api.json"><code>api.json</code><small>the model</small></a></li><li class="formats-sep"><a href="https://claude.ai/new?q=Read%20https%3A%2F%2Fdocs.example.com%2Fguides%2Fgetting-started.md%20so%20that%20I%20can%20ask%20questions%20about%20Getting%20started%20(geo%202.1.0)." rel="noopener"><span>Open in Claude</span><small>↗︎</small></a></li><li><a href="https://chatgpt.com/?q=Read%20https%3A%2F%2Fdocs.example.com%2Fguides%2Fgetting-started.md%20so%20that%20I%20can%20ask%20questions%20about%20Getting%20started%20(geo%202.1.0)." rel="noopener"><span>Open in ChatGPT</span><small>↗︎</small></a></li></ul></details></div></div><article class="guide" data-guide-id="guide:getting-started" data-reading-progress="true"><header class="page-head guide-head"><p class="guide-kicker">Guide</p><h1>Getting started</h1><p class="lede guide-summary">Add geo to a build and measure a first shape.</p><p class="page-meta"></p></header><div id="guide-body" class="prose guide-body"><div class="guide-intro"><p>geo measures plane shapes: circles, polygons and shapes you build from them. This guide adds it to a build and runs a first program.</p></div><section class="guide-section" aria-labelledby="install"><h2 id="install" class="doc-heading guide-heading">Install<a class="heading-anchor" href="getting-started.html#install" aria-label="Link to this section"><span aria-hidden="true">#</span></a></h2><p>geo needs Java 21 or later. With Gradle, add the dependency to <code>build.gradle.kts</code>:</p><div class="code-block"><pre data-lang="kotlin"><code>dependencies {
+    <span class="hl-f">implementation</span>(<span class="hl-s">&quot;com.example:geo:2.1.0&quot;</span>)
+}</code></pre><button type="button" class="copy" data-copy="true" hidden aria-label="Copy code" title="Copy code">Copy</button></div><p>With Maven, add it to <code>pom.xml</code>:</p><div class="code-block"><pre data-lang="xml"><code><span class="hl-k">&lt;dependency></span>
+  <span class="hl-k">&lt;groupId></span>com.example<span class="hl-k">&lt;/groupId></span>
+  <span class="hl-k">&lt;artifactId></span>geo<span class="hl-k">&lt;/artifactId></span>
+  <span class="hl-k">&lt;version></span>2.1.0<span class="hl-k">&lt;/version></span>
+<span class="hl-k">&lt;/dependency></span></code></pre><button type="button" class="copy" data-copy="true" hidden aria-label="Copy code" title="Copy code">Copy</button></div><p>On the module path, require the module:</p><div class="code-block"><pre data-lang="java"><code><span class="hl-k">module</span> my.app {
+    <span class="hl-k">requires</span> com.example.geo;
+}</code></pre><button type="button" class="copy" data-copy="true" hidden aria-label="Copy code" title="Copy code">Copy</button></div></section><section class="guide-section" aria-labelledby="your-first-shape"><h2 id="your-first-shape" class="doc-heading guide-heading">Your first shape<a class="heading-anchor" href="getting-started.html#your-first-shape" aria-label="Link to this section"><span aria-hidden="true">#</span></a></h2><p>Create shapes with <a href="../com/example/geo/Circle.html#of(double)"><code>Circle.of</code></a> and the <a href="../com/example/geo/Polygon.html#%3Cinit%3E(double...)"><code>Polygon</code></a> constructor, then measure them with <a href="../com/example/geo/Shapes.html"><code>Shapes</code></a>:</p><div class="code-block"><pre data-lang="java"><code><span class="hl-k">import</span> com.example.geo.*;
+
+<span class="hl-k">class</span> <span class="hl-t">First</span> {
+    <span class="hl-k">public</span> <span class="hl-k">static</span> <span class="hl-k">void</span> <span class="hl-f">main</span>(<span class="hl-t">String</span>[] args) {
+        <span class="hl-t">Shape</span> circle = <span class="hl-t">Circle</span>.<span class="hl-f">of</span>(<span class="hl-n">2</span>);
+        <span class="hl-t">Shape</span> triangle = <span class="hl-k">new</span> <span class="hl-t">Polygon</span>(<span class="hl-n">3</span>, <span class="hl-n">3</span>, <span class="hl-n">3</span>);
+        <span class="hl-t">System</span>.out.<span class="hl-f">printf</span>(<span class="hl-s">&quot;total area: %.2f m²%n&quot;</span>, <span class="hl-t">Shapes</span>.<span class="hl-f">total</span>(circle, triangle));
+    }
+}</code></pre><button type="button" class="copy" data-copy="true" hidden aria-label="Copy code" title="Copy code">Copy</button></div><div class="callout callout-tip" role="note"><span class="callout-icon" aria-hidden="true"><svg viewBox="0 0 16 16" width="16" height="16"><path d="M5.6 10.4a4 4 0 1 1 4.8 0c-.4.3-.6.7-.6 1.2H6.2c0-.5-.2-.9-.6-1.2z"></path><path d="M6.5 13.6h3"></path></svg></span><div class="callout-body"><p class="callout-label">Tip</p><p>Every length is in meters. To work in other units, see <a href="concepts.html#units">Units</a> in the concepts guide.</p></div></div></section><section class="guide-section" aria-labelledby="next-steps"><h2 id="next-steps" class="doc-heading guide-heading">Next steps<a class="heading-anchor" href="getting-started.html#next-steps" aria-label="Link to this section"><span aria-hidden="true">#</span></a></h2><ul><li><p><a href="concepts.html">Concepts</a> explains shapes, measuring and units.</p></li><li><p><a href="migrating-from-1x.html">Migrating from 1.x</a> lists what changed in 2.0.</p></li><li><p>The <a href="../com/example/geo/index.html"><code>com.example.geo</code></a> package is the reference for everything above.</p></li></ul></section></div><nav class="guide-pager" aria-label="Previous and next guides"><a class="guide-pager-link guide-next" rel="next" href="concepts.html"><span class="guide-pager-dir">Next</span><span class="guide-pager-title">Concepts</span></a></nav></article></main><nav class="toc" aria-label="On this page"><p class="toc-title">On this page</p><ol class="toc-list"><li class="toc-section"><div class="toc-head"><a href="getting-started.html#install" data-toc-target="install" title="Install">Install</a></div></li><li class="toc-section"><div class="toc-head"><a href="getting-started.html#your-first-shape" data-toc-target="your-first-shape" title="Your first shape">Your first shape</a></div></li><li class="toc-section"><div class="toc-head"><a href="getting-started.html#next-steps" data-toc-target="next-steps" title="Next steps">Next steps</a></div></li></ol></nav></div><footer class="footer"><p><a href="getting-started.md">This page as Markdown</a>, <a href="../llms.txt">llms.txt</a>, <a href="../api.json">api.json</a></p></footer></body></html>
+"
+`;

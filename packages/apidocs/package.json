@@ -1,0 +1,87 @@
+{
+  "name": "@elide/apidocs",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Static API reference pages (HTML and Markdown) from the apidocs/1 model that Elide's Javadoc doclet and Dokka plugin write. Prerendered with Preact; works from file:// and inside a -javadoc.jar.",
+  "license": "UNLICENSED",
+  "type": "module",
+  "sideEffects": [
+    "*.css",
+    "./src/astro/client.ts",
+    "./src/client/islands.tsx"
+  ],
+  "exports": {
+    ".": "./src/index.ts",
+    "./import": "./src/import/index.ts",
+    "./astro": "./src/astro/index.ts",
+    "./astro/helpers": "./src/astro/helpers.ts",
+    "./astro/integration": "./src/astro/integration.ts",
+    "./samples": "./samples/index.ts",
+    "./schema": "./schema/apidocs-1.schema.json",
+    "./render.js": "./dist/render.js",
+    "./assets/*": "./dist/assets/*"
+  },
+  "bin": {
+    "apidocs": "./src/cli.ts"
+  },
+  "files": [
+    "dist",
+    "schema",
+    "src",
+    "README.md"
+  ],
+  "scripts": {
+    "audit": "bun scripts/audit.ts",
+    "build": "bun scripts/gen-types.ts --check && bun scripts/gen-artwork.ts --check && vite build --config vite.render.config.ts && vite build --config vite.client.config.ts && bun scripts/assets.ts",
+    "dev": "bun scripts/dev.ts",
+    "sample": "bun scripts/sample.ts",
+    "generate": "bun scripts/gen-types.ts && bun scripts/gen-artwork.ts",
+    "guides": "bun src/cli.ts guides",
+    "lint": "tsc -p tsconfig.json --noEmit",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "@elide/brand": "workspace:*",
+    "@elide/tokens": "workspace:*",
+    "@fontsource-variable/instrument-sans": "^5.3.0",
+    "@fontsource-variable/inter": "^5.3.0",
+    "@fontsource-variable/jetbrains-mono": "^5.3.0",
+    "preact": "^11.2.0",
+    "preact-render-to-string": "^6.8.2"
+  },
+  "devDependencies": {
+    "@astrojs/preact": "6.1.6",
+    "@types/bun": "^1.3.0",
+    "@types/mdast": "4.0.4",
+    "astro": "7.4.7",
+    "axe-core": "4.14.0",
+    "chrome-launcher": "1.2.3",
+    "lighthouse": "13.6.0",
+    "mdast-util-from-markdown": "2.1.0",
+    "mdast-util-gfm": "3.1.0",
+    "micromark-extension-gfm": "3.0.0",
+    "node-html-parser": "6.1.13",
+    "playwright": "^1.65.0",
+    "postcss": "8.5.32",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.6",
+    "yaml": "2.9.1"
+  },
+  "peerDependencies": {
+    "@astrojs/preact": "^6.1.6",
+    "astro": "^7.4.7"
+  },
+  "peerDependenciesMeta": {
+    "@astrojs/preact": {
+      "optional": true
+    },
+    "astro": {
+      "optional": true
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/elide-dev/components.git",
+    "directory": "packages/apidocs"
+  }
+}

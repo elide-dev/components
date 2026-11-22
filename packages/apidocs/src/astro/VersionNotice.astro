@@ -1,0 +1,28 @@
+---
+/**
+ * One line above the page for a version that is not the latest release: which version this is, and a link to
+ * the same page in the latest release. Always one line of the same height, whatever it says, so a server
+ * island can render it over a fallback of itself without moving the page.
+ */
+import { latestRelease, type Version, versionLabel } from "./versions";
+
+interface Props {
+  versions: Version[];
+  current: string;
+  /** The page's path under its site's base. */
+  path?: string;
+}
+
+const { versions, current, path = "" } = Astro.props;
+const here = versions.find(v => v.id === current);
+const latest = latestRelease(versions);
+const label = here ? versionLabel(here) : current;
+const kind = here?.channel === "development" ? "the development version" : here?.channel === "prerelease" ? "a prerelease" : "an older release";
+---
+<p class="version-notice" role="note">
+  {latest && latest.id !== current ? (
+    <span>You are reading <span class="version">{label}</span>, {kind}. The latest release is <a href={latest.base + path} data-version-base={latest.base}><span class="version">{versionLabel(latest)}</span></a>.</span>
+  ) : (
+    <span>You are reading <span class="version">{label}</span>, the latest release.</span>
+  )}
+</p>

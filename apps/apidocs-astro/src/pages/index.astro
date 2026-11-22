@@ -1,0 +1,30 @@
+---
+/** The sample's front page: links to each site. Not part of the integration. */
+const sites = [
+  { href: "/java/2.0/", label: "Java sample 2.0", note: "the latest release" },
+  { href: "/java/main/", label: "Java sample main", note: "a development version, with a version notice" },
+  { href: "/kotlin/", label: "Kotlin sample", note: "unversioned" },
+  { href: "/guides/", label: "Markdown sample suite", note: "a guides-only site from the importer" },
+];
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@elide/apidocs on Astro</title>
+    <meta name="description" content="The sample models served by the @elide/apidocs Astro integration." />
+    <style>
+      body { font: 15px/1.6 system-ui, sans-serif; max-width: 40rem; margin: 3rem auto; padding: 0 1rem; color: #161a21; background: #fbfcfd; }
+      a { color: #5b21b6; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>@elide/apidocs on Astro</h1>
+      <ul>
+        {sites.map(site => <li><a href={site.href}>{site.label}</a>: {site.note}</li>)}
+      </ul>
+    </main>
+  </body>
+</html>

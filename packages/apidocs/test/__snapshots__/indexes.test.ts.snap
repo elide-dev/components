@@ -1,0 +1,207 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`index pages Markdown snapshots of the fixture's index pages: packages.md 1`] = `
+"# Packages
+
+Every package of fixture.
+
+- [\`fixture.java\`](fixture/java/index.md) (1 abstract class, 1 annotation interface, 7 class, 2 enum class, 1 exception, 3 interface, 1 record, 1 sealed interface): Shapes, units and measurements: a fixture that exercises every declaration kind and documentation construct the API model represents.
+- [\`fixture.java.io\`](fixture/java/io/index.md) (1 class): Reading shapes from streams.
+"
+`;
+
+exports[`index pages Markdown snapshots of the fixture's index pages: types.md 1`] = `
+"# All types
+
+Every type of fixture, nested ones too, by name.
+
+- [\`AbstractCanvas\`](fixture/java/AbstractCanvas.md), abstract class in fixture.java: A canvas that counts what it draws.
+- [\`Box\`](fixture/java/Box.md), class in fixture.java: A mutable holder for one comparable value.
+- [\`Builder\`](fixture/java/Polygon.Builder.md), class in fixture.java: Builds a polygon one side at a time.
+- [\`Canvas\`](fixture/java/Canvas.md), interface in fixture.java: Somewhere to draw shapes.
+- [\`Circle\`](fixture/java/Circle.md), record in fixture.java: A circle.
+- [\`Edge\`](fixture/java/Polygon.Edge.md), class in fixture.java: One edge of this polygon: an inner class, bound to its polygon.
+- [\`Geometry\`](fixture/java/Geometry.md), class in fixture.java: Operations on [\`shapes\`](fixture/java/Shape.md).
+- [\`GeometryException\`](fixture/java/GeometryException.md), exception in fixture.java: A shape that cannot exist, such as a triangle whose sides violate the triangle inequality.
+- [\`Kind\`](fixture/java/Canvas.Layer.Kind.md), enum class in fixture.java: What a layer holds.
+- [\`Layer\`](fixture/java/Canvas.Layer.md), interface in fixture.java: One layer of a canvas.
+- [\`Legacy\`](fixture/java/Geometry.Legacy.md), class in fixture.java: Methods from before null markings; their nullness is unspecified.
+- [\`Measured\`](fixture/java/Measured.md), annotation interface in fixture.java: Marks a declaration whose values are lengths, and in which unit.
+- [\`Polygon\`](fixture/java/Polygon.md), class in fixture.java: A regular polygon.
+- [\`Rect\`](fixture/java/Rect.md), class in fixture.java: An axis-aligned rectangle.
+- [\`Shape\`](fixture/java/Shape.md), sealed interface in fixture.java: A closed plane figure.
+- [\`ShapeReader\`](fixture/java/io/ShapeReader.md), class in fixture.java.io: Reads shapes in their [text form](fixture/java/Geometry.md#parse%28java.lang.String%29), one per line.
+- [\`Units\`](fixture/java/Units.md), enum class in fixture.java: Units of length.
+- [\`Visitor\`](fixture/java/Shape.Visitor.md), interface in fixture.java: Operations over each kind of shape.
+"
+`;
+
+exports[`index pages Markdown snapshots of the fixture's index pages: index-all.md 1`] = `
+"# Index
+
+Every declaration of fixture, from A to Z.
+
+## A
+
+- [\`AbstractCanvas\`](fixture/java/AbstractCanvas.md), abstract class in fixture.java: A canvas that counts what it draws.
+- [\`accept(Shape.Visitor)\`](fixture/java/Circle.md#accept%28fixture.java.Shape.Visitor%29), method in Circle: Calls the visitor's method for this shape's kind.
+- [\`accept(Shape.Visitor)\`](fixture/java/Polygon.md#accept%28fixture.java.Shape.Visitor%29), method in Polygon: Calls the visitor's method for this shape's kind.
+- [\`accept(Shape.Visitor)\`](fixture/java/Rect.md#accept%28fixture.java.Shape.Visitor%29), method in Rect: Calls the visitor's method for this shape's kind.
+- [\`accept(Shape.Visitor)\`](fixture/java/Shape.md#accept%28fixture.java.Shape.Visitor%29), method in Shape: Calls the visitor's method for this shape's kind.
+- [\`area()\`](fixture/java/Circle.md#area%28%29), method in Circle: The shape's area.
+- [\`area()\`](fixture/java/Polygon.md#area%28%29), method in Polygon: The area of a regular polygon with these sides' mean length.
+- [\`area()\`](fixture/java/Rect.md#area%28%29), method in Rect: The shape's area.
+- [\`area()\`](fixture/java/Shape.md#area%28%29), method in Shape: The shape's area.
+
+## B
+
+- [\`BACKGROUND\`](fixture/java/Canvas.Layer.Kind.md#BACKGROUND), enum constant in Canvas.Layer.Kind: Background fills.
+- [\`Box\`](fixture/java/Box.md), class in fixture.java: A mutable holder for one comparable value.
+- [\`Box(T)\`](fixture/java/Box.md#%3Cinit%3E%28T%29), constructor in Box: Creates a box.
+- [\`build()\`](fixture/java/Polygon.Builder.md#build%28%29), method in Polygon.Builder: Builds the polygon.
+- [\`Builder\`](fixture/java/Polygon.Builder.md), class in fixture.java: Builds a polygon one side at a time.
+- [\`Builder()\`](fixture/java/Polygon.Builder.md#%3Cinit%3E%28%29), constructor in Polygon.Builder: Creates an empty builder.
+
+## C
+
+- [\`Canvas\`](fixture/java/Canvas.md), interface in fixture.java: Somewhere to draw shapes.
+- [\`Circle\`](fixture/java/Circle.md), record in fixture.java: A circle.
+- [\`Circle(double, String)\`](fixture/java/Circle.md#%3Cinit%3E%28double,java.lang.String%29), constructor in Circle: Checks the radius.
+- [\`clear()\`](fixture/java/Canvas.md#clear%28%29), method in Canvas: Clears every layer.
+- [\`close()\`](fixture/java/io/ShapeReader.md#close%28%29), method in ShapeReader: Closes the underlying reader.
+- [\`compareTo(Box)\`](fixture/java/Box.md#compareTo%28fixture.java.Box%29), method in Box: Compares the value with another box's.
+- [\`compareTo(Shape)\`](fixture/java/Shape.md#compareTo%28fixture.java.Shape%29), method in Shape: Compares shapes by area.
+
+## D
+
+- [\`draw(Shape, Canvas.Layer)\`](fixture/java/AbstractCanvas.md#draw%28fixture.java.Shape,fixture.java.Canvas.Layer%29), method in AbstractCanvas: Draws a shape on a layer.
+- [\`draw(Shape, Canvas.Layer)\`](fixture/java/Canvas.md#draw%28fixture.java.Shape,fixture.java.Canvas.Layer%29), method in Canvas: Draws a shape on a layer.
+- [\`drawn()\`](fixture/java/AbstractCanvas.md#drawn%28%29), method in AbstractCanvas: The number of shapes drawn so far.
+
+## E
+
+- [\`Edge\`](fixture/java/Polygon.Edge.md), class in fixture.java: One edge of this polygon: an inner class, bound to its polygon.
+- [\`Edge(int)\`](fixture/java/Polygon.Edge.md#%3Cinit%3E%28int%29), constructor in Polygon.Edge: Selects an edge.
+- [\`empty()\`](fixture/java/Canvas.md#empty%28%29), method in Canvas: A canvas that ignores everything drawn on it.
+- [\`equals(Object)\`](fixture/java/Circle.md#equals%28java.lang.Object%29), method in Circle
+
+## F
+
+- [\`FEET\`](fixture/java/Units.md#FEET), enum constant in Units (deprecated): International feet.
+- [\`find(Map, String)\`](fixture/java/Geometry.md#find%28java.util.Map,java.lang.String%29), method in Geometry: Finds a shape by name.
+
+## G
+
+- [\`Geometry\`](fixture/java/Geometry.md), class in fixture.java: Operations on [\`shapes\`](fixture/java/Shape.md).
+- [\`GeometryException\`](fixture/java/GeometryException.md), exception in fixture.java: A shape that cannot exist, such as a triangle whose sides violate the triangle inequality.
+- [\`GeometryException(String)\`](fixture/java/GeometryException.md#%3Cinit%3E%28java.lang.String%29), constructor in GeometryException: Creates an exception.
+- [\`GeometryException(String, Throwable)\`](fixture/java/GeometryException.md#%3Cinit%3E%28java.lang.String,java.lang.Throwable%29), constructor in GeometryException: Creates an exception with a cause.
+
+## H
+
+- [\`hashCode()\`](fixture/java/Circle.md#hashCode%28%29), method in Circle
+- [\`height\`](fixture/java/Rect.md#height), field in Rect: The height in meters.
+
+## I
+
+- [\`index()\`](fixture/java/Canvas.Layer.md#index%28%29), method in Canvas.Layer: The layer's index.
+
+## K
+
+- [\`Kind\`](fixture/java/Canvas.Layer.Kind.md), enum class in fixture.java: What a layer holds.
+- [\`kind()\`](fixture/java/Canvas.Layer.md#kind%28%29), method in Canvas.Layer: What a layer holds.
+
+## L
+
+- [\`label()\`](fixture/java/Circle.md#label%28%29), method in Circle
+- [\`largest(Collection)\`](fixture/java/Geometry.md#largest%28java.util.Collection%29), method in Geometry: Returns the largest shape.
+- [\`Layer\`](fixture/java/Canvas.Layer.md), interface in fixture.java: One layer of a canvas.
+- [\`Legacy\`](fixture/java/Geometry.Legacy.md), class in fixture.java: Methods from before null markings; their nullness is unspecified.
+- [\`length()\`](fixture/java/Polygon.Edge.md#length%28%29), method in Polygon.Edge: The edge's length.
+
+## M
+
+- [\`map(Function)\`](fixture/java/Box.md#map%28java.util.function.Function%29), method in Box: Applies a function to the value.
+- [\`MAX_LAYERS\`](fixture/java/Canvas.md#MAX_LAYERS), field in Canvas: The largest layer index a canvas supports.
+- [\`Measured\`](fixture/java/Measured.md), annotation interface in fixture.java: Marks a declaration whose values are lengths, and in which unit.
+- [\`METERS\`](fixture/java/Units.md#METERS), enum constant in Units: Meters: the base unit.
+
+## N
+
+- [\`NAME\`](fixture/java/Geometry.md#NAME), field in Geometry: The library's name, [\`"fixture"\`](fixture/java/Geometry.md#NAME), as tools report it.
+- [\`name()\`](fixture/java/Circle.md#name%28%29), method in Circle: Returns the shape's name, or \`null\` for an anonymous shape.
+- [\`name()\`](fixture/java/Shape.md#name%28%29), method in Shape: Returns the shape's name, or \`null\` for an anonymous shape.
+- [\`nameOf(Shape)\`](fixture/java/Geometry.Legacy.md#nameOf%28fixture.java.Shape%29), method in Geometry.Legacy: Returns the name, possibly \`null\`.
+
+## O
+
+- [\`of(double)\`](fixture/java/Circle.md#of%28double%29), method in Circle: Creates an unlabeled circle.
+- [\`open(Reader)\`](fixture/java/io/ShapeReader.md#open%28java.io.Reader%29), method in ShapeReader: Opens a reader.
+
+## P
+
+- [\`parse(String)\`](fixture/java/Geometry.md#parse%28java.lang.String%29), method in Geometry: Parses a shape from its text form, such as \`circle 2.5\`.
+- [\`Polygon\`](fixture/java/Polygon.md), class in fixture.java: A regular polygon.
+- [\`Polygon(double...)\`](fixture/java/Polygon.md#%3Cinit%3E%28double...%29), constructor in Polygon: Creates a polygon from its sides.
+- [\`PRECISION\`](fixture/java/Geometry.md#PRECISION), field in Geometry: The default number of significant digits: \`6\`.
+- [\`precision()\`](fixture/java/Measured.md#precision%28%29), element in Measured: Significant digits.
+- [\`present()\`](fixture/java/Box.md#present%28%29), method in Box: Returns whether the box holds a value.
+
+## R
+
+- [\`radius()\`](fixture/java/Circle.md#radius%28%29), method in Circle
+- [\`read(InputStream)\`](fixture/java/io/ShapeReader.md#read%28java.io.InputStream%29), method in ShapeReader: Reads every shape from a stream of UTF-8 text.
+- [\`read(Reader, Charset)\`](fixture/java/io/ShapeReader.md#read%28java.io.Reader,java.nio.charset.Charset%29), method in ShapeReader: Reads every shape from a reader.
+- [\`Rect\`](fixture/java/Rect.md), class in fixture.java: An axis-aligned rectangle.
+- [\`Rect(double, double)\`](fixture/java/Rect.md#%3Cinit%3E%28double,double%29), constructor in Rect: Creates a rectangle.
+
+## S
+
+- [\`Shape\`](fixture/java/Shape.md), sealed interface in fixture.java: A closed plane figure.
+- [\`ShapeReader\`](fixture/java/io/ShapeReader.md), class in fixture.java.io: Reads shapes in their [text form](fixture/java/Geometry.md#parse%28java.lang.String%29), one per line.
+- [\`SHAPES\`](fixture/java/Canvas.Layer.Kind.md#SHAPES), enum constant in Canvas.Layer.Kind: Shapes.
+- [\`side(double)\`](fixture/java/Polygon.Builder.md#side%28double%29), method in Polygon.Builder: Adds a side.
+- [\`square(double)\`](fixture/java/Rect.md#square%28double%29), method in Rect: Creates a square.
+- [\`sum(List)\`](fixture/java/Geometry.md#sum%28java.util.List%29), method in Geometry (deprecated for removal): Sums the areas of a list of shapes.
+
+## T
+
+- [\`tags()\`](fixture/java/Measured.md#tags%28%29), element in Measured: Free-form tags.
+- [\`toMeters(double)\`](fixture/java/Units.md#toMeters%28double%29), method in Units: Converts a length in this unit to meters.
+- [\`toString()\`](fixture/java/Circle.md#toString%28%29), method in Circle
+- [\`totalArea(Shape...)\`](fixture/java/Geometry.md#totalArea%28fixture.java.Shape...%29), method in Geometry: Sums the shapes' areas.
+
+## U
+
+- [\`unit()\`](fixture/java/Measured.md#unit%28%29), element in Measured: The unit of the values.
+- [\`Units\`](fixture/java/Units.md), enum class in fixture.java: Units of length.
+
+## V
+
+- [\`value\`](fixture/java/Box.md#value), field in Box: The value, or \`null\` when the box is empty.
+- [\`valueOf(String)\`](fixture/java/Canvas.Layer.Kind.md#valueOf%28java.lang.String%29), method in Canvas.Layer.Kind
+- [\`valueOf(String)\`](fixture/java/Units.md#valueOf%28java.lang.String%29), method in Units
+- [\`values()\`](fixture/java/Canvas.Layer.Kind.md#values%28%29), method in Canvas.Layer.Kind
+- [\`values()\`](fixture/java/Units.md#values%28%29), method in Units
+- [\`visitCircle(Circle)\`](fixture/java/Shape.Visitor.md#visitCircle%28fixture.java.Circle%29), method in Shape.Visitor: Visits a circle.
+- [\`Visitor\`](fixture/java/Shape.Visitor.md), interface in fixture.java: Operations over each kind of shape.
+- [\`visitPolygon(Polygon)\`](fixture/java/Shape.Visitor.md#visitPolygon%28fixture.java.Polygon%29), method in Shape.Visitor: Visits a polygon.
+- [\`visitRect(Rect)\`](fixture/java/Shape.Visitor.md#visitRect%28fixture.java.Rect%29), method in Shape.Visitor: Visits a rectangle.
+
+## W
+
+- [\`width\`](fixture/java/Rect.md#width), field in Rect: The width in meters.
+"
+`;
+
+exports[`index pages Markdown snapshots of the fixture's index pages: deprecated.md 1`] = `
+"# Deprecated
+
+Everything deprecated in fixture; what will be removed comes first.
+
+## Members
+
+- [\`sum(List)\`](fixture/java/Geometry.md#sum%28java.util.List%29), method in Geometry (deprecated for removal) Since 1.1. Use [\`totalArea(Shape...)\`](fixture/java/Geometry.md#totalArea%28fixture.java.Shape...%29), which takes any number of shapes.
+- [\`FEET\`](fixture/java/Units.md#FEET), enum constant in Units (deprecated) Since 1.2. Use [\`METERS\`](fixture/java/Units.md#METERS); mixing units causes rounding errors.
+"
+`;
