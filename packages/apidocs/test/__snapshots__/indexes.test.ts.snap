@@ -1,7 +1,15 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
 exports[`index pages Markdown snapshots of the fixture's index pages: packages.md 1`] = `
-"# Packages
+"---
+title: "Packages"
+description: "Packages: every package with its summary and type counts."
+kind: "index"
+module: "fixture"
+version: "1.0"
+---
+
+# Packages
 
 Every package of fixture.
 
@@ -11,7 +19,15 @@ Every package of fixture.
 `;
 
 exports[`index pages Markdown snapshots of the fixture's index pages: types.md 1`] = `
-"# All types
+"---
+title: "All types"
+description: "All types: every type, nested ones too, by name."
+kind: "index"
+module: "fixture"
+version: "1.0"
+---
+
+# All types
 
 Every type of fixture, nested ones too, by name.
 
@@ -37,7 +53,15 @@ Every type of fixture, nested ones too, by name.
 `;
 
 exports[`index pages Markdown snapshots of the fixture's index pages: index-all.md 1`] = `
-"# Index
+"---
+title: "Index"
+description: "Index: every declaration from A to Z."
+kind: "index"
+module: "fixture"
+version: "1.0"
+---
+
+# Index
 
 Every declaration of fixture, from A to Z.
 
@@ -195,7 +219,15 @@ Every declaration of fixture, from A to Z.
 `;
 
 exports[`index pages Markdown snapshots of the fixture's index pages: deprecated.md 1`] = `
-"# Deprecated
+"---
+title: "Deprecated"
+description: "Deprecated: everything deprecated, for removal first."
+kind: "index"
+module: "fixture"
+version: "1.0"
+---
+
+# Deprecated
 
 Everything deprecated in fixture; what will be removed comes first.
 

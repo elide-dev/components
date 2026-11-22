@@ -54,7 +54,6 @@ export function GuidePage({ entry, children, extraToc = [] }: { entry: GuideEntr
     "@type": "TechArticle",
     headline: g.title,
     description,
-    ...(theme.baseUrl ? { url: `${theme.baseUrl}${page}.html` } : {}),
     isPartOf: { "@type": "SoftwareSourceCode", name: m.name, ...(m.version ? { version: m.version } : {}) },
   };
   const nav = guideNav(site, page);

@@ -16,6 +16,8 @@ export const elide: Theme = {
   name: "elide",
   logo: { light: logoLight, dark: logoDark, alt: "Elide" },
   favicon: mark,
+  // The dark lockup on the dark surface, 1200 by 630 (scripts/gen-social.ts).
+  socialImage: { asset: "social/elide.png", width: 1200, height: 630, alt: "The Elide logo on a dark background" },
   // JetBrains Mono for code and for every type and member name; the reader's system fonts for prose and
   // headings. The files hold Latin only, and the unicode-range says so, so a symbol or an emoji goes straight to
   // the system font chosen for it.

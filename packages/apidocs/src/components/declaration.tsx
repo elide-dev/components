@@ -174,8 +174,11 @@ export function MemberDetail({ member, summary }: { member: Member; summary?: Co
       <summary class="member-row">
         <svg class="member-chevron" viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M6 3.75 10.25 8 6 12.25" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" /></svg>
         <span class="member-sig">{summary ?? <code class="summary-sig">{member.name}</code>}</span>
-        <span class="member-brief">
-          {brief || (!member.implicit && <span class="undocumented">No description.</span>)}
+        {/* The summary sentence is the first sentence of the entry inside, which carries it as text: the row draws it
+            from the attribute, so a page with hundreds of members does not hold each sentence twice. It is still in
+            the row's accessible name, and find-in-page finds it in the entry, opening the row. */}
+        <span class="member-brief" data-brief={brief || undefined}>
+          {!brief && !member.implicit && <span class="undocumented">No description.</span>}
         </span>
         <span class="member-marks">
           {noted && <span class="member-noted" title="Has an API note"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><circle cx="8" cy="8" r="6.25" /><path d="M8 4.6v3.9" /><path d="M8 11.1v.01" /></svg><span class="visually-hidden">Has an API note</span></span>}

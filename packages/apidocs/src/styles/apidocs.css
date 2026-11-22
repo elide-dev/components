@@ -813,6 +813,7 @@ td .badge { margin-right: 6px; }
 .member[open] > .member-row { background: color-mix(in srgb, var(--apidocs-subtle) 60%, transparent); }
 .member[open] > .member-row .member-brief { visibility: hidden; }
 .member-sig { min-width: 0; }
+.member-brief[data-brief]::before { content: attr(data-brief); }
 .member-brief { min-width: 0; color: var(--apidocs-muted); display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; }
 .member-marks { display: flex; align-items: center; gap: 8px; user-select: none; -webkit-user-select: none; }
 .member-noted { display: inline-grid; color: var(--apidocs-note-api); }

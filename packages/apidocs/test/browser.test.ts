@@ -166,6 +166,28 @@ describe("from file:// with JavaScript on", () => {
     await page.context().close();
   });
 
+  test("copy as Markdown copies the page's text, without the frontmatter its twin opens with", async () => {
+    const { page } = await open("com/example/geo/Shapes.html", { http: true });
+    await page.context().grantPermissions(["clipboard-read", "clipboard-write"]);
+    await page.locator("button.formats-main").click();
+    await page.waitForSelector("button.formats-main[data-copied]");
+    const copied = await page.evaluate(() => navigator.clipboard.readText());
+    expect(copied.startsWith("# ")).toBe(true);
+    expect(copied).toContain("Operations on");
+    expect(readFileSync(join(out, "com/example/geo/Shapes.md"), "utf8").startsWith('---\ntitle: "Shapes"')).toBe(true);
+    await page.context().close();
+  });
+
+  test("a member row shows its summary sentence, drawn from the entry's text, and the members filter matches it", async () => {
+    const { page } = await open("com/example/geo/Shapes.html");
+    const row = page.locator("details.member", { has: page.locator("#parse\\(java\\.lang\\.String\\)") }).locator(".member-brief");
+    const brief = await row.getAttribute("data-brief");
+    expect(brief?.length).toBeGreaterThan(10);
+    expect(await row.evaluate(e => getComputedStyle(e, "::before").content)).toBe(JSON.stringify(brief));
+    expect(await page.getByRole("group").filter({ has: page.locator("#parse\\(java\\.lang\\.String\\)") }).locator("summary").evaluate(e => e.textContent)).not.toContain(brief!);
+    await page.context().close();
+  });
+
   test("font preloads appear over HTTP and not on file://", async () => {
     const preloads = (page: Page) => page.locator('head link[rel="preload"][as="font"]').count();
     const local = await open("com/example/geo/Shapes.html");
@@ -205,7 +227,7 @@ describe("layout stability", () => {
 
 describe("accessibility", () => {
   for (const colorScheme of ["light", "dark"] as const) {
-    for (const path of ["index.html", "com/example/geo/index.html", "com/example/geo/Shapes.html", "com/example/geo/Shapes.html#parse(java.lang.String)", "com/example/geo/Circle.html", "guides/concepts.html", "guides/getting-started.html", "packages.html", "types.html", "index-all.html", "deprecated.html"]) {
+    for (const path of ["index.html", "com/example/geo/index.html", "com/example/geo/Shapes.html", "com/example/geo/Shapes.html#parse(java.lang.String)", "com/example/geo/Circle.html", "guides/concepts.html", "guides/getting-started.html", "packages.html", "types.html", "index-all.html", "deprecated.html", "404.html"]) {
       test(`${path} in ${colorScheme} has no axe violations`, async () => {
         const { page } = await open(path, { colorScheme });
         await page.addScriptTag({ path: require.resolve("axe-core/axe.min.js") });

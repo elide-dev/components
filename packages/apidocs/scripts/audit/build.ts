@@ -61,14 +61,16 @@ export function listFiles(dir: string): string[] {
 
 /**
  * The module overview, the package page with the most types, the smallest and
- * the largest type page by HTML size, and every page. `prefer` names a page
+ * the largest type page by HTML size, a guide page (getting-started when there is one), and every page. `prefer` names a page
  * to use as the largest type page when it exists (dev/elide/kotlin/api/Ir.html
  * for the Komodo model).
  */
 export function representativePages(dir: string, prefer?: string): RepresentativePages {
   const html = listFiles(dir).filter(f => f.endsWith(".html") && !f.startsWith("assets/") && f !== "404.html");
   const packages = html.filter(f => f.endsWith("/index.html"));
-  const types = html.filter(f => !f.endsWith("index.html"));
+  // Type pages only: not package pages, guides, or the index pages (packages, types, index-all, deprecated) at the root.
+  const types = html.filter(f => !f.endsWith("index.html") && !f.startsWith("guides/") && f.includes("/"));
+  const guides = html.filter(f => f.startsWith("guides/")).sort();
   const size = (f: string) => statSync(join(dir, f)).size;
   const typeCount = (pkgPage: string) => {
     const prefix = pkgPage.slice(0, -"index.html".length);
@@ -79,5 +81,5 @@ export function representativePages(dir: string, prefer?: string): Representativ
   const largest = prefer && types.includes(prefer) ? prefer : bySize.at(-1) ?? "index.html";
   // The smallest type page that still documents something: skip pages under 2 KB of text (empty annotation types).
   const small = bySize.find(f => readFileSync(join(dir, f), "utf8").length > 4000) ?? bySize[0] ?? "index.html";
-  return { overview: "index.html", package: pkg, smallType: small, largestType: largest, all: html };
+  return { overview: "index.html", package: pkg, smallType: small, largestType: largest, ...(guides.length ? { guide: guides.find(g => /getting-started/.test(g)) ?? guides[0] } : {}), all: html };
 }

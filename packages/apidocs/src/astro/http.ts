@@ -38,7 +38,8 @@ function escapeHtml(s: string): string {
 export function notFound(base: string, title: string, accept: string | null | undefined): Response {
   const headers = { vary: "Accept", "cache-control": "public, max-age=60" };
   if (prefersMarkdown(accept)) {
-    const body = `# Not found\n\nThere is no such page in ${title}. Start at the [overview](${base}index.md), or read [llms.txt](${base}llms.txt), which lists every page.\n`;
+    // The wording of the static renderer's 404.md (notFoundMarkdown), which a route with the model sends instead.
+    const body = `# Not found\n\nThere is no such page in ${title}. Start at the [overview](${base}index.md), or read [llms.txt](${base}llms.txt), which lists every page as Markdown.\n`;
     return new Response(body, { status: 404, headers: { ...headers, "content-type": "text/markdown; charset=utf-8" } });
   }
   const name = escapeHtml(title);

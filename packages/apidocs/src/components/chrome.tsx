@@ -132,7 +132,7 @@ export interface ShellProps {
 }
 
 export interface PageMeta {
-  kind: "module" | "package" | "type" | "guide";
+  kind: "module" | "package" | "type" | "guide" | "index" | "notfound";
   /** The declaration's stable id. */
   id?: string;
   package?: string;
@@ -177,7 +177,8 @@ export function headData(ctx: PageContext, props: Pick<ShellProps, "title" | "de
   const root = rootOf(page);
   const name = page.split("/").pop()!;
   const product = theme.productName ?? site.model.module.name;
-  const canonical = theme.baseUrl ? `${theme.baseUrl}${page}.html` : undefined;
+  // The not-found page is served at every missing URL: it names no canonical one.
+  const canonical = theme.baseUrl && meta?.kind !== "notfound" ? `${theme.baseUrl}${page}.html` : undefined;
   const m = site.model.module;
   const at = (path: string, fromRoot: boolean) => (theme.baseUrl ? `${theme.baseUrl}${fromRoot ? path : `${page.slice(0, page.lastIndexOf("/") + 1)}${path}`}` : `${fromRoot ? root : ""}${path}`);
   const formats: Formats = {
@@ -187,17 +188,31 @@ export function headData(ctx: PageContext, props: Pick<ShellProps, "title" | "de
     model: at("api.json", true),
   };
   const keywords = [...new Set([...(meta?.keywords ?? []), m.name, ...(m.languages ?? []).map(languageName), ...(site.packages.length ? ["API reference"] : [])])].filter(Boolean);
+  // Another page's URL in the graph: absolute under the base URL, else relative to this page, as the breadcrumbs are.
+  const pageUrl = (target: string) => (theme.baseUrl ? `${theme.baseUrl}${target}.html` : relative(page, target, ".html"));
+  const image = socialImageUrl(theme, root);
   const graph = {
     "@context": "https://schema.org",
     "@graph": [
       {
         ...jsonLd,
         "@context": undefined,
+        url: pageUrl(page),
         headline: title,
         inLanguage: "en",
         keywords: keywords.join(", "),
         encoding: [{ "@type": "MediaObject", encodingFormat: "text/markdown", contentUrl: formats.markdown, name: "This page as Markdown" }],
         ...(m.version ? { version: m.version } : {}),
+        ...(image ? { image: { "@type": "ImageObject", url: image, width: theme.socialImage!.width, height: theme.socialImage!.height, caption: theme.socialImage!.alt } } : {}),
+        // The overview lists what the site holds: the guides, then the packages.
+        ...(page === INDEX && (site.guides.length > 0 || site.packages.length > 0)
+          ? {
+              hasPart: [
+                ...site.guides.filter(g => g.page !== INDEX).map(g => ({ "@type": "TechArticle", name: g.guide.title, url: pageUrl(g.page) })),
+                ...site.packages.map(pkg => ({ "@type": "APIReference", name: pkg.name || "(default package)", url: pageUrl(packagePage(pkg)) })),
+              ],
+            }
+          : {}),
       },
       ...(crumbs.length > 1
         ? [{
@@ -239,7 +254,16 @@ export function headData(ctx: PageContext, props: Pick<ShellProps, "title" | "de
     { property: "og:description", content: description },
     { property: "og:site_name", content: product },
     ...(canonical ? [{ property: "og:url", content: canonical }] : []),
-    { name: "twitter:card", content: "summary" },
+    ...(image
+      ? [
+          { property: "og:image", content: image },
+          { property: "og:image:width", content: String(theme.socialImage!.width) },
+          { property: "og:image:height", content: String(theme.socialImage!.height) },
+          { property: "og:image:alt", content: theme.socialImage!.alt },
+        ]
+      : []),
+    { name: "twitter:card", content: image ? "summary_large_image" : "summary" },
+    ...(meta?.kind === "notfound" ? [{ name: "robots", content: "noindex" }] : []),
   ];
   // The same content for programs and AI agents: this page as Markdown, the index, the whole reference, the model.
   const links: HeadData["links"] = [
@@ -250,6 +274,18 @@ export function headData(ctx: PageContext, props: Pick<ShellProps, "title" | "de
     { rel: "index", href: `${root}index.html`, title: `${product} API reference` },
   ];
   return { title, description, keywords, product, canonical, meta: tags, links, formats, jsonLd: graph };
+}
+
+/**
+ * Where the theme's social image is: its URL as given, else its asset under the base URL (absolute, as Open Graph
+ * wants) or, without one, relative to the page. Undefined without an image.
+ */
+export function socialImageUrl(theme: Theme, root: string): string | undefined {
+  const image = theme.socialImage;
+  if (!image) return undefined;
+  if (image.url) return image.url;
+  if (!image.asset) return undefined;
+  return theme.baseUrl ? `${theme.baseUrl}assets/${image.asset}` : `${root}assets/${image.asset}`;
 }
 
 /** The head's metadata elements: charset and viewport, title, meta tags, canonical, alternates and index. */
@@ -282,6 +318,8 @@ export function Shell({ title, description, crumbs, toc, jsonLd, meta, children 
   return (
     <html lang="en" data-root={root || "./"}>
       <head>
+        {/* A host serves the not-found page at any depth: with the site's address known, its links resolve from the root. */}
+        {meta?.kind === "notfound" && theme.baseUrl && !astro && <base href={theme.baseUrl} />}
         <HeadMeta head={head} />
         {/* Astro bundles the stylesheet and inlines the theme's tokens itself. */}
         {!astro && <link rel="stylesheet" href={`${root}assets/apidocs.css`} />}
@@ -291,7 +329,7 @@ export function Shell({ title, description, crumbs, toc, jsonLd, meta, children 
         <script dangerouslySetInnerHTML={{ __html: astro ? THEME_BOOT : THEME_BOOT + fontPreload(theme.fonts, root) }} />
         {!astro && <script defer src={`${root}assets/apidocs.js`} />}
         {/* Hold first paint until the content element is parsed, so a page transition starts from real content. */}
-        <link rel="expect" href={`${name}.html#content`} {...({ blocking: "render" } as object)} />
+        <link rel="expect" href={meta?.kind === "notfound" ? "#content" : `${name}.html#content`} {...({ blocking: "render" } as object)} />
         {/* On a server, start loading and rendering a page of this site when a link to it is hovered or pressed.
             Astro pages navigate with its client router and prefetch instead. */}
         {!astro && <script type="speculationrules" dangerouslySetInnerHTML={{ __html: SPECULATION }} />}
@@ -300,7 +338,8 @@ export function Shell({ title, description, crumbs, toc, jsonLd, meta, children 
       <body>
         <div class="loadbar" aria-hidden="true" />
         {meta?.kind === "guide" && <div class="readbar" aria-hidden="true" />}
-        <a class="skip" href={`${name}.html#content`}>Skip to content</a>
+        {/* The not-found page is served at whatever URL was missing, so its skip link names no file. */}
+        <a class="skip" href={meta?.kind === "notfound" ? "#content" : `${name}.html#content`}>Skip to content</a>
         <TopBar />
         <div class="layout">
           <Navigation />

@@ -159,6 +159,7 @@
         "node-html-parser": "6.1.13",
         "playwright": "^1.65.0",
         "postcss": "8.5.32",
+        "sharp": "^0.35.5",
         "typescript": "^7.0.2",
         "vite": "^8.3.6",
         "yaml": "2.9.1",

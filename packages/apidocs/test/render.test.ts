@@ -102,6 +102,68 @@ describe("render", () => {
   });
 });
 
+describe("agent readiness", () => {
+  const base = "https://example.com/geo/";
+  const elide = render(samples.java, { extends: "elide", baseUrl: base, lastModified: "2026-11-21" });
+  const head = (html: string) => html.split("<head>")[1]!.split("</head>")[0]!;
+  const graph = (html: string) => JSON.parse(/<script type="application\/ld\+json">(.*?)<\/script>/.exec(html)![1]!)["@graph"];
+
+  test("a theme's social image gives og:image, its size and alt text, and the large card; none without one", () => {
+    const h = head(elide["com/example/geo/Shapes.html"] as string);
+    expect(h).toContain(`<meta property="og:image" content="${base}assets/social/elide.png"/>`);
+    expect(h).toContain('<meta property="og:image:width" content="1200"/>');
+    expect(h).toContain('<meta property="og:image:height" content="630"/>');
+    expect(h).toContain('<meta property="og:image:alt" content="The Elide logo on a dark background"/>');
+    expect(h).toContain('<meta name="twitter:card" content="summary_large_image"/>');
+    expect(elide["assets/social/elide.png"]).toEqual({ asset: "social/elide.png" });
+    expect(head(render(samples.java)["index.html"] as string)).toContain('<meta property="og:image" content="assets/social/neutral.png"/>');
+    const none = head(render(samples.java, { socialImage: null })["index.html"] as string);
+    expect(none).not.toContain("og:image");
+    expect(none).toContain('<meta name="twitter:card" content="summary"/>');
+    // A URL that is not http(s), or an asset path that climbs out of assets/, is dropped.
+    expect(render(samples.java, { socialImage: { url: "javascript:x", width: 1, height: 1, alt: "" } })["index.html"]).not.toContain("og:image");
+    expect(Object.keys(render(samples.java, { socialImage: { asset: "../secret.png", width: 1, height: 1, alt: "" } }))).not.toContain("assets/../secret.png");
+  });
+  test("the overview's JSON-LD lists the guides and packages, every page's has a url", () => {
+    const parts = graph(elide["index.html"] as string)[0].hasPart as { "@type": string; name: string; url: string }[];
+    expect(parts[0]).toEqual({ "@type": "TechArticle", name: "Getting started", url: `${base}guides/getting-started.html` });
+    expect(parts.find(p => p.name === "com.example.geo")).toEqual({ "@type": "APIReference", name: "com.example.geo", url: `${base}com/example/geo/index.html` });
+    expect(graph(elide["com/example/geo/Shapes.html"] as string)[0].url).toBe(`${base}com/example/geo/Shapes.html`);
+    // Relative without a base URL, as the breadcrumbs are.
+    expect(graph(render(samples.java)["com/example/geo/Shapes.html"] as string)[0].url).toBe("Shapes.html");
+  });
+  test("404.html and 404.md: the page shell with the way back, links from the site's address, kept out of the indexes", () => {
+    const html = elide["404.html"] as string;
+    expect(html).toContain(`<head><base href="${base}"/>`);
+    expect(html).toContain('<meta name="robots" content="noindex"/>');
+    expect(html).not.toContain('rel="canonical"');
+    expect(html).toContain('<h1>Not found</h1>');
+    expect(html).toContain('<a href="deprecated.html">Deprecated</a>');
+    expect(elide["404.md"]).toContain(`Start at the [overview](${base}index.md)`);
+    expect(render(samples.java)["404.md"]).toContain("Start at the [overview](index.md)");
+    expect(elide["llms.txt"]).not.toContain("404");
+    expect(elide["sitemap.xml"]).not.toContain("404");
+  });
+  test("sitemap.xml has lastmod from the theme, never from the clock", () => {
+    expect(elide["sitemap.xml"]).toContain(`<url><loc>${base}index.html</loc><lastmod>2026-11-21</lastmod></url>`);
+    expect(render(samples.java, { baseUrl: base })["sitemap.xml"]).not.toContain("lastmod");
+    expect(render(samples.java, { baseUrl: base, lastModified: "yesterday" })["sitemap.xml"]).not.toContain("lastmod");
+  });
+  test("llms.txt says when to use the reference: the theme's text, or a sentence from the module's", () => {
+    expect(elide["llms.txt"]).toContain("## When to use this\n\nUse this API reference when you write, read or review code that uses geo 2.1.0. A small geometry library: the Java-flavored sample for @elide/apidocs.");
+    expect(render(samples.java, { whenToUse: "Read the guides first." })["llms.txt"]).toContain("## When to use this\n\nRead the guides first.");
+  });
+  test("Markdown twins open with frontmatter; llms-full.txt joins them without it", () => {
+    expect((elide["com/example/geo/Shapes.md"] as string).split("\n---\n")[0]).toBe(
+      `---\ntitle: "Shapes"\ndescription: "Operations on shapes."\nkind: "class"\nid: "com.example.geo.Shapes"\nmodule: "geo"\nversion: "2.1.0"\ncanonical: "${base}com/example/geo/Shapes.html"`);
+    expect(elide["guides/concepts.md"]).toMatch(/^---\ntitle: "Concepts"\n[\s\S]*kind: "guide"\nid: "guide:concepts"/);
+    expect(elide["packages.md"]).toMatch(/^---\ntitle: "Packages"\ndescription: "Packages: every package with its summary and type counts\."\nkind: "index"/);
+    const full = elide["llms-full.txt"] as string;
+    expect(full).not.toMatch(/^(title|kind|canonical): "/m);
+    expect(full).toContain("<!-- com/example/geo/Shapes.md -->\n# ");
+  });
+});
+
 describe("layout", () => {
   const java = render(samples.java, { extends: "elide" });
   const between = (html: string, start: string, end: string) => html.slice(html.indexOf(start), html.indexOf(end, html.indexOf(start)));

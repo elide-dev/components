@@ -383,3 +383,78 @@ export function deprecatedIndexMarkdown(site: Site, symbols: SymbolMode = "utf")
   }
   return join(parts);
 }
+
+// ---- Frontmatter and the not-found page.
+
+/** What a Markdown twin's frontmatter says about its page. */
+export interface TwinMeta {
+  title: string;
+  description?: string;
+  /** module, package, a type's kind word (class, interface, ...), guide, index or notfound. */
+  kind: string;
+  /** The declaration's or guide's stable id. */
+  id?: string;
+}
+
+/**
+ * A twin's YAML frontmatter: title, description, kind, id, module, version and, when the site's address is known,
+ * the HTML page's canonical URL. Every value is a double-quoted YAML string (JSON's escaping is YAML's).
+ */
+export function frontmatter(site: Site, meta: TwinMeta, canonical?: string): string {
+  const m = site.model.module;
+  const fields: [string, string | undefined][] = [
+    ["title", meta.title], ["description", meta.description || undefined], ["kind", meta.kind], ["id", meta.id],
+    ["module", m.name], ["version", m.version], ["canonical", canonical],
+  ];
+  // Angle brackets and ampersands as \u escapes (YAML reads them as JSON does), so a reader that shows frontmatter as
+  // text, and one that renders it as Markdown, gets no markup from a title.
+  const value = (v: string) => JSON.stringify(v).replace(/[<>&]/g, c => `\\u${c.charCodeAt(0).toString(16).padStart(4, "0")}`);
+  return `---\n${fields.filter(([, v]) => v !== undefined && v !== "").map(([k, v]) => `${k}: ${value(v!)}`).join("\n")}\n---\n\n`;
+}
+
+/** A twin without its frontmatter: what llms-full.txt joins, and what "copy as Markdown" copies. */
+export function stripFrontmatter(md: string): string {
+  return md.replace(/^---\n[\s\S]*?\n---\n\n?/, "");
+}
+
+const flat = (text: string) => text.replace(/\s+/g, " ").trim();
+
+/** The overview's frontmatter. */
+export function moduleTwin(site: Site): TwinMeta {
+  const m = site.model.module;
+  const overview = overviewGuide(site);
+  return { title: overview?.guide.title ?? m.name, description: summaryText(m.doc) || flat(inlineText(overview?.guide.summary)) || undefined, kind: "module", id: overview?.guide.id };
+}
+
+export function packageTwin(pkg: Package): TwinMeta {
+  return { title: pkg.name || "(default package)", description: summaryText(pkg.doc), kind: "package", id: pkg.id };
+}
+
+export function typeTwin(type: Type): TwinMeta {
+  return { title: type.name, description: summaryText(type.doc), kind: typeKindWord(type), id: type.id };
+}
+
+export function guideTwin(entry: GuideEntry): TwinMeta {
+  return { title: entry.guide.title, description: flat(inlineText(entry.guide.summary)), kind: "guide", id: entry.guide.id };
+}
+
+export function indexTwin(title: string, description: string): TwinMeta {
+  return { title, description, kind: "index" };
+}
+
+/** The page path of the not-found page (404.html, 404.md). It is not linked from anywhere and not in llms.txt or the sitemap. */
+export const NOT_FOUND = "404";
+
+/**
+ * The not-found page as Markdown. `root` is where the site's files are: the site's absolute URL when known (a host
+ * serves 404.md for a missing path at any depth), a base path, or "" for links relative to the site's root.
+ */
+export function notFoundMarkdown(site: Site, root: string, indexes: { page: string; label: string }[]): string {
+  const name = esc(site.model.module.name);
+  const lines = [
+    "# Not found",
+    `There is no such page in ${name}. Start at the [overview](${root}index.md), or read [llms.txt](${root}llms.txt), which lists every page as Markdown.`,
+  ];
+  if (indexes.length) lines.push(indexes.map(entry => `- [${esc(entry.label)}](${root}${entry.page}.md)`).join("\n"));
+  return join(lines);
+}

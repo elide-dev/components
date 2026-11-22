@@ -3,17 +3,17 @@
  * The apidocs command line. One command so far:
  *
  *   apidocs guides --src <suite dir> --id <suite id> --title <site title> --out <output dir>
- *                  [--theme <theme.json>] [--version <string>] [--base-url <url with trailing slash>]
+ *                  [--theme <theme.json>] [--version <string>] [--base-url <url with trailing slash>] [--last-modified <date>]
  *                  [--source-link <template with {path} and {line}>] [--source-root <repo-relative suite path>]
  *                  [--link <prefix>=<target> ...] [--include-drafts] [--warn-only] [--assets <dir>]
  *
  * It imports a Markdown suite (src/import/markdown.ts), renders it as a guides-only site and writes the site into
- * --out: HTML pages and their Markdown twins, llms.txt, llms-full.txt, api.json (the guides-only model), the search
+ * --out: HTML pages and their Markdown twins, 404.html and 404.md, llms.txt, llms-full.txt, api.json (the guides-only model), the search
  * index, the assets and the suite's images. Diagnostics go to stderr as file:line: message, with paths as given to
  * --src. It exits 1 when there is an error (unless --warn-only), 2 on bad arguments, and prints one JSON line of
  * counts on success. It writes into --out without deleting what is already there.
  *
- * The stylesheet and fonts come from the sources; the client script from dist/assets/apidocs.js, which is built
+ * The stylesheet, fonts and social images come from the sources; the client script from dist/assets/apidocs.js, which is built
  * first when it is missing or older than src/client. --assets takes every asset from a directory instead.
  */
 import { spawnSync } from "node:child_process";
@@ -26,7 +26,7 @@ import { suiteSite } from "./import/suite";
 import type { Theme } from "./theme";
 
 const USAGE = `usage: apidocs guides --src <suite dir> --id <suite id> --title <site title> --out <output dir>
-         [--theme <theme.json>] [--version <string>] [--base-url <url/>] [--source-link <template>]
+         [--theme <theme.json>] [--version <string>] [--base-url <url/>] [--last-modified <date>] [--source-link <template>]
          [--source-root <path>] [--link <prefix>=<target> ...] [--include-drafts] [--warn-only] [--assets <dir>]`;
 
 const pkg = fileURLToPath(new URL("..", import.meta.url));
@@ -40,7 +40,7 @@ interface Args {
   flags: Set<string>;
 }
 
-const VALUED = new Set(["src", "id", "title", "out", "theme", "version", "base-url", "source-link", "source-root", "assets"]);
+const VALUED = new Set(["src", "id", "title", "out", "theme", "version", "base-url", "last-modified", "source-link", "source-root", "assets"]);
 const FLAGS = new Set(["include-drafts", "warn-only"]);
 
 function parseArgs(argv: string[]): Args {
@@ -95,6 +95,8 @@ function assetSource(name: string, assets: string | undefined): string {
     const file = name.slice("fonts/".length);
     return require.resolve(`@fontsource-variable/${file.replace(/-latin-.*$/, "")}/files/${file}`);
   }
+  // The presets' link-preview images (scripts/gen-social.ts).
+  if (/^social\/[a-z]+\.png$/.test(name)) return join(pkg, `artwork/social-${name.slice("social/".length)}`);
   throw new Error(`no source for the asset ${name}`);
 }
 
@@ -107,6 +109,7 @@ function guides(argv: string[]): number {
   if (!existsSync(src) || !statSync(src).isDirectory()) throw new UsageError(`--src ${args.values.get("src")} is not a directory`);
   const themePath = args.values.get("theme");
   const theme: Theme = themePath ? JSON.parse(readFileSync(resolve(cwd, themePath), "utf8")) : {};
+  if (args.values.get("last-modified")) theme.lastModified = args.values.get("last-modified")!;
   const assetsDir = args.values.get("assets") ? resolve(cwd, args.values.get("assets")!) : undefined;
   const warnOnly = args.flags.has("warn-only");
   const opt = (key: string) => args.values.get(key);
@@ -159,7 +162,8 @@ function guides(argv: string[]): number {
     bytes += file.data.byteLength;
     count++;
   }
-  const pages = Object.keys(site.output).filter(p => p.endsWith(".html")).length;
+  // The site's pages: the not-found page is not one of them.
+  const pages = Object.keys(site.output).filter(p => p.endsWith(".html") && p !== "404.html").length;
   process.stdout.write(JSON.stringify({ files: count, bytes, pages, guides: site.model.module.guides?.length ?? 0, drafts: site.result.drafts.length, errors: 0, warnings }) + "\n");
   return 0;
 }

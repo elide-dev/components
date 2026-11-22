@@ -45,7 +45,9 @@ const SKIP = new Set(["script", "style", "template", "svg"]);
 const INSTRUCTION = /\b(ignore (all |any )?(previous|prior|above) instructions|you are (an? )?(ai|assistant|language model)|as an ai|system prompt|disregard (the|all|previous)|do not tell the user)\b/i;
 
 export function readPage(html: string): PageFacts {
-  const root = parse(html, { comment: false, blockTextElements: { script: true, style: true, pre: true, textarea: true } });
+  // Scripts, styles and textareas hold raw text; <pre> is parsed like any element, so the markup of a highlighted
+  // signature counts as the text it shows, not as its tags.
+  const root = parse(html, { comment: false, blockTextElements: { script: true, style: true, textarea: true } });
   const doc = root.querySelector("html") ?? root;
   const head = root.querySelector("head");
   const body = root.querySelector("body") ?? root;

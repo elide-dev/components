@@ -43,8 +43,9 @@ the score below; the CSS row is the share of the nine mechanical good-css rules 
 
 Lighthouse 13.6.0 (pinned) runs programmatically in the Chromium that Playwright installs, through chrome-launcher, once
 per page and form factor (mobile is Lighthouse's default config; desktop uses `desktop-config.js`). It audits the module
-overview, the package page with the most types, the smallest type page with real content, and the largest type page
-(`ShapeCatalog.html` in the Java sample; `dev/elide/kotlin/api/Ir.html` in the Komodo model). Each run's JSON and HTML
+overview, the package page with the most types, the smallest type page with real content, the largest type page
+(`ShapeCatalog.html` in the Java sample; `dev/elide/kotlin/api/Ir.html` in the Komodo model), and a guide page
+(`guides/getting-started.html` when there is one). Each run's JSON and HTML
 report, and a summary of the failing weighted audits with their values, are in `lighthouse/`.
 
 The pages are served the way a static host would serve them: brotli or gzip, `Cache-Control: public, max-age=31536000`
@@ -82,6 +83,16 @@ here); emerging checks unscored; bonus checks count only what they earn. It is a
 Ora's partial-credit thresholds are not all published, and the values used are in the code next to each check. Is
 Agentic's own display groups checks as Essential (80 points), Recommended (20) and Bonus (5); that grouping per site
 type is not published, so the audit reports Ora's score.
+
+The text the token budget and the content checks measure is what a reader gets: `<pre>` is parsed like any other
+element, so a highlighted signature counts as its text, not its markup. (Earlier versions of the audit counted the
+markup inside `<pre>`, which made the largest Java sample page read as 175,174 characters; parsed, it was 102,861,
+and with each member's summary sentence drawn once it is 89,287.) Built sites get the run's date as the theme's
+`lastModified`, as the doclet passes its build date.
+
+The static host profile cannot pass `agent-friendly-404` in full: a missing page gets the site's `404.html` with a
+404 status (1 of 2), but answering `Accept: text/markdown` with `404.md` is content negotiation, which a static
+host does not do. `--host agent` does it, as the Astro integration's route does.
 
 Each finding names an owner: `page` (markup, CSS, client script), `output` (files the renderer writes: llms.txt,
 sitemap.xml, robots.txt, 404 pages, JSON-LD content) or `host` (status codes, headers, negotiation). `--host agent`

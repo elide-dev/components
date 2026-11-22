@@ -316,7 +316,10 @@ export function listFilter(boxSelector: string, rowSelector: string, also: strin
     if (also) {
       const query = input.value.trim().toLowerCase();
       for (const row of document.querySelectorAll<HTMLElement>(also)) {
-        const hit = !query || (row.querySelector("summary, th")?.textContent ?? "").toLowerCase().includes(query);
+        const head = row.querySelector("summary, th");
+        // A member row's summary sentence is drawn from an attribute (MemberDetail), so it is read from there too.
+        const text = `${head?.textContent ?? ""} ${head?.querySelector("[data-brief]")?.getAttribute("data-brief") ?? ""}`;
+        const hit = !query || text.toLowerCase().includes(query);
         row.toggleAttribute("data-filtered-out", !hit);
       }
     }
@@ -351,7 +354,8 @@ export function copyMarkdown(signal?: AbortSignal) {
     request.onload = async () => {
       if (request.status < 200 || request.status >= 300) return fail();
       try {
-        await navigator.clipboard.writeText(request.responseText);
+        // The page's text, as a reader pastes it: without the frontmatter that describes it to programs.
+        await navigator.clipboard.writeText(request.responseText.replace(/^---\n[\s\S]*?\n---\n\n?/, ""));
       } catch {
         return fail();
       }

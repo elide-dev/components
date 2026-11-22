@@ -477,7 +477,7 @@ describe("reduced motion", () => {
 
 describe("accessibility", () => {
   for (const colorScheme of ["light", "dark"] as const) {
-    for (const path of [TYPE, "/java/2.0/guides/concepts", "/java/2.0/index-all", "/java/main/com/example/geo/", "/guides/"]) {
+    for (const path of [TYPE, "/java/2.0/guides/concepts", "/java/2.0/index-all", "/java/main/com/example/geo/", "/guides/", "/java/2.0/nope"]) {
       test(`${path} in ${colorScheme} has no axe violations`, async () => {
         const { page } = await open(path, { colorScheme });
         await page.waitForLoadState("networkidle");
@@ -505,9 +505,10 @@ describe("metadata", () => {
       const head = html.split("<head>")[1]!.split("</head>")[0]!;
       return {
         title: /<title>(.*?)<\/title>/.exec(head)?.[1],
-        meta: [...head.matchAll(/<meta (?:name|property)="(description|keywords|generator|apidocs:[a-z]+|og:[a-z_]+|twitter:card)" content="([^"]*)"\/?>/g)].map(m => [m[1], m[1] === "og:url" ? map(m[2]!) : m[2]]),
+        meta: [...head.matchAll(/<meta (?:name|property)="(description|keywords|generator|apidocs:[a-z]+|og:[a-z_]+|twitter:card)" content="([^"]*)"\/?>/g)].map(m => [m[1], m[1] === "og:url" ? map(m[2]!) : m[1] === "og:image" ? "(the social image)" : m[2]]),
         links: [...head.matchAll(/<link rel="(canonical|alternate|index)"[^>]*? href="([^"]*)"/g)].map(m => [m[1], map(m[2]!)]),
-        jsonLd: JSON.parse(/<script type="application\/ld\+json">(.*?)<\/script>/.exec(head)![1]!, (key, value) => (["url", "item", "contentUrl"].includes(key) ? map(value) : value)),
+        // The social image is the app's bundled file, not the static site's assets/social/.
+        jsonLd: JSON.parse(/<script type="application\/ld\+json">(.*?)<\/script>/.exec(head)![1]!, (key, value) => (key === "url" && /\.png$/.test(value) ? "(the social image)" : ["url", "item", "contentUrl"].includes(key) ? map(value) : value)),
       };
     };
     expect(metadata(served, u => u)).toEqual(metadata(staticHtml, u => mapUrl(u, ctx)));
@@ -521,5 +522,24 @@ describe("metadata", () => {
     expect(redirect.status).toBe(301);
     expect(redirect.headers.get("location")).toBe("/java/2.0/com/example/geo/Circle");
     expect((await at("/java/2.0/com/example/geo/Nope")).status).toBe(404);
+  });
+
+  test("the social image is served, and a missing page is the site's not-found page, as HTML or Markdown", async () => {
+    const html = await (await fetch(`${origin}/java/2.0/`)).text();
+    const image = /<meta property="og:image" content="([^"]*)"/.exec(html)![1]!;
+    expect(image).toMatch(new RegExp(`^${origin}/_astro/`));
+    const png = await fetch(image);
+    expect(png.status).toBe(200);
+    expect(png.headers.get("content-type")).toBe("image/png");
+    const missing = await fetch(`${origin}/java/2.0/com/example/geo/Nope`);
+    expect(missing.status).toBe(404);
+    const page = await missing.text();
+    expect(page).toContain("<h1>Not found</h1>");
+    expect(page).toContain('<a href="/java/2.0/packages">Packages</a>');
+    expect(page).toContain('<meta name="robots" content="noindex"/>');
+    const md = await fetch(`${origin}/java/2.0/com/example/geo/Nope`, { headers: { accept: "text/markdown" } });
+    expect(md.status).toBe(404);
+    expect(md.headers.get("content-type")).toContain("text/markdown");
+    expect(await md.text()).toContain("Start at the [overview](/java/2.0/index.md)");
   });
 });

@@ -5,11 +5,20 @@
  * Astro form.
  */
 import type { Model } from "../model";
-import { render, safeTheme, searchIndex } from "../render";
+import { render, safeTheme, searchIndex, sitemap } from "../render";
 import { resolveTheme, type Theme, themeCss } from "../theme";
 import type { Entry } from "../client/search";
 import { siteOf } from "./pages";
 import { fileUrl, pageUrl } from "./urls";
+
+/**
+ * The not-found page as Markdown, with links under the site's base path: what a server sends a client that asks for
+ * Markdown at a missing URL. The same text as the static renderer's 404.md.
+ */
+export function notFoundText(model: Model, base: string, themeInput?: Theme | string): string {
+  return siteOf(model).notFound.markdown(prepareTheme(themeInput).symbols ?? "utf", base);
+}
+
 
 /** A theme with its preset applied and its URLs checked, as render() uses it. Accepts the theme as JSON text. */
 export function prepareTheme(input: Theme | string | undefined): Theme {
@@ -75,7 +84,11 @@ export function renderText(model: Model, path: string, themeInput?: Theme | stri
   const { site, pages } = siteOf(model);
   const theme = prepareTheme(themeInput);
   const body = ((): string | undefined => {
-    if (path.endsWith(".md")) return pages.get(path.slice(0, -".md".length))?.markdown(theme.symbols ?? "utf");
+    if (path.endsWith(".md")) {
+      const page = path.slice(0, -".md".length);
+      // The frontmatter's canonical URL is the page's, in the Astro form.
+      return pages.get(page)?.markdown(theme.symbols ?? "utf", theme.baseUrl ? theme.baseUrl + pageUrl(page) : undefined);
+    }
     switch (path) {
       case "llms.txt":
       case "llms-full.txt":
@@ -96,16 +109,10 @@ export function renderText(model: Model, path: string, themeInput?: Theme | stri
       case "assets/favicon.svg":
         return theme.favicon;
       case "sitemap.xml":
-        return theme.baseUrl ? sitemap(theme.baseUrl, [...pages.keys()]) : undefined;
+        return theme.baseUrl ? sitemap(theme.baseUrl, [...pages.keys()].map(pageUrl), theme.lastModified) : undefined;
       default:
         return undefined;
     }
   })();
   return body === undefined ? undefined : { body, contentType: contentType(path) };
-}
-
-function sitemap(base: string, pages: string[]): string {
-  const escape = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-  const urls = pages.map(p => `  <url><loc>${escape(base + pageUrl(p))}</loc></url>`).join("\n");
-  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`;
 }

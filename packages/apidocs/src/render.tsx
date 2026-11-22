@@ -8,10 +8,10 @@
 import { renderToString } from "preact-render-to-string";
 import { DeprecatedPage, IndexAllPage, PackagesIndexPage, TypesIndexPage } from "./indexes";
 import { Ctx, type PageContext } from "./context";
-import { deprecatedIndexMarkdown, guideMarkdown, indexAllMarkdown, indexMarkdown, packageMarkdown, packagesIndexMarkdown, typeMarkdown, typesIndexMarkdown } from "./markdown";
+import { deprecatedIndexMarkdown, frontmatter, guideMarkdown, guideTwin, indexAllMarkdown, indexMarkdown, indexTwin, moduleTwin, NOT_FOUND, notFoundMarkdown, packageMarkdown, packagesIndexMarkdown, packageTwin, stripFrontmatter, typeMarkdown, typesIndexMarkdown, typeTwin } from "./markdown";
 import type { Model } from "./model";
 import { GuidePage } from "./narrative";
-import { IndexPage, PackagePage, TypePage } from "./pages";
+import { IndexPage, NotFoundPage, PackagePage, TypePage } from "./pages";
 import { buildSite, DEPRECATED_PAGE, INDEX, INDEX_ALL_PAGE, indexPages, isThrowable, overviewGuide, PACKAGES_PAGE, packagePage, type Site, TYPES_PAGE, typePage } from "./site";
 import { inlineText, summaryText, typeKindWord } from "./structure";
 import { type SymbolKey, type SymbolMode, typeSymbolKey, withSym } from "./symbols";
@@ -38,6 +38,8 @@ export function render(modelInput: Model | string, themeInput?: Theme | string):
   const out: Output = {};
   const pages: ListedPage[] = [];
   const symbols = theme.symbols ?? "utf";
+  // A Markdown twin's canonical URL is its HTML page's, when the site's address is known.
+  const canonical = (page: string) => (theme.baseUrl ? `${theme.baseUrl}${page}.html` : undefined);
 
   const html = (page: string, language: string, node: preact.VNode) => {
     const ctx: PageContext = { site, theme, page, language };
@@ -45,7 +47,7 @@ export function render(modelInput: Model | string, themeInput?: Theme | string):
   };
 
   html(INDEX, site.language, <IndexPage />);
-  out[`${INDEX}.md`] = indexMarkdown(site, symbols);
+  out[`${INDEX}.md`] = frontmatter(site, moduleTwin(site), canonical(INDEX)) + indexMarkdown(site, symbols);
   pages.push({ page: INDEX, title: `${model.module.name} overview`, summary: overviewSummary(site), symbol: "module" });
   // Guides come right after the overview in llms-full.txt: agents should read them before the reference. The
   // overview guide is the index page, already written.
@@ -53,18 +55,18 @@ export function render(modelInput: Model | string, themeInput?: Theme | string):
   for (const entry of site.guides) {
     if (entry.page === INDEX) continue;
     html(entry.page, site.language, <GuidePage entry={entry} />);
-    out[`${entry.page}.md`] = guideMarkdown(site, entry, symbols);
+    out[`${entry.page}.md`] = frontmatter(site, guideTwin(entry), canonical(entry.page)) + guideMarkdown(site, entry, symbols);
     guides.push({ page: entry.page, title: entry.guide.title, summary: oneLine(inlineText(entry.guide.summary)), symbol: "guide" });
   }
   for (const pkg of site.packages) {
     const page = packagePage(pkg);
     html(page, site.language, <PackagePage pkg={pkg} />);
-    out[`${page}.md`] = packageMarkdown(site, pkg, symbols);
+    out[`${page}.md`] = frontmatter(site, packageTwin(pkg), canonical(page)) + packageMarkdown(site, pkg, symbols);
     pages.push({ page, title: `Package ${pkg.name}`, summary: summaryText(pkg.doc), symbol: "package" });
     for (const type of pkg.types ?? []) {
       const tpage = typePage(pkg, type);
       html(tpage, type.language, <TypePage type={type} />);
-      out[`${tpage}.md`] = typeMarkdown(site, type, symbols);
+      out[`${tpage}.md`] = frontmatter(site, typeTwin(type), canonical(tpage)) + typeMarkdown(site, type, symbols);
       pages.push({ page: tpage, title: `${type.name} (${typeKindWord(type)} in ${pkg.name})`, summary: summaryText(type.doc), symbol: typeSymbolKey(type.kind, isThrowable(type)) });
     }
   }
@@ -73,7 +75,7 @@ export function render(modelInput: Model | string, themeInput?: Theme | string):
   const indexes: ListedPage[] = [];
   const indexPage = (page: string, title: string, summary: string, node: preact.VNode, markdown: string) => {
     html(page, site.language, node);
-    out[`${page}.md`] = markdown;
+    out[`${page}.md`] = frontmatter(site, indexTwin(title, `${title}: ${summary}.`), canonical(page)) + markdown;
     indexes.push({ page, title, summary, symbol: "module" });
   };
   for (const { page } of indexPages(site)) {
@@ -83,8 +85,13 @@ export function render(modelInput: Model | string, themeInput?: Theme | string):
     if (page === DEPRECATED_PAGE) indexPage(page, "Deprecated", "everything deprecated, for removal first", <DeprecatedPage />, deprecatedIndexMarkdown(site, symbols));
   }
 
-  out["llms.txt"] = llms(site, pages, guides, symbols, indexes);
-  out["llms-full.txt"] = [pages[0]!, ...guides, ...pages.slice(1)].map(p => `<!-- ${p.page}.md -->\n${out[`${p.page}.md`]}`).join("\n");
+  // What a host serves for a missing URL: the page shell with the way back, and its Markdown form.
+  html(NOT_FOUND, site.language, <NotFoundPage />);
+  out[`${NOT_FOUND}.md`] = frontmatter(site, { title: "Not found", kind: "notfound" }) + notFoundMarkdown(site, theme.baseUrl ?? "", indexPages(site));
+
+  out["llms.txt"] = llms(site, pages, guides, symbols, indexes, theme.whenToUse);
+  // The twins without their frontmatter: in one file, each starts at the comment that names it.
+  out["llms-full.txt"] = [pages[0]!, ...guides, ...pages.slice(1)].map(p => `<!-- ${p.page}.md -->\n${stripFrontmatter(out[`${p.page}.md`] as string)}`).join("\n");
   out["api.json"] = JSON.stringify(model);
   // Javadoc's element-list: a module line first when the packages belong to a named JPMS module, as -link expects.
   // A guides-only site has no packages for -link to find, so it has no element-list.
@@ -97,7 +104,8 @@ export function render(modelInput: Model | string, themeInput?: Theme | string):
   if (theme.logo?.light) out["assets/logo-light.svg"] = theme.logo.light;
   if (theme.logo?.dark) out["assets/logo-dark.svg"] = theme.logo.dark;
   if (theme.favicon) out["assets/favicon.svg"] = theme.favicon;
-  if (theme.baseUrl) out["sitemap.xml"] = sitemap(theme.baseUrl, [pages[0]!, ...guides, ...pages.slice(1), ...indexes].map(p => p.page));
+  if (theme.socialImage?.asset) out[`assets/${theme.socialImage.asset}`] = { asset: theme.socialImage.asset };
+  if (theme.baseUrl) out["sitemap.xml"] = sitemap(theme.baseUrl, [pages[0]!, ...guides, ...pages.slice(1), ...indexes].map(p => `${p.page}.html`), theme.lastModified);
   return out;
 }
 
@@ -114,11 +122,29 @@ export function safeTheme(theme: Theme): Theme {
     });
   const base = theme.baseUrl && /^https?:\/\//i.test(safeUrl(theme.baseUrl) ?? "") ? theme.baseUrl : undefined;
   const source = theme.sourceLink && safeUrl(theme.sourceLink.replace(/\{(path|line|ref)\}/g, "x")) ? theme.sourceLink : undefined;
-  return { ...theme, links: { header: links(theme.links?.header), footer: links(theme.links?.footer) }, baseUrl: base, sourceLink: source };
+  return {
+    ...theme,
+    links: { header: links(theme.links?.header), footer: links(theme.links?.footer) },
+    baseUrl: base,
+    sourceLink: source,
+    socialImage: safeSocialImage(theme.socialImage),
+    lastModified: theme.lastModified && W3C_DATE.test(theme.lastModified) ? theme.lastModified : undefined,
+  };
+}
+
+/** A W3C date or date-time, as sitemap.xml's lastmod takes it: 2026-11-21, or with a time and a zone. */
+const W3C_DATE = /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}(:\d{2}(\.\d+)?)?(Z|[+-]\d{2}:\d{2}))?$/;
+
+/** The social image when it is usable: an absolute http(s) URL, or an asset path with no way out of assets/. */
+function safeSocialImage(image: Theme["socialImage"]): Theme["socialImage"] | undefined {
+  if (!image || !(image.width > 0) || !(image.height > 0)) return undefined;
+  const url = image.url && /^https?:\/\//i.test(safeUrl(image.url) ?? "") ? image.url : undefined;
+  const asset = image.asset && /^[a-z0-9][a-z0-9._/-]*\.(png|jpe?g|webp)$/i.test(image.asset) && !image.asset.split("/").includes("..") ? image.asset : undefined;
+  return url || asset ? { ...image, url, asset } : undefined;
 }
 
 /** llms.txt (llmstxt.org): what the module is, the guides, then every reference page, each with its summary. */
-function llms(site: Site, pages: ListedPage[], guides: ListedPage[], symbols: SymbolMode, indexes: ListedPage[] = []): string {
+function llms(site: Site, pages: ListedPage[], guides: ListedPage[], symbols: SymbolMode, indexes: ListedPage[] = [], whenToUse?: string): string {
   const m = site.model.module;
   const guidesOnly = site.packages.length === 0 && site.guides.length > 0;
   // Names and summaries are untrusted text: Markdown escapes keep their angle brackets and brackets literal.
@@ -130,6 +156,10 @@ function llms(site: Site, pages: ListedPage[], guides: ListedPage[], symbols: Sy
     "Each page below is Markdown; the HTML page of the same name has the same content. llms-full.txt has every page in one file, and api.json is the apidocs/1 model.",
     "",
   );
+  // For an agent deciding whether this is the reference it needs: the theme's words, or one sentence from the module's.
+  const what = guidesOnly ? "documentation" : "API reference";
+  const summary = overviewSummary(site);
+  lines.push("## When to use this", "", whenToUse?.trim() || `Use this ${what} when you write, read or review code that uses ${md(m.name)}${m.version ? ` ${md(m.version)}` : ""}.${summary ? ` ${md(summary)}` : ""}`, "");
   lines.push(
     "## Overview", "",
     `- [${withSym(symbols, "module", md(m.name))}](index.md): ${guidesOnly ? "the overview" : "packages and types"}`,
@@ -192,8 +222,10 @@ export function searchIndex(site: Site): string {
   return `window.apidocsSearch=${JSON.stringify(items).replace(/</g, "\\u003c")};\n`;
 }
 
-function sitemap(base: string, pages: string[]): string {
-  const urls = pages.map(p => `  <url><loc>${escapeXml(base + p + ".html")}</loc></url>`).join("\n");
+/** sitemap.xml: each URL (relative to base), with the theme's lastModified as every entry's lastmod when there is one. */
+export function sitemap(base: string, paths: string[], lastModified?: string): string {
+  const lastmod = lastModified ? `<lastmod>${escapeXml(lastModified)}</lastmod>` : "";
+  const urls = paths.map(p => `  <url><loc>${escapeXml(base + p)}</loc>${lastmod}</url>`).join("\n");
   return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`;
 }
 

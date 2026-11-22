@@ -97,6 +97,7 @@ const DEV_SCRIPTS = '<script type="module" src="/@vite/client"></script><script 
 
 function asset(name: string): { body: Buffer | string; type: string } {
   if (name === "apidocs.css") return { body: readFileSync(resolve(root, "src/styles/apidocs.css"), "utf8"), type: "text/css" };
+  if (name.startsWith("social/")) return { body: readFileSync(resolve(root, `artwork/social-${name.slice("social/".length)}`)), type: "image/png" };
   if (name.startsWith("fonts/")) {
     const file = name.slice("fonts/".length);
     return { body: readFileSync(require.resolve(`@fontsource-variable/${file.replace(/-latin-.*$/, "")}/files/${file}`)), type: "font/woff2" };
