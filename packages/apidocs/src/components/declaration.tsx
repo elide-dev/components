@@ -169,6 +169,9 @@ export function MemberDetail({ member, summary }: { member: Member; summary?: Co
   const noted = (doc?.notes ?? []).some(note => note.kind === "apiNote");
   // Text only: the row is a disclosure's summary, which may hold no links. The entry inside has the linked text.
   const brief = summaryText(doc);
+  // An override with no description of its own is described where it is declared: say so, with the link, rather
+  // than "No description."
+  const describedElsewhere = !brief && !doc?.body?.length && !!member.overrides;
   return (
     <details class={member.deprecated ? "member is-deprecated" : "member"} data-kind={member.kind} open={open}>
       <summary class="member-row">
@@ -178,7 +181,8 @@ export function MemberDetail({ member, summary }: { member: Member; summary?: Co
             from the attribute, so a page with hundreds of members does not hold each sentence twice. It is still in
             the row's accessible name, and find-in-page finds it in the entry, opening the row. */}
         <span class="member-brief" data-brief={brief || undefined}>
-          {!brief && !member.implicit && <span class="undocumented">No description.</span>}
+          {!brief && !member.implicit && !describedElsewhere && <span class="undocumented">No description.</span>}
+          {describedElsewhere && <span class="undocumented">Described in {refLabel(ctx.site, member.overrides!)}.</span>}
         </span>
         <span class="member-marks">
           {noted && <span class="member-noted" title="Has an API note"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><circle cx="8" cy="8" r="6.25" /><path d="M8 4.6v3.9" /><path d="M8 11.1v.01" /></svg><span class="visually-hidden">Has an API note</span></span>}
@@ -203,7 +207,9 @@ export function MemberDetail({ member, summary }: { member: Member; summary?: Co
       <DeprecationBanner deprecation={member.deprecated} />
       {doc?.body && doc.body.length > 0
         ? <div class="prose"><Blocks nodes={doc.body} offset={2} /></div>
-        : !member.implicit && <p class="undocumented">No description.</p>}
+        : describedElsewhere
+          ? <p class="inherited-from">Described in <RefLink refValue={member.overrides!} />.</p>
+          : !member.implicit && <p class="undocumented">No description.</p>}
       {doc?.inheritedFrom && (
         <p class="inherited-from">Description copied from <RefLink refValue={doc.inheritedFrom} />.</p>
       )}
@@ -233,7 +239,7 @@ export function MemberDetail({ member, summary }: { member: Member; summary?: Co
       {member.defaultValue && <p class="default-value">Default: <code>{member.defaultValue}</code></p>}
       <Throws exceptions={member.throws} />
       <Notes notes={doc?.notes} />
-      {member.overrides && <p class="overrides">Overrides <RefLink refValue={member.overrides} />.</p>}
+      {member.overrides && !describedElsewhere && <p class="overrides">Overrides <RefLink refValue={member.overrides} />.</p>}
       <SeeAlso doc={doc} />
       </div>
     </details>

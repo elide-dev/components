@@ -385,6 +385,17 @@ describe("parts", () => {
     expect(search(entries, "read").map(e => e[0])).toEqual(["Reader", "readAll()", "ShapeReader", "thread()"]);
     expect(search(entries, "")).toEqual([]);
   });
+  test("an override with no description of its own says where it is described, with the link", () => {
+    const model = structuredClone(samples.java);
+    const type = model.packages.flatMap(p => p.types ?? []).find(t => (t.members ?? []).some(m => m.kind === "method"))!;
+    const member = type.members!.find(m => m.kind === "method")!;
+    member.doc = undefined;
+    member.overrides = { id: "com.example.Other#run()", text: "Other.run", url: "https://example.com/Other.html#run()" };
+    const page = Object.entries(render(model)).find(([path, html]) => path.endsWith(".html") && typeof html === "string" && html.includes(`id="${member.anchor}"`))![1] as string;
+    const entry = page.slice(page.indexOf(`id="${member.anchor}"`));
+    expect(entry.slice(0, 4000)).toContain('<p class="inherited-from">Described in <a href="https://example.com/Other.html#run()"><code>Other.run</code></a>.</p>');
+    expect(entry.slice(0, 4000)).not.toContain('<p class="overrides">');
+  });
   test("drops executable markup from raw nodes", () => {
     expect(sanitize('<sup onclick="x()">2</sup><script>alert(1)</script><a href="javascript:x">y</a>')).toBe("<sup>2</sup><a>y</a>");
   });
