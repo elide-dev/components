@@ -261,19 +261,17 @@ export function navigatorScroll(signal?: AbortSignal) {
   const nav = document.querySelector<HTMLElement>(".sidebar");
   if (!nav) return;
   const key = navScrollKey();
-  let restored = false;
   try {
     const saved = window.sessionStorage.getItem(key);
-    if (saved) {
-      nav.scrollTop = Number(saved);
-      restored = true;
-    }
+    if (saved) nav.scrollTop = Number(saved);
   } catch {
     /* storage blocked */
   }
   const currentLink = nav.querySelector<HTMLElement>('[aria-current="page"]');
-  if (currentLink && (!restored || currentLink.offsetTop < nav.scrollTop || currentLink.offsetTop > nav.scrollTop + nav.clientHeight)) {
-    nav.scrollTop = Math.max(0, currentLink.offsetTop - nav.clientHeight / 3);
+  // Only when the current row is out of view, as the head script does: a navigator moved for no reason leaves its top
+  // rows half under the filter field.
+  if (currentLink && (currentLink.offsetTop < nav.scrollTop || currentLink.offsetTop > nav.scrollTop + nav.clientHeight - 40)) {
+    nav.scrollTop = window.apidocsNavTop?.(nav, currentLink) ?? Math.max(0, currentLink.offsetTop - nav.clientHeight / 3);
   }
   saveNavigatorScroll(signal);
 }
@@ -396,6 +394,8 @@ export function menus(signal?: AbortSignal) {
 declare global {
   interface Window {
     apidocsFitSuites?: () => void;
+    /** Where the navigator scrolls to show a row (NAV_BOOT in chrome.tsx). */
+    apidocsNavTop?: (nav: HTMLElement, row: HTMLElement) => number;
   }
 }
 

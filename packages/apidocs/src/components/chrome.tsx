@@ -77,9 +77,21 @@ function logoWidth(svg: string, height: number): number | undefined {
   return w > 0 && h > 0 ? Math.round((height * w) / h) : undefined;
 }
 
-/** Restores the navigator's scroll position as soon as it is parsed, so it never jumps after paint. */
+/**
+ * Where the navigator scrolls to show the current row: about a third of the way down, at a position where no row
+ * lies partly under the sticky filter field, which covers the navigator's top once it is scrolled (a row half under
+ * the field is a link with part of it covered). It picks the scroll position nearest the third whose field sits over
+ * a gap between rows (a heading, the space between sections), with the current row still in view; at the top
+ * nothing is under the field. Defined once, as a global the page's scripts call (apidocsNavTop), and used at once to
+ * restore the navigator's position before it is painted.
+ */
 const NAV_BOOT =
-  '(function(){var n=document.getElementById("apidocs-nav");if(!n)return;try{var k="apidocs-nav:"+new URL(document.documentElement.getAttribute("data-root")||"./",location.href).pathname;var s=sessionStorage.getItem(k);if(s)n.scrollTop=+s}catch(e){}var c=n.querySelector(\'[aria-current="page"]\');if(c&&(c.offsetTop<n.scrollTop||c.offsetTop>n.scrollTop+n.clientHeight-40))n.scrollTop=Math.max(0,c.offsetTop-n.clientHeight/3)})()';
+  'window.apidocsNavTop=function(n,c){var m=n.scrollHeight-n.clientHeight,w=Math.max(0,Math.min(c.offsetTop-n.clientHeight/3,m)),i=n.querySelector(".nav-filter input"),' +
+  'a=i?i.offsetTop:0,z=i?a+i.offsetHeight:0,best=0,end=0;' +
+  'Array.prototype.forEach.call(n.querySelectorAll(".nav-row"),function(r){if(!r.offsetHeight)return;var t=r.offsetTop,s=t-z;' +
+  'if(t-end>=z-a&&s>=0&&s<=m&&end<=s+a&&c.offsetTop>=s+z&&c.offsetTop+c.offsetHeight<=s+n.clientHeight&&Math.abs(s-w)<Math.abs(best-w))best=s;end=Math.max(end,t+r.offsetHeight)});' +
+  'return best};' +
+  '(function(){var n=document.getElementById("apidocs-nav");if(!n)return;try{var k="apidocs-nav:"+new URL(document.documentElement.getAttribute("data-root")||"./",location.href).pathname;var s=sessionStorage.getItem(k);if(s)n.scrollTop=+s}catch(e){}var c=n.querySelector(\'[aria-current="page"]\');if(c&&(c.offsetTop<n.scrollTop||c.offsetTop>n.scrollTop+n.clientHeight-40))n.scrollTop=apidocsNavTop(n,c)})()';
 
 /**
  * Preloads the upright font files, so they are ready at first paint. Done from the head script, not with link

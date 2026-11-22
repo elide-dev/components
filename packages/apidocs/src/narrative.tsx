@@ -52,6 +52,7 @@ export function GuidePage({ entry, children, extraToc = [] }: { entry: GuideEntr
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "TechArticle",
+    name: g.title,
     headline: g.title,
     description,
     isPartOf: { "@type": "SoftwareSourceCode", name: m.name, ...(m.version ? { version: m.version } : {}) },

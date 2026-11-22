@@ -85,7 +85,7 @@ function refreshNavigator(kept: HTMLElement, next: HTMLElement) {
   // The current page's row comes into view if it is out of it, as on a first load.
   const current = kept.querySelector<HTMLElement>('[aria-current="page"]');
   if (current && (current.offsetTop < kept.scrollTop || current.offsetTop > kept.scrollTop + kept.clientHeight - 40)) {
-    kept.scrollTop = Math.max(0, current.offsetTop - kept.clientHeight / 3);
+    kept.scrollTop = window.apidocsNavTop?.(kept, current) ?? Math.max(0, current.offsetTop - kept.clientHeight / 3);
   }
   kept.dataset.scrollTop = String(kept.scrollTop);
 }
