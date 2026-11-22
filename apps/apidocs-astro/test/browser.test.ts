@@ -268,20 +268,24 @@ describe("behaviors across navigations", () => {
     await loop(4);
     await page.waitForTimeout(300);
     const before = await measure();
-    console.log("  census before:", JSON.stringify(await census()));
-    for (let cycle = 1; cycle <= 4; cycle++) {
-      await loop(4);
-      await page.waitForTimeout(300);
-      console.log(`  series after ${4 + cycle * 4}:`, JSON.stringify(await measure()), JSON.stringify(await census()).replace(/"head":"[^"]*",/, ""));
-    }
-    await loop(4);
+    const censusBefore = await census();
+    await loop(20);
     await page.waitForTimeout(300);
     const after = await measure();
-    console.log("  census after:", JSON.stringify(await census()));
+    const censusAfter = await census();
     console.log("  listeners and nodes, after 4 and after 24 navigations:", before, after);
+    const grew = after.listeners > before.listeners || after.nodes > before.nodes * 1.02 || after.documents > before.documents;
+    // The counts alone cannot say where a growth sits: print what the page holds, live and detached, when it fails.
+    if (grew || censusAfter.elements !== censusBefore.elements || censusAfter.detached !== "[]") {
+      console.log("  census before:", JSON.stringify(censusBefore), "\n  census after: ", JSON.stringify(censusAfter));
+    }
     expect(after.listeners).toBeLessThanOrEqual(before.listeners);
     expect(after.nodes).toBeLessThanOrEqual(before.nodes * 1.02);
     expect(after.documents).toBeLessThanOrEqual(before.documents);
+    // The page's own elements are the same in number, and nothing detached stays reachable from script.
+    expect(censusAfter.elements).toBe(censusBefore.elements);
+    expect(censusAfter.containers).toBe(censusBefore.containers);
+    expect(censusAfter.detached).toBe("[]");
     await page.context().close();
   }, 120_000);
 });
