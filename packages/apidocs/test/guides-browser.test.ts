@@ -55,7 +55,9 @@ describe("a guides-only site from file://", () => {
     const { page, requests } = await open("guides/concepts/alerts.html", { javaScriptEnabled: false });
     expect(await page.getByRole("heading", { level: 1 }).textContent()).toBe("Callouts");
     expect(await page.locator(".callout").count()).toBe(5);
-    expect(await page.getByRole("navigation", { name: "Guides" }).locator(".nav-row").count()).toBe(7);
+    expect(await page.getByRole("navigation", { name: "Guides" }).locator("a.nav-row").count()).toBe(7);
+    // Without the script nothing is folded: every guide is reachable.
+    expect(await page.getByRole("navigation", { name: "Guides" }).locator("a.nav-row:visible").count()).toBe(7);
     expect(await page.locator(".nav-packages").count()).toBe(0);
     for (const control of await page.locator("[data-js-only]").all()) expect(await control.isVisible()).toBe(false);
     expect(requests.every(r => r.startsWith("file://"))).toBe(true);
@@ -92,14 +94,13 @@ describe("a guides-only site from file://", () => {
 
   test("the navigator's filter narrows the guides", async () => {
     const { page } = await open("guides/getting-started.html");
-    const rows = page.locator(".nav-guides .nav-row");
-    const visible = async () => (await rows.all()).length - (await page.locator(".nav-guides [data-filtered-out]").count());
-    const all = await rows.count();
+    const links = page.locator(".nav-guides a.nav-row:visible");
+    const before = await links.count();
+    // "Pictures" is in a group folded on this page: the filter opens the branch that leads to it.
     await page.locator("#apidocs-nav-filter").fill("pictures");
-    expect(await visible()).toBe(1);
-    expect(await page.locator(".nav-guides .nav-row:visible").allTextContents()).toEqual([expect.stringContaining("Pictures")]);
+    expect(await links.allTextContents()).toEqual([expect.stringContaining("Pictures")]);
     await page.locator("#apidocs-nav-filter").press("Escape");
-    expect(await visible()).toBe(all);
+    expect(await links.count()).toBe(before);
     await page.context().close();
   });
 

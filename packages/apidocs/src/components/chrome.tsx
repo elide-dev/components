@@ -11,8 +11,7 @@ import { createContext, type ComponentChildren } from "preact";
 import { useContext } from "preact/hooks";
 import { type PageContext, usePage } from "../context";
 import type { Package, Type } from "../model";
-import { INDEX, guideNav, indexPages, isAbsolute, isThrowable, overviewGuide, packagePage, relative, rootOf, type Site, typePage } from "../site";
-import { typeGroups } from "../structure";
+import { INDEX, PACKAGES_PAGE, TYPES_PAGE, guideNav, indexPages, isAbsolute, isThrowable, packagePage, relative, rootOf, type Site, typePage } from "../site";
 import type { Theme } from "../theme";
 import { SYMBOLS, sym } from "../symbols";
 
@@ -289,15 +288,16 @@ export function headData(ctx: PageContext, props: Pick<ShellProps, "title" | "de
 }
 
 /**
- * Where the theme's social image is: its URL as given, else its asset under the base URL (absolute, as Open Graph
- * wants) or, without one, relative to the page. Undefined without an image.
+ * Where the theme's social image is: its URL as given, else its asset under the base URL. Open Graph needs an
+ * absolute URL and link previews ignore a relative one, so without a base URL (a jar, a page opened from disk) a
+ * page names no image. Undefined without an image.
  */
-export function socialImageUrl(theme: Theme, root: string): string | undefined {
+export function socialImageUrl(theme: Theme, _root: string): string | undefined {
   const image = theme.socialImage;
   if (!image) return undefined;
   if (image.url) return image.url;
-  if (!image.asset) return undefined;
-  return theme.baseUrl ? `${theme.baseUrl}assets/${image.asset}` : `${root}assets/${image.asset}`;
+  if (!image.asset || !theme.baseUrl) return undefined;
+  return `${theme.baseUrl}assets/${image.asset}`;
 }
 
 /** The head's metadata elements: charset and viewport, title, meta tags, canonical, alternates and index. */
@@ -362,7 +362,6 @@ export function Shell({ title, description, crumbs, toc, jsonLd, meta, children 
             {astro && <HoleMark name="notice" />}
             {children}
           </main>
-          <Toc items={toc} filterLabel={meta?.kind === "guide" ? "Filter sections" : "Filter members"} />
         </div>
         <Footer />
       </body>
@@ -426,7 +425,7 @@ export function TopBar() {
       <label class="nav-button" for="apidocs-nav-toggle" title="Toggle navigation" aria-hidden="true">
         <svg viewBox="0 0 16 16" width="16" height="16"><rect x="2" y="2.75" width="12" height="10.5" rx="2.25" /><path d="M6.25 2.75v10.5" /></svg>
       </label>
-      <a class="brand" href={relative(page, INDEX, ".html")}>
+      <a class="brand" href={theme.homeUrl ? hrefFor(page, theme.homeUrl) : relative(page, INDEX, ".html")}>
         {theme.logo?.light && (
           <>
             <img class="logo logo-light" src={`${root}assets/logo-light.svg`} alt={theme.logo.alt ?? ""} height={22} width={logoWidth(theme.logo.light, 22)} />
@@ -461,6 +460,11 @@ export interface Suite {
   href: string;
   /** Whether this is the site being rendered. */
   current: boolean;
+  /**
+   * The theme's link to the site, from the page: the same for every page of every sibling site that names it, so
+   * the script can remember the last page read in each site under it (suiteMemory in client/behaviors.tsx).
+   */
+  key: string;
 }
 
 /**
@@ -485,7 +489,7 @@ export function suites(theme: Theme, page: string): Suite[] {
   const list = links.map(link => {
     const current = !found && (marked ? !!link.current : isOwnRoot(link.url));
     found ||= current;
-    return { label: link.label, href: current ? relative(page, INDEX, ".html") : hrefFor(page, link.url), current };
+    return { label: link.label, href: current ? relative(page, INDEX, ".html") : hrefFor(page, link.url), current, key: hrefFor(page, link.url) };
   });
   return list.some(entry => !entry.current) ? list : [];
 }
@@ -518,7 +522,7 @@ export function SuiteSwitcher() {
         <span class="suites-probe" aria-hidden="true" />
         {list.map((entry, i) => <span key={i} class="suites-ghost" data-current={entry.current ? "" : undefined} aria-hidden="true">{entry.label}</span>)}
         <nav class="suites-row" aria-label="Documentation">
-          {list.map((entry, i) => <a key={i} href={entry.href} aria-current={entry.current ? "true" : undefined}>{entry.label}</a>)}
+          {list.map((entry, i) => <a key={i} href={entry.href} data-suite={entry.key} aria-current={entry.current ? "true" : undefined}>{entry.label}</a>)}
         </nav>
         <details class="suite-menu">
           <summary class="suite-current" aria-label={`${label}: other documentation`} title="Other documentation">
@@ -526,7 +530,7 @@ export function SuiteSwitcher() {
             {CHEVRON}
           </summary>
           <ul class="suite-list">
-            {list.map((entry, i) => <li key={i}><a href={entry.href} aria-current={entry.current ? "true" : undefined}>{entry.label}</a></li>)}
+            {list.map((entry, i) => <li key={i}><a href={entry.href} data-suite={entry.key} aria-current={entry.current ? "true" : undefined}>{entry.label}</a></li>)}
           </ul>
         </details>
       </div>
@@ -703,11 +707,12 @@ export function kindGlyph(type: Type): { letter: string; tone: string } {
 }
 
 /**
- * The navigator. Two flat lists, never a tree of disclosures: every package by
- * the part of its name that differs, then the current package's types by kind.
- * A row is one line and truncates; its title carries the full name. Nested
- * types appear only along the current page's nesting chain, so a type with
- * hundreds of nested types does not repeat them on every page.
+ * The navigator: one tree. Guides by group, then the module, whose heading leads to its overview, then every
+ * package with its types, and every type with its nested types, each shown as `.Name` under its enclosing type.
+ * Every branch folds. On the server, the branches on the current page's path are open and the rest are folded; the
+ * script keeps a reader's own folding across pages (refreshNavigator in astro/client.ts) and the fold-all button
+ * folds or opens them all. Without the script nothing is folded, so every row stays reachable. A row is one line
+ * and truncates; its title carries the full name.
  */
 export function Navigation() {
   const { site, theme, page } = usePage();
@@ -716,10 +721,12 @@ export function Navigation() {
   const prefix = sharedPrefix(site.packages.map(pkg => pkg.name));
   const chain = new Set<string>();
   for (let t: Type | undefined = current; t; t = t.enclosing ? site.types.get(t.enclosing)?.type : undefined) chain.add(t.id);
-  const tops = (currentPkg?.types ?? []).filter(t => !t.enclosing);
   const guides = guideNav(site, page);
   const sites = suites(theme, page);
   const indexes = navIndexes(site, page);
+  const overview = relative(page, INDEX, ".html");
+  // One package needs no fold of its own: its types are the tree.
+  const single = site.packages.length === 1;
   return (
     <nav class="sidebar" id="apidocs-nav" aria-label={site.packages.length ? "Packages and types" : "Guides"} {...persistAttr(useVariant(), "apidocs-nav")}>
       {/* Shown only where the navigator is a drawer: there the top bar may have no room for the switcher. */}
@@ -728,94 +735,112 @@ export function Navigation() {
           <h2 class="nav-heading"><span>Documentation</span></h2>
           <ul class="nav-list">
             {sites.map((entry, i) => (
-              <li key={i}><a class="nav-row" href={entry.href} aria-current={entry.current ? "true" : undefined}><span class="nav-label">{entry.label}</span></a></li>
+              <li key={i}><a class="nav-row" href={entry.href} data-suite={entry.key} aria-current={entry.current ? "true" : undefined}><span class="nav-label">{entry.label}</span></a></li>
             ))}
           </ul>
         </section>
       )}
       {(site.packages.length > 0 || site.guides.length > 0) && (
         <div class="nav-filter" data-nav-filter data-js-only>
-          <label class="visually-hidden" for="apidocs-nav-filter">{site.packages.length ? "Filter types and guides" : "Filter guides"}</label>
+          <label class="visually-hidden" for="apidocs-nav-filter">{site.packages.length ? "Filter packages, types and guides" : "Filter guides"}</label>
           <input id="apidocs-nav-filter" type="search" placeholder="Filter" autocomplete="off" spellcheck={false} />
+          <button type="button" class="nav-fold-all" data-nav-fold-all aria-label="Expand all" title="Expand all" data-state="folded">
+            {/* Chevrons apart: open everything; chevrons together: fold everything. */}
+            <svg class="icon fold-all-expand" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M4.5 6 8 2.5 11.5 6M4.5 10 8 13.5 11.5 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
+            <svg class="icon fold-all-collapse" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M4.5 2.5 8 6l3.5-3.5M4.5 13.5 8 10l3.5 3.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
+          </button>
         </div>
       )}
-      {indexes.length > 0 && (indexes.length <= NAV_INDEX_ROW_MAX
-        ? (
-          <ul class="nav-index" aria-label="Indexes">
-            {indexes.map(entry => <li key={entry.page}><a href={entry.href} aria-current={entry.current ? "page" : undefined}>{entry.label}</a></li>)}
-          </ul>
-        )
-        : (
-          <section class="nav-section nav-reference">
-            <h2 class="nav-heading"><span>Reference</span></h2>
-            <ul class="nav-list">
-              {indexes.map(entry => (
-                <li key={entry.page}><a class="nav-row" href={entry.href} aria-current={entry.current ? "page" : undefined}><span class="nav-label">{entry.label}</span></a></li>
-              ))}
-            </ul>
-          </section>
-        ))}
       {guides.groups.length > 0 && (
         <section class="nav-section nav-guides" data-nav-filterable>
-          <h2 class="nav-heading"><span>Guides</span></h2>
-          {guides.groups.map((group, i) => (
-            <div key={i} class="nav-group">
-              {group.title && <p class="nav-subheading">{group.title}</p>}
-              <ul class="nav-list">
-                {group.guides.map(guide => (
-                  <li key={guide.id}>
-                    <a class="nav-row" href={guide.href} title={guide.summary || guide.title} aria-current={guide.current ? "page" : undefined}>
-                      <span class="glyph" data-tone="guide" aria-hidden="true">{SYMBOLS.guide.utf}</span>
-                      <span class="nav-label">{guide.label}</span>
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+          <h2 class="nav-heading">{site.packages.length > 0 ? <span>Guides</span> : <a href={overview} aria-current={page === INDEX ? "page" : undefined}>Guides</a>}</h2>
+          <ul class="nav-list nav-tree">
+            {guides.groups.map((group, i) => {
+              const rows = group.guides.map(guide => (
+                <li key={guide.id} class="nav-item">
+                  <a class="nav-row" href={guide.href} title={guide.summary || guide.title} aria-current={guide.current ? "page" : undefined}>
+                    <span class="glyph" data-tone="guide" aria-hidden="true">{SYMBOLS.guide.utf}</span>
+                    <span class="nav-label">{guide.label}</span>
+                  </a>
+                </li>
+              ));
+              if (!group.title) return rows;
+              const open = group.guides.some(guide => guide.current);
+              return (
+                <NavBranch key={i} id={`g:${group.title}`} open={open} label={group.title}
+                  row={<span class="nav-row nav-group-row"><span class="nav-label">{group.title}</span></span>}>
+                  {rows}
+                </NavBranch>
+              );
+            })}
+          </ul>
         </section>
       )}
-      {site.packages.length > 0 && <section class="nav-section nav-packages">
-        <h2 class="nav-heading"><span>Packages</span></h2>
-        {prefix && (
-          <a class="nav-row nav-prefix" href={relative(page, INDEX, ".html")} title={`${prefix}: the prefix every package shares`}>
-            <span class="nav-label">{prefix}</span>
-          </a>
-        )}
-        <ul class={prefix ? "nav-list nav-suffixes" : "nav-list"}>
-          {site.packages.map(pkg => {
-            const here = packagePage(pkg) === page;
-            const label = pkg.name ? (prefix ? pkg.name.slice(prefix.length + 1) : pkg.name) : "(default package)";
-            const count = (pkg.types ?? []).filter(t => !t.enclosing).length;
-            return (
-              <li key={pkg.id}>
-                <a class="nav-row nav-package" href={relative(page, packagePage(pkg), ".html")} title={pkg.name}
-                  aria-current={here ? "page" : undefined} data-open={pkg === currentPkg ? "" : undefined}>
-                  <span class="nav-label">{prefix && <span class="nav-dot" aria-hidden="true">.</span>}{label}</span>
-                  {count > 0 && <span class="nav-count">{count}</span>}
-                </a>
-              </li>
-            );
-          })}
-        </ul>
-      </section>}
-      {currentPkg && typeGroups(tops).map(group => (
-        <section key={group.id} class="nav-section" data-nav-filterable>
-          <h2 class="nav-heading"><span>{group.title}</span></h2>
-          <NavTypes types={group.types} pkg={currentPkg} chain={chain} />
+      {site.packages.length > 0 && (
+        <section class="nav-section nav-packages" data-nav-filterable>
+          <h2 class="nav-heading nav-module">
+            <a href={overview} aria-current={page === INDEX ? "page" : undefined} title={`${site.model.module.name}: overview`}>{site.model.module.name}</a>
+            {indexes.length > 0 && (
+              <span class="nav-index">
+                {indexes.map(entry => <a key={entry.page} href={entry.href} aria-current={entry.current ? "page" : undefined}>{entry.label}</a>)}
+              </span>
+            )}
+          </h2>
+          <ul class="nav-list nav-tree">
+            {site.packages.map(pkg => {
+              const tops = sortedTypes((pkg.types ?? []).filter(t => !t.enclosing));
+              const types = <NavTypes types={tops} pkg={pkg} chain={chain} />;
+              if (single) return <li key={pkg.id} class="nav-item nav-children-wrap">{types}</li>;
+              const here = packagePage(pkg) === page;
+              const label = pkg.name ? (prefix ? pkg.name.slice(prefix.length + 1) : pkg.name) : "(default package)";
+              return (
+                <NavBranch key={pkg.id} id={`p:${pkg.id}`} open={pkg === currentPkg} label={pkg.name || label} empty={tops.length === 0}
+                  row={
+                    <a class="nav-row nav-package" href={relative(page, packagePage(pkg), ".html")} title={pkg.name}
+                      aria-current={here ? "page" : undefined} data-open={pkg === currentPkg ? "" : undefined}>
+                      <span class="nav-label">{prefix && <span class="nav-dot" aria-hidden="true">.</span>}{label}</span>
+                      {tops.length > 0 && <span class="nav-count">{tops.length}</span>}
+                    </a>
+                  }>
+                  {tops.length > 0 && <li class="nav-item nav-children-wrap">{types}</li>}
+                </NavBranch>
+              );
+            })}
+          </ul>
         </section>
-      ))}
+      )}
     </nav>
   );
 }
 
 /**
- * The most index links that share one line at the navigator's narrowest width: 223px of line at 16.5rem, less the
- * padding. Measured in Chromium at both presets' type scales (13px and 13.33px): all five links (Overview, Packages,
- * All types, Index, Deprecated) need 357-364px, any four 264-309px, any three 223-238px, which leaves no room on the
- * narrowest line; two fit with room to spare. More than two are rows under "Reference", never a wrapped line.
+ * A branch of the navigator's tree: a twisty button that folds it, its row, and its children. `open` is the
+ * server's choice: open along the current page's path. `id` names the branch across pages, so the script can keep a
+ * reader's folding. The children's list is the twisty's controlled region.
  */
-export const NAV_INDEX_ROW_MAX = 2;
+function NavBranch({ id, open, label, row, empty, children }: { id: string; open: boolean; label: string; row: ComponentChildren; empty?: boolean; children: ComponentChildren }) {
+  const region = `nav-${id.replace(/[^A-Za-z0-9_-]+/g, "-")}`;
+  return (
+    <li class="nav-item nav-branch" data-nav-key={id} data-folded={open ? undefined : ""} data-path={open ? "" : undefined}>
+      <div class="nav-branch-row">
+        {empty
+          ? <span class="nav-twisty" aria-hidden="true" />
+          : (
+            <button type="button" class="nav-twisty" data-js-only aria-expanded={open ? "true" : "false"} aria-controls={region} aria-label={`${label}: ${open ? "fold" : "unfold"}`}>
+              <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M6 3.75 10.25 8 6 12.25" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" /></svg>
+            </button>
+          )}
+        {row}
+      </div>
+      {!empty && <ul class="nav-list nav-children" id={region}>{children}</ul>}
+    </li>
+  );
+}
+
+/** Types by name, as a reader scans them: the kind glyph beside each name says what it is. */
+function sortedTypes(types: Type[]): Type[] {
+  return [...types].sort((a, b) => a.name.localeCompare(b.name, "en"));
+}
 
 /** One of the module's index pages, as the navigator lists it. */
 export interface NavIndex {
@@ -826,35 +851,39 @@ export interface NavIndex {
 }
 
 /**
- * The module's index pages, from a page: the overview (unless the navigator already lists it as the overview
- * guide), then the index pages this site has. A guides-only site has few or none.
+ * The module's index pages that hold what the overview does not: the A to Z index of every declaration and the
+ * deprecated list. The overview itself is the module's heading, and it lists the packages and their types, so the
+ * separate package and type lists are not in the navigator. A guides-only site has none.
  */
 export function navIndexes(site: Site, page: string): NavIndex[] {
-  const entries = [...(overviewGuide(site) ? [] : [{ page: INDEX, label: "Overview" }]), ...indexPages(site)];
+  const entries = indexPages(site).filter(entry => entry.page !== PACKAGES_PAGE && entry.page !== TYPES_PAGE);
   return entries.map(entry => ({ ...entry, href: relative(page, entry.page, ".html"), current: entry.page === page }));
 }
 
-function NavTypes({ types, pkg, chain }: { types: Type[]; pkg: Package; chain: Set<string> }) {
+function NavTypes({ types, pkg, chain, depth = 0 }: { types: Type[]; pkg: Package; chain: Set<string>; depth?: number }) {
   const { site, page } = usePage();
   const mixed = (site.model.module.languages ?? []).length > 1;
   return (
-    <ul class="nav-list">
+    <ul class="nav-list" data-depth={depth || undefined}>
       {types.map(type => {
         const target = typePage(pkg, type);
-        const all = site.types.get(type.id)!.nested;
-        const nested = chain.has(type.id) ? all : [];
+        const nested = sortedTypes(site.types.get(type.id)!.nested);
         const glyph = kindGlyph(type);
+        const simple = type.name.split(".").pop()!;
+        const row = (
+          <a class="nav-row" href={relative(page, target, ".html")} title={`${type.name} (${type.kind})`}
+            aria-current={target === page ? "page" : undefined} data-open={chain.has(type.id) ? "" : undefined}>
+            <span class="glyph" data-tone={glyph.tone} aria-hidden="true">{glyph.letter}</span>
+            {/* A nested type reads as a member of its enclosing type's name: ".Inner" under "Outer". */}
+            <span class="nav-label">{depth > 0 && <span class="nav-dot" aria-hidden="true">.</span>}{simple}</span>
+            {mixed && <LanguageMark language={type.language} />}
+          </a>
+        );
+        if (nested.length === 0) return <li key={type.id} class="nav-item">{row}</li>;
         return (
-          <li key={type.id}>
-            <a class="nav-row" href={relative(page, target, ".html")} title={`${type.name} (${type.kind})`}
-              aria-current={target === page ? "page" : undefined} data-open={chain.has(type.id) ? "" : undefined}>
-              <span class="glyph" data-tone={glyph.tone} aria-hidden="true">{glyph.letter}</span>
-              <span class="nav-label">{type.name.split(".").pop()}</span>
-              {mixed && <LanguageMark language={type.language} />}
-              {all.length > 0 && <span class="nav-count" title={`${all.length} nested types`}>{all.length}</span>}
-            </a>
-            {nested.length > 0 && <div class="nav-nested"><NavTypes types={nested} pkg={pkg} chain={chain} /></div>}
-          </li>
+          <NavBranch key={type.id} id={`t:${type.id}`} open={chain.has(type.id)} label={type.name} row={row}>
+            <li class="nav-item nav-children-wrap"><NavTypes types={nested} pkg={pkg} chain={chain} depth={depth + 1} /></li>
+          </NavBranch>
         );
       })}
     </ul>
@@ -864,59 +893,6 @@ function NavTypes({ types, pkg, chain }: { types: Type[]; pkg: Package; chain: S
 function currentType(types: Map<string, { type: Type; page: string }>, page: string): Type | undefined {
   for (const entry of types.values()) if (entry.page === page) return entry.type;
   return undefined;
-}
-
-/** Sections with more entries than this start collapsed in the rail; the script opens the one in view. */
-const TOC_OPEN_LIMIT = 12;
-
-/**
- * "On this page": the page's sections, each with a count of its entries. A long
- * section's entries sit behind a disclosure, so a type with hundreds of members
- * gives a rail of a few lines, not hundreds.
- */
-export function Toc({ items, filterLabel }: { items: TocItem[]; filterLabel: string }) {
-  const name = usePage().page.split("/").pop()!;
-  if (items.length === 0) return <div class="toc-spacer" />;
-  const sections: { head: TocItem; entries: TocItem[] }[] = [];
-  for (const item of items) {
-    if (item.depth === 1 || sections.length === 0) sections.push({ head: item, entries: [] });
-    else sections[sections.length - 1]!.entries.push(item);
-  }
-  const link = (item: TocItem) => (
-    <a href={`${name}.html#${item.id}`} data-toc-target={item.id} title={item.label}>{item.code ? <code>{item.label}</code> : item.label}</a>
-  );
-  // A filter earns its place only on a long page.
-  const hasEntries = sections.reduce((n, section) => n + section.entries.length, 0) > 8;
-  return (
-    <nav class="toc" aria-label="On this page">
-      <p class="toc-title">On this page</p>
-      {hasEntries && (
-        <div class="toc-filter" data-toc-filter data-js-only>
-          <label class="visually-hidden" for="apidocs-toc-filter">{filterLabel}</label>
-          <input id="apidocs-toc-filter" type="search" placeholder={filterLabel} autocomplete="off" spellcheck={false} />
-        </div>
-      )}
-      <ol class="toc-list">
-        {sections.map(({ head, entries }) => (
-          <li key={head.id} class="toc-section">
-            <div class="toc-head">
-              {link(head)}
-              {entries.length > 0 && <span class="toc-count">{entries.length}</span>}
-            </div>
-            {entries.length > 0 && entries.length <= TOC_OPEN_LIMIT && (
-              <ol class="toc-entries">{entries.map(entry => <li key={entry.id}>{link(entry)}</li>)}</ol>
-            )}
-            {entries.length > TOC_OPEN_LIMIT && (
-              <details class="toc-more">
-                <summary>Show all {entries.length}</summary>
-                <ol class="toc-entries">{entries.map(entry => <li key={entry.id}>{link(entry)}</li>)}</ol>
-              </details>
-            )}
-          </li>
-        ))}
-      </ol>
-    </nav>
-  );
 }
 
 /**

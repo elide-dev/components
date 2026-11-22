@@ -212,44 +212,6 @@ export function searchBox(signal?: AbortSignal) {
   }, { signal });
 }
 
-// ---- Table of contents: mark the section in view.
-
-export function tableOfContents(signal?: AbortSignal) {
-  const toc = document.querySelector<HTMLElement>(".toc");
-  const links = new Map<string, HTMLAnchorElement>();
-  for (const link of document.querySelectorAll<HTMLAnchorElement>("[data-toc-target]")) links.set(link.dataset.tocTarget!, link);
-  if (!toc || !links.size || !("IntersectionObserver" in window)) return;
-  const visible = new Set<string>();
-  let current: HTMLAnchorElement | undefined;
-  const observer = new IntersectionObserver(entries => {
-    for (const entry of entries) {
-      if (entry.isIntersecting) visible.add(entry.target.id);
-      else visible.delete(entry.target.id);
-    }
-    // The most specific entry in view: a member over the section that contains it.
-    let first: HTMLAnchorElement | undefined;
-    for (const [id, link] of links) {
-      if (!visible.has(id)) continue;
-      if (!first || (link.closest(".toc-entries") && !first.closest(".toc-entries"))) first = link;
-      if (first.closest(".toc-entries")) break;
-    }
-    if (first && first !== current) {
-      current?.removeAttribute("aria-current");
-      first.setAttribute("aria-current", "true");
-      current = first;
-      const fold = first.closest("details");
-      if (fold) fold.open = true;
-      const top = first.offsetTop - toc.clientHeight / 3;
-      if (first.offsetTop < toc.scrollTop || first.offsetTop > toc.scrollTop + toc.clientHeight - 40) toc.scrollTop = Math.max(0, top);
-    }
-  }, { rootMargin: "-56px 0px -55% 0px" });
-  for (const id of links.keys()) {
-    const target = document.getElementById(id);
-    if (target) observer.observe(target);
-  }
-  signal?.addEventListener("abort", () => observer.disconnect(), { once: true });
-}
-
 // ---- The navigator's scroll position across full page loads: saved when the page goes, restored on load.
 
 /** The key the navigator's scroll position is stored under: one per site. */
@@ -289,48 +251,99 @@ export function saveNavigatorScroll(signal?: AbortSignal) {
   }, { signal });
 }
 
-// ---- List filters: narrow the navigator, or the page rail and the member summary, to rows that match.
+// ---- The navigator's filter: narrow the tree to rows that match, with the branches that lead to them.
 
-/** Marks the rows under `scope` that do not contain the query (case-insensitive), and opens folds while filtering. */
-export function filterRows(scope: Element, rowSelector: string, rawQuery: string) {
+/**
+ * Filters the navigator's tree under `scope` (case-insensitive). A row that matches stays, with everything under it
+ * (a package that matches keeps its types); a branch stays when anything under it matches, and opens while the filter
+ * has text (data-filter-open), without changing the reader's own folding. An empty query clears it all.
+ */
+export function filterTree(scope: Element, rawQuery: string) {
   const query = rawQuery.trim().toLowerCase();
-  for (const fold of scope.querySelectorAll<HTMLDetailsElement>("details")) if (query) fold.open = true;
-  for (const row of scope.querySelectorAll<HTMLElement>(rowSelector)) {
-    const hit = !query || (row.textContent ?? "").toLowerCase().includes(query);
-    row.toggleAttribute("data-filtered-out", !hit);
+  const visit = (item: HTMLElement, inherited: boolean): boolean => {
+    const own = item.querySelector<HTMLElement>(":scope > .nav-branch-row, :scope > .nav-row");
+    const hit = inherited || !query || (own ? (own.textContent ?? "").toLowerCase().includes(query) : false);
+    let below = false;
+    // The list items whose nearest enclosing item is this one: its children, through the wrapper that holds a list.
+    for (const child of item.querySelectorAll<HTMLElement>("li")) {
+      if (child.parentElement?.closest("li") !== item) continue;
+      if (visit(child, hit && !!query)) below = true;
+    }
+    const shown = hit || below;
+    item.toggleAttribute("data-filtered-out", !shown);
+    item.toggleAttribute("data-filter-open", !!query && below);
+    return shown;
+  };
+  for (const list of scope.querySelectorAll<HTMLElement>(".nav-section[data-nav-filterable] > ul")) {
+    for (const item of list.querySelectorAll<HTMLElement>(":scope > li")) visit(item, false);
   }
 }
 
-/** The navigator rows its filter narrows: types and guides. The sites, the indexes and the packages always stay. */
-export const NAV_FILTERED_ROWS = ".nav-section[data-nav-filterable] .nav-list > li";
+/** The navigator's rows the filter narrows: guides, packages and types. The sites stay. */
+export const NAV_FILTERED_ROWS = ".nav-section[data-nav-filterable] li";
 
-export function listFilter(boxSelector: string, rowSelector: string, also: string | undefined, signal?: AbortSignal) {
-  const box = document.querySelector<HTMLElement>(boxSelector);
+export function navigatorFilter(signal?: AbortSignal) {
+  const box = document.querySelector<HTMLElement>("[data-nav-filter]");
   const input = box?.querySelector<HTMLInputElement>("input");
-  if (!box || !input) return;
+  const nav = box?.closest<HTMLElement>(".sidebar");
+  if (!box || !input || !nav) return;
   box.hidden = false;
-  const apply = () => {
-    filterRows(box.parentElement!, rowSelector, input.value);
-    if (also) {
-      const query = input.value.trim().toLowerCase();
-      for (const row of document.querySelectorAll<HTMLElement>(also)) {
-        const head = row.querySelector("summary, th");
-        // A member row's summary sentence is drawn from an attribute (MemberDetail), so it is read from there too.
-        const text = `${head?.textContent ?? ""} ${head?.querySelector("[data-brief]")?.getAttribute("data-brief") ?? ""}`;
-        const hit = !query || text.toLowerCase().includes(query);
-        row.toggleAttribute("data-filtered-out", !hit);
-      }
-    }
-  };
+  const apply = () => filterTree(nav, input.value);
   input.addEventListener("input", apply, { signal });
   input.addEventListener("keydown", event => {
     if (event.key === "Escape") {
       input.value = "";
-      input.dispatchEvent(new Event("input"));
+      apply();
     }
   }, { signal });
   // A filter that kept its text across a client-side navigation applies to the new page's rows at once.
   if (input.value.trim()) apply();
+}
+
+// ---- The navigator's folds: each branch's twisty, and the button that folds or opens them all.
+
+/** Sets a branch folded or open, and its twisty's state. */
+export function setFolded(branch: HTMLElement, folded: boolean) {
+  branch.toggleAttribute("data-folded", folded);
+  const twisty = branch.querySelector<HTMLButtonElement>(":scope > .nav-branch-row > .nav-twisty");
+  if (twisty?.tagName === "BUTTON") {
+    twisty.setAttribute("aria-expanded", String(!folded));
+    const label = twisty.getAttribute("aria-label") ?? "";
+    twisty.setAttribute("aria-label", label.replace(/: (fold|unfold)$/, folded ? ": unfold" : ": fold"));
+  }
+}
+
+/** The fold-all button's look: it opens everything when anything is folded, else folds everything. */
+export function syncFoldAll(nav: Element) {
+  const button = nav.querySelector<HTMLButtonElement>("[data-nav-fold-all]");
+  if (!button) return;
+  const anyFolded = !!nav.querySelector(".nav-branch[data-folded]");
+  const label = anyFolded ? "Expand all" : "Collapse all";
+  button.dataset.state = anyFolded ? "folded" : "open";
+  button.setAttribute("aria-label", label);
+  button.title = label;
+}
+
+export function navigatorFolds(signal?: AbortSignal) {
+  const nav = document.querySelector<HTMLElement>(".sidebar");
+  if (!nav) return;
+  syncFoldAll(nav);
+  nav.addEventListener("click", event => {
+    const target = event.target as Element;
+    const twisty = target.closest?.("button.nav-twisty");
+    if (twisty) {
+      const branch = twisty.closest<HTMLElement>(".nav-branch")!;
+      setFolded(branch, !branch.hasAttribute("data-folded"));
+      syncFoldAll(nav);
+      return;
+    }
+    const all = target.closest?.("[data-nav-fold-all]");
+    if (all) {
+      const fold = (all as HTMLElement).dataset.state === "open";
+      for (const branch of nav.querySelectorAll<HTMLElement>(".nav-branch")) setFolded(branch, fold);
+      syncFoldAll(nav);
+    }
+  }, { signal });
 }
 
 // ---- Copy the page as Markdown: read the Markdown file beside the page and put it on the clipboard.
@@ -416,6 +429,63 @@ export function suiteSwitcher(signal?: AbortSignal) {
   signal?.addEventListener("abort", () => observer.disconnect(), { once: true });
 }
 
+// ---- The suite switcher keeps the reader's place: each entry leads back to the page last read in that site.
+
+/** The session key for the last page read in the site an entry names. */
+function suiteKey(link: HTMLAnchorElement): string {
+  return `apidocs-suite:${new URL(link.dataset.suite!, window.location.href).pathname}`;
+}
+
+export function suiteMemory(signal?: AbortSignal) {
+  const links = () => [...document.querySelectorAll<HTMLAnchorElement>("a[data-suite]")];
+  const update = () => {
+    const all = links();
+    const current = all.find(link => link.getAttribute("aria-current") === "true");
+    try {
+      const store = window.sessionStorage;
+      if (current) store.setItem(suiteKey(current), window.location.pathname + window.location.search + window.location.hash);
+      for (const link of all) {
+        if (link === current || link.getAttribute("aria-current") === "true") continue;
+        const saved = store.getItem(suiteKey(link));
+        // Only a path on this origin: the stored value came from this site, but is checked all the same.
+        if (saved && saved.startsWith("/") && !saved.startsWith("//")) link.href = saved;
+      }
+    } catch {
+      /* storage blocked: the entries lead to each site's overview */
+    }
+  };
+  update();
+  window.addEventListener("hashchange", update, { signal });
+}
+
+// ---- Folded descriptions: a long description shows its first lines and a control that shows the rest.
+
+export function folds(signal?: AbortSignal) {
+  for (const fold of document.querySelectorAll<HTMLElement>("[data-fold]")) {
+    const body = fold.querySelector<HTMLElement>(":scope > .fold-body");
+    const button = fold.querySelector<HTMLButtonElement>(":scope > .fold-toggle");
+    if (!body || !button) continue;
+    // Only a description longer than its folded height gets the control; a short one shows whole.
+    const long = body.scrollHeight > body.clientHeight + 2;
+    fold.toggleAttribute("data-short", !long);
+    button.hidden = !long;
+    button.addEventListener("click", () => {
+      const open = !fold.hasAttribute("data-open");
+      fold.toggleAttribute("data-open", open);
+      button.setAttribute("aria-expanded", String(open));
+      button.textContent = open ? "Show less" : "Show more";
+    }, { signal });
+  }
+  // A link into a folded description opens it.
+  const reveal = () => {
+    const id = decodeURIComponent(window.location.hash.slice(1));
+    const fold = id ? document.getElementById(id)?.closest<HTMLElement>("[data-fold]") : null;
+    if (fold && !fold.hasAttribute("data-open")) fold.querySelector<HTMLButtonElement>(":scope > .fold-toggle")?.click();
+  };
+  window.addEventListener("hashchange", reveal, { signal });
+  reveal();
+}
+
 // ---- Leaving for another page of this site: start the load bar; the next page finishes it.
 
 export function leaving(signal?: AbortSignal) {
@@ -497,13 +567,13 @@ export function navigatorToggle(signal?: AbortSignal) {
 export function pageBehaviors(signal?: AbortSignal) {
   themeSwitch(signal);
   copyButtons(signal);
-  tableOfContents(signal);
   navigatorToggle(signal);
   copyMarkdown(signal);
   members(signal);
   menus(signal);
   suiteSwitcher(signal);
-  // Types and guides only: the sites, the indexes and the packages stay, so the way to another one is never filtered away.
-  listFilter("[data-nav-filter]", NAV_FILTERED_ROWS, undefined, signal);
-  listFilter("[data-toc-filter]", ".toc-entries > li", ".members > details.member", signal);
+  suiteMemory(signal);
+  navigatorFilter(signal);
+  navigatorFolds(signal);
+  folds(signal);
 }

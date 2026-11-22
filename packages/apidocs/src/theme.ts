@@ -73,6 +73,11 @@ export interface Theme {
   /** The site's absolute URL, with a trailing slash. Enables canonical links and sitemap.xml. */
   baseUrl?: string;
   /**
+   * Where the brand in the top bar leads: a home page above this site, such as the page that lists every guide and
+   * module of a version. Resolved like a header link. Defaults to this site's overview.
+   */
+  homeUrl?: string;
+  /**
    * Which symbols pages write beside words: "utf" (plain Unicode symbols, the default), "emoji", or "none".
    * Markdown pages and llms.txt use the set as text; HTML pages draw icons and offer the set where it reads well.
    */

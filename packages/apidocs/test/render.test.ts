@@ -117,7 +117,8 @@ describe("agent readiness", () => {
     expect(h).toContain('<meta property="og:image:alt" content="The Elide logo on a dark background"/>');
     expect(h).toContain('<meta name="twitter:card" content="summary_large_image"/>');
     expect(elide["assets/social/elide.png"]).toEqual({ asset: "social/elide.png" });
-    expect(head(render(samples.java)["index.html"] as string)).toContain('<meta property="og:image" content="assets/social/neutral.png"/>');
+    // Without a base URL the image would be relative, which link previews ignore: the page names none.
+    expect(head(render(samples.java)["index.html"] as string)).not.toContain("og:image");
     const none = head(render(samples.java, { socialImage: null })["index.html"] as string);
     expect(none).not.toContain("og:image");
     expect(none).toContain('<meta name="twitter:card" content="summary"/>');
@@ -205,10 +206,24 @@ describe("layout", () => {
       expect(nav).not.toContain("<details");
     }
   });
-  test("a rail section with more than 12 entries is folded; a short one is not", () => {
-    const rail = (page: string) => between(java[page] as string, '<nav class="toc"', "</nav>");
-    expect(rail("com/example/geo/registry/ShapeCatalog.html")).toContain('<details class="toc-more">');
-    expect(rail("com/example/geo/Circle.html")).not.toContain('<details class="toc-more">');
+  test("pages have no \"On this page\" rail: the navigator and the page's own headings are the way around", () => {
+    for (const page of ["index.html", "com/example/geo/registry/ShapeCatalog.html", "com/example/geo/Circle.html"]) {
+      expect(java[page] as string).not.toContain('class="toc');
+    }
+  });
+  test("the navigator is one tree: packages fold, their types under them, nested types as .Name under theirs", () => {
+    const nav = between(java["com/example/geo/Shapes.Builder.Option.html"] as string, '<nav class="sidebar"', "</nav>");
+    // The current package and the chain of enclosing types are open; the other packages are folded.
+    expect(nav).toContain('<li class="nav-item nav-branch" data-nav-key="p:com.example.geo" data-path>');
+    expect(nav).toContain('data-nav-key="t:com.example.geo.Shapes" data-path>');
+    expect(nav).toMatch(/data-nav-key="p:com\.example\.geo\.[a-z]+" data-folded>/);
+    expect(nav).toContain('<span class="nav-label"><span class="nav-dot" aria-hidden="true">.</span>Builder</span>');
+    expect(nav).toContain('aria-current="page"');
+    // The twisty controls its branch's list; the fold-all button sits beside the filter.
+    expect(nav).toMatch(/<button type="button" class="nav-twisty" data-js-only="true" aria-expanded="true" aria-controls="nav-[^"]+"/);
+    expect(nav).toContain('data-nav-fold-all');
+    // The module's heading is its overview's link.
+    expect(nav).toContain('<h2 class="nav-heading nav-module"><a href="../../../index.html"');
   });
   test("script-only controls are marked, and the head marks script support before paint", () => {
     const html = java["com/example/geo/Shapes.html"] as string;
@@ -246,26 +261,31 @@ describe("layout", () => {
     expect(suites({}, "index")).toEqual([]);
     expect(java["index.html"]).not.toContain('class="suites"');
     const html = render(samples.java, { extends: "elide", links: { header: [...sites, { label: "Here", url: "./", current: true }] } })["com/example/geo/Shapes.html"] as string;
-    expect(between(html, '<nav class="suites-row"', "</nav>")).toContain('<a href="../../../index.html" aria-current="true">Here</a>');
+    expect(between(html, '<nav class="suites-row"', "</nav>")).toMatch(/<a href="\.\.\/\.\.\/\.\.\/index\.html" data-suite="[^"]*" aria-current="true">Here<\/a>/);
+    // Every entry names its site the same way from every page, for the script that remembers the last page read there.
+    expect(between(html, '<nav class="suites-row"', "</nav>")).toContain('data-suite="https://example.com/guide/"');
     expect(between(html, '<section class="nav-section nav-suites"', "</section>")).toContain(">Guide<");
   });
-  test("the navigator lists the indexes: rows under Reference past two, the current one marked; none on a guides-only site", () => {
+  test("the navigator links the indexes the overview does not hold, beside the module's heading; none on a guides-only site", () => {
     const site = buildSite(samples.java);
-    expect(navIndexes(site, "types").map(e => [e.label, e.current])).toEqual([["Overview", false], ["Packages", false], ["All types", true], ["Index", false], ["Deprecated", false]]);
+    // The overview lists the packages and their types, so only the A to Z index and the deprecated list remain.
+    expect(navIndexes(site, "index-all").map(e => [e.label, e.current])).toEqual([["Index", true], ["Deprecated", false]]);
     const nav = between(java["com/example/geo/Shapes.html"] as string, '<nav class="sidebar"', "</nav>");
-    expect(nav).toContain('<section class="nav-section nav-reference"><h2 class="nav-heading"><span>Reference</span></h2>');
-    expect(between(java["types.html"] as string, '<section class="nav-section nav-reference"', "</section>")).toContain('<a class="nav-row" href="types.html" aria-current="page">');
-    expect(java["index.html"]).not.toContain('class="topbar-nav"');
-    // A guides-only site whose overview is a guide has none: the overview is the first guide row.
-    const guides = render({ ...samples.java, packages: [], module: { ...samples.java.module, overview: samples.java.module.guides![0]!.id } });
-    expect(guides["index.html"]).not.toMatch(/nav-reference|nav-index/);
-    // One with a generated overview has a one-link row.
+    expect(between(nav, '<h2 class="nav-heading nav-module"', "</h2>")).toContain('<span class="nav-index"><a href="../../../index-all.html">Index</a><a href="../../../deprecated.html">Deprecated</a></span>');
+    expect(nav).not.toContain(">Overview<");
+    expect(nav).not.toContain(">All types<");
+    // The package and type lists still exist at their URLs, for links that name them.
+    expect(java["packages.html"]).toBeDefined();
+    expect(java["types.html"]).toBeDefined();
+    // A guides-only site has no index links; its "Guides" heading is the overview's link.
     const plain = render({ ...samples.java, packages: [], module: { ...samples.java.module, overview: undefined } });
-    expect(between(plain["index.html"] as string, '<ul class="nav-index"', "</ul>")).toContain(">Overview<");
-    // The filter is there on guides-only sites too, and filters guides and types, never sites, indexes or packages.
+    expect(plain["index.html"]).not.toContain("nav-index");
+    expect(between(plain["index.html"] as string, '<section class="nav-section nav-guides"', "</h2>")).toContain('<a href="index.html" aria-current="page">Guides</a>');
+    // The filter is there on guides-only sites too, and narrows guides, packages and types, never the sites.
     expect(plain["index.html"]).toContain("data-nav-filter");
     expect(nav).toContain('<section class="nav-section nav-guides" data-nav-filterable');
-    expect(nav).not.toMatch(/nav-packages" data-nav-filterable|nav-reference" data-nav-filterable/);
+    expect(nav).toContain('<section class="nav-section nav-packages" data-nav-filterable');
+    expect(nav).not.toMatch(/nav-suites" data-nav-filterable/);
   });
   test("font preloads are added at run time off file://, upright faces only", () => {
     const head = between(java["com/example/geo/Shapes.html"] as string, "<head>", "</head>");
