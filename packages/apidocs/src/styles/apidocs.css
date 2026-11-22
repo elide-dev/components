@@ -875,10 +875,15 @@ html[data-js] .fold:not([data-open]):not([data-short]) > .fold-body {
   max-height: calc(4lh + 1.2em); overflow: clip;
   mask-image: linear-gradient(to bottom, #000 60%, transparent);
 }
+/* Folded, the control sits over the faded last line, so showing it (once the script finds the description long)
+   moves nothing on the page; open, it follows the text. */
+.fold { position: relative; }
 .fold-toggle {
-  margin-block: 2px 0; padding-block: 2px; padding-inline: 0; font: inherit; font-size: var(--apidocs-size-sm);
-  color: var(--apidocs-link); background: none; border: 0; cursor: pointer;
+  position: absolute; inset-block-end: 0; inset-inline-start: 0;
+  min-block-size: 24px; padding-block: 0; padding-inline: 0 8px; font: inherit; font-size: var(--apidocs-size-sm);
+  color: var(--apidocs-link); background: var(--apidocs-bg); border: 0; cursor: pointer;
 }
+.fold[data-open] > .fold-toggle { position: static; margin-block-start: 2px; }
 @media (hover: hover) and (pointer: fine) { .fold-toggle:hover { text-decoration: underline; text-underline-offset: 2px; } }
 
 /* A member is a disclosure: a row when closed, the full entry when open. Rows far from the viewport are not

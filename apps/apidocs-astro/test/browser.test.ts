@@ -155,13 +155,15 @@ describe("the persisted top bar and navigator", () => {
     await page.context().close();
   });
 
-  test("the navigator's index links follow the page", async () => {
+  test("the navigator's index links and module heading follow the page", async () => {
     const { page } = await open(TYPE);
-    expect(await page.locator('.nav-reference [aria-current="page"]').count()).toBe(0);
-    await follow(page, '.nav-reference a[href="/java/2.0/packages"]');
-    expect(await page.locator('.nav-reference [aria-current="page"]').getAttribute("href")).toBe("/java/2.0/packages");
-    await follow(page, '.nav-reference a[href="/java/2.0/index-all"]');
-    expect(await page.locator('.nav-reference [aria-current="page"]').getAttribute("href")).toBe("/java/2.0/index-all");
+    expect(await page.locator('.nav-module [aria-current="page"]').count()).toBe(0);
+    await follow(page, '.nav-index a[href="/java/2.0/index-all"]');
+    expect(await page.locator('.nav-index [aria-current="page"]').getAttribute("href")).toBe("/java/2.0/index-all");
+    expect(await page.locator('.sidebar [aria-current="page"]').count()).toBe(1);
+    // The module's heading is its overview.
+    await follow(page, '.nav-module > a[href="/java/2.0/"]');
+    expect(await page.locator('.nav-module > a').getAttribute("aria-current")).toBe("page");
     expect(await page.locator('.sidebar [aria-current="page"]').count()).toBe(1);
     await page.context().close();
   });
@@ -231,22 +233,22 @@ describe("behaviors across navigations", () => {
     await toggle.click();
     expect(await toggle.getAttribute("aria-expanded")).toBe("true");
     expect(await page.locator("section.members").first().locator("details.member:not([open])").count()).toBe(0);
-    // The rail's filter narrows the rail to the entries that match.
-    const visible = () => page.locator(".toc-entries a:visible").count();
+    // The navigator's filter narrows its rows; fold-all folds and opens every branch, once per click.
+    const visible = () => page.locator(".sidebar a.nav-row:visible").count();
     const all = await visible();
-    const first = (await page.locator(".toc-entries a").first().textContent())!.split("(")[0]!;
-    await page.locator("#apidocs-toc-filter").fill(first);
+    await page.locator("#apidocs-nav-filter").fill("Circle");
     const narrowed = await visible();
     expect(narrowed).toBeGreaterThan(0);
     expect(narrowed).toBeLessThan(all);
+    await page.locator("#apidocs-nav-filter").fill("");
+    await page.locator("[data-nav-fold-all]").click();
+    expect(await page.locator(".sidebar .nav-branch[data-folded]").count()).toBe(0);
+    await page.locator("[data-nav-fold-all]").click();
+    expect(await page.locator(".sidebar .nav-branch:not([data-folded])").count()).toBe(0);
     // The navigator toggle.
     await page.locator(".nav-button").click();
     expect(await page.locator("#apidocs-nav").isVisible()).toBe(false);
     await page.locator(".nav-button").click();
-    // The table of contents follows the page.
-    await page.locator("#apidocs-toc-filter").fill("");
-    await page.evaluate(() => document.querySelector("details.member:last-of-type")?.scrollIntoView());
-    await page.waitForSelector('.toc a[aria-current="true"]');
     // Search: type, open a result through the router.
     await page.locator("#apidocs-search").fill("ShapeCat");
     await page.locator("#apidocs-results [role=option]").first().waitFor();
@@ -438,7 +440,10 @@ describe("JavaScript off", () => {
     const { page } = await open("/java/main/com/example/geo/Circle", { javaScriptEnabled: false });
     expect(await page.locator("h1").textContent()).toContain("Circle");
     expect(await page.locator("details.member").count()).toBeGreaterThan(3);
-    expect(await page.locator(".toc a").count()).toBeGreaterThan(5);
+    // Nothing in the navigator is folded without the script.
+    const rows = page.locator(".sidebar a.nav-row");
+    expect(await rows.count()).toBeGreaterThan(5);
+    expect(await page.locator(".sidebar a.nav-row:visible").count()).toBe(await rows.count() - await page.locator(".nav-suites a.nav-row").count());
     for (const control of await page.locator("[data-js-only]").all()) expect(await control.isVisible()).toBe(false);
     // The fallbacks: a working version menu and the notice, from the versions known when the page rendered.
     expect(await page.locator(".version-notice").textContent()).toContain("2.0");
