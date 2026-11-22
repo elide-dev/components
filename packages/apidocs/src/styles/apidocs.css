@@ -872,6 +872,17 @@ td .badge { margin-inline-end: 6px; }
 /* good-css exception (overflow-clip): hidden, not clip: WebKit clamps lines with -webkit-line-clamp only under overflow: hidden. */
 .member-brief { min-width: 0; color: var(--apidocs-muted); display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; }
 .member-marks { display: flex; align-items: center; gap: 8px; user-select: none; -webkit-user-select: none; }
+/* A narrow page has no room for the signature and the sentence side by side: the sentence goes under the
+   signature, which then has the full line and breaks between words. */
+@media (max-width: 640px) {
+  .member-row { grid-template-columns: 12px minmax(0, 1fr) auto; grid-template-areas: "chevron sig marks" ". brief brief"; row-gap: 2px; }
+  .member-chevron { grid-area: chevron; align-self: start; margin-block-start: 5px; }
+  .member-sig { grid-area: sig; }
+  .member-marks { grid-area: marks; }
+  .member-brief { grid-area: brief; }
+  .member-sig .summary-sig { overflow-wrap: break-word; }
+  .member[open] > .member-row .member-brief { display: none; }
+}
 .member-noted { display: inline-grid; color: var(--apidocs-note-api); }
 .member-noted svg { fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; }
 .member-key { font-weight: 650; color: var(--apidocs-link); }
