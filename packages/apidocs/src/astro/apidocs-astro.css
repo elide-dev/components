@@ -38,7 +38,7 @@ details.version-menu > .version-current:active, .version-list a:active { backgro
   position: absolute; inset-inline-start: -1px; inset-block-start: calc(100% + 6px); z-index: 12;
   min-inline-size: 12rem; margin: 0; padding: 4px; list-style: none;
   background: var(--apidocs-surface); border: 1px solid var(--apidocs-rule-strong);
-  border-radius: calc(var(--apidocs-radius) + 2px); box-shadow: 0 12px 32px -12px rgb(0 0 0 / 0.28);
+  border-radius: calc(var(--apidocs-radius) + 2px); box-shadow: 0 12px 32px -12px oklch(0% 0 none / 0.28);
   line-height: 1.5;
 }
 .version-list a {

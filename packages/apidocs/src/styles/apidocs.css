@@ -28,114 +28,129 @@
   --apidocs-code-scale: 0.9em;
   --apidocs-tracking-display: -0.015em;
   --apidocs-tracking-caps: 0.04em;
-  --apidocs-bg: #fbfcfd;
-  --apidocs-surface: #ffffff;
-  --apidocs-subtle: #f2f4f7;
-  --apidocs-fg: #161a21;
-  --apidocs-muted: #4f5766;
-  --apidocs-faint: #5f6775;
-  --apidocs-rule: #e1e4ea;
-  --apidocs-rule-strong: #c7ccd6;
-  --apidocs-accent: #0f6e7a;
-  --apidocs-accent-soft: rgb(15 110 122 / 0.08);
-  --apidocs-link: #0c5f6b;
-  --apidocs-focus: #0f6e7a;
-  --apidocs-note-api: #0f6e7a;
-  --apidocs-note-api-soft: rgb(15 110 122 / 0.08);
-  --apidocs-note-spec: #2d55a8;
-  --apidocs-note-spec-soft: rgb(45 85 168 / 0.07);
-  --apidocs-note-impl: #5f6775;
-  --apidocs-note-impl-soft: rgb(22 26 33 / 0.03);
-  --apidocs-deprecated: #a8321f;
-  --apidocs-deprecated-soft: rgb(168 50 31 / 0.07);
-  --apidocs-nullable: #8a5300;
-  --apidocs-non-null: #2b6b3a;
-  --apidocs-code-bg: #f3f5f8;
-  --apidocs-code-fg: #1d2430;
-  --apidocs-syn-comment: #5f6775;
-  --apidocs-syn-keyword: #7a3196;
-  --apidocs-syn-string: #1c6d45;
-  --apidocs-syn-number: #9a4a00;
-  --apidocs-syn-type: #0c5f6b;
-  --apidocs-syn-function: #2b4db3;
-  --apidocs-syn-annotation: #8a5300;
-  --apidocs-syn-param: #8c1f4f;
+  --apidocs-bg: oklch(99.059% 0.0017 247.839);
+  --apidocs-surface: oklch(100% 0 none);
+  --apidocs-subtle: oklch(96.648% 0.00454 258.325);
+  --apidocs-fg: oklch(21.685% 0.01509 261.617);
+  --apidocs-muted: oklch(45.541% 0.02655 263.037);
+  --apidocs-faint: oklch(51.195% 0.0243 261.702);
+  --apidocs-rule: oklch(91.83% 0.00875 264.52);
+  --apidocs-rule-strong: oklch(84.433% 0.01492 264.488);
+  --apidocs-accent: oklch(49.4% 0.08141 208.54);
+  --apidocs-accent-soft: oklch(49.4% 0.08141 208.54 / 0.08);
+  --apidocs-link: oklch(44.632% 0.07384 210.379);
+  --apidocs-focus: oklch(49.4% 0.08141 208.54);
+  --apidocs-note-api: oklch(49.4% 0.08141 208.54);
+  --apidocs-note-api-soft: oklch(49.4% 0.08141 208.54 / 0.08);
+  --apidocs-note-spec: oklch(46.754% 0.14115 262.814);
+  --apidocs-note-spec-soft: oklch(46.754% 0.14115 262.814 / 0.07);
+  --apidocs-note-impl: oklch(51.195% 0.0243 261.702);
+  --apidocs-note-impl-soft: oklch(21.685% 0.01509 261.617 / 0.03);
+  --apidocs-deprecated: oklch(49.291% 0.15737 31.846);
+  --apidocs-deprecated-soft: oklch(49.291% 0.15737 31.846 / 0.07);
+  --apidocs-nullable: oklch(49.402% 0.10925 66.906);
+  --apidocs-non-null: oklch(47.294% 0.10194 148.797);
+  --apidocs-code-bg: oklch(96.948% 0.00454 258.325);
+  --apidocs-code-fg: oklch(25.906% 0.02487 261.09);
+  --apidocs-syn-comment: oklch(51.195% 0.0243 261.702);
+  --apidocs-syn-keyword: oklch(46.111% 0.16624 315.205);
+  --apidocs-syn-string: oklch(47.612% 0.10049 157.022);
+  --apidocs-syn-number: oklch(50.112% 0.12797 52.531);
+  --apidocs-syn-type: oklch(44.632% 0.07384 210.379);
+  --apidocs-syn-function: oklch(45.846% 0.16697 265.949);
+  --apidocs-syn-annotation: oklch(49.402% 0.10925 66.906);
+  --apidocs-syn-param: oklch(43.405% 0.14897 358.998);
   --apidocs-radius: 6px;
   --apidocs-topbar: 52px;
+  /* Sizes that grow with the screen: the narrow value at 480px wide and below, the wide one from 1000px, a straight
+     line between. Spacing only, and two sizes of the fallback type scale: a theme whose type is set to exact pixels
+     (the Elide preset's JetBrains Mono, whose characters are then a whole number of pixels wide) sets those two to
+     its own sizes, and the scale tokens above stay exact. */
+  --apidocs-gutter: clamp(16px, 5.385vw - 0.656rem, 44px);
+  --apidocs-content-top: clamp(18px, 1.923vw + 0.585rem, 28px);
+  --apidocs-content-bottom: clamp(72px, 4.615vw + 3.323rem, 96px);
+  --apidocs-topbar-pad: clamp(12px, 1.538vw + 0.308rem, 20px);
+  --apidocs-topbar-gap: clamp(10px, 0.769vw + 0.421rem, 14px);
+  --apidocs-tools-gap: clamp(10px, 0.385vw + 0.544rem, 12px);
+  --apidocs-specimen-pad-block: clamp(14px, 0.769vw + 0.687rem, 18px);
+  --apidocs-specimen-pad-inline: clamp(16px, 1.154vw + 0.697rem, 22px);
+  /* A page's title and its declaration specimen. */
+  --apidocs-size-title: clamp(var(--apidocs-size-2xl), 1.154vw + 1.231rem, var(--apidocs-size-3xl));
+  --apidocs-size-specimen: clamp(var(--apidocs-size-sm), 0.385vw + 0.744rem, var(--apidocs-size-md));
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     color-scheme: dark;
-    --apidocs-bg: #0f1216;
-    --apidocs-surface: #151920;
-    --apidocs-subtle: #1a1f27;
-    --apidocs-fg: #e6e8ec;
-    --apidocs-muted: #a3abb8;
-    --apidocs-faint: #8f98a6;
-    --apidocs-rule: #262c35;
-    --apidocs-rule-strong: #3a414d;
-    --apidocs-accent: #5cc6d0;
-    --apidocs-accent-soft: rgb(92 198 208 / 0.1);
-    --apidocs-link: #6fd0d9;
-    --apidocs-focus: #5cc6d0;
-    --apidocs-note-api: #5cc6d0;
-    --apidocs-note-api-soft: rgb(92 198 208 / 0.1);
-    --apidocs-note-spec: #8fb0f0;
-    --apidocs-note-spec-soft: rgb(143 176 240 / 0.09);
-    --apidocs-note-impl: #8f98a6;
-    --apidocs-note-impl-soft: rgb(230 232 236 / 0.03);
-    --apidocs-deprecated: #f08a78;
-    --apidocs-deprecated-soft: rgb(240 138 120 / 0.1);
-    --apidocs-nullable: #e3b25c;
-    --apidocs-non-null: #7cc98d;
-    --apidocs-code-bg: #141920;
-    --apidocs-code-fg: #d9dde3;
-    --apidocs-syn-comment: #8a93a1;
-    --apidocs-syn-keyword: #d09be6;
-    --apidocs-syn-string: #8fd1a6;
-    --apidocs-syn-number: #f0b47a;
-    --apidocs-syn-type: #6fd0d9;
-    --apidocs-syn-function: #9ab5ff;
-    --apidocs-syn-annotation: #e3b25c;
-    --apidocs-syn-param: #f09ac0;
+    --apidocs-bg: oklch(18.079% 0.00953 255.642);
+    --apidocs-surface: oklch(21.25% 0.01517 261.609);
+    --apidocs-subtle: oklch(23.785% 0.01713 259.757);
+    --apidocs-fg: oklch(93.061% 0.00581 264.531);
+    --apidocs-muted: oklch(73.897% 0.0208 260.165);
+    --apidocs-faint: oklch(67.698% 0.02312 259.192);
+    --apidocs-rule: oklch(29.114% 0.01854 258.368);
+    --apidocs-rule-strong: oklch(37.364% 0.02265 261.232);
+    --apidocs-accent: oklch(76.813% 0.09823 203.685);
+    --apidocs-accent-soft: oklch(76.813% 0.09823 203.685 / 0.1);
+    --apidocs-link: oklch(80.181% 0.09233 203.396);
+    --apidocs-focus: oklch(76.813% 0.09823 203.685);
+    --apidocs-note-api: oklch(76.813% 0.09823 203.685);
+    --apidocs-note-api-soft: oklch(76.813% 0.09823 203.685 / 0.1);
+    --apidocs-note-spec: oklch(75.722% 0.0996 263.17);
+    --apidocs-note-spec-soft: oklch(75.722% 0.0996 263.17 / 0.09);
+    --apidocs-note-impl: oklch(67.698% 0.02312 259.192);
+    --apidocs-note-impl-soft: oklch(93.061% 0.00581 264.531 / 0.03);
+    --apidocs-deprecated: oklch(73.872% 0.12799 30.977);
+    --apidocs-deprecated-soft: oklch(73.872% 0.12799 30.977 / 0.1);
+    --apidocs-nullable: oklch(79.118% 0.11843 79.713);
+    --apidocs-non-null: oklch(77.004% 0.115 150.059);
+    --apidocs-code-bg: oklch(21.154% 0.01586 256.82);
+    --apidocs-code-fg: oklch(89.621% 0.00927 258.337);
+    --apidocs-syn-comment: oklch(66.055% 0.02327 259.192);
+    --apidocs-syn-keyword: oklch(76.528% 0.11869 315.718);
+    --apidocs-syn-string: oklch(80.46% 0.09072 155.262);
+    --apidocs-syn-number: oklch(81.27% 0.10204 64.602);
+    --apidocs-syn-type: oklch(80.181% 0.09233 203.396);
+    --apidocs-syn-function: oklch(78.123% 0.11032 268.427);
+    --apidocs-syn-annotation: oklch(79.118% 0.11843 79.713);
+    --apidocs-syn-param: oklch(78.337% 0.11238 351.953);
   }
 }
 
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --apidocs-bg: #0f1216;
-  --apidocs-surface: #151920;
-  --apidocs-subtle: #1a1f27;
-  --apidocs-fg: #e6e8ec;
-  --apidocs-muted: #a3abb8;
-  --apidocs-faint: #8f98a6;
-  --apidocs-rule: #262c35;
-  --apidocs-rule-strong: #3a414d;
-  --apidocs-accent: #5cc6d0;
-  --apidocs-accent-soft: rgb(92 198 208 / 0.1);
-  --apidocs-link: #6fd0d9;
-  --apidocs-focus: #5cc6d0;
-  --apidocs-note-api: #5cc6d0;
-  --apidocs-note-api-soft: rgb(92 198 208 / 0.1);
-  --apidocs-note-spec: #8fb0f0;
-  --apidocs-note-spec-soft: rgb(143 176 240 / 0.09);
-  --apidocs-note-impl: #8f98a6;
-  --apidocs-note-impl-soft: rgb(230 232 236 / 0.03);
-  --apidocs-deprecated: #f08a78;
-  --apidocs-deprecated-soft: rgb(240 138 120 / 0.1);
-  --apidocs-nullable: #e3b25c;
-  --apidocs-non-null: #7cc98d;
-  --apidocs-code-bg: #141920;
-  --apidocs-code-fg: #d9dde3;
-  --apidocs-syn-comment: #8a93a1;
-  --apidocs-syn-keyword: #d09be6;
-  --apidocs-syn-string: #8fd1a6;
-  --apidocs-syn-number: #f0b47a;
-  --apidocs-syn-type: #6fd0d9;
-  --apidocs-syn-function: #9ab5ff;
-  --apidocs-syn-annotation: #e3b25c;
-  --apidocs-syn-param: #f09ac0;
+  --apidocs-bg: oklch(18.079% 0.00953 255.642);
+  --apidocs-surface: oklch(21.25% 0.01517 261.609);
+  --apidocs-subtle: oklch(23.785% 0.01713 259.757);
+  --apidocs-fg: oklch(93.061% 0.00581 264.531);
+  --apidocs-muted: oklch(73.897% 0.0208 260.165);
+  --apidocs-faint: oklch(67.698% 0.02312 259.192);
+  --apidocs-rule: oklch(29.114% 0.01854 258.368);
+  --apidocs-rule-strong: oklch(37.364% 0.02265 261.232);
+  --apidocs-accent: oklch(76.813% 0.09823 203.685);
+  --apidocs-accent-soft: oklch(76.813% 0.09823 203.685 / 0.1);
+  --apidocs-link: oklch(80.181% 0.09233 203.396);
+  --apidocs-focus: oklch(76.813% 0.09823 203.685);
+  --apidocs-note-api: oklch(76.813% 0.09823 203.685);
+  --apidocs-note-api-soft: oklch(76.813% 0.09823 203.685 / 0.1);
+  --apidocs-note-spec: oklch(75.722% 0.0996 263.17);
+  --apidocs-note-spec-soft: oklch(75.722% 0.0996 263.17 / 0.09);
+  --apidocs-note-impl: oklch(67.698% 0.02312 259.192);
+  --apidocs-note-impl-soft: oklch(93.061% 0.00581 264.531 / 0.03);
+  --apidocs-deprecated: oklch(73.872% 0.12799 30.977);
+  --apidocs-deprecated-soft: oklch(73.872% 0.12799 30.977 / 0.1);
+  --apidocs-nullable: oklch(79.118% 0.11843 79.713);
+  --apidocs-non-null: oklch(77.004% 0.115 150.059);
+  --apidocs-code-bg: oklch(21.154% 0.01586 256.82);
+  --apidocs-code-fg: oklch(89.621% 0.00927 258.337);
+  --apidocs-syn-comment: oklch(66.055% 0.02327 259.192);
+  --apidocs-syn-keyword: oklch(76.528% 0.11869 315.718);
+  --apidocs-syn-string: oklch(80.46% 0.09072 155.262);
+  --apidocs-syn-number: oklch(81.27% 0.10204 64.602);
+  --apidocs-syn-type: oklch(80.181% 0.09233 203.396);
+  --apidocs-syn-function: oklch(78.123% 0.11032 268.427);
+  --apidocs-syn-annotation: oklch(79.118% 0.11843 79.713);
+  --apidocs-syn-param: oklch(78.337% 0.11238 351.953);
 }
 
 /* ---- Base ---- */
@@ -159,12 +174,11 @@ html {
   font-synthesis: none;
   font-variant-ligatures: none;
   font-kerning: normal;
-  text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
-  scroll-padding-top: calc(var(--apidocs-topbar) + 16px);
+  scroll-padding-block-start: calc(var(--apidocs-topbar) + 16px);
   /* The page keeps its width whether or not it scrolls, so moving between short and long pages shifts nothing. */
   scrollbar-gutter: stable;
 }
@@ -172,14 +186,17 @@ html {
 body { margin: 0; min-height: 100vh; font-size: var(--apidocs-size-md); }
 
 a { color: var(--apidocs-link); text-decoration: none; }
-a:hover { text-decoration: underline; text-underline-offset: 2px; }
+@media (hover: hover) and (pointer: fine) { a:hover { text-decoration: underline; text-underline-offset: 2px; } }
+a:active { text-decoration: underline; text-underline-offset: 2px; }
 :focus-visible { outline: 2px solid var(--apidocs-focus); outline-offset: 2px; border-radius: 3px; }
 
 code, kbd, pre { font-family: var(--apidocs-font-mono); font-size: var(--apidocs-code-scale); font-variant-ligatures: none; }
+/* Code reads left to right on a right-to-left page too. Only there: isolating inline code moves line breaks. */
+code:dir(rtl), kbd:dir(rtl), pre:dir(rtl) { direction: ltr; unicode-bidi: isolate; }
 :not(pre) > code {
   background: var(--apidocs-subtle);
   border-radius: 4px;
-  padding: 0.08em 0.32em;
+  padding-block: 0.08em; padding-inline: 0.32em;
   overflow-wrap: anywhere;
 }
 a > code { color: inherit; }
@@ -187,22 +204,23 @@ a > code { color: inherit; }
   text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px;
   text-decoration-color: color-mix(in srgb, currentColor 45%, transparent);
 }
-.prose a:hover, .callout a:hover, .fact dd a:hover, td a:not(.type-link):hover, .lede a:hover, .inherited-list a:hover, .see-list a:hover, .index-summary a:hover { text-decoration-color: currentColor; }
+@media (hover: hover) and (pointer: fine) { .prose a:hover, .callout a:hover, .fact dd a:hover, td a:not(.type-link):hover, .lede a:hover, .inherited-list a:hover, .see-list a:hover, .index-summary a:hover { text-decoration-color: currentColor; } }
+.prose a:active, .callout a:active, .fact dd a:active, td a:not(.type-link):active, .lede a:active, .inherited-list a:active, .see-list a:active, .index-summary a:active { text-decoration-color: currentColor; }
 .summary-sig a { text-decoration: none; }
 
 h1, h2, h3, h4 { font-family: var(--apidocs-font-display); line-height: 1.2; margin: 0; text-wrap: balance; }
 p, li, dd { text-wrap: pretty; }
 
 .visually-hidden {
-  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  position: absolute; width: 1px; height: 1px; overflow: clip;
   clip-path: inset(50%); white-space: nowrap;
 }
 
 .skip {
-  position: absolute; left: 12px; top: -60px; z-index: 20;
-  background: var(--apidocs-surface); padding: 8px 12px; border: 1px solid var(--apidocs-rule-strong);
+  position: absolute; inset-inline-start: 12px; inset-block-start: -60px; z-index: 20;
+  background: var(--apidocs-surface); padding-block: 8px; padding-inline: 12px; border: 1px solid var(--apidocs-rule-strong);
 }
-.skip:focus { top: 8px; }
+.skip:focus-visible { inset-block-start: 8px; }
 
 /* Labels, counts, marks and controls are furniture, not content: a selection skips them, so copying a name or a
    paragraph gives that text and nothing else. */
@@ -225,16 +243,17 @@ p, li, dd { text-wrap: pretty; }
  * only into space the switcher's row does not need, and the switcher is the one part that shrinks.
  */
 .topbar {
-  position: sticky; top: 0; z-index: 10;
+  position: sticky; inset-block-start: 0; z-index: 10;
   height: var(--apidocs-topbar);
-  display: flex; align-items: center; gap: 14px;
-  padding: 0 20px;
+  display: flex; align-items: center; gap: var(--apidocs-topbar-gap);
+  padding-inline: var(--apidocs-topbar-pad);
   background: color-mix(in srgb, var(--apidocs-bg) 92%, transparent);
   backdrop-filter: blur(8px);
-  border-bottom: 1px solid var(--apidocs-rule);
+  border-block-end: 1px solid var(--apidocs-rule);
 }
 .brand { flex: 0 1 auto; min-width: 0; display: flex; align-items: center; gap: 10px; color: var(--apidocs-fg); font-weight: 650; white-space: nowrap; }
-.brand:hover { text-decoration: none; }
+@media (hover: hover) and (pointer: fine) { .brand:hover { text-decoration: none; } }
+.brand:active { text-decoration: none; }
 .logo { flex: none; height: 22px; width: auto; display: block; }
 .logo-dark { display: none; }
 @media (prefers-color-scheme: dark) {
@@ -243,59 +262,65 @@ p, li, dd { text-wrap: pretty; }
 }
 :root[data-theme="dark"] .logo-light { display: none; }
 :root[data-theme="dark"] .logo-dark { display: block; }
+/* good-css exception (overflow-clip): hidden, not clip, so the ellipsis shows in every target browser, Safari before 16 among them. */
 .product { min-width: 0; overflow: hidden; text-overflow: ellipsis; font-family: var(--apidocs-font-mono); font-size: var(--apidocs-size-lg); letter-spacing: 0; }
 .module-version { flex: none; color: var(--apidocs-muted); font-size: var(--apidocs-size-sm); white-space: nowrap; }
 .version { font-family: var(--apidocs-font-mono); font-size: var(--apidocs-size-sm); }
-.topbar-tools { --apidocs-search-floor: 10rem; flex: 1 1 0; display: flex; align-items: center; gap: 12px; }
+.topbar-tools { --apidocs-search-floor: 10rem; flex: 1 1 0; display: flex; align-items: center; gap: var(--apidocs-tools-gap); }
 .topbar-tools > .search-fallback, .topbar-tools > .theme-switch { flex: none; }
-.search-fallback { margin-left: auto; }
+.search-fallback { margin-inline-start: auto; }
 
 /* The suite switcher (SuiteSwitcher in chrome.tsx). .suites-fit holds hidden copies of the labels in a wrapping
    row: 32px tall when they fit on one line, 64px or more when they do not. The visible row and the menu are placed
    from that height, scaled up so the one that does not apply sits far above the page: the row at the top when the
    labels fit, the menu when they do not. No width is written down anywhere: the browser's layout decides. The
    hidden copy of the menu button (.suites-floor) keeps the bar from squeezing the switcher below the button. */
-.suites { flex: 0 1 auto; height: 32px; margin-left: 10px; font-size: var(--apidocs-size-sm); user-select: none; -webkit-user-select: none; }
+.suites { flex: 0 1 auto; height: 32px; margin-inline-start: 10px; font-size: var(--apidocs-size-sm); user-select: none; -webkit-user-select: none; }
 .suites-fit { position: relative; display: flex; flex-wrap: wrap; column-gap: 2px; pointer-events: none; }
-.suites-probe { width: 0; height: 32px; margin-right: -2px; }
-.suites-ghost { display: flex; align-items: center; height: 32px; padding: 0 9px; white-space: nowrap; visibility: hidden; }
+.suites-probe { width: 0; height: 32px; margin-inline-end: -2px; }
+.suites-ghost { display: flex; align-items: center; height: 32px; padding-block: 0; padding-inline: 9px; white-space: nowrap; visibility: hidden; }
 .suites-ghost[data-current] { font-weight: 600; }
 .suites-row, .suite-menu { pointer-events: auto; }
-.suites-row { position: absolute; left: 0; top: calc((32px - 100%) * 1000); display: flex; align-items: center; height: 32px; max-width: 100%; overflow: clip; column-gap: 2px; }
-.suites-row a { padding: 5px 9px; border-radius: var(--apidocs-radius); color: var(--apidocs-muted); white-space: nowrap; }
-.suites-row a:hover { color: var(--apidocs-fg); background: var(--apidocs-subtle); text-decoration: none; }
+.suites-row { position: absolute; inset-inline-start: 0; inset-block-start: calc((32px - 100%) * 1000); display: flex; align-items: center; height: 32px; max-width: 100%; overflow: clip; column-gap: 2px; }
+.suites-row a { padding-block: 5px; padding-inline: 9px; border-radius: var(--apidocs-radius); color: var(--apidocs-muted); white-space: nowrap; }
+@media (hover: hover) and (pointer: fine) { .suites-row a:hover { color: var(--apidocs-fg); background: var(--apidocs-subtle); text-decoration: none; } }
+.suites-row a:active { color: var(--apidocs-fg); background: var(--apidocs-subtle); text-decoration: none; }
 .suites-row a[aria-current="true"] { color: var(--apidocs-accent); background: var(--apidocs-accent-soft); font-weight: 600; }
-.suite-menu { position: absolute; left: 0; right: 0; top: min(0px, calc((100% - 64px) * 1000)); height: 32px; }
-.suite-current, .suites-floor { display: flex; align-items: center; gap: 4px; padding: 0 7px 0 9px; border: 1px solid transparent; white-space: nowrap; }
+.suite-menu { position: absolute; inset-inline-start: 0; inset-inline-end: 0; inset-block-start: min(0px, calc((100% - 64px) * 1000)); height: 32px; }
+.suite-current, .suites-floor { display: flex; align-items: center; gap: 4px; padding-block: 0; padding-inline: 9px 7px; border: 1px solid transparent; white-space: nowrap; }
 .suite-current {
-  width: fit-content; max-width: 100%; height: 30px; margin-top: 1px;
+  width: fit-content; max-width: 100%; height: 30px; margin-block-start: 1px;
   border-color: var(--apidocs-rule-strong); border-radius: var(--apidocs-radius);
   color: var(--apidocs-fg); list-style: none; cursor: pointer;
 }
 .suite-current::-webkit-details-marker { display: none; }
 .suite-current .icon { flex: none; vertical-align: 0; color: var(--apidocs-muted); }
+/* good-css exception (overflow-clip): hidden, not clip, so the ellipsis shows in every target browser, Safari before 16 among them. */
 .suite-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
-.suite-current:hover, .suite-menu[open] > .suite-current { background: var(--apidocs-subtle); }
+.suite-menu[open] > .suite-current { background: var(--apidocs-subtle); }
+@media (hover: hover) and (pointer: fine) { .suite-current:hover { background: var(--apidocs-subtle); } }
+.suite-current:active { background: var(--apidocs-subtle); }
 .suites-floor { width: max-content; height: 0; overflow: clip; visibility: hidden; }
 /* With the script (SUITES_BOOT in chrome.tsx), the switcher is as wide as what it shows, and the one out of view is
    hidden from assistive technology and the keyboard too. */
 .suites[data-fit] { flex: 0 1 var(--apidocs-suites-width); }
 .suites[data-fit="row"] { min-width: 0; }
 /* Out of the bar, but still laid out, so the script can measure its labels the next time: no width, no gap, unseen. */
-.suites[data-fit="none"] { flex: 0 0 0; min-width: 0; margin-right: -10px; overflow: clip; visibility: hidden; }
+.suites[data-fit="none"] { flex: 0 0 0; min-width: 0; margin-inline-end: calc(-1 * var(--apidocs-tools-gap)); overflow: clip; visibility: hidden; }
 .suites[data-fit="row"] .suite-menu, .suites[data-fit="menu"] .suites-row { visibility: hidden; }
 .suite-list {
-  position: absolute; left: -1px; top: calc(100% + 6px); z-index: 12;
+  position: absolute; inset-inline-start: -1px; inset-block-start: calc(100% + 6px); z-index: 12;
   min-width: 12rem; margin: 0; padding: 4px; list-style: none;
   background: var(--apidocs-surface); border: 1px solid var(--apidocs-rule-strong);
-  border-radius: calc(var(--apidocs-radius) + 2px); box-shadow: 0 12px 32px -12px rgb(0 0 0 / 0.28);
+  border-radius: calc(var(--apidocs-radius) + 2px); box-shadow: 0 12px 32px -12px oklch(0% 0 none / 0.28);
   line-height: 1.5;
 }
-.suite-list a { display: block; padding: 5px 10px; border-radius: 4px; color: var(--apidocs-fg); white-space: nowrap; }
-.suite-list a:hover { background: var(--apidocs-subtle); text-decoration: none; }
+.suite-list a { display: block; padding-block: 5px; padding-inline: 10px; border-radius: 4px; color: var(--apidocs-fg); white-space: nowrap; }
+@media (hover: hover) and (pointer: fine) { .suite-list a:hover { background: var(--apidocs-subtle); text-decoration: none; } }
+.suite-list a:active { background: var(--apidocs-subtle); text-decoration: none; }
 .suite-list a[aria-current="true"] { color: var(--apidocs-accent); font-weight: 600; }
 
-.search { position: relative; display: block; flex: 1000 1 0; min-width: var(--apidocs-search-floor); max-width: 19rem; margin-left: auto; }
+.search { position: relative; display: block; flex: 1000 1 0; min-width: var(--apidocs-search-floor); max-width: 19rem; margin-inline-start: auto; }
 .search input {
   width: 100%; text-overflow: ellipsis;
   font: inherit; font-size: var(--apidocs-size-sm);
@@ -303,32 +328,34 @@ p, li, dd { text-wrap: pretty; }
   background: var(--apidocs-surface);
   border: 1px solid var(--apidocs-rule-strong);
   border-radius: var(--apidocs-radius);
-  padding: 6px 30px 6px 10px;
+  padding-block: 6px; padding-inline: 10px 30px;
 }
 .search input:focus-visible { outline: 2px solid var(--apidocs-focus); outline-offset: 0; border-color: transparent; }
 .search-key {
-  position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+  position: absolute; inset-inline-end: 8px; inset-block-start: 50%; transform: translateY(-50%);
   font-size: var(--apidocs-size-xs); color: var(--apidocs-faint);
-  border: 1px solid var(--apidocs-rule-strong); border-radius: 4px; padding: 0 5px; line-height: 1.4;
+  border: 1px solid var(--apidocs-rule-strong); border-radius: 4px; padding-block: 0; padding-inline: 5px; line-height: 1.4;
 }
 .search-results {
-  position: absolute; right: 0; top: calc(100% + 6px);
+  position: absolute; inset-inline-end: 0; inset-block-start: calc(100% + 6px);
   width: min(34rem, 92vw); max-height: min(70vh, 34rem); overflow: auto;
   margin: 0; padding: 4px; list-style: none;
   background: var(--apidocs-surface);
   border: 1px solid var(--apidocs-rule-strong);
   border-radius: var(--apidocs-radius);
-  box-shadow: 0 12px 32px -12px rgb(0 0 0 / 0.28);
+  box-shadow: 0 12px 32px -12px oklch(0% 0 none / 0.28);
 }
 .search-results li a {
   display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0 12px;
-  padding: 7px 10px; border-radius: 4px; color: var(--apidocs-fg);
+  padding-block: 7px; padding-inline: 10px; border-radius: 4px; color: var(--apidocs-fg);
 }
-.search-results li a:hover { text-decoration: none; }
+@media (hover: hover) and (pointer: fine) { .search-results li a:hover { text-decoration: none; } }
+.search-results li a:active { text-decoration: none; }
 .search-results li[aria-selected="true"] a { background: var(--apidocs-accent-soft); }
 .result-label { font-family: var(--apidocs-font-mono); font-size: var(--apidocs-size-sm); overflow-wrap: anywhere; }
 .result-label mark { background: none; color: var(--apidocs-accent); font-weight: 700; }
-.result-kind { color: var(--apidocs-faint); font-size: var(--apidocs-size-sm); text-align: right; }
+.result-kind { color: var(--apidocs-faint); font-size: var(--apidocs-size-sm); text-align: end; }
+/* good-css exception (overflow-clip): hidden, not clip, so the ellipsis shows in every target browser, Safari before 16 among them. */
 .result-context { grid-column: 1 / -1; color: var(--apidocs-muted); font-size: var(--apidocs-size-sm); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .search-empty { padding: 10px; color: var(--apidocs-muted); font-size: var(--apidocs-size-sm); }
 
@@ -356,10 +383,10 @@ html[data-emoji] .theme-switch[data-mode="dark"] .theme-emoji::before { content:
   display: grid;
   grid-template-columns: 17.5rem minmax(0, 1fr) 15.5rem;
   max-width: 104rem;
-  margin: 0 auto;
+  margin-block: 0; margin-inline: auto;
 }
 .sidebar, .toc {
-  position: sticky; top: var(--apidocs-topbar);
+  position: sticky; inset-block-start: var(--apidocs-topbar);
   align-self: start;
   height: calc(100vh - var(--apidocs-topbar));
   overflow: auto;
@@ -367,46 +394,50 @@ html[data-emoji] .theme-switch[data-mode="dark"] .theme-emoji::before { content:
   scrollbar-width: thin;
   font-size: var(--apidocs-size-sm); line-height: 1.5;
 }
-.sidebar { padding: 14px 10px 40px 14px; border-right: 1px solid var(--apidocs-rule); }
-.content { padding: 28px 44px 96px; min-width: 0; }
+.sidebar { padding-block: 14px 40px; padding-inline: 14px 10px; border-inline-end: 1px solid var(--apidocs-rule); }
+.content { padding-block: var(--apidocs-content-top) var(--apidocs-content-bottom); padding-inline: var(--apidocs-gutter); min-width: 0; }
 .content > * { max-width: 62rem; }
-.toc { padding: 28px 16px 40px 4px; }
+.toc { padding-block: 28px 40px; padding-inline: 4px 16px; }
 
 /* The navigator: flat one-line rows. Nothing wraps; a row truncates and its title has the full name. */
 .nav-button {
   display: grid; place-items: center; width: 32px; height: 32px; flex: none; cursor: pointer;
-  margin-left: -6px; border-radius: var(--apidocs-radius); color: var(--apidocs-muted);
+  margin-inline-start: -6px; border-radius: var(--apidocs-radius); color: var(--apidocs-muted);
 }
-.nav-button:hover { background: var(--apidocs-subtle); color: var(--apidocs-fg); }
+@media (hover: hover) and (pointer: fine) { .nav-button:hover { background: var(--apidocs-subtle); color: var(--apidocs-fg); } }
+.nav-button:active { background: var(--apidocs-subtle); color: var(--apidocs-fg); }
 .nav-button svg { display: block; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linejoin: round; }
 .nav-toggle:focus-visible + script + .nav-button, .nav-toggle:focus-visible + .nav-button { outline: 2px solid var(--apidocs-focus); outline-offset: 2px; }
 /* Wide screens: checked hides the navigator and gives its column to the content. No animation: the page is laid out once. */
 @media (min-width: 861px) {
   body:has(.nav-toggle:checked) .layout { grid-template-columns: minmax(0, 1fr) 15.5rem; }
   body:has(.nav-toggle:checked) .layout .sidebar { display: none; }
-  body:has(.nav-toggle:checked) .layout .content { padding-left: max(44px, calc((100% - 62rem) / 2)); }
+  /* good-css exception (fluid-clamp): a layout, not a size step: with the navigator hidden, the text is centered. */
+  body:has(.nav-toggle:checked) .layout .content { padding-inline-start: max(var(--apidocs-gutter), calc((100% - 62rem) / 2)); }
 }
 @media (min-width: 861px) and (max-width: 1240px) {
   body:has(.nav-toggle:checked) .layout { grid-template-columns: minmax(0, 1fr); }
 }
-.nav-section + .nav-section { margin-top: 18px; }
+.nav-section + .nav-section { margin-block-start: 18px; }
 .nav-heading {
   display: flex; align-items: baseline; gap: 8px;
-  margin: 0 0 4px; padding: 0 8px;
+  margin-block: 0 4px; margin-inline: 0; padding-block: 0; padding-inline: 8px;
   font-family: var(--apidocs-font-sans); font-size: var(--apidocs-size-xs); font-weight: 650;
   letter-spacing: var(--apidocs-tracking-caps); text-transform: uppercase; color: var(--apidocs-faint);
 }
 /* The shared package prefix is a row of its own; the packages hang from it, each starting with the dot that joins them. */
 .nav-prefix { font-family: var(--apidocs-font-mono); font-size: var(--apidocs-size-sm); color: var(--apidocs-muted); }
-.nav-list.nav-suffixes { margin-left: 15px; padding-left: 4px; border-left: 1px solid var(--apidocs-rule-strong); }
+.nav-list.nav-suffixes { margin-inline-start: 15px; padding-inline-start: 4px; border-inline-start: 1px solid var(--apidocs-rule-strong); }
 .nav-dot { color: var(--apidocs-faint); }
 .nav-list { list-style: none; margin: 0; padding: 0; }
 .nav-row {
   display: flex; align-items: center; gap: 8px;
-  height: 28px; padding: 0 8px; border-radius: 5px;
+  height: 28px; padding-block: 0; padding-inline: 8px; border-radius: 5px;
   color: var(--apidocs-fg); white-space: nowrap;
 }
-.nav-row:hover { background: var(--apidocs-subtle); text-decoration: none; }
+@media (hover: hover) and (pointer: fine) { .nav-row:hover { background: var(--apidocs-subtle); text-decoration: none; } }
+.nav-row:active { background: var(--apidocs-subtle); text-decoration: none; }
+/* good-css exception (overflow-clip): hidden, not clip, so the ellipsis shows in every target browser, Safari before 16 among them. */
 .nav-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .nav-package .nav-label { font-family: var(--apidocs-font-mono); font-size: var(--apidocs-size-sm); }
 .nav-count { flex: none; font-size: var(--apidocs-size-xs); font-variant-numeric: tabular-nums; color: var(--apidocs-faint); }
@@ -415,25 +446,26 @@ html[data-emoji] .theme-switch[data-mode="dark"] .theme-emoji::before { content:
 .nav-package[data-open] .nav-dot { color: inherit; opacity: 0.6; }
 .nav-row[aria-current="page"], .nav-row[aria-current="true"] { background: var(--apidocs-accent-soft); color: var(--apidocs-accent); font-weight: 600; }
 .nav-row[aria-current] .nav-count { color: inherit; }
-.nav-nested { margin: 1px 0 4px 15px; padding-left: 6px; border-left: 1px solid var(--apidocs-rule); }
+.nav-nested { margin-block: 1px 4px; margin-inline: 15px 0; padding-inline-start: 6px; border-inline-start: 1px solid var(--apidocs-rule); }
 /* The sites, first in the drawer only: on a wide screen the top bar's switcher has them. */
 .nav-suites { display: none; }
 /* The module's indexes: one line of links when they fit the narrowest navigator (NAV_INDEX_ROW_MAX in chrome.tsx),
    else rows under "Reference". */
-.nav-index { display: flex; gap: 2px; margin: 0 0 14px; padding: 0; list-style: none; font-size: var(--apidocs-size-sm); white-space: nowrap; user-select: none; -webkit-user-select: none; }
-.nav-index a { display: block; padding: 3px 8px; border-radius: 5px; color: var(--apidocs-muted); }
-.nav-index a:hover { color: var(--apidocs-fg); background: var(--apidocs-subtle); text-decoration: none; }
+.nav-index { display: flex; gap: 2px; margin-block: 0 14px; margin-inline: 0; padding: 0; list-style: none; font-size: var(--apidocs-size-sm); white-space: nowrap; user-select: none; -webkit-user-select: none; }
+.nav-index a { display: block; padding-block: 3px; padding-inline: 8px; border-radius: 5px; color: var(--apidocs-muted); }
+@media (hover: hover) and (pointer: fine) { .nav-index a:hover { color: var(--apidocs-fg); background: var(--apidocs-subtle); text-decoration: none; } }
+.nav-index a:active { color: var(--apidocs-fg); background: var(--apidocs-subtle); text-decoration: none; }
 .nav-index a[aria-current="page"] { color: var(--apidocs-accent); background: var(--apidocs-accent-soft); font-weight: 600; }
-.nav-filter, .toc-filter { margin: 0 0 12px; }
+.nav-filter, .toc-filter { margin-block: 0 12px; margin-inline: 0; }
 .nav-filter {
-  position: sticky; top: -14px; z-index: 1;
-  margin: -14px -10px 10px -14px; padding: 14px 10px 8px 14px;
+  position: sticky; inset-block-start: -14px; z-index: 1;
+  margin-block: -14px 10px; margin-inline: -14px -10px; padding-block: 14px 8px; padding-inline: 14px 10px;
   background: var(--apidocs-bg);
 }
 .nav-filter input, .toc-filter input {
   width: 100%; font: inherit; font-size: var(--apidocs-size-sm); color: var(--apidocs-fg);
   background: var(--apidocs-surface); border: 1px solid var(--apidocs-rule-strong);
-  border-radius: var(--apidocs-radius); padding: 5px 9px;
+  border-radius: var(--apidocs-radius); padding-block: 5px; padding-inline: 9px;
 }
 .nav-filter input:focus-visible, .toc-filter input:focus-visible { outline: 2px solid var(--apidocs-focus); outline-offset: 0; border-color: transparent; }
 [data-filtered-out] { display: none !important; }
@@ -453,44 +485,47 @@ html[data-emoji] .theme-switch[data-mode="dark"] .theme-emoji::before { content:
 .glyph[data-tone="object"] { --glyph: var(--apidocs-syn-keyword); }
 .glyph[data-tone="exception"] { --glyph: var(--apidocs-deprecated); }
 .glyph[data-tone="guide"] { --glyph: var(--apidocs-accent); font-family: var(--apidocs-font-system); }
-.nav-subheading { margin: 8px 0 2px; padding: 0 8px; font-size: var(--apidocs-size-xs); color: var(--apidocs-faint); user-select: none; -webkit-user-select: none; }
+.nav-subheading { margin-block: 8px 2px; margin-inline: 0; padding-block: 0; padding-inline: 8px; font-size: var(--apidocs-size-xs); color: var(--apidocs-faint); user-select: none; -webkit-user-select: none; }
 .glyph-large { width: 28px; height: 28px; border-radius: 7px; font-size: var(--apidocs-size-md); }
 
 /* "On this page": sections with counts; long sections fold. */
-.toc-title { margin: 0 0 10px; padding-left: 12px; color: var(--apidocs-faint); font-weight: 650; font-size: var(--apidocs-size-xs); letter-spacing: var(--apidocs-tracking-caps); text-transform: uppercase; }
-.toc-filter { padding-left: 12px; }
+.toc-title { margin-block: 0 10px; margin-inline: 0; padding-inline-start: 12px; color: var(--apidocs-faint); font-weight: 650; font-size: var(--apidocs-size-xs); letter-spacing: var(--apidocs-tracking-caps); text-transform: uppercase; }
+.toc-filter { padding-inline-start: 12px; }
 .toc-list, .toc-entries { list-style: none; margin: 0; padding: 0; }
-.toc-section + .toc-section { margin-top: 2px; }
+.toc-section + .toc-section { margin-block-start: 2px; }
 .toc-head { display: flex; align-items: baseline; gap: 8px; }
 .toc-head a { flex: 1; }
+/* good-css exception (overflow-clip): hidden, not clip, so the ellipsis shows in every target browser, Safari before 16 among them. */
 .toc a {
-  display: block; min-width: 0; padding: 3px 0 3px 12px;
-  border-left: 2px solid transparent; color: var(--apidocs-muted);
+  display: block; min-width: 0; padding-block: 3px; padding-inline: 12px 0;
+  border-inline-start: 2px solid transparent; color: var(--apidocs-muted);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .toc-head a { color: var(--apidocs-fg); font-weight: 550; }
-.toc a:hover { color: var(--apidocs-fg); text-decoration: none; }
-.toc a[aria-current="true"] { color: var(--apidocs-accent); border-left-color: var(--apidocs-accent); }
+@media (hover: hover) and (pointer: fine) { .toc a:hover { color: var(--apidocs-fg); text-decoration: none; } }
+.toc a:active { color: var(--apidocs-fg); text-decoration: none; }
+.toc a[aria-current="true"] { color: var(--apidocs-accent); border-inline-start-color: var(--apidocs-accent); }
 .toc-count { flex: none; font-size: var(--apidocs-size-xs); font-variant-numeric: tabular-nums; color: var(--apidocs-faint); }
-.toc-entries { margin: 0 0 6px; }
-.toc-entries a { padding-left: 22px; font-size: var(--apidocs-size-sm); }
+.toc-entries { margin-block: 0 6px; margin-inline: 0; }
+.toc-entries a { padding-inline-start: 22px; font-size: var(--apidocs-size-sm); }
 .toc code { background: none; padding: 0; font-size: 1em; }
 .toc-more > summary {
-  list-style: none; cursor: pointer; padding: 2px 0 4px 22px;
+  list-style: none; cursor: pointer; padding-block: 2px 4px; padding-inline: 22px 0;
   font-size: var(--apidocs-size-sm); color: var(--apidocs-faint);
 }
 .toc-more > summary::-webkit-details-marker { display: none; }
-.toc-more > summary:hover { color: var(--apidocs-fg); }
+@media (hover: hover) and (pointer: fine) { .toc-more > summary:hover { color: var(--apidocs-fg); } }
+.toc-more > summary:active { color: var(--apidocs-fg); }
 .toc-more[open] > summary { display: none; }
 .toc-more > .toc-entries { max-height: 55vh; overflow: auto; scrollbar-width: thin; }
 
 /* The row above the title: where you are, and the page's other forms. */
-.page-tools { display: flex; align-items: center; gap: 12px; min-height: 30px; margin-bottom: 14px; }
+.page-tools { display: flex; align-items: center; gap: 12px; min-height: 30px; margin-block-end: 14px; }
 .page-tools .crumbs { flex: 1; min-width: 0; }
 .page-tools .crumbs ol { margin: 0; }
 /* The formats control: a mark and an arrow in one quiet pill. */
 .formats {
-  display: flex; align-items: stretch; flex: none; margin-left: auto; position: relative; height: 30px;
+  display: flex; align-items: stretch; flex: none; margin-inline-start: auto; position: relative; height: 30px;
   border: 1px solid var(--apidocs-rule-strong); border-radius: var(--apidocs-radius);
   background: var(--apidocs-surface); color: var(--apidocs-muted);
   user-select: none; -webkit-user-select: none;
@@ -498,73 +533,76 @@ html[data-emoji] .theme-switch[data-mode="dark"] .theme-emoji::before { content:
 .formats-main, .formats-menu > summary {
   display: grid; place-items: center; color: inherit; background: none; border: 0; padding: 0; cursor: pointer;
 }
-.formats-main { width: 36px; border-radius: calc(var(--apidocs-radius) - 1px) 0 0 calc(var(--apidocs-radius) - 1px); }
-.formats-menu > summary { width: 28px; height: 100%; list-style: none; border-left: 1px solid var(--apidocs-rule); border-radius: 0 calc(var(--apidocs-radius) - 1px) calc(var(--apidocs-radius) - 1px) 0; }
+.formats-main { width: 36px; border-radius: 0; border-start-start-radius: calc(var(--apidocs-radius) - 1px); border-end-start-radius: calc(var(--apidocs-radius) - 1px); }
+.formats-menu > summary { width: 28px; height: 100%; list-style: none; border-inline-start: 1px solid var(--apidocs-rule); border-radius: 0; border-start-end-radius: calc(var(--apidocs-radius) - 1px); border-end-end-radius: calc(var(--apidocs-radius) - 1px); }
 .formats-menu > summary::-webkit-details-marker { display: none; }
-.formats-main:hover, .formats-menu > summary:hover, .formats-menu[open] > summary { color: var(--apidocs-fg); background: var(--apidocs-subtle); }
+.formats-menu[open] > summary { color: var(--apidocs-fg); background: var(--apidocs-subtle); }
+@media (hover: hover) and (pointer: fine) { .formats-main:hover, .formats-menu > summary:hover { color: var(--apidocs-fg); background: var(--apidocs-subtle); } }
+.formats-main:active, .formats-menu > summary:active { color: var(--apidocs-fg); background: var(--apidocs-subtle); }
 .formats-main .formats-done { display: none; color: var(--apidocs-non-null); }
 .formats-main[data-copied] .icon-markdown { display: none; }
 .formats-main[data-copied] .formats-done { display: block; }
 .formats-main .icon { vertical-align: 0; }
 .formats-list {
-  position: absolute; right: -1px; top: calc(100% + 6px); z-index: 8; width: max-content; min-width: 16rem;
+  position: absolute; inset-inline-end: -1px; inset-block-start: calc(100% + 6px); z-index: 8; width: max-content; min-width: 16rem;
   margin: 0; padding: 4px; list-style: none;
   background: var(--apidocs-surface); border: 1px solid var(--apidocs-rule-strong);
-  border-radius: calc(var(--apidocs-radius) + 2px); box-shadow: 0 12px 32px -12px rgb(0 0 0 / 0.28);
+  border-radius: calc(var(--apidocs-radius) + 2px); box-shadow: 0 12px 32px -12px oklch(0% 0 none / 0.28);
   font-size: var(--apidocs-size-sm); line-height: 1.5;
 }
-.formats-list a { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; padding: 5px 10px; border-radius: 4px; color: var(--apidocs-fg); }
-.formats-list a:hover { background: var(--apidocs-subtle); text-decoration: none; }
+.formats-list a { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; padding-block: 5px; padding-inline: 10px; border-radius: 4px; color: var(--apidocs-fg); }
+@media (hover: hover) and (pointer: fine) { .formats-list a:hover { background: var(--apidocs-subtle); text-decoration: none; } }
+.formats-list a:active { background: var(--apidocs-subtle); text-decoration: none; }
 .formats-list code { background: none; padding: 0; }
 .formats-list small { color: var(--apidocs-faint); font-size: var(--apidocs-size-xs); }
-.formats-sep { margin-top: 4px; padding-top: 4px; border-top: 1px solid var(--apidocs-rule); }
+.formats-sep { margin-block-start: 4px; padding-block-start: 4px; border-block-start: 1px solid var(--apidocs-rule); }
 .icon { display: inline-block; vertical-align: -0.125em; }
 
 /* A language's mark. */
 .lang { display: inline-flex; align-items: center; gap: 5px; color: var(--apidocs-muted); font-size: var(--apidocs-size-sm); white-space: nowrap; user-select: none; }
 .lang .icon { flex: none; vertical-align: 0; }
-.lang[data-lang="kotlin"] .icon { color: var(--apidocs-lang-kotlin, #7f52ff); }
-.lang[data-lang="java"] .icon { color: var(--apidocs-lang-java, #c9601a); }
+.lang[data-lang="kotlin"] .icon { color: var(--apidocs-lang-kotlin, oklch(58.775% 0.24128 288.635)); }
+.lang[data-lang="java"] .icon { color: var(--apidocs-lang-java, oklch(60.725% 0.15353 48.401)); }
 .nav-row .lang, .type-link .lang { flex: none; }
 
-.crumbs ol { list-style: none; display: flex; flex-wrap: wrap; gap: 4px; margin: 0 0 18px; padding: 0; font-size: var(--apidocs-size-sm); color: var(--apidocs-muted); }
-.crumbs li + li::before { content: "/"; margin-right: 4px; color: var(--apidocs-rule-strong); }
+.crumbs ol { list-style: none; display: flex; flex-wrap: wrap; gap: 4px; margin-block: 0 18px; margin-inline: 0; padding: 0; font-size: var(--apidocs-size-sm); color: var(--apidocs-muted); }
+.crumbs li + li::before { content: "/"; margin-inline-end: 4px; color: var(--apidocs-rule-strong); }
 .crumbs a { color: var(--apidocs-muted); }
 
 .footer {
-  border-top: 1px solid var(--apidocs-rule);
-  padding: 20px 24px 32px; color: var(--apidocs-muted); font-size: var(--apidocs-size-sm);
-  max-width: 94rem; margin: 0 auto;
+  border-block-start: 1px solid var(--apidocs-rule);
+  padding-block: 20px 32px; padding-inline: 24px; color: var(--apidocs-muted); font-size: var(--apidocs-size-sm);
+  max-width: 94rem; margin-block: 0; margin-inline: auto;
 }
-.footer p { margin: 0 0 6px; }
+.footer p { margin-block: 0 6px; margin-inline: 0; }
 .footer-links { display: flex; gap: 16px; flex-wrap: wrap; }
 
 /* ---- Page head and the declaration specimen ---- */
 
-.page-head { margin-bottom: 16px; }
-.page-head h1 { font-size: var(--apidocs-size-3xl); font-weight: 650; letter-spacing: var(--apidocs-tracking-display); overflow-wrap: anywhere; }
+.page-head { margin-block-end: 16px; }
+.page-head h1 { font-size: var(--apidocs-size-title); font-weight: 650; letter-spacing: var(--apidocs-tracking-display); overflow-wrap: anywhere; }
 /* The tile and the name share one line box and one center line, whatever fonts they come from. */
 .page-head h1[data-kind] { display: flex; align-items: center; gap: 12px; font-family: var(--apidocs-font-mono); letter-spacing: 0; font-weight: 700; line-height: 36px; }
 @supports (text-box: trim-both cap alphabetic) {
   .page-head h1 { text-box: trim-both cap alphabetic; }
   .page-head h1[data-kind] { line-height: 1; }
-  .page-head .page-meta { margin-top: 14px; }
+  .page-head .page-meta { margin-block-start: 14px; }
 }
 .page-head h1 code { background: none; padding: 0; font-size: calc(var(--apidocs-code-scale) * 0.92); }
-.page-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin: 8px 0 0; color: var(--apidocs-muted); font-size: var(--apidocs-size-sm); }
+.page-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin-block: 8px 0; margin-inline: 0; color: var(--apidocs-muted); font-size: var(--apidocs-size-sm); }
 .kind-word { font-weight: 600; color: var(--apidocs-fg); }
 .lede { font-size: var(--apidocs-size-lg); color: var(--apidocs-muted); }
 
 .sig { position: relative; }
 .sig pre {
-  margin: 12px 0; padding: 10px 14px;
+  margin-block: 12px; margin-inline: 0; padding-block: 10px; padding-inline: 14px;
   background: var(--apidocs-code-bg); color: var(--apidocs-code-fg);
   border-radius: var(--apidocs-radius);
   overflow-x: auto; font-size: var(--apidocs-size-sm); line-height: 1.5;
 }
 .sig-large pre {
-  margin: 18px 0 20px; padding: 18px 22px;
-  font-size: var(--apidocs-size-md); line-height: 1.6;
+  margin-block: 18px 20px; margin-inline: 0; padding-block: var(--apidocs-specimen-pad-block); padding-inline: var(--apidocs-specimen-pad-inline);
+  font-size: var(--apidocs-size-specimen); line-height: 1.6;
   border: 1px solid var(--apidocs-rule);
   border-radius: calc(var(--apidocs-radius) + 4px);
 }
@@ -577,26 +615,29 @@ html[data-emoji] .theme-switch[data-mode="dark"] .theme-emoji::before { content:
 .tk-l { color: var(--apidocs-syn-string); }
 .tk-p { color: var(--apidocs-syn-param); }
 a.tk-t, a.tk-a { text-decoration: underline; text-decoration-color: color-mix(in srgb, currentColor 30%, transparent); text-underline-offset: 3px; }
-a.tk-t:hover, a.tk-a:hover { text-decoration-color: currentColor; }
+@media (hover: hover) and (pointer: fine) { a.tk-t:hover, a.tk-a:hover { text-decoration-color: currentColor; } }
+a.tk-t:active, a.tk-a:active { text-decoration-color: currentColor; }
 
 .copy {
-  position: absolute; top: 6px; right: 6px;
+  position: absolute; inset-block-start: 6px; inset-inline-end: 6px;
   font: inherit; font-size: var(--apidocs-size-xs); line-height: 1;
-  padding: 5px 7px;
+  padding-block: 5px; padding-inline: 7px;
   color: var(--apidocs-muted);
   background: var(--apidocs-surface);
   border: 1px solid var(--apidocs-rule-strong); border-radius: 4px;
   cursor: pointer; opacity: 0;
 }
-.sig:hover .copy, .code-block:hover .copy, .copy:focus-visible, .copy[data-copied] { opacity: 1; }
+.copy:focus-visible, .copy[data-copied] { opacity: 1; }
+@media (hover: hover) and (pointer: fine) { .sig:hover .copy, .code-block:hover .copy { opacity: 1; } }
+.sig:active .copy, .code-block:active .copy { opacity: 1; }
 @media (hover: none) { .copy { opacity: 1; } }
 
-.lineage { display: grid; gap: 4px; margin: 0 0 22px; font-size: var(--apidocs-size-sm); }
+.lineage { display: grid; gap: 4px; margin-block: 0 22px; margin-inline: 0; font-size: var(--apidocs-size-sm); }
 .lineage > div { display: grid; grid-template-columns: 10rem minmax(0, 1fr); gap: 12px; }
 .lineage dt { color: var(--apidocs-muted); }
 .lineage dd { margin: 0; min-width: 0; }
 .chain, .inline-list { list-style: none; display: flex; flex-wrap: wrap; gap: 2px 8px; margin: 0; padding: 0; }
-.chain li + li::before { content: "\203A"; margin-right: 8px; color: var(--apidocs-faint); }
+.chain li + li::before { content: "\203A"; margin-inline-end: 8px; color: var(--apidocs-faint); }
 .inline-list li:not(:last-child)::after { content: ","; color: var(--apidocs-faint); }
 
 /* ---- Badges, deprecation and notes ---- */
@@ -604,7 +645,7 @@ a.tk-t:hover, a.tk-a:hover { text-decoration-color: currentColor; }
 .badge {
   display: inline-block;
   font-size: var(--apidocs-size-xs); line-height: 1.5; font-weight: 550;
-  padding: 0 7px; border-radius: 999px;
+  padding-block: 0; padding-inline: 7px; border-radius: 999px;
   border: 1px solid var(--apidocs-rule-strong);
   color: var(--apidocs-muted); white-space: nowrap;
 }
@@ -619,7 +660,7 @@ a.tk-t:hover, a.tk-a:hover { text-decoration-color: currentColor; }
   --tone: var(--apidocs-note-api);
   --tone-soft: var(--apidocs-note-api-soft);
   display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 0 12px; align-items: start;
-  margin: 16px 0; padding: 12px 18px 13px 12px;
+  margin-block: 16px; margin-inline: 0; padding-block: 12px 13px; padding-inline: 12px 18px;
   background: var(--tone-soft);
   border: 1px solid color-mix(in srgb, var(--tone) 16%, transparent);
   border-radius: calc(var(--apidocs-radius) + 4px);
@@ -638,8 +679,8 @@ a.tk-t:hover, a.tk-a:hover { text-decoration-color: currentColor; }
 }
 .callout-aside { font-weight: 450; }
 .callout-body > p:not(.callout-label) { margin: 0; }
-.callout-body > p:not(.callout-label) + p { margin-top: 0.5em; }
-.callout-body > :last-child { margin-bottom: 0; }
+.callout-body > p:not(.callout-label) + p { margin-block-start: 0.5em; }
+.callout-body > :last-child { margin-block-end: 0; }
 .callout-implSpec { --tone: var(--apidocs-note-spec); --tone-soft: var(--apidocs-note-spec-soft); }
 .callout-implNote { --tone: var(--apidocs-note-impl); --tone-soft: transparent; border-color: var(--apidocs-rule-strong); }
 .callout-implNote .callout-icon { background: var(--apidocs-subtle); }
@@ -655,22 +696,22 @@ a.tk-t:hover, a.tk-a:hover { text-decoration-color: currentColor; }
 /* ---- Prose and documentation content ---- */
 
 .prose { max-width: 46rem; }
-.prose p, .member p { margin: 0.6em 0; }
-.prose ul, .prose ol, .member ul, .member ol { padding-left: 1.4em; margin: 0.6em 0; }
-.prose li + li, .member li + li { margin-top: 0.2em; }
+.prose p, .member p { margin-block: 0.6em; margin-inline: 0; }
+.prose ul, .prose ol, .member ul, .member ol { padding-inline-start: 1.4em; margin-block: 0.6em; margin-inline: 0; }
+.prose li + li, .member li + li { margin-block-start: 0.2em; }
 /* Guide images keep their aspect ratio inside the column; task-list items show their check box instead of a bullet. */
 .prose img, .member img { max-width: 100%; height: auto; }
-.prose li:has(> p:first-child > .task-check:first-child) { list-style: none; margin-left: -1.4em; }
-.task-check { margin: 0 0.45em 0 0; vertical-align: -0.1em; accent-color: var(--apidocs-accent); }
-.doc-heading { margin: 1.4em 0 0.4em; font-size: var(--apidocs-size-lg); font-weight: 650; }
-blockquote { margin: 0.8em 0; padding: 2px 16px; border-left: 3px solid var(--apidocs-rule-strong); color: var(--apidocs-muted); }
+.prose li:has(> p:first-child > .task-check:first-child) { list-style: none; margin-inline-start: -1.4em; }
+.task-check { margin-block: 0; margin-inline: 0 0.45em; vertical-align: -0.1em; accent-color: var(--apidocs-accent); }
+.doc-heading { margin-block: 1.4em 0.4em; margin-inline: 0; font-size: var(--apidocs-size-lg); font-weight: 650; }
+blockquote { margin-block: 0.8em; margin-inline: 0; padding-block: 2px; padding-inline: 16px; border-inline-start: 3px solid var(--apidocs-rule-strong); color: var(--apidocs-muted); }
 .undocumented { color: var(--apidocs-faint); font-style: italic; }
 .inherited-from, .overrides, .default-value { color: var(--apidocs-muted); font-size: var(--apidocs-size-sm); }
 .raw sup, .raw sub { line-height: 0; }
 
-.code-block { position: relative; margin: 0.9em 0; }
+.code-block { position: relative; margin-block: 0.9em; margin-inline: 0; }
 .code-block pre {
-  margin: 0; padding: 12px 16px;
+  margin: 0; padding-block: 12px; padding-inline: 16px;
   background: var(--apidocs-code-bg); color: var(--apidocs-code-fg);
   border-radius: var(--apidocs-radius);
   overflow-x: auto; font-size: var(--apidocs-size-sm); line-height: 1.5;
@@ -684,83 +725,92 @@ blockquote { margin: 0.8em 0; padding: 2px 16px; border-left: 3px solid var(--ap
 .hl-f { color: var(--apidocs-syn-function); }
 .hl-p { color: var(--apidocs-syn-param); }
 
-.table-scroll { overflow-x: auto; margin: 0.8em 0; }
+.table-scroll { overflow-x: auto; margin-block: 0.8em; margin-inline: 0; }
 table { border-collapse: collapse; width: 100%; font-size: var(--apidocs-size-sm); line-height: 1.5; }
-caption { text-align: left; color: var(--apidocs-muted); font-size: var(--apidocs-size-sm); padding-bottom: 6px; }
-th, td { text-align: left; vertical-align: top; padding: 7px 12px 7px 0; border-bottom: 1px solid var(--apidocs-rule); }
-thead th { color: var(--apidocs-muted); font-weight: 600; font-size: var(--apidocs-size-sm); border-bottom-color: var(--apidocs-rule-strong); }
-.doc-table td, .doc-table th { padding-left: 10px; }
+caption { text-align: start; color: var(--apidocs-muted); font-size: var(--apidocs-size-sm); padding-block-end: 6px; }
+th, td { text-align: start; vertical-align: top; padding-block: 7px; padding-inline: 0 12px; border-block-end: 1px solid var(--apidocs-rule); }
+thead th { color: var(--apidocs-muted); font-weight: 600; font-size: var(--apidocs-size-sm); border-block-end-color: var(--apidocs-rule-strong); }
+.doc-table td, .doc-table th { padding-inline-start: 10px; }
 
 /* ---- Guides: prose pages beside the reference ---- */
 
 .guide-kicker {
-  margin: 0 0 6px; font-size: var(--apidocs-size-xs); font-weight: 650; letter-spacing: var(--apidocs-tracking-caps);
+  margin-block: 0 6px; margin-inline: 0; font-size: var(--apidocs-size-xs); font-weight: 650; letter-spacing: var(--apidocs-tracking-caps);
   text-transform: uppercase; color: var(--apidocs-accent); user-select: none; -webkit-user-select: none;
 }
-.guide-head h1 { font-size: var(--apidocs-size-3xl); }
-.guide-summary { margin: 10px 0 0; max-width: 44rem; }
+.guide-head h1 { font-size: var(--apidocs-size-title); }
+.guide-summary { margin-block: 10px 0; margin-inline: 0; max-width: 44rem; }
 .guide-body { max-width: 46rem; }
-.guide-body > .guide-intro > :first-child { margin-top: 0; }
-.guide-section { margin-top: 36px; }
-.guide-heading { position: relative; scroll-margin-top: calc(var(--apidocs-topbar) + 16px); }
-h2.guide-heading { font-size: var(--apidocs-size-xl); font-weight: 650; margin: 0 0 10px; padding-bottom: 8px; border-bottom: 1px solid var(--apidocs-rule); }
-h3.guide-heading { font-size: var(--apidocs-size-lg); font-weight: 650; margin: 26px 0 6px; }
+.guide-body > .guide-intro > :first-child { margin-block-start: 0; }
+.guide-section { margin-block-start: 36px; }
+.guide-heading { position: relative; scroll-margin-block-start: calc(var(--apidocs-topbar) + 16px); }
+h2.guide-heading { font-size: var(--apidocs-size-xl); font-weight: 650; margin-block: 0 10px; margin-inline: 0; padding-block-end: 8px; border-block-end: 1px solid var(--apidocs-rule); }
+h3.guide-heading { font-size: var(--apidocs-size-lg); font-weight: 650; margin-block: 26px 6px; margin-inline: 0; }
 /* The section link sits in the margin and shows when the heading is pointed at or the link has focus. */
 .heading-anchor {
-  position: absolute; right: 100%; top: 0; padding-right: 8px;
+  position: absolute; inset-inline-end: 100%; inset-block-start: 0; padding-inline-end: 8px;
   color: var(--apidocs-faint); font-family: var(--apidocs-font-mono); font-weight: 400;
   opacity: 0; text-decoration: none !important; user-select: none; -webkit-user-select: none;
 }
-.guide-heading:hover .heading-anchor, .heading-anchor:focus-visible { opacity: 1; }
-.heading-anchor:hover { color: var(--apidocs-accent); }
+.heading-anchor:focus-visible { opacity: 1; }
+@media (hover: hover) and (pointer: fine) { .guide-heading:hover .heading-anchor { opacity: 1; } }
+.guide-heading:active .heading-anchor { opacity: 1; }
+@media (hover: hover) and (pointer: fine) { .heading-anchor:hover { color: var(--apidocs-accent); } }
+.heading-anchor:active { color: var(--apidocs-accent); }
 .guide-heading:target { color: var(--apidocs-accent); }
-@media (hover: none) { .heading-anchor { position: static; opacity: 1; padding: 0 0 0 8px; } }
+@media (hover: none) { .heading-anchor { position: static; opacity: 1; padding-block: 0; padding-inline: 8px 0; } }
 
 /* Previous and next: two quiet cards at the foot of a guide. */
-.guide-pager { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 56px; max-width: 46rem; }
+.guide-pager { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-block-start: 56px; max-width: 46rem; }
 .guide-pager-link {
-  display: grid; gap: 2px; padding: 12px 16px;
+  display: grid; gap: 2px; padding-block: 12px; padding-inline: 16px;
   border: 1px solid var(--apidocs-rule-strong); border-radius: calc(var(--apidocs-radius) + 4px);
   color: var(--apidocs-fg);
 }
-.guide-pager-link:hover { border-color: var(--apidocs-accent); background: var(--apidocs-accent-soft); text-decoration: none; }
-.guide-next { grid-column: 2; text-align: right; }
+@media (hover: hover) and (pointer: fine) { .guide-pager-link:hover { border-color: var(--apidocs-accent); background: var(--apidocs-accent-soft); text-decoration: none; } }
+.guide-pager-link:active { border-color: var(--apidocs-accent); background: var(--apidocs-accent-soft); text-decoration: none; }
+.guide-next { grid-column: 2; text-align: end; }
 .guide-pager-dir { font-size: var(--apidocs-size-xs); color: var(--apidocs-faint); user-select: none; -webkit-user-select: none; }
 .guide-pager-title { font-weight: 600; }
 
 /* Guides on the overview: cards. */
-.guide-group-title { font-size: var(--apidocs-size-sm); font-weight: 600; margin: 20px 0 0; color: var(--apidocs-muted); }
-.guide-cards { list-style: none; margin: 12px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: 12px; }
+.guide-group-title { font-size: var(--apidocs-size-sm); font-weight: 600; margin-block: 20px 0; margin-inline: 0; color: var(--apidocs-muted); }
+.guide-cards { list-style: none; margin-block: 12px 0; margin-inline: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: 12px; }
 .guide-card {
-  position: relative; padding: 14px 16px 15px;
+  position: relative; padding-block: 14px 15px; padding-inline: 16px;
   border: 1px solid var(--apidocs-rule-strong); border-radius: calc(var(--apidocs-radius) + 4px);
   background: var(--apidocs-surface);
 }
-.guide-card:hover, .guide-card:focus-within { border-color: var(--apidocs-accent); }
+.guide-card:focus-within { border-color: var(--apidocs-accent); }
+@media (hover: hover) and (pointer: fine) { .guide-card:hover { border-color: var(--apidocs-accent); } }
+.guide-card:active { border-color: var(--apidocs-accent); }
 .guide-card-link { color: var(--apidocs-fg); font-weight: 600; text-decoration: none !important; }
 .guide-card-link::after { content: ""; position: absolute; inset: 0; border-radius: inherit; }
-.guide-card-summary { margin: 4px 0 0; font-size: var(--apidocs-size-sm); line-height: 1.5; color: var(--apidocs-muted); }
+.guide-card-summary { margin-block: 4px 0; margin-inline: 0; font-size: var(--apidocs-size-sm); line-height: 1.5; color: var(--apidocs-muted); }
 
 /* How far through a guide the reader is: a hairline under the top bar, driven by scrolling alone. */
 .readbar { display: none; }
 @supports (animation-timeline: scroll()) {
   .readbar {
-    display: block; position: fixed; z-index: 11; left: 0; right: 0; top: var(--apidocs-topbar); height: 2px;
+    display: block; position: fixed; z-index: 11; inset-inline-start: 0; inset-inline-end: 0; inset-block-start: var(--apidocs-topbar); height: 2px;
     background: var(--apidocs-accent); transform-origin: 0 50%; transform: scaleX(0); pointer-events: none;
-    animation: apidocs-read linear both; animation-timeline: scroll(root block);
   }
+  .readbar:dir(rtl) { transform-origin: 100% 50%; }
+  /* Driven by scrolling, not by time; reduced motion hides the bar. */
+  @media (prefers-reduced-motion: no-preference) { .readbar { animation: apidocs-read linear both; animation-timeline: scroll(root block); } }
 }
 @keyframes apidocs-read { to { transform: scaleX(1); } }
 
 /* ---- Index pages ---- */
 
-.letter-bar { display: flex; flex-wrap: wrap; gap: 2px; margin: 18px 0 4px; font-family: var(--apidocs-font-mono); font-size: var(--apidocs-size-sm); user-select: none; -webkit-user-select: none; }
+.letter-bar { display: flex; flex-wrap: wrap; gap: 2px; margin-block: 18px 4px; margin-inline: 0; font-family: var(--apidocs-font-mono); font-size: var(--apidocs-size-sm); user-select: none; -webkit-user-select: none; }
 .letter-bar a { display: grid; place-items: center; min-width: 28px; height: 28px; border-radius: var(--apidocs-radius); color: var(--apidocs-muted); }
-.letter-bar a:hover { color: var(--apidocs-accent); background: var(--apidocs-accent-soft); text-decoration: none; }
-.index-letter { margin-top: 28px; }
-.index-letter > h2 { font-family: var(--apidocs-font-mono); font-size: var(--apidocs-size-xl); padding-bottom: 6px; border-bottom: 1px solid var(--apidocs-rule-strong); }
+@media (hover: hover) and (pointer: fine) { .letter-bar a:hover { color: var(--apidocs-accent); background: var(--apidocs-accent-soft); text-decoration: none; } }
+.letter-bar a:active { color: var(--apidocs-accent); background: var(--apidocs-accent-soft); text-decoration: none; }
+.index-letter { margin-block-start: 28px; }
+.index-letter > h2 { font-family: var(--apidocs-font-mono); font-size: var(--apidocs-size-xl); padding-block-end: 6px; border-block-end: 1px solid var(--apidocs-rule-strong); }
 .index-list { list-style: none; margin: 0; padding: 0; font-size: var(--apidocs-size-sm); line-height: 1.5; }
-.index-entry { display: grid; grid-template-columns: minmax(0, 30%) minmax(0, 22%) minmax(0, 1fr); gap: 0 16px; align-items: baseline; padding: 7px 0; border-bottom: 1px solid var(--apidocs-rule); }
+.index-entry { display: grid; grid-template-columns: minmax(0, 30%) minmax(0, 22%) minmax(0, 1fr); gap: 0 16px; align-items: baseline; padding-block: 7px; padding-inline: 0; border-block-end: 1px solid var(--apidocs-rule); }
 .index-name { font-family: var(--apidocs-font-mono); font-weight: 600; overflow-wrap: anywhere; }
 .index-where { color: var(--apidocs-muted); overflow-wrap: anywhere; }
 .index-summary { color: var(--apidocs-muted); }
@@ -768,90 +818,97 @@ h3.guide-heading { font-size: var(--apidocs-size-lg); font-weight: 650; margin: 
 
 /* ---- Sections, summaries and members ---- */
 
-.section { margin-top: 40px; }
+.section { margin-block-start: 40px; }
 .section > h2 {
   font-size: var(--apidocs-size-xl); font-weight: 650;
-  padding-bottom: 8px; border-bottom: 1px solid var(--apidocs-rule-strong);
-  margin-bottom: 8px;
+  padding-block-end: 8px; border-block-end: 1px solid var(--apidocs-rule-strong);
+  margin-block-end: 8px;
 }
-.section-tight { margin-top: 12px; }
-.summary-group h3, .type-index h3, .inherited h3 { font-size: var(--apidocs-size-md); font-weight: 600; margin: 22px 0 2px; color: var(--apidocs-fg); }
+.section-tight { margin-block-start: 12px; }
+.summary-group h3, .type-index h3, .inherited h3 { font-size: var(--apidocs-size-md); font-weight: 600; margin-block: 22px 2px; margin-inline: 0; color: var(--apidocs-fg); }
 .type-index h3 code { background: none; padding: 0; }
 
-table.summary th[scope="row"] { font-weight: 400; width: 44%; padding-right: 20px; }
-table.summary tbody tr:hover { background: color-mix(in srgb, var(--apidocs-subtle) 60%, transparent); }
+table.summary th[scope="row"] { font-weight: 400; width: 44%; padding-inline-end: 20px; }
+@media (hover: hover) and (pointer: fine) { table.summary tbody tr:hover { background: color-mix(in srgb, var(--apidocs-subtle) 60%, transparent); } }
+table.summary tbody tr:active { background: color-mix(in srgb, var(--apidocs-subtle) 60%, transparent); }
 .summary-sig { background: none !important; padding: 0 !important; font-size: var(--apidocs-size-sm); overflow-wrap: anywhere; }
 .summary-sig a { font-weight: 650; }
 .type-link { display: inline-flex; align-items: center; gap: 8px; }
 .type-link code { background: none !important; padding: 0 !important; font-weight: 600; }
 .kind-cell { color: var(--apidocs-muted); white-space: nowrap; }
 tr.is-deprecated .summary-sig a { text-decoration: line-through; text-decoration-color: var(--apidocs-deprecated); }
-td .badge { margin-right: 6px; }
+td .badge { margin-inline-end: 6px; }
 
 /* A member is a disclosure: a row when closed, the full entry when open. Rows far from the viewport are not
    laid out or painted until they come near; find-in-page still searches them and opens the one it matches. */
 .members-heading { display: flex; align-items: baseline; gap: 10px; }
 .members-count { font-size: var(--apidocs-size-sm); font-weight: 400; color: var(--apidocs-faint); user-select: none; -webkit-user-select: none; }
 .members-toggle {
-  margin-left: auto; font: inherit; font-size: var(--apidocs-size-xs); font-weight: 400; color: var(--apidocs-muted);
-  background: none; border: 0; padding: 2px 4px; border-radius: 4px; cursor: pointer; user-select: none; -webkit-user-select: none;
+  margin-inline-start: auto; font: inherit; font-size: var(--apidocs-size-xs); font-weight: 400; color: var(--apidocs-muted);
+  background: none; border: 0; padding-block: 2px; padding-inline: 4px; border-radius: 4px; cursor: pointer; user-select: none; -webkit-user-select: none;
 }
-.members-toggle:hover { color: var(--apidocs-fg); background: var(--apidocs-subtle); }
-.members > .member { border-bottom: 1px solid var(--apidocs-rule); content-visibility: auto; contain-intrinsic-size: auto 41px; }
+@media (hover: hover) and (pointer: fine) { .members-toggle:hover { color: var(--apidocs-fg); background: var(--apidocs-subtle); } }
+.members-toggle:active { color: var(--apidocs-fg); background: var(--apidocs-subtle); }
+.members > .member { border-block-end: 1px solid var(--apidocs-rule); content-visibility: auto; contain-intrinsic-size: auto 41px; }
 /* A group's first rows can be in the first viewport, where a placeholder that differs from the real row by a few
    pixels would shift everything below it once the row is laid out: those render as usual. 24 rows fill any screen. */
 .members > .member:nth-of-type(-n+24) { content-visibility: visible; }
 .member-row {
   display: grid; grid-template-columns: 12px minmax(0, 46%) minmax(0, 1fr) auto; gap: 0 12px; align-items: baseline;
-  padding: 9px 4px 9px 0; cursor: pointer; list-style: none;
+  padding-block: 9px; padding-inline: 0 4px; cursor: pointer; list-style: none;
   font-size: var(--apidocs-size-sm); line-height: 1.5;
 }
 .member-row::-webkit-details-marker { display: none; }
-.member-row:hover { background: color-mix(in srgb, var(--apidocs-subtle) 60%, transparent); }
+@media (hover: hover) and (pointer: fine) { .member-row:hover { background: color-mix(in srgb, var(--apidocs-subtle) 60%, transparent); } }
+.member-row:active { background: color-mix(in srgb, var(--apidocs-subtle) 60%, transparent); }
 .member-chevron { align-self: center; color: var(--apidocs-faint); }
 .member[open] > .member-row .member-chevron { transform: rotate(90deg); }
+/* Right to left, a closed row points to the start of the line. */
+.member:not([open]) > .member-row .member-chevron:dir(rtl) { scale: -1 1; }
 .member[open] > .member-row { background: color-mix(in srgb, var(--apidocs-subtle) 60%, transparent); }
 .member[open] > .member-row .member-brief { visibility: hidden; }
 .member-sig { min-width: 0; }
 .member-brief[data-brief]::before { content: attr(data-brief); }
+/* good-css exception (overflow-clip): hidden, not clip: WebKit clamps lines with -webkit-line-clamp only under overflow: hidden. */
 .member-brief { min-width: 0; color: var(--apidocs-muted); display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; }
 .member-marks { display: flex; align-items: center; gap: 8px; user-select: none; -webkit-user-select: none; }
 .member-noted { display: inline-grid; color: var(--apidocs-note-api); }
 .member-noted svg { fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; }
 .member-key { font-weight: 650; color: var(--apidocs-link); }
 .member.is-deprecated .member-key { text-decoration: line-through; text-decoration-color: var(--apidocs-deprecated); }
-.member-body { padding: 14px 0 22px 24px; }
+.member-body { padding-block: 14px 22px; padding-inline: 24px 0; }
 /* Opening fades the entry in: opacity only, so nothing is laid out twice. */
-.member::details-content { opacity: 1; transition: opacity 140ms ease-out; }
+.member::details-content { opacity: 1; }
+@media (prefers-reduced-motion: no-preference) { .member::details-content { transition: opacity 140ms ease-out; } }
 @starting-style { .member[open]::details-content { opacity: 0; } }
 .member-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
 .member-name { font-family: var(--apidocs-font-mono); font-size: var(--apidocs-size-lg); font-weight: 700; overflow-wrap: anywhere; }
 .member-name .anchor { color: var(--apidocs-fg); }
 .member-badges { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
 .source-link { font-size: var(--apidocs-size-sm); color: var(--apidocs-faint); }
-.member .prose { margin-top: 2px; }
+.member .prose { margin-block-start: 2px; }
 
-.facts { margin: 14px 0 0; }
-.facts-title, .see .facts-title { font-family: var(--apidocs-font-sans); font-size: var(--apidocs-size-sm); font-weight: 650; color: var(--apidocs-muted); margin: 0 0 2px; }
+.facts { margin-block: 14px 0; margin-inline: 0; }
+.facts-title, .see .facts-title { font-family: var(--apidocs-font-sans); font-size: var(--apidocs-size-sm); font-weight: 650; color: var(--apidocs-muted); margin-block: 0 2px; margin-inline: 0; }
 .facts-list { margin: 0; }
 .fact {
   display: grid; grid-template-columns: minmax(9rem, 18rem) minmax(0, 1fr); gap: 2px 20px;
-  padding: 6px 0; border-top: 1px solid var(--apidocs-rule);
+  padding-block: 6px; padding-inline: 0; border-block-start: 1px solid var(--apidocs-rule);
   font-size: var(--apidocs-size-md);
 }
-.fact:first-child { border-top: 0; }
+.fact:first-child { border-block-start: 0; }
 .fact dt { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; min-width: 0; }
 .fact dd { margin: 0; min-width: 0; }
-.fact dd p { margin: 0 0 0.4em; }
+.fact dd p { margin-block: 0 0.4em; margin-inline: 0; }
 .fact-name { background: none !important; padding: 0 !important; font-weight: 700; }
 .fact-type { background: none !important; padding: 0 !important; color: var(--apidocs-muted); font-size: var(--apidocs-size-sm); }
 .fact:target { background: var(--apidocs-accent-soft); }
-.see { margin-top: 14px; }
-.see-list { margin: 0; padding-left: 1.2em; }
+.see { margin-block-start: 14px; }
+.see-list { margin: 0; padding-inline-start: 1.2em; }
 
-.inherited-list { margin: 2px 0 0; line-height: 1.9; font-size: var(--apidocs-size-sm); }
+.inherited-list { margin-block: 2px 0; margin-inline: 0; line-height: 1.9; font-size: var(--apidocs-size-sm); }
 .member-head:target .member-name .anchor { color: var(--apidocs-accent); }
-.member-head { scroll-margin-top: calc(var(--apidocs-topbar) + 56px); }
+.member-head { scroll-margin-block-start: calc(var(--apidocs-topbar) + 56px); }
 
 /* ---- Small screens ---- */
 
@@ -860,37 +917,41 @@ td .badge { margin-right: 6px; }
   .toc, .toc-spacer { display: none; }
 }
 @media (max-width: 860px) {
-  html { font-size: 15px; }
   .layout { grid-template-columns: minmax(0, 1fr); }
   /* The drawer fills the space under the bar and scrolls. Stretch, not the wide layout's start: an absolutely
      positioned box aligned to the start takes its content's height and, taller than the screen, is moved up behind
      the bar, where it cannot scroll. */
   .sidebar {
-    display: none; position: fixed; z-index: 9; inset: var(--apidocs-topbar) 0 0 0; height: auto; align-self: stretch;
-    background: var(--apidocs-bg); border-right: 0; padding: 14px 12px 40px;
+    display: none; position: fixed; z-index: 9; inset-block: var(--apidocs-topbar) 0; inset-inline: 0; height: auto; align-self: stretch;
+    background: var(--apidocs-bg); border-inline-end: 0;
+    /* good-css exception (fluid-clamp): a layout, not a size step: the drawer's own padding, over the page. */
+    padding-block: 14px 40px; padding-inline: 12px;
   }
   body:has(.nav-toggle:checked) .layout .sidebar { display: block; }
-  .content { padding: 18px 16px 72px; }
-  .topbar { padding: 0 12px; gap: 10px; }
   .module-version { display: none; }
   /* The drawer lists the sites, so the switcher shows its row when it fits and leaves the bar when it does not. Once
      it has left (or where there is none), the search field may narrow further, to 5rem. The tools' floor is then the
      search field's narrowest, the theme switch and the gaps, not the switcher's labels. */
-  .topbar-tools { gap: 10px; min-width: calc(5rem + 52px); }
-  .suites { min-width: 0; margin-left: 0; overflow: clip; }
+  .topbar-tools { min-width: calc(5rem + 32px + 2 * var(--apidocs-tools-gap)); }
+  /* good-css exception (fluid-clamp): a layout, not a size step: the switcher sits beside the search field here. */
+  .suites { min-width: 0; margin-inline-start: 0; overflow: clip; }
   .suite-menu, .suites-floor { display: none; }
   .topbar-tools:not(:has(> .suites:not([data-fit="none"]))) .search { min-width: 5rem; }
   .search-key { display: none; }
-  .search input { padding-right: 10px; }
-  .nav-suites { display: block; margin-bottom: 14px; }
-  .nav-suites + .nav-filter { margin-top: 0; }
-  .page-head h1 { font-size: var(--apidocs-size-2xl); }
-  .sig-large pre { font-size: var(--apidocs-size-sm); padding: 14px 16px; }
+  /* good-css exception (fluid-clamp): a layout, not a size step: no keyboard hint to leave room for. */
+  .search input { padding-inline-end: 10px; }
+  /* good-css exception (fluid-clamp): a layout, not a size step: the sites are the drawer's first block. */
+  .nav-suites { display: block; margin-block-end: 14px; }
+  /* good-css exception (fluid-clamp): see above. */
+  .nav-suites + .nav-filter { margin-block-start: 0; }
+  /* good-css exception (fluid-clamp): a layout, not a size step: one column, so no gap between name and text. */
   .lineage > div, .fact { grid-template-columns: minmax(0, 1fr); gap: 0; }
   table.summary th[scope="row"] { width: auto; }
   table.summary, table.summary tbody, table.summary tr, table.summary th, table.summary td { display: block; }
   table.summary thead { display: none; }
-  table.summary tr { padding: 8px 0; border-bottom: 1px solid var(--apidocs-rule); }
+  /* good-css exception (fluid-clamp): a layout, not a size step: the summary table's rows become blocks. */
+  table.summary tr { padding-block: 8px; padding-inline: 0; border-block-end: 1px solid var(--apidocs-rule); }
+  /* good-css exception (fluid-clamp): see above. */
   table.summary th, table.summary td { border: 0; padding: 0; }
 }
 
@@ -901,7 +962,7 @@ td .badge { margin-right: 6px; }
   .layout { display: block; }
   .content { padding: 0; }
   .content > * { max-width: none; }
-  .sig pre, .code-block pre { white-space: pre-wrap; border: 1px solid #ccc; }
+  .sig pre, .code-block pre { white-space: pre-wrap; border: 1px solid oklch(84.522% 0 none); }
   .member::details-content { content-visibility: visible; display: block; }
   .members-toggle, .member-chevron { display: none; }
   .member { break-inside: avoid-page; }
@@ -912,17 +973,21 @@ td .badge { margin-right: 6px; }
    arrives finishes it and lets it fade. The content cross-fades and rises a few pixels; the top bar and the
    navigator do not move. Only transform and opacity animate, so nothing is laid out again. */
 .loadbar {
-  position: fixed; inset: 0 0 auto 0; height: 2px; z-index: 30; pointer-events: none;
+  position: fixed; inset-block: 0 auto; inset-inline: 0; height: 2px; z-index: 30; pointer-events: none;
   transform: translateX(-101%); opacity: 0;
   background: linear-gradient(90deg, transparent 0%, var(--apidocs-loadbar-tail, var(--apidocs-accent)) 55%, var(--apidocs-loadbar-head, var(--apidocs-accent)) 100%);
 }
 .loadbar::after {
-  content: ""; position: absolute; right: 0; top: -2px; width: 96px; height: 6px; border-radius: 3px;
+  content: ""; position: absolute; inset-inline-end: 0; inset-block-start: -2px; width: 96px; height: 6px; border-radius: 3px;
   background: linear-gradient(90deg, transparent, var(--apidocs-loadbar-head, var(--apidocs-accent)));
   filter: blur(3px); opacity: 0.9;
 }
 @media (prefers-reduced-motion: no-preference) {
+  /* good-css exception (motion-properties): the load bar shows progress, not a change of state. It eases out over 6s
+     so a slow page still shows movement, and the arriving page finishes it in 420ms: both longer than a 300ms UI
+     transition on purpose. */
   html[data-leaving] .loadbar { opacity: 1; animation: apidocs-leave 6s cubic-bezier(0.08, 0.82, 0.17, 1) forwards; }
+  /* good-css exception (motion-properties): see above. */
   html[data-arriving] .loadbar { animation: apidocs-arrive 420ms ease-out both; }
 }
 @keyframes apidocs-leave { from { transform: translateX(-101%); } to { transform: translateX(-12%); } }
@@ -932,7 +997,8 @@ td .badge { margin-right: 6px; }
   100% { transform: translateX(0); opacity: 0; }
 }
 
-@view-transition { navigation: auto; }
+/* Cross-document transitions only where motion is welcome; with reduced motion a page simply loads. */
+@media (prefers-reduced-motion: no-preference) { @view-transition { navigation: auto; } }
 .topbar { view-transition-name: apidocs-topbar; }
 .sidebar { view-transition-name: apidocs-sidebar; }
 .content { view-transition-name: apidocs-content; }
@@ -941,8 +1007,10 @@ td .badge { margin-right: 6px; }
 ::view-transition-old(root), ::view-transition-new(root) { animation-duration: 120ms; }
 ::view-transition-old(apidocs-topbar), ::view-transition-old(apidocs-sidebar), ::view-transition-old(apidocs-loadbar) { display: none; }
 ::view-transition-new(apidocs-topbar), ::view-transition-new(apidocs-sidebar), ::view-transition-new(apidocs-loadbar) { animation: none; }
-::view-transition-old(apidocs-content) { animation: apidocs-out 90ms ease-out both; }
-::view-transition-new(apidocs-content) { animation: apidocs-in 180ms 40ms ease-out both; }
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-old(apidocs-content) { animation: apidocs-out 90ms ease-out both; }
+  ::view-transition-new(apidocs-content) { animation: apidocs-in 180ms 40ms ease-out both; }
+}
 @keyframes apidocs-out { to { opacity: 0; } }
 @keyframes apidocs-in { from { opacity: 0; transform: translateY(6px); } }
 

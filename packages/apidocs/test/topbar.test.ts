@@ -165,6 +165,27 @@ describe("the top bar never wraps, overflows or is cut off", () => {
   }
 });
 
+describe("right to left", () => {
+  test("a page laid out with dir=rtl mirrors: navigator on the right, rail on the left, bar intact", async () => {
+    const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+    await page.goto(urlOf(variants.find(v => v.name === "static-s3")!));
+    await page.evaluate(() => document.documentElement.setAttribute("dir", "rtl"));
+    await page.evaluate(() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))));
+    const box = (selector: string) => page.locator(selector).first().evaluate(e => { const r = e.getBoundingClientRect(); return { left: r.left, right: r.right }; });
+    const [nav, content, toc] = [await box(".sidebar"), await box(".content"), await box(".toc")];
+    expect(nav.left).toBeGreaterThan(content.left);
+    expect(toc.right).toBeLessThanOrEqual(content.left + 1);
+    // The brand starts the bar on the right; the theme switch ends it on the left.
+    expect((await box(".brand")).left).toBeGreaterThan((await box(".theme-switch")).left);
+    // Text starts at the right edge of its box: a navigator row's label, a member row's signature.
+    const row = await page.locator(".sidebar .nav-row").first().evaluate(e => getComputedStyle(e).direction);
+    expect(row).toBe("rtl");
+    expect(await topBarProblems(page)).toEqual([]);
+    await page.screenshot({ path: join(dir, "rtl.png") });
+    await page.close();
+  });
+});
+
 describe("the suite switcher", () => {
   const five = () => variants.find(v => v.name === "static-s5")!;
 

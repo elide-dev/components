@@ -117,3 +117,19 @@ everything pressable (approximated: every `:hover` selector has a matching `:act
 `prefers-reduced-motion: no-preference`, named transition properties without `all` or `ease-in` and at most 300 ms,
 `overflow: clip` over `hidden`, and the declarations the skill leaves out on purpose. The 47 entries need judgment
 about where they apply, so each gets a `review` row in the report with what the stylesheet shows; a person settles it.
+
+A declaration may be a noted exception to one rule: a `/* good-css exception (rule-id): reason */` comment before it
+in its rule, or before its rule, takes it out of that rule's count, and the report lists it. Each one is a choice
+the pages need, kept on purpose:
+
+| Rule | Where | Why |
+| --- | --- | --- |
+| `motion-properties` | the load bar's two animations | It shows progress, not a change of state: a 6s ease-out so a slow page still shows movement, and 420ms for the arriving page to finish it. Both stay inside `prefers-reduced-motion: no-preference`. |
+| `overflow-clip` | `.product`, `.suite-label`, `.result-context`, `.nav-label`, `.toc a` | `overflow: hidden` so `text-overflow: ellipsis` shows in every target browser (Safari before 16 has no `clip`). |
+| `overflow-clip` | `.member-brief` | WebKit clamps lines with `-webkit-line-clamp` only under `overflow: hidden`. |
+| `fluid-clamp` | where the navigator becomes a drawer (860px): the drawer's padding, the switcher's margin, the search field without its key hint, the drawer's sites block, one-column facts, the summary table as blocks; and the content's padding when the navigator is hidden | Layout changes, not a size stepped at a breakpoint: each value belongs to a different arrangement of the page. |
+| `fluid-clamp` | the Elide preset's title and declaration-specimen sizes | The preset sets its type in exact pixels so JetBrains Mono's characters are a whole number of pixels wide: 30px and 15px, 25px and 13.3333px where the navigator is a drawer. A fluid size between them would put the characters off the pixel grid. It is written as a token switch in the preset's CSS. |
+
+Fluid sizes are custom properties at the top of `apidocs.css` (`--apidocs-gutter`, `--apidocs-content-top`, and so
+on): the narrow value at 480px wide and below, the wide one from 1000px, a straight line between. They cover spacing,
+and the title and specimen sizes of the neutral (fallback) type scale; the scale tokens themselves stay exact.

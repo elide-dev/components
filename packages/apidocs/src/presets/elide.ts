@@ -3,9 +3,21 @@
  * and @elide/brand artwork. Branding lives here and in theme files only; the
  * components never name Elide.
  */
-import { code, neutral, purple, status, syntax, syntaxLight } from "@elide/tokens";
+import { code as codeHex, neutral as neutralHex, purple as purpleHex, status as statusHex, syntax as syntaxHex, syntaxLight as syntaxLightHex } from "@elide/tokens";
+import { oklch } from "../color";
 import type { Theme } from "../theme";
 import { logoDark, logoLight, mark } from "./elide-artwork";
+
+// @elide/tokens has its colors as hex; the pages write them as oklch(), converted exactly (src/color.ts), so each
+// is the same 8-bit color.
+const inOklch = <T extends Record<string | number, string>>(scale: T): { [K in keyof T]: string } =>
+  Object.fromEntries(Object.entries(scale).map(([k, v]) => [k, oklch(v)])) as { [K in keyof T]: string };
+const neutral = inOklch(neutralHex);
+const purple = inOklch(purpleHex);
+const status = inOklch(statusHex);
+const syntax = inOklch(syntaxHex);
+const syntaxLight = inOklch(syntaxLightHex);
+const code = inOklch(codeHex);
 
 const LATIN = "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD";
 
@@ -27,7 +39,12 @@ export const elide: Theme = {
   ],
   // A local monospace font scaled to JetBrains Mono's width, for the moment before the web font is ready, so
   // text takes the same space either way.
-  css: '@font-face{font-family:"Apidocs Mono Fallback";src:local("Consolas");size-adjust:109.1%}',
+  // The title and the declaration specimen keep exact sizes, set in JetBrains Mono: 30px and 15px, 25px and 13.3333px
+  // where the navigator is a drawer. A fluid size between them would put the characters off the pixel grid.
+  css:
+    '@font-face{font-family:"Apidocs Mono Fallback";src:local("Consolas");size-adjust:109.1%}\n' +
+    "/* good-css exception (fluid-clamp): exact type sizes for JetBrains Mono, stepped where the navigator becomes a drawer. */\n" +
+    "@media (max-width:860px){:root:root{--apidocs-size-title:25px;--apidocs-size-specimen:13.3333px}}",
   tokens: {
     light: {
       "font-mono": MONO,
@@ -40,10 +57,12 @@ export const elide: Theme = {
       "size-xl": "20px",
       "size-2xl": "25px",
       "size-3xl": "30px",
+      "size-title": "30px",
+      "size-specimen": "15px",
       // Code inside 15px prose: 13.3333px, the same 8px grid as code blocks.
       "code-scale": "0.8889em",
       bg: neutral[50],
-      surface: "#ffffff",
+      surface: oklch("#ffffff"),
       subtle: neutral[100],
       fg: neutral[950],
       muted: neutral[600],
