@@ -69,6 +69,23 @@ const rect: Type = type({
   doc: doc("An axis-aligned rectangle."), since: "1.0",
 }, "kotlin");
 
+// An exception: its ancestors are Kotlin's, by Dokka DRI (kotlin/Exception, kotlin/Throwable), so the navigator and
+// the package list group it under Exceptions with the exception glyph.
+const parseError: Type = type({
+  id: dri(K, "ShapeParseException"), name: "ShapeParseException", kind: "class", modifiers: ["public"],
+  signature: tk(kw("class"), " ", nm("ShapeParseException"), "(", prm("message"), ": ", STRING, ") : ", std("Exception"), "(", prm("message"), ")"),
+  superclass: [std("Exception")],
+  ancestors: [
+    { id: dri("kotlin", "Exception"), url: "https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-exception/" },
+    { id: dri("kotlin", "Throwable"), url: "https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-throwable/" },
+    { id: dri("kotlin", "Any"), url: "https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-any/" },
+  ],
+  members: [
+    f(`${K}/ShapeParseException`, { name: "ShapeParseException", kind: "constructor", params: [{ name: "message", type: [STRING], doc: "what could not be read" }], doc: "Creates the exception with its message." }),
+  ],
+  doc: doc("Thrown when text does not describe a shape."), since: "2.1",
+}, "kotlin");
+
 const meters: Type = type({
   id: dri(K, "Meters"), name: "Meters", kind: "class", modifiers: ["public", "value"],
   annotations: [[an("@JvmInline", dri("kotlin.jvm", "JvmInline"), "https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.jvm/-jvm-inline/")]],
@@ -254,7 +271,7 @@ const packages: Package[] = [
   {
     id: K, name: K, since: "1.0",
     doc: doc({ body: [P("Shapes and measurements in Kotlin."), UL("Shapes: [[org.example.kgeo/Shape///PointingToDeclaration/|Shape]] and its subclasses.", "Extensions on shapes, such as `scaled`; see [[guide:concepts#extensions|Extensions]]."), P("The [[guide:concepts|Concepts]] guide explains how these fit together.")] }),
-    types: [circle, companion, geometry, lengthUnit, meters, metric, point, rect, shape],
+    types: [circle, companion, geometry, lengthUnit, meters, metric, point, rect, shape, parseError],
     typeAliases: [
       { id: `${K}/ShapeList///PointingToDeclaration/`, name: "ShapeList", signature: tk(kw("typealias"), " ", nm("ShapeList"), " = ", list(t("Shape"))), target: list(t("Shape")), doc: doc("A list of shapes."), since: "1.0" },
       { id: `${K}/Transform///PointingToDeclaration/`, name: "Transform", typeParams: [{ name: "T", doc: blocks("the value type") }], signature: tk(kw("typealias"), " ", nm("Transform"), "<", tp("T"), "> = (", tp("T"), ") -> ", tp("T")), target: tk("(", tp("T"), ") -> ", tp("T")), doc: doc("A function from a value to a value of the same type."), since: "1.1" },

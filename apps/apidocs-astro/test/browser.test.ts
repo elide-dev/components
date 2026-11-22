@@ -477,7 +477,7 @@ describe("reduced motion", () => {
 
 describe("accessibility", () => {
   for (const colorScheme of ["light", "dark"] as const) {
-    for (const path of [TYPE, "/java/2.0/guides/concepts", "/java/2.0/index-all", "/java/main/com/example/geo/", "/guides/", "/java/2.0/nope"]) {
+    for (const path of [TYPE, "/java/2.0/guides/concepts", "/java/2.0/index-all", "/java/main/com/example/geo/", "/guides/", "/kotlin/org/example/kgeo/ShapeParseException", "/java/2.0/nope"]) {
       test(`${path} in ${colorScheme} has no axe violations`, async () => {
         const { page } = await open(path, { colorScheme });
         await page.waitForLoadState("networkidle");

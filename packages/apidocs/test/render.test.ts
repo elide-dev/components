@@ -12,7 +12,7 @@ import { render } from "../src/render";
 import { sanitize } from "../src/sanitize";
 import { layoutSignature } from "../src/signature";
 import { navIndexes, sharedPrefix, suites } from "../src/components/chrome";
-import { buildSite } from "../src/site";
+import { buildSite, isThrowable } from "../src/site";
 import { checkSite } from "./check";
 import { validate } from "./validate";
 
@@ -161,6 +161,27 @@ describe("agent readiness", () => {
     const full = elide["llms-full.txt"] as string;
     expect(full).not.toMatch(/^(title|kind|canonical): "/m);
     expect(full).toContain("<!-- com/example/geo/Shapes.md -->\n# ");
+  });
+});
+
+describe("exceptions", () => {
+  const type = (id: string, ancestors: string[]) => ({ id, name: id, kind: "class", signature: [], language: "java", ancestors: ancestors.map(a => ({ id: a })) }) as unknown as import("../src/model").Type;
+  test("a Java exception: java.lang.Throwable among its ancestors", () => {
+    expect(isThrowable(type("com.example.Oops", ["java.lang.RuntimeException", "java.lang.Exception", "java.lang.Throwable", "java.lang.Object"]))).toBe(true);
+    expect(isThrowable(type("java.lang.Throwable", ["java.lang.Object"]))).toBe(true);
+  });
+  test("a Kotlin exception: kotlin.Throwable, or the Java class, as Dokka DRIs", () => {
+    expect(isThrowable(type("org.example/Oops///PointingToDeclaration/", ["kotlin/Exception///PointingToDeclaration/", "kotlin/Throwable///PointingToDeclaration/", "kotlin/Any///PointingToDeclaration/"]))).toBe(true);
+    expect(isThrowable(type("org.example/Oops///PointingToDeclaration/", ["java.lang/IllegalStateException///PointingToDeclaration/", "java.lang/Throwable///PointingToDeclaration/"]))).toBe(true);
+  });
+  test("a class that merely has Throwable in its name is not one", () => {
+    expect(isThrowable(type("com.example.ThrowableFactory", ["java.lang.Object"]))).toBe(false);
+    expect(isThrowable(type("org.example/Wrapper///PointingToDeclaration/", ["org.example/ThrowableHolder///PointingToDeclaration/", "my.Throwable", "kotlin/Any///PointingToDeclaration/"]))).toBe(false);
+  });
+  test("the Kotlin sample's exception gets the exception glyph and group", () => {
+    const html = render(samples.kotlin)["org/example/kgeo/ShapeParseException.html"] as string;
+    expect(html).toContain('data-tone="exception"');
+    expect(render(samples.kotlin)["org/example/kgeo/index.md"]).toContain("## Exceptions");
   });
 });
 

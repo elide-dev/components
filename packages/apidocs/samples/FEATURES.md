@@ -16,7 +16,7 @@ doclet's flavor. `kotlin` is `samples/kotlin.ts`, the Dokka plugin's flavor. `re
 | Record with documented components (`#param-radius`) | java | `com/example/geo/Circle.html` |
 | Enum with a deprecated constant | java, kotlin | `com/example/geo/Units.html`, `org/example/kgeo/LengthUnit.html` |
 | Annotation interface with element defaults | java, kotlin | `com/example/geo/Measured.html`, `org/example/kgeo/experimental/ExperimentalGeometry.html` |
-| Exception (grouped under Exceptions) | java | `com/example/geo/GeometryException.html` |
+| Exception (grouped under Exceptions, with the exception glyph): `java.lang.Throwable`, and Kotlin's `kotlin/Throwable` DRI | java, kotlin | `com/example/geo/GeometryException.html`, `org/example/kgeo/ShapeParseException.html` |
 | Nested types, two levels deep, in breadcrumbs and navigation | java | `com/example/geo/Shapes.Builder.Option.html` |
 | Generics with bounds and wildcards | java | `com/example/geo/Shapes.html#largest(java.util.Collection)` |
 | Constructors | java, kotlin | `com/example/geo/Circle.html`, `org/example/kgeo/Point.html` |

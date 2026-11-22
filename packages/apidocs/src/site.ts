@@ -294,9 +294,15 @@ export function refLabel(site: Site, ref: Ref): string {
   return tail.slice(tail.lastIndexOf(".", tail.indexOf("(") < 0 ? tail.length : tail.indexOf("(")) + 1).replace(/\$/g, ".");
 }
 
-/** Whether a type is an exception: its superclass chain reaches java.lang.Throwable. */
+/**
+ * The ids Throwable has in the models: the doclet's binary name, and the Dokka DRIs of Kotlin's Throwable and of the
+ * Java class as a Kotlin model reaches it.
+ */
+const THROWABLE = new Set(["java.lang.Throwable", "kotlin/Throwable///PointingToDeclaration/", "java.lang/Throwable///PointingToDeclaration/"]);
+
+/** Whether a type is an exception: its superclass chain reaches Throwable, by id (a name that merely contains "Throwable" does not count). */
 export function isThrowable(type: Type): boolean {
-  return (type.ancestors ?? []).some(a => a.id === "java.lang.Throwable") || type.id === "java.lang.Throwable";
+  return THROWABLE.has(type.id) || (type.ancestors ?? []).some(a => THROWABLE.has(a.id));
 }
 
 /** Tokens as plain text. */
