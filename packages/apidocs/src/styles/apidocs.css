@@ -995,6 +995,9 @@ html[data-js] .fold:not([data-open]):not([data-short]) > .fold-body {
   /* good-css exception (fluid-clamp): a layout, not a size step: breadcrumbs keep only the page's parent. */
   .crumbs li:not(:nth-last-child(-n+2)) { display: none; }
   .product { display: none; }
+  /* good-css exception (fluid-clamp): a layout, not a size step: with the name gone, the brand is its logo, which
+     never shrinks under what follows it in the bar. */
+  .brand { flex: none; }
   /* The drawer lists the sites, so the switcher shows its row when it fits and leaves the bar when it does not. Once
      it has left (or where there is none), the search field may narrow further, to 5rem. The tools' floor is then the
      search field's narrowest, the theme switch and the gaps, not the switcher's labels. */

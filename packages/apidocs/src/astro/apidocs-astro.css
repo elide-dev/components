@@ -58,3 +58,9 @@ details.version-menu > .version-current:active, .version-list a:active { backgro
 .version-notice > span { min-inline-size: 0; overflow: hidden; text-overflow: ellipsis; }
 .version-notice .version { color: var(--apidocs-fg); }
 .version-notice a .version { color: inherit; }
+
+/* The narrowest phones (under 360px): the bar keeps the navigator button, the brand, search and the theme switch,
+   and the version menu gives way; the version is in every page's URL and in the version page the brand leads to. */
+@media (max-width: 360px) {
+  .topbar .version-menu { display: none; }
+}
