@@ -366,11 +366,16 @@ describe("parts", () => {
       { kind: "punct", text: "(" }, { kind: "type", text: "Map" }, { kind: "punct", text: "<" }, { kind: "type", text: "String" },
       { kind: "punct", text: ", " }, { kind: "type", text: "Object" }, { kind: "punct", text: "> " }, { kind: "param", text: "aVeryLongParameterName" },
       { kind: "punct", text: ", " }, { kind: "keyword", text: "int" }, { kind: "punct", text: " " }, { kind: "param", text: "anotherQuiteLongParameterName" },
+      { kind: "punct", text: ", " }, { kind: "keyword", text: "boolean" }, { kind: "punct", text: " " }, { kind: "param", text: "aThirdOne" },
       { kind: "punct", text: ")" },
     ];
     expect(layoutSignature(tokens).map(t => t.text).join("")).toBe(
-      "public transform(\n    Map<String, Object> aVeryLongParameterName,\n    int anotherQuiteLongParameterName\n)");
+      "public transform(\n    Map<String, Object> aVeryLongParameterName,\n    int anotherQuiteLongParameterName,\n    boolean aThirdOne\n)");
     expect(layoutSignature(tokens.slice(0, 4))).toEqual(tokens.slice(0, 4));
+    // 81 to 100 columns is a line the source formatter would keep: it stays one line here too.
+    const oneLine = [...tokens.slice(0, 15), { kind: "punct" as const, text: ")" }];
+    expect(oneLine.reduce((n, t) => n + t.text.length, 0)).toBe(95);
+    expect(layoutSignature(oneLine)).toEqual(oneLine);
   });
   test("ranks search results", () => {
     const entries: [string, string, string, string, string][] = [

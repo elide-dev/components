@@ -3,10 +3,17 @@
  * longer one puts each parameter on its own indented line, and a long type
  * declaration starts its extends, implements and permits clauses on new lines,
  * so signatures read the same way on every page.
+ *
+ * A signature the source formatter laid out arrives with its line breaks and is
+ * shown as it came. The formatters the JVM tools run (google-java-format, ktfmt)
+ * stop at 100 columns and leave a shorter signature on one line, so this uses
+ * the same width: a one-line signature of 81 to 100 columns is one the formatter
+ * chose to keep, and is not broken again here. The signature box sizes its text
+ * so 100 columns fit (apidocs.css, "the declaration specimen").
  */
 import type { Token } from "./model";
 
-export const WIDTH = 80;
+export const WIDTH = 100;
 const INDENT = "    ";
 
 export function layoutSignature(tokens: Token[]): Token[] {

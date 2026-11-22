@@ -589,16 +589,19 @@ html[data-js] .nav-branch[data-folded]:not([data-filter-open]) > .nav-children {
 .kind-word { font-weight: 600; color: var(--apidocs-fg); }
 .lede { font-size: var(--apidocs-size-lg); color: var(--apidocs-muted); }
 
-.sig { position: relative; }
+.sig { position: relative; container-type: inline-size; }
+/* A signature holds up to 100 columns (WIDTH in signature.ts). Its text is as large as the theme says, and smaller
+   when the box is too narrow for 100 columns of a monospace font (0.6em per column), down to 11px; below that the
+   box scrolls sideways. */
 .sig pre {
   margin-block: 12px; margin-inline: 0; padding-block: 10px; padding-inline: 14px;
   background: var(--apidocs-code-bg); color: var(--apidocs-code-fg);
   border-radius: var(--apidocs-radius);
-  overflow-x: auto; font-size: var(--apidocs-size-sm); line-height: 1.5;
+  overflow-x: auto; font-size: clamp(11px, (100cqi - 28px) / 60.6, var(--apidocs-size-sm)); line-height: 1.5;
 }
 .sig-large pre {
   margin-block: 18px 20px; margin-inline: 0; padding-block: var(--apidocs-specimen-pad-block); padding-inline: var(--apidocs-specimen-pad-inline);
-  font-size: var(--apidocs-size-specimen); line-height: 1.6;
+  font-size: clamp(11px, (100cqi - 2 * var(--apidocs-specimen-pad-inline)) / 60.6, var(--apidocs-size-specimen)); line-height: 1.6;
   border: 1px solid var(--apidocs-rule);
   border-radius: calc(var(--apidocs-radius) + 4px);
 }
