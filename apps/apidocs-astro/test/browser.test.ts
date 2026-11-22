@@ -244,12 +244,35 @@ describe("behaviors across navigations", () => {
         await afterLoad(page, () => page.evaluate(href => (document.querySelector(`a[href="${href}"]`) as HTMLAnchorElement).click(), i % 2 ? TYPE : OTHER));
       }
     };
+    // Which elements the page holds, live and detached (kept alive by something), to read a growth from.
+    const census = async () => {
+      const { result } = await cdp.send("Runtime.evaluate", { expression: "Element.prototype", objectGroup: "census" });
+      const { objects } = await cdp.send("Runtime.queryObjects", { prototypeObjectId: result.objectId!, objectGroup: "census" });
+      const detached = await cdp.send("Runtime.callFunctionOn", {
+        objectId: objects.objectId!,
+        functionDeclaration: `function () {
+          const tally = {};
+          for (const el of this) try { if (!el.isConnected) { const k = el.tagName + (typeof el.className === "string" && el.className ? "." + el.className.split(" ")[0] : ""); tally[k] = (tally[k] || 0) + 1; } } catch {}
+          return JSON.stringify(Object.entries(tally).sort((a, b) => b[1] - a[1]).slice(0, 12));
+        }`,
+        returnByValue: true,
+      });
+      await cdp.send("Runtime.releaseObjectGroup", { objectGroup: "census" });
+      const live = await page.evaluate(() => ({
+        elements: document.querySelectorAll("*").length,
+        containers: Array.from(document.body.children).map(c => `${c.tagName.toLowerCase()}.${(c as HTMLElement).className}:${c.querySelectorAll("*").length}`).join(" "),
+        head: Array.from(document.head.children).map(c => c.tagName.toLowerCase()).join(","),
+      }));
+      return { ...live, detached: detached.result.value ?? detached.exceptionDetails?.text };
+    };
     await loop(4);
     await page.waitForTimeout(300);
     const before = await measure();
+    console.log("  census before:", JSON.stringify(await census()));
     await loop(20);
     await page.waitForTimeout(300);
     const after = await measure();
+    console.log("  census after:", JSON.stringify(await census()));
     console.log("  listeners and nodes, after 4 and after 24 navigations:", before, after);
     expect(after.listeners).toBeLessThanOrEqual(before.listeners);
     expect(after.nodes).toBeLessThanOrEqual(before.nodes * 1.02);
