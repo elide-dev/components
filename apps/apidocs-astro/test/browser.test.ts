@@ -269,7 +269,12 @@ describe("behaviors across navigations", () => {
     await page.waitForTimeout(300);
     const before = await measure();
     console.log("  census before:", JSON.stringify(await census()));
-    await loop(20);
+    for (let cycle = 1; cycle <= 4; cycle++) {
+      await loop(4);
+      await page.waitForTimeout(300);
+      console.log(`  series after ${4 + cycle * 4}:`, JSON.stringify(await measure()), JSON.stringify(await census()).replace(/"head":"[^"]*",/, ""));
+    }
+    await loop(4);
     await page.waitForTimeout(300);
     const after = await measure();
     console.log("  census after:", JSON.stringify(await census()));
