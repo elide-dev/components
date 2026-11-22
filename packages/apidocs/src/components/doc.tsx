@@ -32,11 +32,37 @@ function InlineNode({ node }: { node: Inline }): JSX.Element {
       return <img src={src} alt={node.alt} title={node.title} width={node.width} height={node.height} loading="lazy" decoding="async" />;
     }
     case "link": {
-      const label = node.code ? <code><Inlines nodes={node.children} /></code> : <Inlines nodes={node.children} />;
+      const short = node.target ? shortLabel(node.children, node.target.id) : undefined;
+      const text = short ? [{ kind: "text" as const, text: short }] : node.children;
+      const label = node.code ? <code><Inlines nodes={text} /></code> : <Inlines nodes={text} />;
       const href = node.target ? resolveRef(ctx.site, ctx.page, ".html", node.target) : safeUrl(node.url);
-      return href ? <a href={href}>{label}</a> : label;
+      const title = short ? linkText(node.children) : undefined;
+      return href ? <a href={href} title={title}>{label}</a> : label;
     }
   }
+}
+
+function linkText(nodes: Inline[] | undefined): string {
+  return (nodes ?? []).map(n => (n.kind === "text" || n.kind === "code" ? n.text : "")).join("");
+}
+
+/**
+ * The short form of a link whose text is its target's qualified name, as a Javadoc `{@link com.example.Frontend}`
+ * gives when a file cannot import the type: "Frontend", or "Frontend.compile(Request)" for a member, with the
+ * parameter types' packages dropped too. Text a writer chose (a label, a simple name) is kept: undefined then.
+ */
+export function shortLabel(children: Inline[] | undefined, targetId: string): string | undefined {
+  const text = linkText(children).trim();
+  if (!text || /\s/.test(text.replace(/,\s/g, ","))) return undefined;
+  const head = text.split("(")[0]!;
+  // Only text that names the target itself: its id, with a member's "#" and a nested type's "$" written as dots.
+  if (!head.includes(".") || head !== targetId.split("(")[0]!.replace(/[#$]/g, ".")) return undefined;
+  const parts = head.split(".");
+  // The package is the run of lowercase segments before the first capitalized one.
+  const first = parts.findIndex(part => /^[A-Z]/.test(part));
+  if (first <= 0) return undefined;
+  const params = text.includes("(") ? text.slice(text.indexOf("(")).replace(/[a-z][\w]*\.(?=[\w.]*[A-Z])/g, "") : "";
+  return parts.slice(first).join(".") + params;
 }
 
 /** Blocks, with documentation headings shifted below the page's own (offset 1: an h2 in a comment becomes h3). */

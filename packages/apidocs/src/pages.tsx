@@ -89,32 +89,33 @@ export function IndexPage() {
   );
 }
 
-/** The overview's package table and its types by package. */
+/**
+ * The overview's packages, each with its types as declarations: the one place that lists the module's contents.
+ * The package and type index pages still exist at their URLs, but the navigator and the overview no longer send
+ * readers to them.
+ */
 function PackageSections() {
   const { site } = usePage();
   return (
-    <>
-      <section id="packages" class="section">
-        <h2>Packages</h2>
-        <SummaryTable
-          rows={site.packages.map(pkg => ({
-            key: pkg.id,
-            name: <a href={relative(INDEX, packagePage(pkg), ".html")}><code>{pkg.name || "(default package)"}</code></a>,
-            summary: pkg.doc?.summary,
-            deprecated: !!pkg.deprecated,
-          }))}
-        />
-      </section>
-      <section id="all-types" class="section">
-        <h2>All types</h2>
-        {site.packages.filter(pkg => pkg.types?.length).map(pkg => (
-          <div key={pkg.id} class="type-index">
-            <h3><code>{pkg.name || "(default package)"}</code></h3>
-            <TypeTable types={pkg.types ?? []} pkg={pkg} withKind />
-          </div>
-        ))}
-      </section>
-    </>
+    <section id="packages" class="section">
+      <h2>Packages</h2>
+      {site.packages.map(pkg => {
+        const tops = (pkg.types ?? []).filter(t => !t.enclosing);
+        return (
+          <section key={pkg.id} id={pkg.name ? `package-${pkg.name}` : "package-default"} class="package-block">
+            <h3 class="package-name">
+              <a href={relative(INDEX, packagePage(pkg), ".html")}><code>{pkg.name || "(default package)"}</code></a>
+              {pkg.deprecated && <Badge tone="deprecated">deprecated</Badge>}
+              <span class="package-count">{tops.length === 1 ? "1 type" : `${tops.length} types`}</span>
+            </h3>
+            {pkg.doc?.summary?.length ? <p class="package-summary"><Inlines nodes={pkg.doc.summary} /></p> : null}
+            {tops.length > 0 && <DeclList types={tops} pkg={pkg} />}
+          </section>
+        );
+      })}
+      {/* The old "All types" anchor, which links from elsewhere still name, lands on the package list. */}
+      <span id="all-types" />
+    </section>
   );
 }
 
@@ -159,13 +160,13 @@ export function PackagePage({ pkg }: { pkg: Package }) {
         </p>
       </header>
       <DeprecationBanner deprecation={pkg.deprecated} />
-      {pkg.doc?.body && <section id="doc-description" class="prose"><Blocks nodes={pkg.doc.body} offset={0} /></section>}
+      {pkg.doc?.body && <section id="doc-description"><Fold><div class="prose"><Blocks nodes={pkg.doc.body} offset={0} /></div></Fold></section>}
       <Notes notes={pkg.doc?.notes} />
       <SeeAlso doc={pkg.doc} level={2} />
       {groups.map(group => (
         <section key={group.id} id={group.id} class="section">
           <h2>{group.title}</h2>
-          <TypeTable types={group.types} pkg={pkg} />
+          <DeclList types={group.types} pkg={pkg} />
         </section>
       ))}
       {pkg.typeAliases?.length ? (
@@ -248,8 +249,8 @@ export function TypePage({ type }: { type: Type }) {
       <Signature tokens={type.signature} annotations={type.annotations} large />
       <Lineage type={type} />
       <DeprecationBanner deprecation={type.deprecated} />
-      <section id="doc-description" class="prose">
-        {type.doc?.body?.length ? <Blocks nodes={type.doc.body} offset={0} /> : <p class="undocumented">No description.</p>}
+      <section id="doc-description">
+        {type.doc?.body?.length ? <Fold><div class="prose"><Blocks nodes={type.doc.body} offset={0} /></div></Fold> : <p class="undocumented">No description.</p>}
       </section>
       <Notes notes={type.doc?.notes} />
       {type.components?.length ? (
@@ -258,19 +259,24 @@ export function TypePage({ type }: { type: Type }) {
       <TypeParams params={type.typeParams} level={2} />
       <SeeAlso doc={type.doc} level={2} />
 
-      {entry.nested.length > 0 && (
-        <section id="nested-types" class="section">
-          <h2>Nested types</h2>
-          <TypeTable types={entry.nested} pkg={pkg} withKind within={type.name} />
-        </section>
-      )}
-
       {groups.map(group => (
         <section key={group.id} id={group.id} class="section members">
           <MembersHeading title={group.title} count={group.members.length} />
           {group.members.map(member => <MemberDetail key={member.id} member={member} summary={<MemberSummarySignature member={member} />} />)}
         </section>
       ))}
+      {/* Said, not left to an absent heading: a type that only holds nested types must not read as one whose nested
+          types are its members. */}
+      {groups.length === 0 && (
+        <p class="empty" id="no-members">{type.inherited?.length ? `${type.name.split(".").pop()} declares no members of its own.` : `${type.name.split(".").pop()} has no members.`}</p>
+      )}
+
+      {entry.nested.length > 0 && (
+        <section id="nested-types" class="section">
+          <h2>Nested types</h2>
+          <DeclList types={entry.nested} pkg={pkg} within={type.name} />
+        </section>
+      )}
 
       {type.inherited?.length ? (
         <section id="inherited-members" class="section">
@@ -383,62 +389,77 @@ function MemberSummarySignature({ member }: { member: Member }) {
   );
 }
 
-interface Row {
-  key: string;
-  name: preact.ComponentChildren;
-  kind?: string;
-  summary?: import("./model").Inline[];
-  deprecated?: boolean;
+/**
+ * The head of a type's declaration, on one line, as a list row shows it: the modifiers, the kind and the name, with
+ * a record's components and the supertype clauses left for the type's page. Inside its enclosing type's list
+ * (`within`), a nested type's name drops that prefix and begins with the dot: ".Inner".
+ */
+export function declHead(type: Type, within?: string): Token[] {
+  const tokens = compactTokens(type.signature);
+  const out: Token[] = [];
+  for (const token of tokens) {
+    if (token.kind === "keyword" && /^(extends|implements|permits)$/.test(token.text)) break;
+    if (token.kind === "punct" && /^\s*:\s*$/.test(token.text) && out.some(t => t.kind === "name")) break;
+    if (token.kind === "punct" && token.text.includes("(")) {
+      out.push({ kind: "punct", text: `${token.text.slice(0, token.text.indexOf("("))}(…)` });
+      break;
+    }
+    if (token.kind === "name" && within && token.text.startsWith(`${within}.`)) {
+      out.push({ ...token, text: token.text.slice(within.length) });
+      continue;
+    }
+    out.push(token);
+  }
+  while (out.length && out[out.length - 1]!.kind === "punct" && !out[out.length - 1]!.text.trim()) out.pop();
+  return out;
 }
 
-function SummaryTable({ rows, withKind }: { rows: Row[]; withKind?: boolean }) {
-  return (
-    <div class="table-scroll">
-      <table class="summary">
-        <thead>
-          <tr>
-            <th scope="col">Name</th>
-            {withKind && <th scope="col">Kind</th>}
-            <th scope="col">Description</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map(row => (
-            <tr key={row.key} class={row.deprecated ? "is-deprecated" : undefined}>
-              <th scope="row">{row.name}</th>
-              {withKind && <td class="kind-cell">{row.kind}</td>}
-              <td>
-                {row.deprecated && <Badge tone="deprecated">deprecated</Badge>}
-                {row.summary?.length ? <Inlines nodes={row.summary} /> : <span class="undocumented">No description.</span>}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
+/** Plain text of tokens, for a title. */
+function tokensText(tokens: Token[]): string {
+  return tokens.map(t => t.text).join("");
 }
 
-/** `within` is the enclosing type's name on a nested-types table: rows drop that prefix. */
-function TypeTable({ types, pkg, withKind, within }: { types: Type[]; pkg: Package; withKind?: boolean; within?: string }) {
+/**
+ * Types as declaration code, one per row: the declaration's head, then its summary sentence folded to two lines.
+ * A type's nested types hang under it, indented, each beginning with the dot that joins it to its enclosing type.
+ */
+function DeclList({ types, pkg, within }: { types: Type[]; pkg: Package; within?: string }) {
   const { page, site } = usePage();
   const mixed = (site.model.module.languages ?? []).length > 1;
   return (
-    <SummaryTable
-      withKind={withKind}
-      rows={types.map(type => ({
-        key: type.id,
-        name: (
-          <a class="type-link" href={relative(page, typePage(pkg, type), ".html")}>
-            <span class="glyph" data-tone={kindGlyph(type).tone} aria-hidden="true">{kindGlyph(type).letter}</span>
-            <code>{within && type.name.startsWith(`${within}.`) ? type.name.slice(within.length + 1) : type.name}</code>
-            {mixed && <LanguageMark language={type.language} />}
-          </a>
-        ),
-        kind: typeKindWord(type),
-        summary: type.doc?.summary,
-        deprecated: !!type.deprecated,
-      }))}
-    />
+    <ul class={within ? "decls decls-nested" : "decls"}>
+      {types.map(type => {
+        const head = declHead(type, within);
+        const nested = within ? [] : site.types.get(type.id)!.nested;
+        const glyph = kindGlyph(type);
+        return (
+          <li key={type.id} class={type.deprecated ? "decl-item is-deprecated" : "decl-item"}>
+            <a class="decl" href={relative(page, typePage(pkg, type), ".html")} title={tokensText(compactTokens(type.signature))}>
+              <span class="glyph" data-tone={glyph.tone} aria-hidden="true">{glyph.letter}</span>
+              <code class="decl-sig"><TokenList plain tokens={head} /></code>
+              {mixed && <LanguageMark language={type.language} />}
+            </a>
+            <p class="decl-summary">
+              {type.deprecated && <Badge tone="deprecated">deprecated</Badge>}
+              {type.doc?.summary?.length ? <Inlines nodes={type.doc.summary} /> : <span class="undocumented">No description.</span>}
+            </p>
+            {nested.length > 0 && <DeclList types={nested} pkg={pkg} within={type.name} />}
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
+/**
+ * A description that shows its first lines and folds the rest behind "Show more". Without the script, or when
+ * the description is short, it shows whole (folds() in client/behaviors.tsx).
+ */
+export function Fold({ children }: { children: preact.ComponentChildren }) {
+  return (
+    <div class="fold" data-fold>
+      <div class="fold-body">{children}</div>
+      <button type="button" class="fold-toggle" data-js-only aria-expanded="false" hidden>Show more</button>
+    </div>
   );
 }

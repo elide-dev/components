@@ -133,11 +133,34 @@ describe("from file:// with JavaScript on", () => {
     await page.context().close();
   });
 
-  test("copy buttons show, and the table of contents follows the page", async () => {
+  test("copy buttons show", async () => {
     const { page } = await open("com/example/geo/registry/ShapeCatalog.html#scaleStar(com.example.geo.Shape,double)");
     expect(await page.locator("[data-copy]").first().isVisible()).toBe(true);
-    await page.waitForSelector('.toc a[aria-current="true"]', { state: "attached" });
-    expect(await page.locator('.toc a[aria-current="true"]').first().textContent()).toContain("scaleStar");
+    await page.context().close();
+  });
+
+  test("the navigator's branches fold and unfold, all at once too, and the filter finds packages and nested types", async () => {
+    const { page, errors } = await open("com/example/geo/Shapes.html", { viewport: { width: 1440, height: 900 } });
+    const nav = page.locator("#apidocs-nav");
+    const visible = () => nav.locator("a.nav-row:visible").count();
+    // The current package is open; another package is folded, its types out of view.
+    const other = nav.locator(".nav-branch[data-nav-key^='p:']").filter({ hasNot: page.locator("[aria-current]") }).first();
+    expect(await other.getAttribute("data-folded")).toBe("");
+    const before = await visible();
+    await other.locator(":scope > .nav-branch-row > .nav-twisty").click();
+    expect(await other.getAttribute("data-folded")).toBeNull();
+    expect(await visible()).toBeGreaterThan(before);
+    // Expand all, then collapse all.
+    await nav.locator("[data-nav-fold-all]").click();
+    expect(await nav.locator(".nav-branch[data-folded]").count()).toBe(0);
+    await nav.locator("[data-nav-fold-all]").click();
+    expect(await nav.locator(".nav-branch:not([data-folded])").count()).toBe(0);
+    // The filter matches a package's name and keeps its types; it finds a nested type inside folded branches.
+    await page.locator("#apidocs-nav-filter").fill("Option");
+    expect(await nav.locator("a.nav-row:visible").allTextContents()).toContainEqual(expect.stringContaining("Option"));
+    await page.locator("#apidocs-nav-filter").press("Escape");
+    expect(await nav.locator("[data-filter-open]").count()).toBe(0);
+    expect(errors).toEqual([]);
     await page.context().close();
   });
 
@@ -178,7 +201,7 @@ describe("from file:// with JavaScript on", () => {
     await page.context().close();
   });
 
-  test("a member row shows its summary sentence, drawn from the entry's text, and the members filter matches it", async () => {
+  test("a member row shows its summary sentence, drawn from the entry's text", async () => {
     const { page } = await open("com/example/geo/Shapes.html");
     const row = page.locator("details.member", { has: page.locator("#parse\\(java\\.lang\\.String\\)") }).locator(".member-brief");
     const brief = await row.getAttribute("data-brief");

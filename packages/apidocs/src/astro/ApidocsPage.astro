@@ -17,7 +17,8 @@ import type { Model } from "../model";
 import type { Theme } from "../theme";
 import { bundledAssets, bundledFonts } from "./fonts";
 import { renderPage } from "./render";
-import Search from "./Search";
+import Search, { type HostedSearch } from "./Search";
+import scriptsDone from "./scripts-done.js?url&no-inline";
 
 interface Props {
   model: Model;
@@ -27,6 +28,8 @@ interface Props {
   base: string;
   /** The site's origin for canonical URLs; defaults to Astro.site, then the request's origin. theme.baseUrl wins. */
   site?: string | URL;
+  /** A search service the search field races against the site's own index (Search.tsx). */
+  search?: HostedSearch;
 }
 
 const { model, page, theme, site } = Astro.props;
@@ -46,12 +49,18 @@ const parts = renderPage(model, page, theme, { base, baseUrl, fontUrl: asset => 
     <Fragment set:html={parts.body[0]} />
     {Astro.slots.has("topbar") ? <slot name="topbar" /> : <Fragment set:html={parts.moduleVersion} />}
     <Fragment set:html={parts.body[1]} />
-    <Search client:idle api={parts.api} />
+    <Search client:idle api={parts.api} hosted={Astro.props.search} />
     <Fragment set:html={parts.body[2]} />
     <slot name="notice" />
     <Fragment set:html={parts.body[3]} />
     <script>
       import "./client";
     </script>
+    {/* scripts-done: after a client-router navigation, Astro waits for the new page's inline module scripts (a
+        server island's loader) by appending `<script type="module" src="data:…">` when the last new module script
+        is inline. A Content-Security-Policy without `data:` in script-src blocks that script and logs a violation on
+        every navigation. An empty same-origin module as the body's last script gives Astro the external script it
+        waits on, so it appends nothing. */}
+    <script is:inline type="module" src={scriptsDone}></script>
   </body>
 </html>

@@ -195,10 +195,13 @@ code, kbd, pre { font-family: var(--apidocs-font-mono); font-size: var(--apidocs
 code:dir(rtl), kbd:dir(rtl), pre:dir(rtl) { direction: ltr; unicode-bidi: isolate; }
 :not(pre) > code {
   background: var(--apidocs-subtle);
-  border-radius: 4px;
-  padding-block: 0.08em; padding-inline: 0.32em;
+  border-radius: 3px;
+  /* Tight, so a chip sits in its sentence like a word: wide padding reads as extra space between the words. */
+  padding-block: 0.04em; padding-inline: 0.18em;
   overflow-wrap: anywhere;
 }
+/* A link's code needs no chip: the link's color and underline already set it apart. */
+.prose a > code, .callout a > code, .fact dd a > code, .lede a > code, .see-list a > code, .decl-summary a > code, .package-summary a > code { background: none; padding: 0; }
 a > code { color: inherit; }
 .prose a, .callout a, .fact dd a, td a:not(.type-link), .lede a, .inherited-list a, .see-list a, .index-summary a {
   text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px;
@@ -224,7 +227,7 @@ p, li, dd { text-wrap: pretty; }
 
 /* Labels, counts, marks and controls are furniture, not content: a selection skips them, so copying a name or a
    paragraph gives that text and nothing else. */
-.nav-heading, .nav-count, .glyph, .badge, .toc-title, .toc-count, .toc-more > summary, thead th, .facts-title,
+.nav-heading, .nav-count, .glyph, .badge, .nav-twisty, .nav-fold-all, .fold-toggle, thead th, .facts-title,
 .callout-icon, .callout-label, .copy, .search-key, .nav-button, .theme-switch, .skip, .kind-cell, .source-link,
 .crumbs li + li::before, .footer, .member-badges, caption { user-select: none; -webkit-user-select: none; }
 
@@ -380,24 +383,23 @@ html[data-emoji] .theme-switch[data-mode="dark"] .theme-emoji::before { content:
 /* ---- Layout ---- */
 
 .layout {
+  /* Full width: the navigator sits against the window's start edge however wide the window is, and the text column
+     keeps its own measure beside it. */
   display: grid;
-  grid-template-columns: 17.5rem minmax(0, 1fr) 15.5rem;
-  max-width: 104rem;
-  margin-block: 0; margin-inline: auto;
+  grid-template-columns: 17.5rem minmax(0, 1fr);
 }
-.sidebar, .toc {
+/* Scrolling over the navigator scrolls it, and once it is at its end the page scrolls on: no overscroll-behavior. */
+.sidebar {
   position: sticky; inset-block-start: var(--apidocs-topbar);
   align-self: start;
   height: calc(100vh - var(--apidocs-topbar));
   overflow: auto;
-  overscroll-behavior: contain;
   scrollbar-width: thin;
   font-size: var(--apidocs-size-sm); line-height: 1.5;
+  padding-block: 14px 40px; padding-inline: 10px 10px; border-inline-end: 1px solid var(--apidocs-rule);
 }
-.sidebar { padding-block: 14px 40px; padding-inline: 14px 10px; border-inline-end: 1px solid var(--apidocs-rule); }
 .content { padding-block: var(--apidocs-content-top) var(--apidocs-content-bottom); padding-inline: var(--apidocs-gutter); min-width: 0; }
 .content > * { max-width: 62rem; }
-.toc { padding-block: 28px 40px; padding-inline: 4px 16px; }
 
 /* The navigator: flat one-line rows. Nothing wraps; a row truncates and its title has the full name. */
 .nav-button {
@@ -410,15 +412,42 @@ html[data-emoji] .theme-switch[data-mode="dark"] .theme-emoji::before { content:
 .nav-toggle:focus-visible + script + .nav-button, .nav-toggle:focus-visible + .nav-button { outline: 2px solid var(--apidocs-focus); outline-offset: 2px; }
 /* Wide screens: checked hides the navigator and gives its column to the content. No animation: the page is laid out once. */
 @media (min-width: 861px) {
-  body:has(.nav-toggle:checked) .layout { grid-template-columns: minmax(0, 1fr) 15.5rem; }
+  body:has(.nav-toggle:checked) .layout { grid-template-columns: minmax(0, 1fr); }
   body:has(.nav-toggle:checked) .layout .sidebar { display: none; }
   /* good-css exception (fluid-clamp): a layout, not a size step: with the navigator hidden, the text is centered. */
   body:has(.nav-toggle:checked) .layout .content { padding-inline-start: max(var(--apidocs-gutter), calc((100% - 62rem) / 2)); }
 }
-@media (min-width: 861px) and (max-width: 1240px) {
-  body:has(.nav-toggle:checked) .layout { grid-template-columns: minmax(0, 1fr); }
-}
 .nav-section + .nav-section { margin-block-start: 18px; }
+/* The module's heading is its overview's link; the index pages that hold more sit beside it. */
+.nav-heading a { color: inherit; }
+@media (hover: hover) and (pointer: fine) { .nav-heading a:hover { color: var(--apidocs-fg); text-decoration: none; } }
+.nav-heading a:active { color: var(--apidocs-fg); text-decoration: none; }
+.nav-heading a[aria-current="page"] { color: var(--apidocs-accent); }
+.nav-module { justify-content: space-between; }
+.nav-module > a { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--apidocs-font-mono); text-transform: none; letter-spacing: 0; font-size: var(--apidocs-size-sm); color: var(--apidocs-fg); }
+.nav-index { display: flex; flex: none; gap: 2px; text-transform: none; letter-spacing: 0; font-weight: 450; }
+.nav-index a { display: inline-flex; align-items: center; min-block-size: 24px; padding-block: 0; padding-inline: 6px; border-radius: 4px; color: var(--apidocs-muted); }
+.nav-index a[aria-current="page"] { color: var(--apidocs-accent); background: var(--apidocs-accent-soft); }
+/* The tree: a twisty, then the row. A folded branch hides its children only when the script runs, which can open it
+   again; a filter with text opens the branches that lead to its matches. */
+.nav-tree, .nav-children { list-style: none; margin: 0; padding: 0; }
+.nav-branch-row { display: flex; align-items: center; }
+.nav-branch-row > .nav-row { flex: 1; min-width: 0; }
+.nav-twisty {
+  /* 24px wide: the smallest target WCAG 2.2 accepts (2.5.8). */
+  flex: none; display: grid; place-items: center; width: 24px; height: 28px; padding: 0; margin: 0;
+  background: none; border: 0; border-radius: 4px; color: var(--apidocs-faint); cursor: pointer;
+}
+@media (hover: hover) and (pointer: fine) { button.nav-twisty:hover { color: var(--apidocs-fg); background: var(--apidocs-subtle); } }
+button.nav-twisty:active { color: var(--apidocs-fg); background: var(--apidocs-subtle); }
+.nav-twisty svg { transform: rotate(90deg); }
+html[data-js] .nav-branch[data-folded]:not([data-filter-open]) > .nav-branch-row > .nav-twisty svg { transform: none; }
+html[data-js] .nav-branch[data-folded]:not([data-filter-open]) > .nav-branch-row > .nav-twisty svg:dir(rtl) { transform: scaleX(-1); }
+html[data-js] .nav-branch[data-folded]:not([data-filter-open]) > .nav-children { display: none; }
+.nav-item > .nav-row { margin-inline-start: 24px; }
+.nav-children { margin-inline-start: 11px; padding-inline-start: 0; border-inline-start: 1px solid var(--apidocs-rule); }
+.nav-children .nav-list { margin: 0; }
+.nav-group-row { color: var(--apidocs-muted); }
 .nav-heading {
   display: flex; align-items: baseline; gap: 8px;
   margin-block: 0 4px; margin-inline: 0; padding-block: 0; padding-inline: 8px;
@@ -427,7 +456,6 @@ html[data-emoji] .theme-switch[data-mode="dark"] .theme-emoji::before { content:
 }
 /* The shared package prefix is a row of its own; the packages hang from it, each starting with the dot that joins them. */
 .nav-prefix { font-family: var(--apidocs-font-mono); font-size: var(--apidocs-size-sm); color: var(--apidocs-muted); }
-.nav-list.nav-suffixes { margin-inline-start: 15px; padding-inline-start: 4px; border-inline-start: 1px solid var(--apidocs-rule-strong); }
 .nav-dot { color: var(--apidocs-faint); }
 .nav-list { list-style: none; margin: 0; padding: 0; }
 .nav-row {
@@ -446,28 +474,28 @@ html[data-emoji] .theme-switch[data-mode="dark"] .theme-emoji::before { content:
 .nav-package[data-open] .nav-dot { color: inherit; opacity: 0.6; }
 .nav-row[aria-current="page"], .nav-row[aria-current="true"] { background: var(--apidocs-accent-soft); color: var(--apidocs-accent); font-weight: 600; }
 .nav-row[aria-current] .nav-count { color: inherit; }
-.nav-nested { margin-block: 1px 4px; margin-inline: 15px 0; padding-inline-start: 6px; border-inline-start: 1px solid var(--apidocs-rule); }
 /* The sites, first in the drawer only: on a wide screen the top bar's switcher has them. */
 .nav-suites { display: none; }
-/* The module's indexes: one line of links when they fit the narrowest navigator (NAV_INDEX_ROW_MAX in chrome.tsx),
-   else rows under "Reference". */
-.nav-index { display: flex; gap: 2px; margin-block: 0 14px; margin-inline: 0; padding: 0; list-style: none; font-size: var(--apidocs-size-sm); white-space: nowrap; user-select: none; -webkit-user-select: none; }
-.nav-index a { display: block; padding-block: 3px; padding-inline: 8px; border-radius: 5px; color: var(--apidocs-muted); }
-@media (hover: hover) and (pointer: fine) { .nav-index a:hover { color: var(--apidocs-fg); background: var(--apidocs-subtle); text-decoration: none; } }
-.nav-index a:active { color: var(--apidocs-fg); background: var(--apidocs-subtle); text-decoration: none; }
-.nav-index a[aria-current="page"] { color: var(--apidocs-accent); background: var(--apidocs-accent-soft); font-weight: 600; }
-.nav-filter, .toc-filter { margin-block: 0 12px; margin-inline: 0; }
+/* The filter and the fold-all button share the navigator's sticky first line. */
 .nav-filter {
-  position: sticky; inset-block-start: -14px; z-index: 1;
-  margin-block: -14px 10px; margin-inline: -14px -10px; padding-block: 14px 8px; padding-inline: 14px 10px;
+  position: sticky; inset-block-start: -14px; z-index: 1; display: flex; gap: 6px;
+  margin-block: -14px 10px; margin-inline: -10px; padding-block: 14px 8px; padding-inline: 10px;
   background: var(--apidocs-bg);
 }
-.nav-filter input, .toc-filter input {
+.nav-fold-all {
+  flex: none; display: grid; place-items: center; width: 32px; padding: 0;
+  background: var(--apidocs-surface); border: 1px solid var(--apidocs-rule-strong); border-radius: var(--apidocs-radius);
+  color: var(--apidocs-muted); cursor: pointer;
+}
+.nav-fold-all[data-state="open"] .fold-all-expand, .nav-fold-all:not([data-state="open"]) .fold-all-collapse { display: none; }
+@media (hover: hover) and (pointer: fine) { .nav-fold-all:hover { color: var(--apidocs-fg); background: var(--apidocs-subtle); } }
+.nav-fold-all:active { color: var(--apidocs-fg); background: var(--apidocs-subtle); }
+.nav-filter input {
   width: 100%; font: inherit; font-size: var(--apidocs-size-sm); color: var(--apidocs-fg);
   background: var(--apidocs-surface); border: 1px solid var(--apidocs-rule-strong);
   border-radius: var(--apidocs-radius); padding-block: 5px; padding-inline: 9px;
 }
-.nav-filter input:focus-visible, .toc-filter input:focus-visible { outline: 2px solid var(--apidocs-focus); outline-offset: 0; border-color: transparent; }
+.nav-filter input:focus-visible { outline: 2px solid var(--apidocs-focus); outline-offset: 0; border-color: transparent; }
 [data-filtered-out] { display: none !important; }
 
 /* Kind glyphs: one letter in a small tile, colored by kind. */
@@ -487,37 +515,6 @@ html[data-emoji] .theme-switch[data-mode="dark"] .theme-emoji::before { content:
 .glyph[data-tone="guide"] { --glyph: var(--apidocs-accent); font-family: var(--apidocs-font-system); }
 .nav-subheading { margin-block: 8px 2px; margin-inline: 0; padding-block: 0; padding-inline: 8px; font-size: var(--apidocs-size-xs); color: var(--apidocs-faint); user-select: none; -webkit-user-select: none; }
 .glyph-large { width: 28px; height: 28px; border-radius: 7px; font-size: var(--apidocs-size-md); }
-
-/* "On this page": sections with counts; long sections fold. */
-.toc-title { margin-block: 0 10px; margin-inline: 0; padding-inline-start: 12px; color: var(--apidocs-faint); font-weight: 650; font-size: var(--apidocs-size-xs); letter-spacing: var(--apidocs-tracking-caps); text-transform: uppercase; }
-.toc-filter { padding-inline-start: 12px; }
-.toc-list, .toc-entries { list-style: none; margin: 0; padding: 0; }
-.toc-section + .toc-section { margin-block-start: 2px; }
-.toc-head { display: flex; align-items: baseline; gap: 8px; }
-.toc-head a { flex: 1; }
-/* good-css exception (overflow-clip): hidden, not clip, so the ellipsis shows in every target browser, Safari before 16 among them. */
-.toc a {
-  display: block; min-width: 0; padding-block: 3px; padding-inline: 12px 0;
-  border-inline-start: 2px solid transparent; color: var(--apidocs-muted);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.toc-head a { color: var(--apidocs-fg); font-weight: 550; }
-@media (hover: hover) and (pointer: fine) { .toc a:hover { color: var(--apidocs-fg); text-decoration: none; } }
-.toc a:active { color: var(--apidocs-fg); text-decoration: none; }
-.toc a[aria-current="true"] { color: var(--apidocs-accent); border-inline-start-color: var(--apidocs-accent); }
-.toc-count { flex: none; font-size: var(--apidocs-size-xs); font-variant-numeric: tabular-nums; color: var(--apidocs-faint); }
-.toc-entries { margin-block: 0 6px; margin-inline: 0; }
-.toc-entries a { padding-inline-start: 22px; font-size: var(--apidocs-size-sm); }
-.toc code { background: none; padding: 0; font-size: 1em; }
-.toc-more > summary {
-  list-style: none; cursor: pointer; padding-block: 2px 4px; padding-inline: 22px 0;
-  font-size: var(--apidocs-size-sm); color: var(--apidocs-faint);
-}
-.toc-more > summary::-webkit-details-marker { display: none; }
-@media (hover: hover) and (pointer: fine) { .toc-more > summary:hover { color: var(--apidocs-fg); } }
-.toc-more > summary:active { color: var(--apidocs-fg); }
-.toc-more[open] > summary { display: none; }
-.toc-more > .toc-entries { max-height: 55vh; overflow: auto; scrollbar-width: thin; }
 
 /* The row above the title: where you are, and the page's other forms. */
 .page-tools { display: flex; align-items: center; gap: 12px; min-height: 30px; margin-block-end: 14px; }
@@ -593,16 +590,19 @@ html[data-emoji] .theme-switch[data-mode="dark"] .theme-emoji::before { content:
 .kind-word { font-weight: 600; color: var(--apidocs-fg); }
 .lede { font-size: var(--apidocs-size-lg); color: var(--apidocs-muted); }
 
-.sig { position: relative; }
+.sig { position: relative; container-type: inline-size; }
+/* A signature holds up to 100 columns (WIDTH in signature.ts). Its text is as large as the theme says, and smaller
+   when the box is too narrow for 100 columns of a monospace font (0.6em per column), down to 11px; below that the
+   box scrolls sideways. */
 .sig pre {
   margin-block: 12px; margin-inline: 0; padding-block: 10px; padding-inline: 14px;
   background: var(--apidocs-code-bg); color: var(--apidocs-code-fg);
   border-radius: var(--apidocs-radius);
-  overflow-x: auto; font-size: var(--apidocs-size-sm); line-height: 1.5;
+  overflow-x: auto; font-size: clamp(11px, (100cqi - 28px) / 60.6, var(--apidocs-size-sm)); line-height: 1.5;
 }
 .sig-large pre {
   margin-block: 18px 20px; margin-inline: 0; padding-block: var(--apidocs-specimen-pad-block); padding-inline: var(--apidocs-specimen-pad-inline);
-  font-size: var(--apidocs-size-specimen); line-height: 1.6;
+  font-size: clamp(11px, (100cqi - 2 * var(--apidocs-specimen-pad-inline)) / 60.6, var(--apidocs-size-specimen)); line-height: 1.6;
   border: 1px solid var(--apidocs-rule);
   border-radius: calc(var(--apidocs-radius) + 4px);
 }
@@ -742,10 +742,15 @@ thead th { color: var(--apidocs-muted); font-weight: 600; font-size: var(--apido
 .guide-summary { margin-block: 10px 0; margin-inline: 0; max-width: 44rem; }
 .guide-body { max-width: 46rem; }
 .guide-body > .guide-intro > :first-child { margin-block-start: 0; }
-.guide-section { margin-block-start: 36px; }
+.guide-section { margin-block-start: 44px; }
 .guide-heading { position: relative; scroll-margin-block-start: calc(var(--apidocs-topbar) + 16px); }
-h2.guide-heading { font-size: var(--apidocs-size-xl); font-weight: 650; margin-block: 0 10px; margin-inline: 0; padding-block-end: 8px; border-block-end: 1px solid var(--apidocs-rule); }
-h3.guide-heading { font-size: var(--apidocs-size-lg); font-weight: 650; margin-block: 26px 6px; margin-inline: 0; }
+h2.guide-heading { font-size: var(--apidocs-size-xl); font-weight: 700; margin-block: 0 12px; margin-inline: 0; padding-block-end: 8px; border-block-end: 1px solid var(--apidocs-rule-strong); }
+h3.guide-heading { font-size: var(--apidocs-size-lg); font-weight: 650; margin-block: 30px 8px; margin-inline: 0; }
+h4.guide-heading { font-size: var(--apidocs-size-md); font-weight: 650; margin-block: 22px 4px; margin-inline: 0; color: var(--apidocs-muted); }
+/* Paragraphs in a guide breathe a little more than reference text, and lists stand out from the paragraphs. */
+.guide-body p { margin-block: 0.75em; }
+.guide-body li::marker { color: var(--apidocs-accent); }
+.guide-body .callout { margin-block: 20px; }
 /* The section link sits in the margin and shows when the heading is pointed at or the link has focus. */
 .heading-anchor {
   position: absolute; inset-inline-end: 100%; inset-block-start: 0; padding-inline-end: 8px;
@@ -839,6 +844,48 @@ table.summary tbody tr:active { background: color-mix(in srgb, var(--apidocs-sub
 tr.is-deprecated .summary-sig a { text-decoration: line-through; text-decoration-color: var(--apidocs-deprecated); }
 td .badge { margin-inline-end: 6px; }
 
+/* Types as declaration code: the head of each declaration on one line, its summary under it in two lines at most. */
+.decls { list-style: none; margin-block: 6px 0; margin-inline: 0; padding: 0; }
+.decl-item { padding-block: 9px; padding-inline: 0; border-block-end: 1px solid var(--apidocs-rule); }
+.decls-nested { margin-block: 6px 0; margin-inline: 8px 0; padding-inline-start: 14px; border-inline-start: 1px solid var(--apidocs-rule); }
+.decls-nested .decl-item { padding-block: 6px; }
+.decls-nested .decl-item:last-child { border-block-end: 0; }
+.decl { display: flex; align-items: center; gap: 8px; min-width: 0; min-block-size: 24px; color: var(--apidocs-fg); }
+@media (hover: hover) and (pointer: fine) { .decl:hover { text-decoration: none; } .decl:hover .tk-n { color: var(--apidocs-link); text-decoration: underline; text-underline-offset: 3px; } }
+.decl:active .tk-n { color: var(--apidocs-link); }
+/* good-css exception (overflow-clip): hidden, not clip, so the ellipsis shows in every target browser, Safari before 16 among them. */
+.decl-sig { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; background: none !important; padding: 0 !important; font-size: var(--apidocs-size-sm); }
+.decl-item.is-deprecated .tk-n { text-decoration: line-through; text-decoration-color: var(--apidocs-deprecated); }
+/* good-css exception (overflow-clip): hidden, not clip: WebKit clamps lines with -webkit-line-clamp only under overflow: hidden. */
+.decl-summary {
+  margin-block: 2px 0; margin-inline: 25px 0; color: var(--apidocs-muted); font-size: var(--apidocs-size-sm); line-height: 1.5;
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden;
+}
+.decl-summary .badge { margin-inline-end: 6px; }
+.package-block { margin-block-start: 26px; }
+.package-name { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; font-size: var(--apidocs-size-lg); font-weight: 650; }
+.package-name code { background: none; padding: 0; }
+.package-count { font-family: var(--apidocs-font-sans); font-size: var(--apidocs-size-sm); font-weight: 400; color: var(--apidocs-faint); }
+.package-summary { margin-block: 4px 0; margin-inline: 0; color: var(--apidocs-muted); }
+.empty { color: var(--apidocs-muted); font-style: italic; margin-block: 24px 0; }
+
+/* A long description shows its first lines; "Show more" opens the rest. Folded only with the script, which shows the
+   control and opens the fold for a link into it. */
+html[data-js] .fold:not([data-open]):not([data-short]) > .fold-body {
+  max-height: calc(4lh + 1.2em); overflow: clip;
+  mask-image: linear-gradient(to bottom, #000 60%, transparent);
+}
+/* Folded, the control sits over the faded last line, so showing it (once the script finds the description long)
+   moves nothing on the page; open, it follows the text. */
+.fold { position: relative; }
+.fold-toggle {
+  position: absolute; inset-block-end: 0; inset-inline-start: 0;
+  min-block-size: 24px; padding-block: 0; padding-inline: 0 8px; font: inherit; font-size: var(--apidocs-size-sm);
+  color: var(--apidocs-link); background: var(--apidocs-bg); border: 0; cursor: pointer;
+}
+.fold[data-open] > .fold-toggle { position: static; margin-block-start: 2px; }
+@media (hover: hover) and (pointer: fine) { .fold-toggle:hover { text-decoration: underline; text-underline-offset: 2px; } }
+
 /* A member is a disclosure: a row when closed, the full entry when open. Rows far from the viewport are not
    laid out or painted until they come near; find-in-page still searches them and opens the one it matches. */
 .members-heading { display: flex; align-items: baseline; gap: 10px; }
@@ -925,7 +972,21 @@ td .badge { margin-inline-end: 6px; }
 
 @media (max-width: 1240px) {
   .layout { grid-template-columns: 16.5rem minmax(0, 1fr); }
-  .toc, .toc-spacer { display: none; }
+}
+/* Half a desktop screen and less: the controls that are not needed to read give way, one by one, and rows are as tall
+   as a fingertip on a touch screen. */
+@media (max-width: 1100px) {
+  .formats-menu { display: none; }
+}
+@media (max-width: 860px), (pointer: coarse) {
+  .nav-row, .nav-twisty { height: 40px; }
+  .nav-twisty { width: 32px; }
+  .nav-item > .nav-row { margin-inline-start: 32px; }
+  .nav-children { margin-inline-start: 15px; }
+  .member-row { padding-block: 12px; }
+  .decl-item { padding-block: 12px; }
+  .nav-fold-all { width: 40px; }
+  .nav-filter input { padding-block: 9px; }
 }
 @media (max-width: 860px) {
   .layout { grid-template-columns: minmax(0, 1fr); }
@@ -940,6 +1001,12 @@ td .badge { margin-inline-end: 6px; }
   }
   body:has(.nav-toggle:checked) .layout .sidebar { display: block; }
   .module-version { display: none; }
+  /* good-css exception (fluid-clamp): a layout, not a size step: breadcrumbs keep only the page's parent. */
+  .crumbs li:not(:nth-last-child(-n+2)) { display: none; }
+  .product { display: none; }
+  /* good-css exception (fluid-clamp): a layout, not a size step: with the name gone, the brand is its logo, which
+     never shrinks under what follows it in the bar. */
+  .brand { flex: none; }
   /* The drawer lists the sites, so the switcher shows its row when it fits and leaves the bar when it does not. Once
      it has left (or where there is none), the search field may narrow further, to 5rem. The tools' floor is then the
      search field's narrowest, the theme switch and the gaps, not the switcher's labels. */
@@ -969,12 +1036,13 @@ td .badge { margin-inline-end: 6px; }
 /* ---- Print ---- */
 
 @media print {
-  .topbar, .sidebar, .toc, .copy, .skip, .footer, .nav-toggle, .formats, .loadbar, .readbar, .guide-pager, .heading-anchor { display: none !important; }
+  .topbar, .sidebar, .copy, .fold-toggle, .skip, .footer, .nav-toggle, .formats, .loadbar, .readbar, .guide-pager, .heading-anchor { display: none !important; }
   .layout { display: block; }
   .content { padding: 0; }
   .content > * { max-width: none; }
   .sig pre, .code-block pre { white-space: pre-wrap; border: 1px solid oklch(84.522% 0 none); }
   .member::details-content { content-visibility: visible; display: block; }
+  .fold > .fold-body { max-height: none !important; mask-image: none !important; }
   .members-toggle, .member-chevron { display: none; }
   .member { break-inside: avoid-page; }
   a { color: inherit; }

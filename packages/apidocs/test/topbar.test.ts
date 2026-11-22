@@ -166,15 +166,14 @@ describe("the top bar never wraps, overflows or is cut off", () => {
 });
 
 describe("right to left", () => {
-  test("a page laid out with dir=rtl mirrors: navigator on the right, rail on the left, bar intact", async () => {
+  test("a page laid out with dir=rtl mirrors: navigator on the right, bar intact", async () => {
     const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
     await page.goto(urlOf(variants.find(v => v.name === "static-s3")!));
     await page.evaluate(() => document.documentElement.setAttribute("dir", "rtl"));
     await page.evaluate(() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))));
     const box = (selector: string) => page.locator(selector).first().evaluate(e => { const r = e.getBoundingClientRect(); return { left: r.left, right: r.right }; });
-    const [nav, content, toc] = [await box(".sidebar"), await box(".content"), await box(".toc")];
+    const [nav, content] = [await box(".sidebar"), await box(".content")];
     expect(nav.left).toBeGreaterThan(content.left);
-    expect(toc.right).toBeLessThanOrEqual(content.left + 1);
     // The brand starts the bar on the right; the theme switch ends it on the left.
     expect((await box(".brand")).left).toBeGreaterThan((await box(".theme-switch")).left);
     // Text starts at the right edge of its box: a navigator row's label, a member row's signature.

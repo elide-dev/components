@@ -124,7 +124,7 @@ function mapPath(pathWithRest: string): string {
   return fileUrl(path) + (cut < 0 ? "" : pathWithRest.slice(cut));
 }
 
-const ATTR = /(\s(?:href|src|data-copy-markdown)=")([^"]*)(")/g;
+const ATTR = /(\s(?:href|src|data-copy-markdown|data-suite)=")([^"]*)(")/g;
 const META_CONTENT = /(<meta property="og:(?:url|image)" content=")([^"]*)(")/g;
 const JSON_LD = /(<script type="application\/ld\+json">)([\s\S]*?)(<\/script>)/g;
 /** The JSON-LD keys whose values are URLs. */
@@ -139,7 +139,7 @@ function escapeAttr(s: string): string {
 }
 
 /**
- * Maps the URLs in a page that Preact rendered: href, src and data-copy-markdown attributes, og:url, and the
+ * Maps the URLs in a page that Preact rendered: href, src, data-copy-markdown and data-suite attributes, og:url, and the
  * URL fields of the JSON-LD graph. Preact escapes every quote in text and in attribute values, so `href="` can
  * occur only as an attribute; raw HTML from documentation comments has passed the sanitizer, which writes its
  * attributes the same way.

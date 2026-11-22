@@ -96,7 +96,7 @@ export interface Type {
   /** Documented annotations, each as tokens. */
   annotations?: Tokens[];
   typeParams?: TypeParam[];
-  /** The declaration line as tokens. */
+  /** The declaration as tokens. One line, or the lines a source formatter laid out: newlines and indentation are in the punctuation tokens. */
   signature: Tokens;
   /** The direct superclass as tokens; absent for interfaces. */
   superclass?: Tokens;
@@ -139,7 +139,7 @@ export interface Member {
   typeParams?: TypeParam[];
   /** The receiver of a Kotlin extension function or property. */
   receiver?: Param;
-  /** The declaration as tokens, on one line. */
+  /** The declaration as tokens. One line, or the lines a source formatter laid out: newlines and indentation are in the punctuation tokens. */
   signature: Tokens;
   params?: Param[];
   returns?: Returns;

@@ -12,7 +12,7 @@
  *   in place;
  * - runs the load bar from astro:before-preparation and finishes it on arrival.
  */
-import { filterRows, NAV_FILTERED_ROWS, pageBehaviors, saveNavigatorScroll, siteRoot } from "../client/behaviors";
+import { filterTree, pageBehaviors, saveNavigatorScroll, setFolded, siteRoot, syncFoldAll } from "../client/behaviors";
 import { pathUnder } from "./versions";
 
 /** The <html> attributes the page's own scripts set, which the router's swap would drop. */
@@ -61,6 +61,9 @@ function refreshPersisted(newDocument: Document) {
 function refreshNavigator(kept: HTMLElement, next: HTMLElement) {
   const focused = kept.contains(document.activeElement) ? (document.activeElement as HTMLAnchorElement).getAttribute?.("href") : null;
   const top = kept.scrollTop;
+  // The reader's folding, by branch: kept for the new page's tree, except that the new page's own path opens.
+  const folding = new Map<string, boolean>();
+  for (const branch of kept.querySelectorAll<HTMLElement>(".nav-branch[data-nav-key]")) folding.set(branch.dataset.navKey!, branch.hasAttribute("data-folded"));
   // Every block but the filter field is the new page's, in the new page's order around the kept field.
   const filter = kept.querySelector<HTMLElement>(":scope > .nav-filter");
   for (const child of [...kept.children]) if (child !== filter) child.remove();
@@ -77,8 +80,13 @@ function refreshNavigator(kept: HTMLElement, next: HTMLElement) {
   }
   // The kept filter text applies to the new rows now, before the scroll position is put back, so the rows above it
   // take the same space as before.
+  for (const branch of kept.querySelectorAll<HTMLElement>(".nav-branch[data-nav-key]")) {
+    const folded = folding.get(branch.dataset.navKey!);
+    if (folded !== undefined && !branch.hasAttribute("data-path")) setFolded(branch, folded);
+  }
+  syncFoldAll(kept);
   const query = filter?.querySelector("input")?.value;
-  if (query?.trim()) filterRows(kept, NAV_FILTERED_ROWS, query);
+  if (query?.trim()) filterTree(kept, query);
   kept.scrollTop = top;
   // Keyboard users who chose a row stay on it.
   if (focused) kept.querySelector<HTMLElement>(`a[href="${CSS.escape(focused)}"]`)?.focus({ preventScroll: true });

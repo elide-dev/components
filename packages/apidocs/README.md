@@ -47,8 +47,8 @@ types as `Outer.Inner`. The root also holds `llms.txt`, `llms-full.txt`, `api.js
 - **JSON-LD**: every page's item has a `url` (absolute with a `baseUrl`, else relative); the overview's lists the
   guides and packages as `hasPart`. Every link is relative and names
 its file. Scripts are classic. Search reads `assets/search-index.js`, which assigns a global, so nothing uses `fetch`.
-With JavaScript off, pages keep all their content; only search, the theme switch, copy buttons and table-of-contents
-tracking go away.
+With JavaScript off, pages keep all their content and the navigator shows every branch open; only search, the theme
+switch, copy buttons, folding and "Show more" go away.
 
 ## Guides
 
@@ -56,7 +56,7 @@ A module can carry narrative guides in `module.guides`: `{ id, slug, title, summ
 source? }`. The body is the same block tree as a documentation comment, plus `admonition` blocks (`tone`: note, tip,
 important, warning, caution, apiNote, implSpec, implNote; optional `title`). Each guide is `guides/<slug>.html` and
 `.md`. Its headings get readable anchors (the heading's `anchor`, or its text slugified), deduplicated with `-2`,
-`-3`; level-2 and level-3 headings fill "On this page". A link targets a guide with `target: { id }` and a section
+`-3`; level-2 and level-3 headings are its sections, which search and Markdown twins list. A link targets a guide with `target: { id }` and a section
 with `target: { id, section }`, from guides and from doc comments; an unresolved one renders as plain text, and the
 output checker reports a link to a section that does not exist. Pages list ungrouped guides first, then each group
 in the order of its first guide; inside each, guides with an `order` come first, lowest first. Guides appear on the
@@ -123,7 +123,7 @@ page. The dev bar also offers the Markdown sample suite, `samples/guides`.
 - **Markdown.** CommonMark with GitHub's tables, task lists, strikethrough and autolinks; fenced code with its
   language (`text` without one); GitHub alerts (`> [!NOTE]`, `[!TIP]`, `[!IMPORTANT]`, `[!WARNING]`, `[!CAUTION]`) as
   admonitions. The title is the page's heading, so the body starts at `##`: `##` is a section and `###` a subsection
-  in "On this page". `## Heading {#id}` sets a heading's anchor. HTML comments, the sync block among them, are
+  among its sections. `## Heading {#id}` sets a heading's anchor. HTML comments, the sync block among them, are
   dropped. Other raw HTML becomes a raw node, which the renderer passes through its allowlist sanitizer.
 - **Links.** A relative link to a `.md` file becomes a reference to that guide, and a `#fragment` a reference to its
   section; both are checked at import. A fragment matches the renderer's anchor, the heading's `{#id}` or GitHub's
@@ -192,9 +192,16 @@ Elide preset does.
 ### The top bar and the navigator
 
 The top bar holds what belongs to the whole site: the navigator toggle, the brand, the version (or an Astro app's
-version menu), a switcher between sibling documentation sites, search and the theme switch. The module's indexes
-(Overview, Packages, All types, Index, Deprecated, as many as the site has) are at the top of the navigator, under the
-filter: one line of links when there are at most two, else rows under "Reference", the current one marked.
+version menu), a switcher between sibling documentation sites, search and the theme switch. The brand leads to the
+theme's `homeUrl`, or to the site's overview. The switcher returns to the page last read in each site during the
+session.
+
+The navigator is one tree, under a filter and a button that folds or opens every branch: guides by group, then the
+module, whose heading leads to its overview (which lists every package with its types) and has the A to Z index and the
+deprecated list beside it; then each package, with its types, and each type with its nested types as `.Name`. The
+current page's path is open and the rest is folded; a reader's own folding is kept across an Astro app's pages. The
+filter matches packages, types and guides and opens the branches that lead to a match. The packages and types index
+pages still exist at their URLs but are not linked. There is no "On this page" rail.
 
 `links.header` lists the sibling sites, such as a user guide, a developer guide and the API reference, in the order
 the switcher shows them. Mark the entry that is this site with `"current": true`; without one, the entry whose URL is
@@ -381,8 +388,8 @@ cached for a year.
 
 | Behavior | How it runs on an Astro page |
 | --- | --- |
-| Search | A Preact island, `client:idle`, in the top bar. Loads `assets/search-index.json` on first focus or keystroke; opens results through the router. The top bar persists, so it hydrates once per site. |
-| Theme switch, navigator toggle and `[`, copy buttons, copy as Markdown, member expand and collapse, open-on-hash, list filters, "On this page" tracking, menus | The static page's functions (`src/client/behaviors.tsx`), started on `astro:page-load` and stopped on `astro:before-swap` through one `AbortController` per page: no listener outlives its page. |
+| Search | A Preact island, `client:idle`, in the top bar. Loads `assets/search-index.json` on first focus or keystroke; opens results through the router. The top bar persists, so it hydrates once per site. With `<ApidocsPage search={...}>` it races a search service: local results at once, the service's added as they arrive, a scope switch (this site or all), the other sites' results when this one has none, a regex mode, and an `apidocs:search` event with counts and timings for analytics. |
+| Theme switch, navigator toggle and `[`, copy buttons, copy as Markdown, member expand and collapse, open-on-hash, navigator folding and filter, "Show more", the suite switcher's memory, menus | The static page's functions (`src/client/behaviors.tsx`), started on `astro:page-load` and stopped on `astro:before-swap` through one `AbortController` per page: no listener outlives its page. |
 | Top bar and navigator | `transition:persist`, keyed by the site's base: across pages of one site they are the same elements, so the navigator keeps its scroll position and filter text without a script restoring them. Before each swap the client moves the new page's suite switcher and navigator blocks (the sites, the indexes with the current one marked, guides, packages and types) into them, around the kept filter field, and applies the kept filter text to the new rows. A top bar from another site is sized before it paints. |
 | Theme and `data-js` | The head script sets them on first load; the client carries them to each new page's `<html>`, whose attributes the router replaces. |
 | Load bar | Starts on `astro:before-preparation`, finishes on arrival, clears if the navigation is aborted. |
