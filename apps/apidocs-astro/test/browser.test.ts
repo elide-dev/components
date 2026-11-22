@@ -3,8 +3,8 @@
  * top bar and navigator, the page behaviors across navigations, server islands, JavaScript off, reduced motion,
  * layout stability, axe, and head metadata against the static renderer.
  *
- * Builds the app and starts wrangler dev on port 5191 unless APIDOCS_ASTRO_URL names a running server. Needs a
- * Playwright 1.65 Chromium (PLAYWRIGHT_BROWSERS_PATH).
+ * Builds the app and starts wrangler dev on port 5191 (APIDOCS_ASTRO_PORT picks another) unless APIDOCS_ASTRO_URL
+ * names a running server. Needs a Playwright 1.65 Chromium (PLAYWRIGHT_BROWSERS_PATH).
  */
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { type ChildProcess, spawn, spawnSync } from "node:child_process";
@@ -17,7 +17,7 @@ import { type Browser, type BrowserContextOptions, chromium, type Page } from "p
 
 const app = fileURLToPath(new URL("..", import.meta.url));
 const require = createRequire(import.meta.url);
-const PORT = 5191;
+const PORT = Number(process.env.APIDOCS_ASTRO_PORT ?? 5191);
 let origin = process.env.APIDOCS_ASTRO_URL?.replace(/\/$/, "") ?? `http://127.0.0.1:${PORT}`;
 let server: ChildProcess | undefined;
 let browser: Browser;
@@ -155,10 +155,50 @@ describe("the persisted top bar and navigator", () => {
     await page.context().close();
   });
 
-  test("the index links follow the page", async () => {
+  test("the navigator's index links follow the page", async () => {
     const { page } = await open(TYPE);
-    await follow(page, '.topbar-nav a[href="/java/2.0/packages"]');
-    expect(await page.locator('.topbar-nav [aria-current="page"]').getAttribute("href")).toBe("/java/2.0/packages");
+    expect(await page.locator('.nav-reference [aria-current="page"]').count()).toBe(0);
+    await follow(page, '.nav-reference a[href="/java/2.0/packages"]');
+    expect(await page.locator('.nav-reference [aria-current="page"]').getAttribute("href")).toBe("/java/2.0/packages");
+    await follow(page, '.nav-reference a[href="/java/2.0/index-all"]');
+    expect(await page.locator('.nav-reference [aria-current="page"]').getAttribute("href")).toBe("/java/2.0/index-all");
+    expect(await page.locator('.sidebar [aria-current="page"]').count()).toBe(1);
+    await page.context().close();
+  });
+
+  test("the suite switcher marks the current site, within a site and after moving to another", async () => {
+    const { page, documents } = await open(TYPE);
+    const current = () => page.locator('.suites-row a[aria-current="true"]').textContent();
+    expect(await current()).toBe("Java API");
+    expect(await page.locator('.suites-row a[aria-current="true"]').getAttribute("href")).toBe("/java/2.0/");
+    await follow(page, `.sidebar a[href="${OTHER}"]`);
+    expect(await current()).toBe("Java API");
+    expect(await page.locator(".suites").getAttribute("data-fit")).toBe("row");
+    await follow(page, '.suites-row a[href="/kotlin/"]');
+    expect(new URL(page.url()).pathname).toBe("/kotlin/");
+    expect(await current()).toBe("Kotlin API");
+    expect(await page.locator('.suites-row a[aria-current="true"]').getAttribute("href")).toBe("/kotlin/");
+    expect(await page.locator(".suites").getAttribute("data-fit")).toBe("row");
+    await follow(page, '.suites-row a[href="/guides/"]');
+    expect(await current()).toBe("User guide");
+    // The guides-only site has its overview as a guide, so the navigator lists no index links.
+    expect(await page.locator(".nav-reference, .nav-index").count()).toBe(0);
+    expect(documents).toEqual([]);
+    await page.context().close();
+  });
+
+  test("on a phone the switcher leaves the bar, and the drawer lists the sites first", async () => {
+    const { page } = await open(TYPE, { viewport: { width: 360, height: 700 } });
+    expect(await page.locator(".suites").getAttribute("data-fit")).toBe("none");
+    expect(await page.locator(".suites-row").isVisible()).toBe(false);
+    await page.locator(".nav-button").click();
+    const first = page.locator(".sidebar > :first-child");
+    expect(await first.evaluate(e => e.classList.contains("nav-suites"))).toBe(true);
+    expect(await first.locator("a").allTextContents()).toEqual(["User guide", "Java API", "Kotlin API"]);
+    // After a navigation the drawer's blocks keep their order around the kept filter field.
+    await follow(page, `.sidebar a[href="${OTHER}"]`);
+    expect(await page.locator(".sidebar > :first-child").evaluate(e => e.classList.contains("nav-suites"))).toBe(true);
+    expect(await page.locator(".sidebar > :nth-child(2)").evaluate(e => e.classList.contains("nav-filter"))).toBe(true);
     await page.context().close();
   });
 
@@ -331,6 +371,48 @@ describe("layout stability", () => {
   });
 });
 
+describe("the top bar", () => {
+  /** packages/apidocs/test/topbar.test.ts topBarProblems, for the app's own pages: what wraps, overflows or is cut off. */
+  const problems = (page: Page) => page.evaluate(() => {
+    const bar = document.querySelector<HTMLElement>(".topbar")!;
+    const box = bar.getBoundingClientRect();
+    const found: string[] = [];
+    if (bar.scrollWidth > bar.clientWidth) found.push(`the bar scrolls: ${bar.scrollWidth} > ${bar.clientWidth}`);
+    const shown = (e: Element) => {
+      for (let n: Element | null = e; n && n !== bar.parentElement; n = n.parentElement) {
+        const s = getComputedStyle(n);
+        if (s.display === "none" || s.visibility === "hidden" || n.classList.contains("visually-hidden")) return false;
+      }
+      return true;
+    };
+    for (const e of bar.querySelectorAll<HTMLElement>("*")) {
+      if (e.matches(".suites-fit, .suites-probe") || e.closest(".search-results, .suite-list, .version-list, script") || !shown(e)) continue;
+      const r = e.getBoundingClientRect();
+      if ((r.width === 0 && r.height === 0) || r.bottom < 0) continue;
+      const s = getComputedStyle(e);
+      const name = `${e.tagName.toLowerCase()}.${typeof e.className === "string" ? e.className.split(" ")[0] : ""}`;
+      if (r.left < box.left - 0.5 || r.right > box.right + 0.5 || r.top < box.top - 0.5 || r.bottom > box.bottom + 0.5) found.push(`${name} lies outside the bar`);
+      if (s.overflowX !== "visible" && e.scrollWidth > e.clientWidth + 1 && s.textOverflow !== "ellipsis" && !(e instanceof HTMLInputElement)) found.push(`${name} is cut off`);
+    }
+    return found;
+  });
+
+  for (const path of [TYPE, "/kotlin/org/example/kgeo/Geometry", "/guides/guides/getting-started"]) {
+    test(`${path}: nothing wraps, overflows or is cut off from 320 to 1600px`, async () => {
+      const { page } = await open(path, { viewport: { width: 1600, height: 600 } });
+      await page.waitForSelector(".topbar");
+      const found: string[] = [];
+      for (let width = 320; width <= 1600; width += 20) {
+        await page.setViewportSize({ width, height: 600 });
+        await page.evaluate(() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))));
+        for (const problem of await problems(page)) found.push(`${width}px: ${problem}`);
+      }
+      expect(found).toEqual([]);
+      await page.context().close();
+    }, 120_000);
+  }
+});
+
 describe("server islands", () => {
   test("the version menu lists the versions and opens the same page in another one", async () => {
     const { page, documents } = await open("/java/main/com/example/geo/Circle");
@@ -395,7 +477,7 @@ describe("reduced motion", () => {
 
 describe("accessibility", () => {
   for (const colorScheme of ["light", "dark"] as const) {
-    for (const path of [TYPE, "/java/2.0/guides/concepts", "/java/2.0/index-all", "/java/main/com/example/geo/", "/guides/"]) {
+    for (const path of [TYPE, "/java/2.0/guides/concepts", "/java/2.0/index-all", "/java/main/com/example/geo/", "/guides/", "/kotlin/org/example/kgeo/ShapeParseException", "/java/2.0/nope"]) {
       test(`${path} in ${colorScheme} has no axe violations`, async () => {
         const { page } = await open(path, { colorScheme });
         await page.waitForLoadState("networkidle");
@@ -423,9 +505,10 @@ describe("metadata", () => {
       const head = html.split("<head>")[1]!.split("</head>")[0]!;
       return {
         title: /<title>(.*?)<\/title>/.exec(head)?.[1],
-        meta: [...head.matchAll(/<meta (?:name|property)="(description|keywords|generator|apidocs:[a-z]+|og:[a-z_]+|twitter:card)" content="([^"]*)"\/?>/g)].map(m => [m[1], m[1] === "og:url" ? map(m[2]!) : m[2]]),
+        meta: [...head.matchAll(/<meta (?:name|property)="(description|keywords|generator|apidocs:[a-z]+|og:[a-z_]+|twitter:card)" content="([^"]*)"\/?>/g)].map(m => [m[1], m[1] === "og:url" ? map(m[2]!) : m[1] === "og:image" ? "(the social image)" : m[2]]),
         links: [...head.matchAll(/<link rel="(canonical|alternate|index)"[^>]*? href="([^"]*)"/g)].map(m => [m[1], map(m[2]!)]),
-        jsonLd: JSON.parse(/<script type="application\/ld\+json">(.*?)<\/script>/.exec(head)![1]!, (key, value) => (["url", "item", "contentUrl"].includes(key) ? map(value) : value)),
+        // The social image is the app's bundled file, not the static site's assets/social/.
+        jsonLd: JSON.parse(/<script type="application\/ld\+json">(.*?)<\/script>/.exec(head)![1]!, (key, value) => (key === "url" && /\.png$/.test(value) ? "(the social image)" : ["url", "item", "contentUrl"].includes(key) ? map(value) : value)),
       };
     };
     expect(metadata(served, u => u)).toEqual(metadata(staticHtml, u => mapUrl(u, ctx)));
@@ -439,5 +522,24 @@ describe("metadata", () => {
     expect(redirect.status).toBe(301);
     expect(redirect.headers.get("location")).toBe("/java/2.0/com/example/geo/Circle");
     expect((await at("/java/2.0/com/example/geo/Nope")).status).toBe(404);
+  });
+
+  test("the social image is served, and a missing page is the site's not-found page, as HTML or Markdown", async () => {
+    const html = await (await fetch(`${origin}/java/2.0/`)).text();
+    const image = /<meta property="og:image" content="([^"]*)"/.exec(html)![1]!;
+    expect(image).toMatch(new RegExp(`^${origin}/_astro/`));
+    const png = await fetch(image);
+    expect(png.status).toBe(200);
+    expect(png.headers.get("content-type")).toBe("image/png");
+    const missing = await fetch(`${origin}/java/2.0/com/example/geo/Nope`);
+    expect(missing.status).toBe(404);
+    const page = await missing.text();
+    expect(page).toContain("<h1>Not found</h1>");
+    expect(page).toContain('<a href="/java/2.0/packages">Packages</a>');
+    expect(page).toContain('<meta name="robots" content="noindex"/>');
+    const md = await fetch(`${origin}/java/2.0/com/example/geo/Nope`, { headers: { accept: "text/markdown" } });
+    expect(md.status).toBe(404);
+    expect(md.headers.get("content-type")).toContain("text/markdown");
+    expect(await md.text()).toContain("Start at the [overview](/java/2.0/index.md)");
   });
 });

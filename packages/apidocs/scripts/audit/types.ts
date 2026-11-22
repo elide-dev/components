@@ -71,6 +71,8 @@ export interface RepresentativePages {
   package: string;
   smallType: string;
   largestType: string;
+  /** A guide page, when the site has guides. */
+  guide?: string;
   /** Every HTML page, for the checks that read all of them. */
   all: string[];
 }

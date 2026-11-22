@@ -19,6 +19,11 @@ export interface RenderOptions {
   baseUrl?: string;
   /** Where a theme font file is served, from its asset path ("fonts/inter.woff2"). Defaults to the site's assets/. */
   fontUrl?: (asset: string) => string;
+  /**
+   * Where the theme's social image (an asset path, "social/elide.png") is served, as a path or URL; it is made
+   * absolute against baseUrl for og:image. Defaults to the site's assets/.
+   */
+  assetUrl?: (asset: string) => string;
 }
 
 export interface PageParts {
@@ -47,13 +52,18 @@ function between(html: string, open: string, close: string): string {
 
 /** Renders one page of a model (a page path from resolvePage) into the pieces of an Astro document. */
 export function renderPage(model: Model, page: string, themeInput: Theme | string | undefined, options: RenderOptions): PageParts {
-  const { site, pages } = siteOf(model);
-  const entry = pages.get(page);
+  const { site, pages, notFound } = siteOf(model);
+  // "404" is the not-found page: an app renders it for a missing path (with a 404 status), never resolves a path to it.
+  const entry = page === notFound.page ? notFound : pages.get(page);
   if (!entry) throw new Error(`apidocs: no page ${JSON.stringify(page)} in ${model.module.name}`);
   const base = options.base.endsWith("/") ? options.base : `${options.base}/`;
   assertBase(base);
   const input = typeof themeInput === "string" ? (JSON.parse(themeInput) as Theme) : (themeInput ?? {});
-  const theme = prepareTheme({ ...input, baseUrl: input.baseUrl ?? options.baseUrl });
+  const prepared = prepareTheme({ ...input, baseUrl: input.baseUrl ?? options.baseUrl });
+  // The social image's asset is wherever the app serves it (Vite bundles the Elide preset's), as an absolute URL.
+  const image = prepared.socialImage;
+  const imageAt = image?.asset && !image.url && options.assetUrl ? options.assetUrl(image.asset) : undefined;
+  const theme = imageAt && image ? { ...prepared, socialImage: { ...image, url: prepared.baseUrl ? new URL(imageAt, prepared.baseUrl).href : imageAt } } : prepared;
   const ctx: PageContext = { site, theme, page, language: entry.language };
   const render = (node: preact.VNode) =>
     rewriteHtml(

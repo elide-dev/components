@@ -83,7 +83,8 @@ for (const input of inputs) {
   const dir = join(reportDir, "sites", input.name);
   const server = serve(dir, host);
   servers.push(server);
-  const theme = { ...extraTheme, extends: extraTheme.extends ?? input.preset, ...(args.includes("--no-base-url") ? {} : { baseUrl: server.url }) };
+  // The build's date, as the doclet passes it (--last-modified): the audit may read the clock; the renderer never does.
+  const theme = { lastModified: new Date().toISOString().slice(0, 10), ...extraTheme, extends: extraTheme.extends ?? input.preset, ...(args.includes("--no-base-url") ? {} : { baseUrl: server.url }) };
   const stats = renderSite({ model: input.model, theme, out: dir, work: join(reportDir, "work", input.name) });
   const prefer = flag("page") ?? (modelPath ? "dev/elide/kotlin/api/Ir.html" : undefined);
   sites.push({ name: input.name, dir, url: server.url, pages: representativePages(dir, prefer) });
@@ -117,12 +118,12 @@ try {
     const which = flag("lighthouse-sites") ?? "first";
     const lhSites = which === "all" ? sites : [sites.find(s => s.name.endsWith("-elide")) ?? sites[0]!];
     const at = (site: Site, page: string) => (site.urlOf ? site.urlOf(page) : site.url + page);
-    console.log(`  lighthouse: ${lhSites.length} site(s) x 4 pages x ${formFactors.length} form factors ...`);
+    console.log(`  lighthouse: ${lhSites.length} site(s) x 5 pages x ${formFactors.length} form factors ...`);
     const lh = await startLighthouse();
     try {
       for (const site of lhSites) {
-        const { overview, package: pkg, smallType, largestType } = site.pages;
-        for (const page of [...new Set([overview, pkg, smallType, largestType])]) {
+        const { overview, package: pkg, smallType, largestType, guide } = site.pages;
+        for (const page of [...new Set([overview, pkg, smallType, largestType, ...(guide ? [guide] : [])])]) {
           for (const formFactor of formFactors) {
             const base = reportPath(reportDir, site.name, page, formFactor);
             const t = Date.now();

@@ -9,7 +9,7 @@ import { samples } from "../samples";
 import { guidesModel, importMarkdown, readSuite } from "../src/import";
 import type { Model } from "../src/model";
 import { render } from "../src/render";
-import { assertBase, isBaseRelative, linkHeader, mapUrl, notFound, pageUrl, prefersMarkdown, renderPage, renderText, resolvePage, searchEntries, sitePaths, textFiles } from "../src/astro/helpers";
+import { assertBase, isBaseRelative, linkHeader, mapUrl, notFound, notFoundText, pageUrl, prefersMarkdown, renderPage, renderText, resolvePage, searchEntries, sitePaths, textFiles } from "../src/astro/helpers";
 
 const fixture: Model = JSON.parse(readFileSync(new URL("fixtures/fixture-java.api.json", import.meta.url), "utf8"));
 const suite = readSuite(fileURLToPath(new URL("../samples/guides", import.meta.url)));
@@ -20,7 +20,8 @@ const theme = { extends: "elide" as const, baseUrl: "https://example.com/docs/" 
 for (const [name, model] of Object.entries(models)) {
   describe(`${name}: every page and file`, () => {
     const out = render(model, theme);
-    const pages = Object.keys(out).filter(f => f.endsWith(".html")).map(f => f.slice(0, -".html".length));
+    // Every page but the not-found page, which an app renders for a missing path and no path resolves to.
+    const pages = Object.keys(out).filter(f => f.endsWith(".html") && f !== "404.html").map(f => f.slice(0, -".html".length));
 
     test("the pages are the static renderer's pages", () => {
       const astroPages = sitePaths(model, theme).filter(p => p.endsWith(".md")).map(p => p.slice(0, -".md".length));
@@ -43,7 +44,8 @@ for (const [name, model] of Object.entries(models)) {
       for (const page of pages) {
         expect(resolvePage(model, `${page}.md`, theme)).toEqual({ kind: "markdown", page });
         const text = renderText(model, `${page}.md`, theme)!;
-        expect(text.body).toBe(out[`${page}.md`] as string);
+        // The frontmatter's canonical URL is the page's in each form.
+        expect(text.body).toBe((out[`${page}.md`] as string).replace(`canonical: "${theme.baseUrl}${page}.html"`, `canonical: "${theme.baseUrl}${pageUrl(page)}"`));
         expect(text.contentType).toBe("text/markdown; charset=utf-8");
       }
     });
@@ -141,7 +143,7 @@ describe("renderPage", () => {
         const astroHead = pageOf(model, page).head;
         const metadata = (head: string, map: (u: string) => string | undefined) => ({
           title: /<title>(.*?)<\/title>/.exec(head)?.[1],
-          meta: [...head.matchAll(/<meta (?:name|property)="([^"]*)" content="([^"]*)"\/>/g)].map(m => [m[1], m[1] === "og:url" ? map(m[2]!) : m[2]]),
+          meta: [...head.matchAll(/<meta (?:name|property)="([^"]*)" content="([^"]*)"\/>/g)].map(m => [m[1], m[1] === "og:url" || m[1] === "og:image" ? map(m[2]!) : m[2]]),
           links: [...head.matchAll(/<link rel="(canonical|alternate|index)"[^>]*? href="([^"]*)"/g)].map(m => [m[1], map(m[2]!)]),
           jsonLd: JSON.parse(/<script type="application\/ld\+json">(.*?)<\/script>/.exec(head)![1]!, (key, value) => (["url", "item", "contentUrl"].includes(key) ? map(value) : value)),
         });
@@ -163,6 +165,26 @@ describe("renderPage", () => {
     expect(parts.themeCss).toContain(":root:root{");
     expect(parts.preload).toEqual(["/docs/assets/fonts/jetbrains-mono-latin-wght-normal.woff2"]);
     expect(parts.moduleVersion).toBe('<span class="module-version"><span class="version">2.1.0</span></span>');
+  });
+
+  test("the not-found page renders in the shell, and its Markdown names the site's base", () => {
+    const parts = pageOf(samples.java, "404");
+    expect(parts.title).toBe("Not found (geo 2.1.0)");
+    expect(parts.head).toContain('<meta name="robots" content="noindex"/>');
+    expect(parts.head).not.toContain('rel="canonical"');
+    expect(parts.body.join("")).toContain('<a href="/docs/packages">Packages</a>');
+    const md = notFoundText(samples.java, "/docs/", theme);
+    expect(md).toContain("[overview](/docs/index.md)");
+    expect(md).toContain("- [Deprecated](/docs/deprecated.md)");
+    // The static 404.md's text, which links from the site's address.
+    expect(md.replaceAll("](/docs/", `](${theme.baseUrl}`)).toBe(render(samples.java, theme)["404.md"] as string);
+    expect(resolvePage(samples.java, "404", theme)).toEqual({ kind: "missing" });
+  });
+
+  test("the social image is the app's bundled file, as an absolute URL", () => {
+    const parts = renderPage(samples.java, "index", theme, { base, baseUrl: theme.baseUrl, assetUrl: () => "/_astro/elide.abc123.png" });
+    expect(parts.head).toContain('<meta property="og:image" content="https://example.com/_astro/elide.abc123.png"/>');
+    expect(parts.head).toContain('<meta name="twitter:card" content="summary_large_image"/>');
   });
 
   test("an unknown page is an error, not an empty page", () => {

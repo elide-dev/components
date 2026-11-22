@@ -11,7 +11,8 @@ import type { Model, Token } from "../src/model";
 import { render } from "../src/render";
 import { sanitize } from "../src/sanitize";
 import { layoutSignature } from "../src/signature";
-import { sharedPrefix } from "../src/components/chrome";
+import { navIndexes, sharedPrefix, suites } from "../src/components/chrome";
+import { buildSite, isThrowable } from "../src/site";
 import { checkSite } from "./check";
 import { validate } from "./validate";
 
@@ -88,7 +89,8 @@ describe("render", () => {
     expect(site["assets/fonts/jetbrains-mono-latin-wght-normal.woff2"]).toEqual({ asset: "fonts/jetbrains-mono-latin-wght-normal.woff2" });
     // Prose and headings use the reader's system fonts: no other font file ships.
     expect(Object.keys(site).filter(f => f.startsWith("assets/fonts/")).sort()).toEqual(["assets/fonts/jetbrains-mono-latin-wght-italic.woff2", "assets/fonts/jetbrains-mono-latin-wght-normal.woff2"]);
-    expect(site["assets/theme.css"]).toContain("--apidocs-accent:#6d28d9");
+    // @elide/tokens' purple[700], #6d28d9, written as oklch().
+    expect(site["assets/theme.css"]).toContain("--apidocs-accent:oklch(49.067% 0.24123 292.581);");
   });
   test("notes render as distinct callouts, the API note first", () => {
     const html = out["fixture/java/Geometry.html"] as string;
@@ -98,6 +100,89 @@ describe("render", () => {
     expect(parse.indexOf("callout-apiNote")).toBeGreaterThan(0);
     expect(parse.indexOf("callout-apiNote")).toBeLessThan(parse.indexOf("callout-implNote"));
     expect(render(samples.java, { symbols: "none" })["com/example/geo/Shapes.md"]).toContain("> **API note**");
+  });
+});
+
+describe("agent readiness", () => {
+  const base = "https://example.com/geo/";
+  const elide = render(samples.java, { extends: "elide", baseUrl: base, lastModified: "2026-11-21" });
+  const head = (html: string) => html.split("<head>")[1]!.split("</head>")[0]!;
+  const graph = (html: string) => JSON.parse(/<script type="application\/ld\+json">(.*?)<\/script>/.exec(html)![1]!)["@graph"];
+
+  test("a theme's social image gives og:image, its size and alt text, and the large card; none without one", () => {
+    const h = head(elide["com/example/geo/Shapes.html"] as string);
+    expect(h).toContain(`<meta property="og:image" content="${base}assets/social/elide.png"/>`);
+    expect(h).toContain('<meta property="og:image:width" content="1200"/>');
+    expect(h).toContain('<meta property="og:image:height" content="630"/>');
+    expect(h).toContain('<meta property="og:image:alt" content="The Elide logo on a dark background"/>');
+    expect(h).toContain('<meta name="twitter:card" content="summary_large_image"/>');
+    expect(elide["assets/social/elide.png"]).toEqual({ asset: "social/elide.png" });
+    expect(head(render(samples.java)["index.html"] as string)).toContain('<meta property="og:image" content="assets/social/neutral.png"/>');
+    const none = head(render(samples.java, { socialImage: null })["index.html"] as string);
+    expect(none).not.toContain("og:image");
+    expect(none).toContain('<meta name="twitter:card" content="summary"/>');
+    // A URL that is not http(s), or an asset path that climbs out of assets/, is dropped.
+    expect(render(samples.java, { socialImage: { url: "javascript:x", width: 1, height: 1, alt: "" } })["index.html"]).not.toContain("og:image");
+    expect(Object.keys(render(samples.java, { socialImage: { asset: "../secret.png", width: 1, height: 1, alt: "" } }))).not.toContain("assets/../secret.png");
+  });
+  test("the overview's JSON-LD lists the guides and packages, every page's has a url", () => {
+    const parts = graph(elide["index.html"] as string)[0].hasPart as { "@type": string; name: string; url: string }[];
+    expect(parts[0]).toEqual({ "@type": "TechArticle", name: "Getting started", url: `${base}guides/getting-started.html` });
+    expect(parts.find(p => p.name === "com.example.geo")).toEqual({ "@type": "APIReference", name: "com.example.geo", url: `${base}com/example/geo/index.html` });
+    expect(graph(elide["com/example/geo/Shapes.html"] as string)[0].url).toBe(`${base}com/example/geo/Shapes.html`);
+    // Relative without a base URL, as the breadcrumbs are.
+    expect(graph(render(samples.java)["com/example/geo/Shapes.html"] as string)[0].url).toBe("Shapes.html");
+  });
+  test("404.html and 404.md: the page shell with the way back, links from the site's address, kept out of the indexes", () => {
+    const html = elide["404.html"] as string;
+    expect(html).toContain(`<head><base href="${base}"/>`);
+    expect(html).toContain('<meta name="robots" content="noindex"/>');
+    expect(html).not.toContain('rel="canonical"');
+    expect(html).toContain('<h1>Not found</h1>');
+    expect(html).toContain('<a href="deprecated.html">Deprecated</a>');
+    expect(elide["404.md"]).toContain(`Start at the [overview](${base}index.md)`);
+    expect(render(samples.java)["404.md"]).toContain("Start at the [overview](index.md)");
+    expect(elide["llms.txt"]).not.toContain("404");
+    expect(elide["sitemap.xml"]).not.toContain("404");
+  });
+  test("sitemap.xml has lastmod from the theme, never from the clock", () => {
+    expect(elide["sitemap.xml"]).toContain(`<url><loc>${base}index.html</loc><lastmod>2026-11-21</lastmod></url>`);
+    expect(render(samples.java, { baseUrl: base })["sitemap.xml"]).not.toContain("lastmod");
+    expect(render(samples.java, { baseUrl: base, lastModified: "yesterday" })["sitemap.xml"]).not.toContain("lastmod");
+  });
+  test("llms.txt says when to use the reference: the theme's text, or a sentence from the module's", () => {
+    expect(elide["llms.txt"]).toContain("## When to use this\n\nUse this API reference when you write, read or review code that uses geo 2.1.0. A small geometry library: the Java-flavored sample for @elide/apidocs.");
+    expect(render(samples.java, { whenToUse: "Read the guides first." })["llms.txt"]).toContain("## When to use this\n\nRead the guides first.");
+  });
+  test("Markdown twins open with frontmatter; llms-full.txt joins them without it", () => {
+    expect((elide["com/example/geo/Shapes.md"] as string).split("\n---\n")[0]).toBe(
+      `---\ntitle: "Shapes"\ndescription: "Operations on shapes."\nkind: "class"\nid: "com.example.geo.Shapes"\nmodule: "geo"\nversion: "2.1.0"\ncanonical: "${base}com/example/geo/Shapes.html"`);
+    expect(elide["guides/concepts.md"]).toMatch(/^---\ntitle: "Concepts"\n[\s\S]*kind: "guide"\nid: "guide:concepts"/);
+    expect(elide["packages.md"]).toMatch(/^---\ntitle: "Packages"\ndescription: "Packages: every package with its summary and type counts\."\nkind: "index"/);
+    const full = elide["llms-full.txt"] as string;
+    expect(full).not.toMatch(/^(title|kind|canonical): "/m);
+    expect(full).toContain("<!-- com/example/geo/Shapes.md -->\n# ");
+  });
+});
+
+describe("exceptions", () => {
+  const type = (id: string, ancestors: string[]) => ({ id, name: id, kind: "class", signature: [], language: "java", ancestors: ancestors.map(a => ({ id: a })) }) as unknown as import("../src/model").Type;
+  test("a Java exception: java.lang.Throwable among its ancestors", () => {
+    expect(isThrowable(type("com.example.Oops", ["java.lang.RuntimeException", "java.lang.Exception", "java.lang.Throwable", "java.lang.Object"]))).toBe(true);
+    expect(isThrowable(type("java.lang.Throwable", ["java.lang.Object"]))).toBe(true);
+  });
+  test("a Kotlin exception: kotlin.Throwable, or the Java class, as Dokka DRIs", () => {
+    expect(isThrowable(type("org.example/Oops///PointingToDeclaration/", ["kotlin/Exception///PointingToDeclaration/", "kotlin/Throwable///PointingToDeclaration/", "kotlin/Any///PointingToDeclaration/"]))).toBe(true);
+    expect(isThrowable(type("org.example/Oops///PointingToDeclaration/", ["java.lang/IllegalStateException///PointingToDeclaration/", "java.lang/Throwable///PointingToDeclaration/"]))).toBe(true);
+  });
+  test("a class that merely has Throwable in its name is not one", () => {
+    expect(isThrowable(type("com.example.ThrowableFactory", ["java.lang.Object"]))).toBe(false);
+    expect(isThrowable(type("org.example/Wrapper///PointingToDeclaration/", ["org.example/ThrowableHolder///PointingToDeclaration/", "my.Throwable", "kotlin/Any///PointingToDeclaration/"]))).toBe(false);
+  });
+  test("the Kotlin sample's exception gets the exception glyph and group", () => {
+    const html = render(samples.kotlin)["org/example/kgeo/ShapeParseException.html"] as string;
+    expect(html).toContain('data-tone="exception"');
+    expect(render(samples.kotlin)["org/example/kgeo/index.md"]).toContain("## Exceptions");
   });
 });
 
@@ -138,6 +223,49 @@ describe("layout", () => {
     const html = java["index.html"] as string;
     expect(html).toContain('<input type="checkbox" id="apidocs-nav-toggle"');
     expect(html).toContain('for="apidocs-nav-toggle"');
+  });
+  test("theme links are resolved from the site root on pages at any depth, header and footer alike", () => {
+    const out = render(samples.java, { links: { header: [{ label: "Guide", url: "guides/concepts.html" }, { label: "Here", url: "./", current: true }], footer: [{ label: "Notes", url: "guides/concepts.html" }, { label: "Root", url: "/docs/" }, { label: "Elsewhere", url: "https://example.com/x" }] } });
+    const footer = (page: string) => between(out[page] as string, '<p class="footer-links">', "</p>");
+    expect(footer("index.html")).toContain('href="guides/concepts.html"');
+    expect(footer("com/example/geo/Shapes.html")).toContain('href="../../../guides/concepts.html"');
+    expect(footer("com/example/geo/Shapes.html")).toContain('href="/docs/"');
+    expect(footer("com/example/geo/Shapes.html")).toContain('href="https://example.com/x"');
+    expect(between(out["com/example/geo/Shapes.html"] as string, '<nav class="suites-row"', "</nav>")).toContain('href="../../../guides/concepts.html"');
+    expect(checkSite(out, { allowed: [...allowed(samples.java), "/docs/"] }).filter(e => !e.includes("/docs/"))).toEqual([]);
+  });
+  test("the suite switcher marks the current site, given or inferred, and is left out with nothing to switch to", () => {
+    const sites = [{ label: "Guide", url: "https://example.com/guide/" }, { label: "API", url: "https://example.com/api/" }];
+    expect(suites({ links: { header: sites } }, "index").map(s => s.current)).toEqual([false, false]);
+    expect(suites({ links: { header: [sites[0]!, { ...sites[1]!, current: true }] } }, "a/B").map(s => [s.current, s.href])).toEqual([[false, "https://example.com/guide/"], [true, "../index.html"]]);
+    // Inferred from the base URL, or from a link to the site's own root.
+    expect(suites({ baseUrl: "https://example.com/api/", links: { header: sites } }, "index").map(s => s.current)).toEqual([false, true]);
+    expect(suites({ links: { header: [sites[0]!, { label: "API", url: "index.html" }] } }, "index").map(s => s.current)).toEqual([false, true]);
+    // Only this site, or no links: no switcher.
+    expect(suites({ links: { header: [{ label: "API", url: "./" }] } }, "index")).toEqual([]);
+    expect(suites({}, "index")).toEqual([]);
+    expect(java["index.html"]).not.toContain('class="suites"');
+    const html = render(samples.java, { extends: "elide", links: { header: [...sites, { label: "Here", url: "./", current: true }] } })["com/example/geo/Shapes.html"] as string;
+    expect(between(html, '<nav class="suites-row"', "</nav>")).toContain('<a href="../../../index.html" aria-current="true">Here</a>');
+    expect(between(html, '<section class="nav-section nav-suites"', "</section>")).toContain(">Guide<");
+  });
+  test("the navigator lists the indexes: rows under Reference past two, the current one marked; none on a guides-only site", () => {
+    const site = buildSite(samples.java);
+    expect(navIndexes(site, "types").map(e => [e.label, e.current])).toEqual([["Overview", false], ["Packages", false], ["All types", true], ["Index", false], ["Deprecated", false]]);
+    const nav = between(java["com/example/geo/Shapes.html"] as string, '<nav class="sidebar"', "</nav>");
+    expect(nav).toContain('<section class="nav-section nav-reference"><h2 class="nav-heading"><span>Reference</span></h2>');
+    expect(between(java["types.html"] as string, '<section class="nav-section nav-reference"', "</section>")).toContain('<a class="nav-row" href="types.html" aria-current="page">');
+    expect(java["index.html"]).not.toContain('class="topbar-nav"');
+    // A guides-only site whose overview is a guide has none: the overview is the first guide row.
+    const guides = render({ ...samples.java, packages: [], module: { ...samples.java.module, overview: samples.java.module.guides![0]!.id } });
+    expect(guides["index.html"]).not.toMatch(/nav-reference|nav-index/);
+    // One with a generated overview has a one-link row.
+    const plain = render({ ...samples.java, packages: [], module: { ...samples.java.module, overview: undefined } });
+    expect(between(plain["index.html"] as string, '<ul class="nav-index"', "</ul>")).toContain(">Overview<");
+    // The filter is there on guides-only sites too, and filters guides and types, never sites, indexes or packages.
+    expect(plain["index.html"]).toContain("data-nav-filter");
+    expect(nav).toContain('<section class="nav-section nav-guides" data-nav-filterable');
+    expect(nav).not.toMatch(/nav-packages" data-nav-filterable|nav-reference" data-nav-filterable/);
   });
   test("font preloads are added at run time off file://, upright faces only", () => {
     const head = between(java["com/example/geo/Shapes.html"] as string, "<head>", "</head>");

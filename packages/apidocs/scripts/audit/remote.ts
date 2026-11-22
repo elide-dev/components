@@ -71,6 +71,7 @@ export async function mirrorSite(name: string, url: string, dir: string): Promis
       // The smallest type page with real content, and the largest, as representativePages chooses them.
       smallType: bySize.find(f => size(f) > 4000) ?? bySize[0] ?? "index.html",
       largestType: bySize.at(-1) ?? "index.html",
+      ...(all.some(f => f.startsWith("guides/")) ? { guide: all.filter(f => f.startsWith("guides/")).sort().find(g => /getting-started/.test(g)) ?? all.filter(f => f.startsWith("guides/")).sort()[0] } : {}),
       all,
     },
   };

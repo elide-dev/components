@@ -43,8 +43,9 @@ the score below; the CSS row is the share of the nine mechanical good-css rules 
 
 Lighthouse 13.6.0 (pinned) runs programmatically in the Chromium that Playwright installs, through chrome-launcher, once
 per page and form factor (mobile is Lighthouse's default config; desktop uses `desktop-config.js`). It audits the module
-overview, the package page with the most types, the smallest type page with real content, and the largest type page
-(`ShapeCatalog.html` in the Java sample; `dev/elide/kotlin/api/Ir.html` in the Komodo model). Each run's JSON and HTML
+overview, the package page with the most types, the smallest type page with real content, the largest type page
+(`ShapeCatalog.html` in the Java sample; `dev/elide/kotlin/api/Ir.html` in the Komodo model), and a guide page
+(`guides/getting-started.html` when there is one). Each run's JSON and HTML
 report, and a summary of the failing weighted audits with their values, are in `lighthouse/`.
 
 The pages are served the way a static host would serve them: brotli or gzip, `Cache-Control: public, max-age=31536000`
@@ -83,6 +84,16 @@ Ora's partial-credit thresholds are not all published, and the values used are i
 Agentic's own display groups checks as Essential (80 points), Recommended (20) and Bonus (5); that grouping per site
 type is not published, so the audit reports Ora's score.
 
+The text the token budget and the content checks measure is what a reader gets: `<pre>` is parsed like any other
+element, so a highlighted signature counts as its text, not its markup. (Earlier versions of the audit counted the
+markup inside `<pre>`, which made the largest Java sample page read as 175,174 characters; parsed, it was 102,861,
+and with each member's summary sentence drawn once it is 89,287.) Built sites get the run's date as the theme's
+`lastModified`, as the doclet passes its build date.
+
+The static host profile cannot pass `agent-friendly-404` in full: a missing page gets the site's `404.html` with a
+404 status (1 of 2), but answering `Accept: text/markdown` with `404.md` is content negotiation, which a static
+host does not do. `--host agent` does it, as the Astro integration's route does.
+
 Each finding names an owner: `page` (markup, CSS, client script), `output` (files the renderer writes: llms.txt,
 sitemap.xml, robots.txt, 404 pages, JSON-LD content) or `host` (status codes, headers, negotiation). `--host agent`
 serves each page's `.md` twin for `Accept: text/markdown` with `Vary: Accept` and adds Link headers, to show the score
@@ -106,3 +117,19 @@ everything pressable (approximated: every `:hover` selector has a matching `:act
 `prefers-reduced-motion: no-preference`, named transition properties without `all` or `ease-in` and at most 300 ms,
 `overflow: clip` over `hidden`, and the declarations the skill leaves out on purpose. The 47 entries need judgment
 about where they apply, so each gets a `review` row in the report with what the stylesheet shows; a person settles it.
+
+A declaration may be a noted exception to one rule: a `/* good-css exception (rule-id): reason */` comment before it
+in its rule, or before its rule, takes it out of that rule's count, and the report lists it. Each one is a choice
+the pages need, kept on purpose:
+
+| Rule | Where | Why |
+| --- | --- | --- |
+| `motion-properties` | the load bar's two animations | It shows progress, not a change of state: a 6s ease-out so a slow page still shows movement, and 420ms for the arriving page to finish it. Both stay inside `prefers-reduced-motion: no-preference`. |
+| `overflow-clip` | `.product`, `.suite-label`, `.result-context`, `.nav-label`, `.toc a` | `overflow: hidden` so `text-overflow: ellipsis` shows in every target browser (Safari before 16 has no `clip`). |
+| `overflow-clip` | `.member-brief` | WebKit clamps lines with `-webkit-line-clamp` only under `overflow: hidden`. |
+| `fluid-clamp` | where the navigator becomes a drawer (860px): the drawer's padding, the switcher's margin, the search field without its key hint, the drawer's sites block, one-column facts, the summary table as blocks; and the content's padding when the navigator is hidden | Layout changes, not a size stepped at a breakpoint: each value belongs to a different arrangement of the page. |
+| `fluid-clamp` | the Elide preset's title and declaration-specimen sizes | The preset sets its type in exact pixels so JetBrains Mono's characters are a whole number of pixels wide: 30px and 15px, 25px and 13.3333px where the navigator is a drawer. A fluid size between them would put the characters off the pixel grid. It is written as a token switch in the preset's CSS. |
+
+Fluid sizes are custom properties at the top of `apidocs.css` (`--apidocs-gutter`, `--apidocs-content-top`, and so
+on): the narrow value at 480px wide and below, the wide one from 1000px, a straight line between. They cover spacing,
+and the title and specimen sizes of the neutral (fallback) type scale; the scale tokens themselves stay exact.

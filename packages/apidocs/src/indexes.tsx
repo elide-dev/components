@@ -22,8 +22,8 @@ function IndexShell({ page, title, description, toc, children }: { page: string;
       description={description}
       crumbs={crumbs}
       toc={toc}
-      meta={{ kind: "module", keywords }}
-      jsonLd={{ "@context": "https://schema.org", "@type": "CollectionPage", name: `${title} of ${m.name}`, description, url: `${page}.html` }}
+      meta={{ kind: "index", keywords }}
+      jsonLd={{ "@context": "https://schema.org", "@type": "CollectionPage", name: `${title} of ${m.name}`, description }}
     >
       <header class="page-head">
         <h1>{title}</h1>

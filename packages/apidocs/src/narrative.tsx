@@ -52,9 +52,9 @@ export function GuidePage({ entry, children, extraToc = [] }: { entry: GuideEntr
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "TechArticle",
+    name: g.title,
     headline: g.title,
     description,
-    ...(theme.baseUrl ? { url: `${theme.baseUrl}${page}.html` } : {}),
     isPartOf: { "@type": "SoftwareSourceCode", name: m.name, ...(m.version ? { version: m.version } : {}) },
   };
   const nav = guideNav(site, page);

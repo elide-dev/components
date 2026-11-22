@@ -7,8 +7,8 @@
 import { sites, versions } from "virtual:@elide/apidocs/sites";
 import ApidocsPage from "./ApidocsPage.astro";
 import { resolvePage } from "./resolve";
-import { linkHeader, notFound, prefersMarkdown } from "./http";
-import { renderText } from "./text";
+import { linkHeader, prefersMarkdown } from "./http";
+import { notFoundText, renderText } from "./text";
 import VersionIsland from "./VersionIsland.astro";
 import VersionNotice from "./VersionNotice.astro";
 import VersionSelect from "./VersionSelect.astro";
@@ -29,15 +29,23 @@ if (resolved.kind === "markdown" || resolved.kind === "file") {
   return new Response(text.body, { headers: { "content-type": text.contentType } });
 }
 const accept = Astro.request.headers.get("accept");
-if (resolved.kind === "missing") return notFound(site.base, site.model.module.name, accept);
-const page = resolved.page;
+// A missing page is the site's not-found page, as the static output's 404.html and 404.md are: Markdown for a client
+// that asks for it, else the page shell with the way back.
+if (resolved.kind === "missing" && prefersMarkdown(accept)) {
+  return new Response(notFoundText(site.model, site.base, theme), { status: 404, headers: { "content-type": "text/markdown; charset=utf-8", vary: "Accept", "cache-control": "public, max-age=60" } });
+}
+if (resolved.kind === "missing") {
+  Astro.response.status = 404;
+  Astro.response.headers.set("cache-control", "public, max-age=60");
+}
+const page = resolved.kind === "missing" ? "404" : resolved.page;
 // One URL, two forms: a request that prefers Markdown gets the page's twin.
-if (prefersMarkdown(accept)) {
+if (resolved.kind === "page" && prefersMarkdown(accept)) {
   const text = renderText(site.model, `${page}.md`, theme)!;
   return new Response(text.body, { headers: { "content-type": text.contentType, vary: "Accept", link: linkHeader(site.base, page) } });
 }
 Astro.response.headers.set("vary", "Accept");
-Astro.response.headers.set("link", linkHeader(site.base, page));
+if (resolved.kind === "page") Astro.response.headers.set("link", linkHeader(site.base, page));
 const here = site.version ? versions.find(v => v.id === site.version) : undefined;
 const latest = latestRelease(versions);
 ---

@@ -57,6 +57,8 @@ export function checkSite(out: Output, options: CheckOptions): string[] {
         if (!options.allowed.some(prefix => url.startsWith(prefix))) errors.push(`${file}: absolute URL ${url}`);
         continue;
       }
+      // 404.html is served at whatever URL was missing: a link within it can only be a fragment.
+      if (url.startsWith("#") && url.length > 1 && file === "404.html") continue;
       if (url === "" || url.startsWith("#")) {
         errors.push(`${file}: link does not name its file: "${url}"`);
         continue;

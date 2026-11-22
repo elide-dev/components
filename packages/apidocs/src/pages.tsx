@@ -1,7 +1,7 @@
 /** The three page kinds: the module overview, a package, and a type. */
 import { usePage } from "./context";
 import type { Member, Package, Token, Type } from "./model";
-import { INDEX, overviewGuide, packagePage, refLabel, relative, resolve, typePage } from "./site";
+import { INDEX, indexPages, overviewGuide, packagePage, refLabel, relative, resolve, rootOf, typePage } from "./site";
 import { compactTokens, memberGroups, memberTitle, summaryText, typeGroups, typeKindWord } from "./structure";
 import { Badge, Blocks, Inlines, Signature, TokenList } from "./components/doc";
 import type { Crumb, TocItem } from "./components/chrome";
@@ -25,9 +25,32 @@ function jsonLd(name: string, description: string, kind: string) {
     description,
     programmingLanguage: (m.languages ?? []).map(l => l[0]!.toUpperCase() + l.slice(1)),
     about: kind,
-    ...(theme.baseUrl ? { url: `${theme.baseUrl}${page}.html` } : {}),
     isPartOf: { "@type": "SoftwareSourceCode", name: m.name, ...(m.version ? { version: m.version } : {}) },
   };
+}
+
+// ---- The page a host serves for a missing URL (404.html).
+
+export function NotFoundPage() {
+  const { site, page } = usePage();
+  const m = site.model.module;
+  const description = `There is no such page in ${m.name}.`;
+  const links = [{ page: INDEX, label: "Overview" }, ...indexPages(site)];
+  return (
+    <Shell title={`Not found (${moduleTitle()})`} description={description} crumbs={[]} toc={[]} jsonLd={{ "@context": "https://schema.org", "@type": "WebPage", name: "Not found", description }}
+      meta={{ kind: "notfound" }}>
+      <header class="page-head">
+        <h1>Not found</h1>
+      </header>
+      <div class="prose">
+        <p>There is no such page in {m.name}. It may have moved, or the link may be wrong. Search above, or start from one of these:</p>
+        <ul>
+          {links.map(link => <li key={link.page}><a href={relative(page, link.page, ".html")}>{link.label}</a></li>)}
+          <li><a href={`${rootOf(page)}llms.txt`}>llms.txt</a>, every page as Markdown</li>
+        </ul>
+      </div>
+    </Shell>
+  );
 }
 
 // ---- The module overview.

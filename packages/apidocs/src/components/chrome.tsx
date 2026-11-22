@@ -11,7 +11,7 @@ import { createContext, type ComponentChildren } from "preact";
 import { useContext } from "preact/hooks";
 import { type PageContext, usePage } from "../context";
 import type { Package, Type } from "../model";
-import { INDEX, guideNav, indexPages, isAbsolute, isThrowable, packagePage, relative, rootOf, typePage } from "../site";
+import { INDEX, guideNav, indexPages, isAbsolute, isThrowable, overviewGuide, packagePage, relative, rootOf, type Site, typePage } from "../site";
 import { typeGroups } from "../structure";
 import type { Theme } from "../theme";
 import { SYMBOLS, sym } from "../symbols";
@@ -77,9 +77,21 @@ function logoWidth(svg: string, height: number): number | undefined {
   return w > 0 && h > 0 ? Math.round((height * w) / h) : undefined;
 }
 
-/** Restores the navigator's scroll position as soon as it is parsed, so it never jumps after paint. */
+/**
+ * Where the navigator scrolls to show the current row: about a third of the way down, at a position where no row
+ * lies partly under the sticky filter field, which covers the navigator's top once it is scrolled (a row half under
+ * the field is a link with part of it covered). It picks the scroll position nearest the third whose field sits over
+ * a gap between rows (a heading, the space between sections), with the current row still in view; at the top
+ * nothing is under the field. Defined once, as a global the page's scripts call (apidocsNavTop), and used at once to
+ * restore the navigator's position before it is painted.
+ */
 const NAV_BOOT =
-  '(function(){var n=document.getElementById("apidocs-nav");if(!n)return;try{var k="apidocs-nav:"+new URL(document.documentElement.getAttribute("data-root")||"./",location.href).pathname;var s=sessionStorage.getItem(k);if(s)n.scrollTop=+s}catch(e){}var c=n.querySelector(\'[aria-current="page"]\');if(c&&(c.offsetTop<n.scrollTop||c.offsetTop>n.scrollTop+n.clientHeight-40))n.scrollTop=Math.max(0,c.offsetTop-n.clientHeight/3)})()';
+  'window.apidocsNavTop=function(n,c){var m=n.scrollHeight-n.clientHeight,w=Math.max(0,Math.min(c.offsetTop-n.clientHeight/3,m)),i=n.querySelector(".nav-filter input"),' +
+  'a=i?i.offsetTop:0,z=i?a+i.offsetHeight:0,best=0,end=0;' +
+  'Array.prototype.forEach.call(n.querySelectorAll(".nav-row"),function(r){if(!r.offsetHeight)return;var t=r.offsetTop,s=t-z;' +
+  'if(t-end>=z-a&&s>=0&&s<=m&&end<=s+a&&c.offsetTop>=s+z&&c.offsetTop+c.offsetHeight<=s+n.clientHeight&&Math.abs(s-w)<Math.abs(best-w))best=s;end=Math.max(end,t+r.offsetHeight)});' +
+  'return best};' +
+  '(function(){var n=document.getElementById("apidocs-nav");if(!n)return;try{var k="apidocs-nav:"+new URL(document.documentElement.getAttribute("data-root")||"./",location.href).pathname;var s=sessionStorage.getItem(k);if(s)n.scrollTop=+s}catch(e){}var c=n.querySelector(\'[aria-current="page"]\');if(c&&(c.offsetTop<n.scrollTop||c.offsetTop>n.scrollTop+n.clientHeight-40))n.scrollTop=apidocsNavTop(n,c)})()';
 
 /**
  * Preloads the upright font files, so they are ready at first paint. Done from the head script, not with link
@@ -100,6 +112,22 @@ const SPECULATION = JSON.stringify({
   prerender: [{ where: { selector_matches: "a[href$='.html']:not([href*='://']), a[href*='.html#']:not([href*='://'])" }, eagerness: "moderate" }],
 });
 
+/**
+ * Sizes the suite switcher before first paint, and again whenever the script calls it (on resize). The layout
+ * alone already shows the row or the menu (see SuiteSwitcher); this gives the switcher exactly the width of what it
+ * shows, so a menu leaves no empty space for the search field, and takes the switcher out of a drawer layout's bar
+ * when its row does not fit. The room it measures is what the tools would leave it with the search field at its
+ * narrowest, so the decision never depends on the switcher's own width.
+ */
+export const SUITES_BOOT =
+  'window.apidocsFitSuites=function(){var b=document.querySelector(".suites");if(!b)return;var t=b.parentElement,g=parseFloat(getComputedStyle(t).columnGap)||0,' +
+  'a=t.clientWidth-(parseFloat(getComputedStyle(b).marginInlineStart)||0),r=0,l=b.querySelectorAll(".suites-ghost"),f=b.querySelector(".suites-floor"),' +
+  // The search field's floor beside a switcher (a length in rem or px), not its floor once the switcher has left.
+  'm=getComputedStyle(t).getPropertyValue("--apidocs-search-floor").trim(),q=parseFloat(m)*(/rem$/.test(m)?parseFloat(getComputedStyle(document.documentElement).fontSize):1)||0;' +
+  'Array.prototype.forEach.call(t.querySelectorAll(".search,.theme-switch,.search-fallback"),function(e){var c=getComputedStyle(e);if(c.display==="none")return;a-=g+(e.classList.contains("search")?q:e.getBoundingClientRect().width)});' +
+  'Array.prototype.forEach.call(l,function(e){r+=e.getBoundingClientRect().width});r+=(parseFloat(getComputedStyle(l[0].parentElement).columnGap)||0)*(l.length-1)+1;' +
+  'var s=r<=a?"row":matchMedia("(min-width:861px)").matches?"menu":"none";b.setAttribute("data-fit",s);b.style.setProperty("--apidocs-suites-width",(s==="row"?r:f.getBoundingClientRect().width)+"px")};apidocsFitSuites()';
+
 /** Applies a stored "navigator hidden" choice on a wide screen, before the navigator is painted. */
 const NAV_STATE_BOOT =
   'try{if(matchMedia("(min-width:861px)").matches&&localStorage.getItem("apidocs-nav")==="closed")document.getElementById("apidocs-nav-toggle").checked=true}catch(e){}';
@@ -116,7 +144,7 @@ export interface ShellProps {
 }
 
 export interface PageMeta {
-  kind: "module" | "package" | "type" | "guide";
+  kind: "module" | "package" | "type" | "guide" | "index" | "notfound";
   /** The declaration's stable id. */
   id?: string;
   package?: string;
@@ -161,7 +189,8 @@ export function headData(ctx: PageContext, props: Pick<ShellProps, "title" | "de
   const root = rootOf(page);
   const name = page.split("/").pop()!;
   const product = theme.productName ?? site.model.module.name;
-  const canonical = theme.baseUrl ? `${theme.baseUrl}${page}.html` : undefined;
+  // The not-found page is served at every missing URL: it names no canonical one.
+  const canonical = theme.baseUrl && meta?.kind !== "notfound" ? `${theme.baseUrl}${page}.html` : undefined;
   const m = site.model.module;
   const at = (path: string, fromRoot: boolean) => (theme.baseUrl ? `${theme.baseUrl}${fromRoot ? path : `${page.slice(0, page.lastIndexOf("/") + 1)}${path}`}` : `${fromRoot ? root : ""}${path}`);
   const formats: Formats = {
@@ -171,17 +200,31 @@ export function headData(ctx: PageContext, props: Pick<ShellProps, "title" | "de
     model: at("api.json", true),
   };
   const keywords = [...new Set([...(meta?.keywords ?? []), m.name, ...(m.languages ?? []).map(languageName), ...(site.packages.length ? ["API reference"] : [])])].filter(Boolean);
+  // Another page's URL in the graph: absolute under the base URL, else relative to this page, as the breadcrumbs are.
+  const pageUrl = (target: string) => (theme.baseUrl ? `${theme.baseUrl}${target}.html` : relative(page, target, ".html"));
+  const image = socialImageUrl(theme, root);
   const graph = {
     "@context": "https://schema.org",
     "@graph": [
       {
         ...jsonLd,
         "@context": undefined,
+        url: pageUrl(page),
         headline: title,
         inLanguage: "en",
         keywords: keywords.join(", "),
         encoding: [{ "@type": "MediaObject", encodingFormat: "text/markdown", contentUrl: formats.markdown, name: "This page as Markdown" }],
         ...(m.version ? { version: m.version } : {}),
+        ...(image ? { image: { "@type": "ImageObject", url: image, width: theme.socialImage!.width, height: theme.socialImage!.height, caption: theme.socialImage!.alt } } : {}),
+        // The overview lists what the site holds: the guides, then the packages.
+        ...(page === INDEX && (site.guides.length > 0 || site.packages.length > 0)
+          ? {
+              hasPart: [
+                ...site.guides.filter(g => g.page !== INDEX).map(g => ({ "@type": "TechArticle", name: g.guide.title, url: pageUrl(g.page) })),
+                ...site.packages.map(pkg => ({ "@type": "APIReference", name: pkg.name || "(default package)", url: pageUrl(packagePage(pkg)) })),
+              ],
+            }
+          : {}),
       },
       ...(crumbs.length > 1
         ? [{
@@ -223,7 +266,16 @@ export function headData(ctx: PageContext, props: Pick<ShellProps, "title" | "de
     { property: "og:description", content: description },
     { property: "og:site_name", content: product },
     ...(canonical ? [{ property: "og:url", content: canonical }] : []),
-    { name: "twitter:card", content: "summary" },
+    ...(image
+      ? [
+          { property: "og:image", content: image },
+          { property: "og:image:width", content: String(theme.socialImage!.width) },
+          { property: "og:image:height", content: String(theme.socialImage!.height) },
+          { property: "og:image:alt", content: theme.socialImage!.alt },
+        ]
+      : []),
+    { name: "twitter:card", content: image ? "summary_large_image" : "summary" },
+    ...(meta?.kind === "notfound" ? [{ name: "robots", content: "noindex" }] : []),
   ];
   // The same content for programs and AI agents: this page as Markdown, the index, the whole reference, the model.
   const links: HeadData["links"] = [
@@ -234,6 +286,18 @@ export function headData(ctx: PageContext, props: Pick<ShellProps, "title" | "de
     { rel: "index", href: `${root}index.html`, title: `${product} API reference` },
   ];
   return { title, description, keywords, product, canonical, meta: tags, links, formats, jsonLd: graph };
+}
+
+/**
+ * Where the theme's social image is: its URL as given, else its asset under the base URL (absolute, as Open Graph
+ * wants) or, without one, relative to the page. Undefined without an image.
+ */
+export function socialImageUrl(theme: Theme, root: string): string | undefined {
+  const image = theme.socialImage;
+  if (!image) return undefined;
+  if (image.url) return image.url;
+  if (!image.asset) return undefined;
+  return theme.baseUrl ? `${theme.baseUrl}assets/${image.asset}` : `${root}assets/${image.asset}`;
 }
 
 /** The head's metadata elements: charset and viewport, title, meta tags, canonical, alternates and index. */
@@ -266,6 +330,8 @@ export function Shell({ title, description, crumbs, toc, jsonLd, meta, children 
   return (
     <html lang="en" data-root={root || "./"}>
       <head>
+        {/* A host serves the not-found page at any depth: with the site's address known, its links resolve from the root. */}
+        {meta?.kind === "notfound" && theme.baseUrl && !astro && <base href={theme.baseUrl} />}
         <HeadMeta head={head} />
         {/* Astro bundles the stylesheet and inlines the theme's tokens itself. */}
         {!astro && <link rel="stylesheet" href={`${root}assets/apidocs.css`} />}
@@ -275,7 +341,7 @@ export function Shell({ title, description, crumbs, toc, jsonLd, meta, children 
         <script dangerouslySetInnerHTML={{ __html: astro ? THEME_BOOT : THEME_BOOT + fontPreload(theme.fonts, root) }} />
         {!astro && <script defer src={`${root}assets/apidocs.js`} />}
         {/* Hold first paint until the content element is parsed, so a page transition starts from real content. */}
-        <link rel="expect" href={`${name}.html#content`} {...({ blocking: "render" } as object)} />
+        <link rel="expect" href={meta?.kind === "notfound" ? "#content" : `${name}.html#content`} {...({ blocking: "render" } as object)} />
         {/* On a server, start loading and rendering a page of this site when a link to it is hovered or pressed.
             Astro pages navigate with its client router and prefetch instead. */}
         {!astro && <script type="speculationrules" dangerouslySetInnerHTML={{ __html: SPECULATION }} />}
@@ -284,7 +350,8 @@ export function Shell({ title, description, crumbs, toc, jsonLd, meta, children 
       <body>
         <div class="loadbar" aria-hidden="true" />
         {meta?.kind === "guide" && <div class="readbar" aria-hidden="true" />}
-        <a class="skip" href={`${name}.html#content`}>Skip to content</a>
+        {/* The not-found page is served at whatever URL was missing, so its skip link names no file. */}
+        <a class="skip" href={meta?.kind === "notfound" ? "#content" : `${name}.html#content`}>Skip to content</a>
         <TopBar />
         <div class="layout">
           <Navigation />
@@ -338,9 +405,13 @@ export function SearchField({ apiLabel = true }: { apiLabel?: boolean }) {
 }
 
 /**
- * The top bar: the navigator toggle, the brand, the module's version, the index pages, search, the theme's
- * links and the theme switch. One checkbox toggles the navigator with no script: it hides it on a wide screen
- * and shows it on a narrow one.
+ * The top bar holds what belongs to the whole site: the navigator toggle, the brand, the module's version (or an
+ * Astro app's version menu), the switcher between sibling documentation sites, search and the theme switch. The
+ * module's indexes (overview, packages, types, A to Z, deprecated) are in the navigator. One checkbox toggles the
+ * navigator with no script: it hides it on a wide screen and shows it on a narrow one.
+ *
+ * Nothing in the bar wraps, overflows or is cut off at any width from 320px; the stylesheet's top-bar section says
+ * in what order its parts give way.
  */
 export function TopBar() {
   const { site, theme, page } = usePage();
@@ -362,26 +433,106 @@ export function TopBar() {
             <img class="logo logo-dark" src={`${root}assets/logo-${theme.logo.dark ? "dark" : "light"}.svg`} alt={theme.logo.alt ?? ""} height={22} width={logoWidth(theme.logo.dark ?? theme.logo.light, 22)} />
           </>
         )}
-        <span class="product">{product}</span>
+        <span class="product" title={product}>{product}</span>
       </a>
       {astro ? <HoleMark name="topbar" /> : <ModuleVersion />}
-      <nav class="topbar-nav" aria-label="Indexes">
-        <a href={relative(page, INDEX, ".html")} aria-current={page === INDEX ? "page" : undefined}>Overview</a>
-        {indexPages(site).map(entry => (
-          <a key={entry.page} href={relative(page, entry.page, ".html")} aria-current={page === entry.page ? "page" : undefined}>{entry.label}</a>
-        ))}
-      </nav>
       <div class="topbar-tools">
+        <SuiteSwitcher />
         {site.packages.length > 0 && <a class="search-fallback" href={`${relative(page, INDEX, ".html")}#all-types`}>All types</a>}
         {astro ? <HoleMark name="search" /> : <SearchField apiLabel={site.packages.length > 0} />}
-        {(theme.links?.header ?? []).map(link => <a key={link.url} class="topbar-link" href={hrefFor(page, link.url)}>{link.label}</a>)}
         <button type="button" class="theme-switch" data-theme-switch data-js-only aria-label="Color theme: system">
           {/* The drawn icon everywhere; a sun or a moon where the platform's emoji are good (data-emoji). */}
           <span aria-hidden="true" class="theme-icon" />
           <span aria-hidden="true" class="theme-emoji" />
         </button>
       </div>
+      {suites(theme, page).length > 0 && <script dangerouslySetInnerHTML={{ __html: SUITES_BOOT }} />}
     </header>
+  );
+}
+
+/**
+ * One sibling documentation site, as the switcher and the navigator list it. The current site is marked with
+ * aria-current="true", not "page": its link goes to the site's overview, which is rarely the page being read.
+ */
+export interface Suite {
+  label: string;
+  /** The link from the page being rendered. */
+  href: string;
+  /** Whether this is the site being rendered. */
+  current: boolean;
+}
+
+/**
+ * The sibling documentation sites from the theme's header links, linked from a page, with the current one
+ * marked: the entry with `current: true`, else the one whose URL is this site's own root (see ThemeLink). The
+ * current entry links to this site's overview. Empty when there is nothing to switch to: no links, or only this site.
+ */
+export function suites(theme: Theme, page: string): Suite[] {
+  const links = theme.links?.header ?? [];
+  const marked = links.some(link => link.current);
+  const isOwnRoot = (url: string) => {
+    if (["", "./", ".", "index.html", "./index.html"].includes(url.trim())) return true;
+    if (!theme.baseUrl) return false;
+    try {
+      const at = new URL(url, theme.baseUrl).href;
+      return at === theme.baseUrl || at === `${theme.baseUrl}index.html`;
+    } catch {
+      return false;
+    }
+  };
+  let found = false;
+  const list = links.map(link => {
+    const current = !found && (marked ? !!link.current : isOwnRoot(link.url));
+    found ||= current;
+    return { label: link.label, href: current ? relative(page, INDEX, ".html") : hrefFor(page, link.url), current };
+  });
+  return list.some(entry => !entry.current) ? list : [];
+}
+
+/** The label of the suite menu's button: the current site, or a word for the set when no entry is current. */
+function currentSuiteLabel(list: Suite[]): string {
+  return list.find(entry => entry.current)?.label ?? "Documentation";
+}
+
+const CHEVRON = <svg class="icon" viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M4 6.25 8 10.25l4-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" /></svg>;
+
+/**
+ * The switcher between sibling documentation sites: a row of the sites with the current one marked when the bar
+ * has room for it, else one menu button that names the current site and opens the list. The browser's layout
+ * decides, with no script and no width written down anywhere: the hidden copies of the labels (.suites-fit) are a
+ * wrapping row whose height says whether the labels fit on one line, and that height places the visible row or
+ * the menu (see "Suite switcher" in apidocs.css). The script only hides the one out of view from assistive
+ * technology and the keyboard. Where the navigator is a drawer, the drawer lists the sites first, and the bar shows
+ * the row only when it fits.
+ */
+export function SuiteSwitcher() {
+  const { theme, page } = usePage();
+  const list = suites(theme, page);
+  if (!list.length) return null;
+  const label = currentSuiteLabel(list);
+  return (
+    <div class="suites">
+      <div class="suites-fit">
+        {/* Empty and zero-wide, so that even a first label wider than the switcher moves to a second line. */}
+        <span class="suites-probe" aria-hidden="true" />
+        {list.map((entry, i) => <span key={i} class="suites-ghost" data-current={entry.current ? "" : undefined} aria-hidden="true">{entry.label}</span>)}
+        <nav class="suites-row" aria-label="Documentation">
+          {list.map((entry, i) => <a key={i} href={entry.href} aria-current={entry.current ? "true" : undefined}>{entry.label}</a>)}
+        </nav>
+        <details class="suite-menu">
+          <summary class="suite-current" aria-label={`${label}: other documentation`} title="Other documentation">
+            <span class="suite-label">{label}</span>
+            {CHEVRON}
+          </summary>
+          <ul class="suite-list">
+            {list.map((entry, i) => <li key={i}><a href={entry.href} aria-current={entry.current ? "true" : undefined}>{entry.label}</a></li>)}
+          </ul>
+        </details>
+      </div>
+      {/* The menu button's width, so the bar keeps room for it. */}
+      <span class="suites-floor" aria-hidden="true"><span>{label}</span>{CHEVRON}</span>
+    </div>
   );
 }
 
@@ -412,7 +563,7 @@ export function Footer() {
         <a href={`${root}api.json`}>api.json</a>
       </p>
       {(theme.links?.footer ?? []).length > 0 && (
-        <p class="footer-links">{theme.links!.footer!.map(link => <a key={link.url} href={link.url}>{link.label}</a>)}</p>
+        <p class="footer-links">{theme.links!.footer!.map(link => <a key={link.url} href={hrefFor(page, link.url)}>{link.label}</a>)}</p>
       )}
     </footer>
   );
@@ -559,7 +710,7 @@ export function kindGlyph(type: Type): { letter: string; tone: string } {
  * hundreds of nested types does not repeat them on every page.
  */
 export function Navigation() {
-  const { site, page } = usePage();
+  const { site, theme, page } = usePage();
   const current = currentType(site.types, page);
   const currentPkg = current ? site.types.get(current.id)!.pkg : site.packages.find(pkg => packagePage(pkg) === page);
   const prefix = sharedPrefix(site.packages.map(pkg => pkg.name));
@@ -567,16 +718,45 @@ export function Navigation() {
   for (let t: Type | undefined = current; t; t = t.enclosing ? site.types.get(t.enclosing)?.type : undefined) chain.add(t.id);
   const tops = (currentPkg?.types ?? []).filter(t => !t.enclosing);
   const guides = guideNav(site, page);
+  const sites = suites(theme, page);
+  const indexes = navIndexes(site, page);
   return (
     <nav class="sidebar" id="apidocs-nav" aria-label={site.packages.length ? "Packages and types" : "Guides"} {...persistAttr(useVariant(), "apidocs-nav")}>
-      {site.packages.length > 0 && (
+      {/* Shown only where the navigator is a drawer: there the top bar may have no room for the switcher. */}
+      {sites.length > 0 && (
+        <section class="nav-section nav-suites">
+          <h2 class="nav-heading"><span>Documentation</span></h2>
+          <ul class="nav-list">
+            {sites.map((entry, i) => (
+              <li key={i}><a class="nav-row" href={entry.href} aria-current={entry.current ? "true" : undefined}><span class="nav-label">{entry.label}</span></a></li>
+            ))}
+          </ul>
+        </section>
+      )}
+      {(site.packages.length > 0 || site.guides.length > 0) && (
         <div class="nav-filter" data-nav-filter data-js-only>
-          <label class="visually-hidden" for="apidocs-nav-filter">Filter this list</label>
+          <label class="visually-hidden" for="apidocs-nav-filter">{site.packages.length ? "Filter types and guides" : "Filter guides"}</label>
           <input id="apidocs-nav-filter" type="search" placeholder="Filter" autocomplete="off" spellcheck={false} />
         </div>
       )}
+      {indexes.length > 0 && (indexes.length <= NAV_INDEX_ROW_MAX
+        ? (
+          <ul class="nav-index" aria-label="Indexes">
+            {indexes.map(entry => <li key={entry.page}><a href={entry.href} aria-current={entry.current ? "page" : undefined}>{entry.label}</a></li>)}
+          </ul>
+        )
+        : (
+          <section class="nav-section nav-reference">
+            <h2 class="nav-heading"><span>Reference</span></h2>
+            <ul class="nav-list">
+              {indexes.map(entry => (
+                <li key={entry.page}><a class="nav-row" href={entry.href} aria-current={entry.current ? "page" : undefined}><span class="nav-label">{entry.label}</span></a></li>
+              ))}
+            </ul>
+          </section>
+        ))}
       {guides.groups.length > 0 && (
-        <section class="nav-section nav-guides">
+        <section class="nav-section nav-guides" data-nav-filterable>
           <h2 class="nav-heading"><span>Guides</span></h2>
           {guides.groups.map((group, i) => (
             <div key={i} class="nav-group">
@@ -620,13 +800,38 @@ export function Navigation() {
         </ul>
       </section>}
       {currentPkg && typeGroups(tops).map(group => (
-        <section key={group.id} class="nav-section">
+        <section key={group.id} class="nav-section" data-nav-filterable>
           <h2 class="nav-heading"><span>{group.title}</span></h2>
           <NavTypes types={group.types} pkg={currentPkg} chain={chain} />
         </section>
       ))}
     </nav>
   );
+}
+
+/**
+ * The most index links that share one line at the navigator's narrowest width: 223px of line at 16.5rem, less the
+ * padding. Measured in Chromium at both presets' type scales (13px and 13.33px): all five links (Overview, Packages,
+ * All types, Index, Deprecated) need 357-364px, any four 264-309px, any three 223-238px, which leaves no room on the
+ * narrowest line; two fit with room to spare. More than two are rows under "Reference", never a wrapped line.
+ */
+export const NAV_INDEX_ROW_MAX = 2;
+
+/** One of the module's index pages, as the navigator lists it. */
+export interface NavIndex {
+  page: string;
+  label: string;
+  href: string;
+  current: boolean;
+}
+
+/**
+ * The module's index pages, from a page: the overview (unless the navigator already lists it as the overview
+ * guide), then the index pages this site has. A guides-only site has few or none.
+ */
+export function navIndexes(site: Site, page: string): NavIndex[] {
+  const entries = [...(overviewGuide(site) ? [] : [{ page: INDEX, label: "Overview" }]), ...indexPages(site)];
+  return entries.map(entry => ({ ...entry, href: relative(page, entry.page, ".html"), current: entry.page === page }));
 }
 
 function NavTypes({ types, pkg, chain }: { types: Type[]; pkg: Package; chain: Set<string> }) {
@@ -714,7 +919,10 @@ export function Toc({ items, filterLabel }: { items: TocItem[]; filterLabel: str
   );
 }
 
-/** A link to an absolute URL or a page, for theme links. */
+/**
+ * A theme link from a page: an absolute URL or a path from the server's root ("/docs/") as given, and a relative
+ * URL resolved from the site's root, so it works from a page at any depth.
+ */
 export function hrefFor(page: string, url: string): string {
-  return isAbsolute(url) ? url : relative(page, url, "");
+  return isAbsolute(url) || url.startsWith("/") ? url : relative(page, url, "");
 }

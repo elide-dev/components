@@ -393,7 +393,8 @@ export async function agenticAudit(site: Site, options: AgenticOptions = {}): Pr
     set("markdown-link-alternate", { score: s, max: 1, status: statusOf(s, 1), evidence: `${advertised}/${rows.length} pages advertise a Markdown twin; ${rows.length - bad.length} of them resolve to Markdown.`, where: bad.slice(0, 5) });
     const index = await get(`${site.url}index.md`);
     const twins = pages.filter(p => existsSync(join(site.dir, p.replace(/\.html$/, ".md"))));
-    const okIndex = index.status === 200 && /markdown/.test(index.type ?? "") && /^#/.test(index.text.trimStart());
+    // A heading first, after the frontmatter that markdown-frontmatter asks for.
+    const okIndex = index.status === 200 && /markdown/.test(index.text && (index.type ?? "")) && /^#/.test(index.text.replace(/^---\n[\s\S]*?\n---\n/, "").trimStart());
     const sf = okIndex ? (twins.length === pages.length ? 2 : 1) : 0;
     set("markdown-url-fallback", { score: sf, max: 2, status: statusOf(sf, 2), evidence: `/index.md: ${index.status} ${index.type ?? ""}; ${twins.length}/${pages.length} pages have a .md twin at the same path.` });
     const mdFiles = pages.map(p => p.replace(/\.html$/, ".md")).filter(p => existsSync(join(site.dir, p)));

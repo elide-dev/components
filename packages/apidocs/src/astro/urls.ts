@@ -125,7 +125,7 @@ function mapPath(pathWithRest: string): string {
 }
 
 const ATTR = /(\s(?:href|src|data-copy-markdown)=")([^"]*)(")/g;
-const META_CONTENT = /(<meta property="og:url" content=")([^"]*)(")/g;
+const META_CONTENT = /(<meta property="og:(?:url|image)" content=")([^"]*)(")/g;
 const JSON_LD = /(<script type="application\/ld\+json">)([\s\S]*?)(<\/script>)/g;
 /** The JSON-LD keys whose values are URLs. */
 const URL_KEYS = new Set(["url", "item", "contentUrl"]);

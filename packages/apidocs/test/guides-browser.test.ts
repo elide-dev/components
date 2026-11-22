@@ -90,6 +90,19 @@ describe("a guides-only site from file://", () => {
     await page.context().close();
   });
 
+  test("the navigator's filter narrows the guides", async () => {
+    const { page } = await open("guides/getting-started.html");
+    const rows = page.locator(".nav-guides .nav-row");
+    const visible = async () => (await rows.all()).length - (await page.locator(".nav-guides [data-filtered-out]").count());
+    const all = await rows.count();
+    await page.locator("#apidocs-nav-filter").fill("pictures");
+    expect(await visible()).toBe(1);
+    expect(await page.locator(".nav-guides .nav-row:visible").allTextContents()).toEqual([expect.stringContaining("Pictures")]);
+    await page.locator("#apidocs-nav-filter").press("Escape");
+    expect(await visible()).toBe(all);
+    await page.context().close();
+  });
+
   test("previous and next follow reading order across groups", async () => {
     const { page } = await open("guides/concepts/images.html", { javaScriptEnabled: false });
     await page.locator("a.guide-next").click();

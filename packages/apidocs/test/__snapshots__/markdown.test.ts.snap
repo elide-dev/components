@@ -1,7 +1,16 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
 exports[`Markdown snapshots of the fixture: fixture/java/Geometry.md 1`] = `
-"# Geometry
+"---
+title: "Geometry"
+description: "Operations on shapes."
+kind: "class"
+id: "fixture.java.Geometry"
+module: "fixture"
+version: "1.0"
+---
+
+# Geometry
 
 [fixture](../../index.md) › [fixture.java](index.md) · Every page: [llms.txt](../../llms.txt)
 
@@ -189,7 +198,16 @@ Finds a shape by name.
 `;
 
 exports[`Markdown snapshots of the fixture: fixture/java/Circle.md 1`] = `
-"# Circle
+"---
+title: "Circle"
+description: "A circle."
+kind: "record"
+id: "fixture.java.Circle"
+module: "fixture"
+version: "1.0"
+---
+
+# Circle
 
 [fixture](../../index.md) › [fixture.java](index.md) · Every page: [llms.txt](../../llms.txt)
 
@@ -351,7 +369,16 @@ public @Nullable String label()
 `;
 
 exports[`Markdown snapshots of the fixture: fixture/java/io/ShapeReader.md 1`] = `
-"# ShapeReader
+"---
+title: "ShapeReader"
+description: "Reads shapes in their text form, one per line."
+kind: "class"
+id: "fixture.java.io.ShapeReader"
+module: "fixture"
+version: "1.0"
+---
+
+# ShapeReader
 
 [fixture](../../../index.md) › [fixture.java.io](index.md) · Every page: [llms.txt](../../../llms.txt)
 
@@ -447,7 +474,14 @@ Overrides [\`close()\`](https://docs.oracle.com/en/java/javase/25/docs/api/java.
 `;
 
 exports[`Markdown snapshots of the fixture: index.md 1`] = `
-"# fixture 1.0
+"---
+title: "fixture"
+kind: "module"
+module: "fixture"
+version: "1.0"
+---
+
+# fixture 1.0
 
 Every page: [llms.txt](llms.txt), or all in one file: [llms-full.txt](llms-full.txt)
 
@@ -490,6 +524,10 @@ exports[`Markdown snapshots of the fixture: llms.txt 1`] = `
 > API reference for fixture.
 
 Each page below is Markdown; the HTML page of the same name has the same content. llms-full.txt has every page in one file, and api.json is the apidocs/1 model.
+
+## When to use this
+
+Use this API reference when you write, read or review code that uses fixture 1.0.
 
 ## Overview
 

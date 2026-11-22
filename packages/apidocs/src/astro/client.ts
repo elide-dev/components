@@ -7,11 +7,12 @@
  * - carries the theme choice and the boot script's marks (data-js, data-emoji) to the new page's <html>, whose
  *   attributes the router replaces;
  * - updates the top bar and the navigator, which the router keeps (transition:persist) so the navigator keeps
- *   its scroll position and filter text: the index links' current page, and the navigator's rows for the new
- *   page, leaving the filter field in place;
+ *   its scroll position and filter text: the suite switcher's links, and the navigator's blocks for the new page
+ *   (the sites, the indexes with the current one marked, the guides, packages and types), leaving the filter field
+ *   in place;
  * - runs the load bar from astro:before-preparation and finishes it on arrival.
  */
-import { pageBehaviors, saveNavigatorScroll, siteRoot } from "../client/behaviors";
+import { filterRows, NAV_FILTERED_ROWS, pageBehaviors, saveNavigatorScroll, siteRoot } from "../client/behaviors";
 import { pathUnder } from "./versions";
 
 /** The <html> attributes the page's own scripts set, which the router's swap would drop. */
@@ -47,9 +48,10 @@ function refreshPersisted(newDocument: Document) {
     const next = newDocument.querySelector<HTMLElement>(`[${PERSIST}="${CSS.escape(kept.getAttribute(PERSIST)!)}"]`);
     if (!next) continue;
     if (kept.matches(".topbar")) {
-      const nav = kept.querySelector(".topbar-nav");
-      const fresh = next.querySelector(".topbar-nav");
-      if (nav && fresh) nav.replaceWith(document.importNode(fresh, true));
+      // The suite switcher marks the site, which a persisted top bar keeps; its links are refreshed all the same.
+      const suites = kept.querySelector(".suites");
+      const fresh = next.querySelector(".suites");
+      if (suites && fresh) suites.replaceWith(document.importNode(fresh, true));
     } else if (kept.matches(".sidebar")) {
       refreshNavigator(kept, next);
     }
@@ -59,15 +61,31 @@ function refreshPersisted(newDocument: Document) {
 function refreshNavigator(kept: HTMLElement, next: HTMLElement) {
   const focused = kept.contains(document.activeElement) ? (document.activeElement as HTMLAnchorElement).getAttribute?.("href") : null;
   const top = kept.scrollTop;
-  for (const child of [...kept.children]) if (!child.matches(".nav-filter")) child.remove();
-  for (const child of [...next.children]) if (!child.matches(".nav-filter")) kept.append(document.importNode(child, true));
+  // Every block but the filter field is the new page's, in the new page's order around the kept field.
+  const filter = kept.querySelector<HTMLElement>(":scope > .nav-filter");
+  for (const child of [...kept.children]) if (child !== filter) child.remove();
+  let afterFilter = false;
+  for (const child of [...next.children]) {
+    if (child.matches(".nav-filter")) {
+      afterFilter = true;
+      if (!filter) kept.append(document.importNode(child, true));
+      continue;
+    }
+    const node = document.importNode(child, true);
+    if (filter && !afterFilter) kept.insertBefore(node, filter);
+    else kept.append(node);
+  }
+  // The kept filter text applies to the new rows now, before the scroll position is put back, so the rows above it
+  // take the same space as before.
+  const query = filter?.querySelector("input")?.value;
+  if (query?.trim()) filterRows(kept, NAV_FILTERED_ROWS, query);
   kept.scrollTop = top;
   // Keyboard users who chose a row stay on it.
   if (focused) kept.querySelector<HTMLElement>(`a[href="${CSS.escape(focused)}"]`)?.focus({ preventScroll: true });
   // The current page's row comes into view if it is out of it, as on a first load.
   const current = kept.querySelector<HTMLElement>('[aria-current="page"]');
   if (current && (current.offsetTop < kept.scrollTop || current.offsetTop > kept.scrollTop + kept.clientHeight - 40)) {
-    kept.scrollTop = Math.max(0, current.offsetTop - kept.clientHeight / 3);
+    kept.scrollTop = window.apidocsNavTop?.(kept, current) ?? Math.max(0, current.offsetTop - kept.clientHeight / 3);
   }
   kept.dataset.scrollTop = String(kept.scrollTop);
 }
@@ -106,6 +124,8 @@ document.addEventListener("astro:before-swap", event => {
 });
 
 document.addEventListener("astro:after-swap", () => {
+  // A top bar from another site arrives without its script having run: size its suite switcher before it paints.
+  window.apidocsFitSuites?.();
   // Where the router cannot move an element without detaching it (no Element.moveBefore), the navigator loses
   // its scroll position in the move: put it back before the new page paints.
   const nav = document.querySelector<HTMLElement>(`.sidebar[${PERSIST}]`);

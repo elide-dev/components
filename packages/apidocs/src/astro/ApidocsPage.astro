@@ -15,7 +15,7 @@ import "../styles/apidocs.css";
 import "./apidocs-astro.css";
 import type { Model } from "../model";
 import type { Theme } from "../theme";
-import { bundledFonts } from "./fonts";
+import { bundledAssets, bundledFonts } from "./fonts";
 import { renderPage } from "./render";
 import Search from "./Search";
 
@@ -32,7 +32,7 @@ interface Props {
 const { model, page, theme, site } = Astro.props;
 const base = Astro.props.base.endsWith("/") ? Astro.props.base : `${Astro.props.base}/`;
 const baseUrl = new URL(base, site ?? Astro.site ?? Astro.url.origin).href;
-const parts = renderPage(model, page, theme, { base, baseUrl, fontUrl: asset => bundledFonts[asset] ?? `${base}assets/${asset}` });
+const parts = renderPage(model, page, theme, { base, baseUrl, fontUrl: asset => bundledFonts[asset] ?? `${base}assets/${asset}`, assetUrl: asset => bundledAssets[asset] ?? `${base}assets/${asset}` });
 ---
 <html lang="en" data-root={base}>
   <head>

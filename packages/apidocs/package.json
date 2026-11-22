@@ -25,6 +25,7 @@
     "apidocs": "./src/cli.ts"
   },
   "files": [
+    "artwork",
     "dist",
     "schema",
     "src",
@@ -57,6 +58,7 @@
     "axe-core": "4.14.0",
     "chrome-launcher": "1.2.3",
     "lighthouse": "13.6.0",
+    "sharp": "^0.35.5",
     "mdast-util-from-markdown": "2.1.0",
     "mdast-util-gfm": "3.1.0",
     "micromark-extension-gfm": "3.0.0",

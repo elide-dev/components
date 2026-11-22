@@ -261,19 +261,17 @@ export function navigatorScroll(signal?: AbortSignal) {
   const nav = document.querySelector<HTMLElement>(".sidebar");
   if (!nav) return;
   const key = navScrollKey();
-  let restored = false;
   try {
     const saved = window.sessionStorage.getItem(key);
-    if (saved) {
-      nav.scrollTop = Number(saved);
-      restored = true;
-    }
+    if (saved) nav.scrollTop = Number(saved);
   } catch {
     /* storage blocked */
   }
   const currentLink = nav.querySelector<HTMLElement>('[aria-current="page"]');
-  if (currentLink && (!restored || currentLink.offsetTop < nav.scrollTop || currentLink.offsetTop > nav.scrollTop + nav.clientHeight)) {
-    nav.scrollTop = Math.max(0, currentLink.offsetTop - nav.clientHeight / 3);
+  // Only when the current row is out of view, as the head script does: a navigator moved for no reason leaves its top
+  // rows half under the filter field.
+  if (currentLink && (currentLink.offsetTop < nav.scrollTop || currentLink.offsetTop > nav.scrollTop + nav.clientHeight - 40)) {
+    nav.scrollTop = window.apidocsNavTop?.(nav, currentLink) ?? Math.max(0, currentLink.offsetTop - nav.clientHeight / 3);
   }
   saveNavigatorScroll(signal);
 }
@@ -293,22 +291,33 @@ export function saveNavigatorScroll(signal?: AbortSignal) {
 
 // ---- List filters: narrow the navigator, or the page rail and the member summary, to rows that match.
 
+/** Marks the rows under `scope` that do not contain the query (case-insensitive), and opens folds while filtering. */
+export function filterRows(scope: Element, rowSelector: string, rawQuery: string) {
+  const query = rawQuery.trim().toLowerCase();
+  for (const fold of scope.querySelectorAll<HTMLDetailsElement>("details")) if (query) fold.open = true;
+  for (const row of scope.querySelectorAll<HTMLElement>(rowSelector)) {
+    const hit = !query || (row.textContent ?? "").toLowerCase().includes(query);
+    row.toggleAttribute("data-filtered-out", !hit);
+  }
+}
+
+/** The navigator rows its filter narrows: types and guides. The sites, the indexes and the packages always stay. */
+export const NAV_FILTERED_ROWS = ".nav-section[data-nav-filterable] .nav-list > li";
+
 export function listFilter(boxSelector: string, rowSelector: string, also: string | undefined, signal?: AbortSignal) {
   const box = document.querySelector<HTMLElement>(boxSelector);
   const input = box?.querySelector<HTMLInputElement>("input");
   if (!box || !input) return;
   box.hidden = false;
   const apply = () => {
-    const query = input.value.trim().toLowerCase();
-    const scope = box.parentElement!;
-    for (const fold of scope.querySelectorAll<HTMLDetailsElement>("details")) if (query) fold.open = true;
-    for (const row of scope.querySelectorAll<HTMLElement>(rowSelector)) {
-      const hit = !query || (row.textContent ?? "").toLowerCase().includes(query);
-      row.toggleAttribute("data-filtered-out", !hit);
-    }
+    filterRows(box.parentElement!, rowSelector, input.value);
     if (also) {
+      const query = input.value.trim().toLowerCase();
       for (const row of document.querySelectorAll<HTMLElement>(also)) {
-        const hit = !query || (row.querySelector("summary, th")?.textContent ?? "").toLowerCase().includes(query);
+        const head = row.querySelector("summary, th");
+        // A member row's summary sentence is drawn from an attribute (MemberDetail), so it is read from there too.
+        const text = `${head?.textContent ?? ""} ${head?.querySelector("[data-brief]")?.getAttribute("data-brief") ?? ""}`;
+        const hit = !query || text.toLowerCase().includes(query);
         row.toggleAttribute("data-filtered-out", !hit);
       }
     }
@@ -343,7 +352,8 @@ export function copyMarkdown(signal?: AbortSignal) {
     request.onload = async () => {
       if (request.status < 200 || request.status >= 300) return fail();
       try {
-        await navigator.clipboard.writeText(request.responseText);
+        // The page's text, as a reader pastes it: without the frontmatter that describes it to programs.
+        await navigator.clipboard.writeText(request.responseText.replace(/^---\n[\s\S]*?\n---\n\n?/, ""));
       } catch {
         return fail();
       }
@@ -360,8 +370,8 @@ export function copyMarkdown(signal?: AbortSignal) {
 
 // ---- Menus built on <details>: close on Escape and on a click elsewhere.
 
-/** The menus this closes: the page's formats menu, and a site's version menu. */
-const MENUS = "details.formats-menu[open], details.version-menu[open]";
+/** The menus this closes: the page's formats menu, the suite menu, and a site's version menu. */
+const MENUS = "details.formats-menu[open], details.suite-menu[open], details.version-menu[open]";
 
 export function menus(signal?: AbortSignal) {
   const open = () => document.querySelectorAll<HTMLDetailsElement>(MENUS);
@@ -375,6 +385,35 @@ export function menus(signal?: AbortSignal) {
       menu.querySelector<HTMLElement>("summary")?.focus();
     }
   }, { signal });
+}
+
+// ---- The suite switcher: the layout alone shows its row or its menu (SuiteSwitcher in chrome.tsx). The top bar's
+// script (SUITES_BOOT) also sizes it to what it shows, and hides the other from assistive technology and the
+// keyboard; this runs that again whenever the tools' width changes, and closes the menu when the row takes its place.
+
+declare global {
+  interface Window {
+    apidocsFitSuites?: () => void;
+    /** Where the navigator scrolls to show a row (NAV_BOOT in chrome.tsx). */
+    apidocsNavTop?: (nav: HTMLElement, row: HTMLElement) => number;
+  }
+}
+
+export function suiteSwitcher(signal?: AbortSignal) {
+  const box = document.querySelector<HTMLElement>(".suites");
+  const tools = box?.parentElement;
+  if (!box || !tools || !window.apidocsFitSuites || !("ResizeObserver" in window)) return;
+  const fit = () => {
+    window.apidocsFitSuites?.();
+    const menu = box.querySelector<HTMLDetailsElement>("details.suite-menu");
+    if (menu?.open && box.dataset.fit !== "menu") menu.open = false;
+  };
+  // At once, for a top bar the client router has just put in place, and then whenever the tools' width changes.
+  fit();
+  const observer = new ResizeObserver(fit);
+  observer.observe(tools);
+  document.fonts?.addEventListener("loadingdone", fit, { signal });
+  signal?.addEventListener("abort", () => observer.disconnect(), { once: true });
 }
 
 // ---- Leaving for another page of this site: start the load bar; the next page finishes it.
@@ -463,7 +502,8 @@ export function pageBehaviors(signal?: AbortSignal) {
   copyMarkdown(signal);
   members(signal);
   menus(signal);
-  // Types only: packages stay, so the way to another package is never filtered away.
-  listFilter("[data-nav-filter]", ".nav-section:not(:first-of-type) .nav-list > li", undefined, signal);
+  suiteSwitcher(signal);
+  // Types and guides only: the sites, the indexes and the packages stay, so the way to another one is never filtered away.
+  listFilter("[data-nav-filter]", NAV_FILTERED_ROWS, undefined, signal);
   listFilter("[data-toc-filter]", ".toc-entries > li", ".members > details.member", signal);
 }

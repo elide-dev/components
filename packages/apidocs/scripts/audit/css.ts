@@ -12,7 +12,7 @@
  *
  * The score is the share of the mechanical rules with no violation.
  */
-import postcss, { type AtRule, type Declaration, type Rule } from "postcss";
+import postcss, { type AtRule, type ChildNode, type Comment, type Declaration, type Rule } from "postcss";
 import type { Finding, Status } from "./types";
 
 export interface Stylesheet {
@@ -31,7 +31,12 @@ interface Decl {
   context: string[];
   prop: string;
   value: string;
+  /** Rules this declaration is a noted exception to: a "good-css exception (rule-id): reason" comment before it in its rule, or before its rule. */
+  exceptions: string[];
 }
+
+const EXCEPTION = /good-css exception \(([a-z-]+)\)/g;
+const exceptionIds = (text: string) => [...text.matchAll(EXCEPTION)].map(m => m[1]!);
 
 export interface CssReport {
   score: number;
@@ -58,7 +63,11 @@ export function readDeclarations(sheets: Stylesheet[]): Decl[] {
         else if (p.type === "rule") selector = `${(p as Rule).selector.replace(/\s+/g, " ")} ${selector}`;
         if (p.type === "atrule") context.unshift(`@${(p as AtRule).name} ${(p as AtRule).params}`.trim());
       }
-      out.push({ sheet: sheet.path, line: decl.source?.start?.line ?? 0, selector: selector || "(at-rule)", context, prop: decl.prop.toLowerCase(), value: decl.value });
+      const exceptions: string[] = [];
+      for (let n: ChildNode | undefined = decl.prev(); n; n = n.prev()) if (n.type === "comment") exceptions.push(...exceptionIds((n as Comment).text));
+      const before = decl.parent && decl.parent.type === "rule" ? (decl.parent as Rule).prev() : undefined;
+      if (before?.type === "comment") exceptions.push(...exceptionIds((before as Comment).text));
+      out.push({ sheet: sheet.path, line: decl.source?.start?.line ?? 0, selector: selector || "(at-rule)", context, prop: decl.prop.toLowerCase(), value: decl.value, exceptions });
     });
   }
   return out;
@@ -70,10 +79,14 @@ export function cssAudit(sheets: Stylesheet[]): CssReport {
   const at = (d: Decl) => `${d.sheet}:${d.line} ${d.selector.slice(0, 70)} { ${d.prop}: ${d.value.slice(0, 60)} }`;
   const files = (list: Decl[]) => [...new Set(list.map(d => sourceOf(d.sheet)))].join(", ") || undefined;
   const rules: Finding[] = [];
-  const rule = (id: string, name: string, violations: Decl[], evidence: string, fix: string, source = SKILL, extra: string[] = []) => {
+  const rule = (id: string, name: string, found: Decl[], evidence: string, fix: string, source = SKILL, extra: string[] = []) => {
+    // A declaration the stylesheet notes as an exception to this rule, with its reason, is reported but does not fail it.
+    const violations = found.filter(d => !d.exceptions.includes(id));
+    const excepted = found.filter(d => d.exceptions.includes(id));
+    const noted = excepted.length ? ` ${excepted.length} noted exception(s) in the stylesheet: ${excepted.map(d => `${d.selector.slice(0, 40)} { ${d.prop} }`).join("; ")}.` : "";
     rules.push({
       rule: id, name, owner: "page", status: violations.length || extra.length ? "fail" : "pass",
-      evidence: violations.length || extra.length ? `${violations.length + extra.length} ${evidence}` : "No violations.",
+      evidence: (violations.length || extra.length ? `${violations.length + extra.length} ${evidence}` : "No violations.") + noted,
       where: [...extra, ...violations.map(at)].slice(0, 8), file: files(violations) ?? (extra.length ? sheets[0]?.source : undefined), fix: violations.length || extra.length ? fix : undefined, source,
     });
   };
