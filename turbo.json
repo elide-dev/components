@@ -44,6 +44,9 @@
       "dependsOn": ["^build"],
       "outputs": ["dist/**"]
     },
+    "@elide/apidocs#lint": {
+      "dependsOn": ["^build"]
+    },
     "@elide/apidocs#test": {
       "dependsOn": ["build"],
       "cache": false,

@@ -221,11 +221,23 @@ describe("behaviors across navigations", () => {
     const { page } = await open(TYPE);
     const cdp = await page.context().newCDPSession(page);
     await cdp.send("Performance.enable");
-    const measure = async () => {
+    const sample = async () => {
       await cdp.send("HeapProfiler.collectGarbage");
       const { metrics } = await cdp.send("Performance.getMetrics");
       const get = (name: string) => metrics.find(m => m.name === name)!.value;
       return { listeners: get("JSEventListeners"), nodes: get("Nodes"), documents: get("Documents") };
+    };
+    // A router transition keeps the outgoing page alive until it ends, and a slow runner ends it late. Sample until
+    // three reads in a row agree, so the counts are those of the settled page; a real leak never settles lower.
+    const measure = async () => {
+      let last = await sample();
+      for (let stable = 0, tries = 0; stable < 3 && tries < 40; tries++) {
+        await page.waitForTimeout(250);
+        const next = await sample();
+        stable = JSON.stringify(next) === JSON.stringify(last) ? stable + 1 : 0;
+        last = next;
+      }
+      return last;
     };
     const loop = async (n: number) => {
       for (let i = 0; i < n; i++) {
