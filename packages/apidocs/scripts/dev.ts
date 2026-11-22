@@ -40,12 +40,24 @@ const require = createRequire(import.meta.url);
 type Output = Record<string, string | { asset: string }>;
 const cache = new Map<string, Output>();
 
-async function site(server: ViteDevServer, model: string, preset: string): Promise<Output> {
-  const key = `${model}/${preset}`;
+/** Sibling sites for the suite switcher, as a theme's header links: the dev bar shows none, one, three or five. */
+const SUITES = [
+  { label: "User guide", url: "https://example.com/user/" },
+  { label: "Developer guide", url: "https://example.com/developer/" },
+  { label: "API reference", url: "index.html", current: true },
+  { label: "Kotlin API", url: "https://example.com/kotlin/" },
+  { label: "Release notes", url: "https://example.com/notes/" },
+];
+
+async function site(server: ViteDevServer, model: string, presetAndSuites: string): Promise<Output> {
+  const key = `${model}/${presetAndSuites}`;
   const cached = cache.get(key);
   if (cached) return cached;
   const { render } = await server.ssrLoadModule("/src/render.tsx");
-  const theme = { extends: preset === "elide" ? "elide" : "neutral" };
+  // "elide" or "elide.3": the preset, and how many sibling sites the switcher lists.
+  const [preset, count] = presetAndSuites.split(".");
+  const header = count === "1" ? [SUITES[0]!] : count === "3" ? SUITES.slice(0, 3) : count === "5" ? SUITES : [];
+  const theme = { extends: preset === "elide" ? "elide" : "neutral", links: { header } };
   if (suites[model]) {
     const { suiteSite } = await server.ssrLoadModule("/src/import/suite.ts");
     const { formatDiagnostic } = await server.ssrLoadModule("/src/import/markdown.ts");
@@ -117,6 +129,7 @@ function shell(): string {
   <strong>@elide/apidocs dev</strong>
   <label>Model <select id="model">${models.map(m => `<option value="${m}">${label(m)}</option>`).join("")}</select></label>
   <label>Theme <select id="preset"><option value="neutral">neutral (default)</option><option value="elide">elide</option></select></label>
+  <label>Sites <select id="suites"><option value="0">none</option><option value="1">1</option><option value="3">3</option><option value="5">5</option></select></label>
   <label>Mode <select id="mode"><option value="system">system</option><option value="light">light</option><option value="dark">dark</option></select></label>
   <label>Width <select id="width"><option value="100%">full</option><option value="1440px">1440</option><option value="1180px">1180</option><option value="1024px">1024</option><option value="820px">820</option><option value="390px">390 (phone)</option></select></label>
   <label><input type="checkbox" id="nojs"> JavaScript off</label>
@@ -125,10 +138,11 @@ function shell(): string {
 <div class="stage"><iframe id="frame" title="Rendered page"></iframe></div>
 <script>
   const $ = id => document.getElementById(id);
-  const state = Object.assign({ model: "java", preset: "neutral", mode: "system", width: "100%", page: "index.html", nojs: false },
+  const state = Object.assign({ model: "java", preset: "neutral", suites: "0", mode: "system", width: "100%", page: "index.html", nojs: false },
     JSON.parse(sessionStorage.getItem("apidocs-dev") || "{}"));
   const frame = $("frame");
-  const src = () => "/site/" + state.model + "/" + state.preset + "/" + state.page + (state.nojs ? "?nojs" : "");
+  const site = () => state.preset + (state.suites === "0" ? "" : "." + state.suites);
+  const src = () => "/site/" + state.model + "/" + site() + "/" + state.page + (state.nojs ? "?nojs" : "");
   function save() { sessionStorage.setItem("apidocs-dev", JSON.stringify(state)); }
   function load() { frame.src = src(); $("direct").href = src(); save(); }
   function applyMode() {
@@ -137,7 +151,7 @@ function shell(): string {
       if (state.mode === "system") html.removeAttribute("data-theme"); else html.setAttribute("data-theme", state.mode);
     } catch (e) {}
   }
-  for (const key of ["model", "preset", "mode", "width"]) {
+  for (const key of ["model", "preset", "suites", "mode", "width"]) {
     $(key).value = state[key];
     $(key).addEventListener("change", () => {
       state[key] = $(key).value;
@@ -153,7 +167,7 @@ function shell(): string {
   frame.addEventListener("load", () => {
     try {
       const path = frame.contentWindow.location.pathname;
-      const prefix = "/site/" + state.model + "/" + state.preset + "/";
+      const prefix = "/site/" + state.model + "/" + site() + "/";
       if (path.startsWith(prefix)) { state.page = path.slice(prefix.length); $("direct").href = src(); save(); }
     } catch (e) {}
     applyMode();

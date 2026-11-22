@@ -28,7 +28,8 @@ beforeAll(async () => {
   const model = join(site, "model.json");
   const theme = join(site, "theme.json");
   writeFileSync(model, JSON.stringify(samples.java));
-  writeFileSync(theme, JSON.stringify({ extends: "elide" }));
+  // With sibling sites, so the suite switcher is in every page the tests open.
+  writeFileSync(theme, JSON.stringify({ extends: "elide", links: { header: [{ label: "User guide", url: "https://example.com/user/" }, { label: "API reference", url: "index.html", current: true }, { label: "Kotlin API", url: "https://example.com/kotlin/" }] } }));
   const run = spawnSync(process.execPath, [join(root, "dist/runner.mjs"), "--bundle", join(root, "dist/render.js"), "--assets", join(root, "dist/assets"), "--model", model, "--theme", theme, "--out", out], { encoding: "utf8" });
   if (run.status !== 0) throw new Error(run.stderr);
   server = Bun.serve({
@@ -204,7 +205,7 @@ describe("layout stability", () => {
 
 describe("accessibility", () => {
   for (const colorScheme of ["light", "dark"] as const) {
-    for (const path of ["index.html", "com/example/geo/index.html", "com/example/geo/Shapes.html", "com/example/geo/Circle.html"]) {
+    for (const path of ["index.html", "com/example/geo/index.html", "com/example/geo/Shapes.html", "com/example/geo/Shapes.html#parse(java.lang.String)", "com/example/geo/Circle.html", "guides/concepts.html", "guides/getting-started.html", "packages.html", "types.html", "index-all.html", "deprecated.html"]) {
       test(`${path} in ${colorScheme} has no axe violations`, async () => {
         const { page } = await open(path, { colorScheme });
         await page.addScriptTag({ path: require.resolve("axe-core/axe.min.js") });

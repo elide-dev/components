@@ -183,11 +183,11 @@ code, kbd, pre { font-family: var(--apidocs-font-mono); font-size: var(--apidocs
   overflow-wrap: anywhere;
 }
 a > code { color: inherit; }
-.prose a, .callout a, .fact dd a, td a:not(.type-link), .lede a, .inherited-list a, .see-list a {
+.prose a, .callout a, .fact dd a, td a:not(.type-link), .lede a, .inherited-list a, .see-list a, .index-summary a {
   text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px;
   text-decoration-color: color-mix(in srgb, currentColor 45%, transparent);
 }
-.prose a:hover, .callout a:hover, .fact dd a:hover, td a:not(.type-link):hover, .lede a:hover, .inherited-list a:hover, .see-list a:hover { text-decoration-color: currentColor; }
+.prose a:hover, .callout a:hover, .fact dd a:hover, td a:not(.type-link):hover, .lede a:hover, .inherited-list a:hover, .see-list a:hover, .index-summary a:hover { text-decoration-color: currentColor; }
 .summary-sig a { text-decoration: none; }
 
 h1, h2, h3, h4 { font-family: var(--apidocs-font-display); line-height: 1.2; margin: 0; text-wrap: balance; }
@@ -212,6 +212,18 @@ p, li, dd { text-wrap: pretty; }
 
 /* ---- Top bar ---- */
 
+/*
+ * The bar holds the site's controls on one line at every width from 320px. As it narrows, its parts give way in
+ * this order, and nothing wraps, overflows or is cut off:
+ *   1. The search field narrows, from 19rem to 10rem (to 5rem where the navigator is a drawer).
+ *   2. The suite switcher's row gives way to its menu button. Where the navigator is a drawer, the switcher leaves
+ *      the bar instead: the drawer lists the sites first.
+ *   3. The product name ends in an ellipsis; its title keeps the whole name. The logo never shrinks.
+ * Where the navigator is a drawer (860px and below), the module's name and version are not in the bar at all.
+ * Flexbox does the ordering. .topbar-tools has a flex basis of 0: it grows into what the brand leaves and squeezes
+ * the brand only once it is at its own minimum. Inside it, the search field also starts from 0 and grows (to 19rem)
+ * only into space the switcher's row does not need, and the switcher is the one part that shrinks.
+ */
 .topbar {
   position: sticky; top: 0; z-index: 10;
   height: var(--apidocs-topbar);
@@ -221,9 +233,9 @@ p, li, dd { text-wrap: pretty; }
   backdrop-filter: blur(8px);
   border-bottom: 1px solid var(--apidocs-rule);
 }
-.brand { display: flex; align-items: center; gap: 10px; color: var(--apidocs-fg); font-weight: 650; white-space: nowrap; }
+.brand { flex: 0 1 auto; min-width: 0; display: flex; align-items: center; gap: 10px; color: var(--apidocs-fg); font-weight: 650; white-space: nowrap; }
 .brand:hover { text-decoration: none; }
-.logo { height: 22px; width: auto; display: block; }
+.logo { flex: none; height: 22px; width: auto; display: block; }
 .logo-dark { display: none; }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) .logo-light { display: none; }
@@ -231,21 +243,61 @@ p, li, dd { text-wrap: pretty; }
 }
 :root[data-theme="dark"] .logo-light { display: none; }
 :root[data-theme="dark"] .logo-dark { display: block; }
-.product { font-family: var(--apidocs-font-mono); font-size: var(--apidocs-size-lg); letter-spacing: 0; }
-.module-version { color: var(--apidocs-muted); font-size: var(--apidocs-size-sm); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.product { min-width: 0; overflow: hidden; text-overflow: ellipsis; font-family: var(--apidocs-font-mono); font-size: var(--apidocs-size-lg); letter-spacing: 0; }
+.module-version { flex: none; color: var(--apidocs-muted); font-size: var(--apidocs-size-sm); white-space: nowrap; }
 .version { font-family: var(--apidocs-font-mono); font-size: var(--apidocs-size-sm); }
-/* The module's indexes, as Javadoc has them: overview, packages, types, A to Z, deprecated. */
-.topbar-nav { display: flex; align-items: center; gap: 2px; margin-left: 10px; min-width: 0; font-size: var(--apidocs-size-sm); user-select: none; -webkit-user-select: none; }
-.topbar-nav a { padding: 5px 9px; border-radius: var(--apidocs-radius); color: var(--apidocs-muted); white-space: nowrap; }
-.topbar-nav a:hover { color: var(--apidocs-fg); background: var(--apidocs-subtle); text-decoration: none; }
-.topbar-nav a[aria-current="page"] { color: var(--apidocs-accent); background: var(--apidocs-accent-soft); font-weight: 600; }
-@media (max-width: 1100px) { .topbar-nav, .topbar-link { display: none; } }
-.topbar-tools { margin-left: auto; display: flex; align-items: center; gap: 12px; min-width: 0; }
-.topbar-link { color: var(--apidocs-muted); font-size: var(--apidocs-size-sm); }
+.topbar-tools { --apidocs-search-floor: 10rem; flex: 1 1 0; display: flex; align-items: center; gap: 12px; }
+.topbar-tools > .search-fallback, .topbar-tools > .theme-switch { flex: none; }
+.search-fallback { margin-left: auto; }
 
-.search { position: relative; display: block; }
+/* The suite switcher (SuiteSwitcher in chrome.tsx). .suites-fit holds hidden copies of the labels in a wrapping
+   row: 32px tall when they fit on one line, 64px or more when they do not. The visible row and the menu are placed
+   from that height, scaled up so the one that does not apply sits far above the page: the row at the top when the
+   labels fit, the menu when they do not. No width is written down anywhere: the browser's layout decides. The
+   hidden copy of the menu button (.suites-floor) keeps the bar from squeezing the switcher below the button. */
+.suites { flex: 0 1 auto; height: 32px; margin-left: 10px; font-size: var(--apidocs-size-sm); user-select: none; -webkit-user-select: none; }
+.suites-fit { position: relative; display: flex; flex-wrap: wrap; column-gap: 2px; pointer-events: none; }
+.suites-probe { width: 0; height: 32px; margin-right: -2px; }
+.suites-ghost { display: flex; align-items: center; height: 32px; padding: 0 9px; white-space: nowrap; visibility: hidden; }
+.suites-ghost[data-current] { font-weight: 600; }
+.suites-row, .suite-menu { pointer-events: auto; }
+.suites-row { position: absolute; left: 0; top: calc((32px - 100%) * 1000); display: flex; align-items: center; height: 32px; max-width: 100%; overflow: clip; column-gap: 2px; }
+.suites-row a { padding: 5px 9px; border-radius: var(--apidocs-radius); color: var(--apidocs-muted); white-space: nowrap; }
+.suites-row a:hover { color: var(--apidocs-fg); background: var(--apidocs-subtle); text-decoration: none; }
+.suites-row a[aria-current="true"] { color: var(--apidocs-accent); background: var(--apidocs-accent-soft); font-weight: 600; }
+.suite-menu { position: absolute; left: 0; right: 0; top: min(0px, calc((100% - 64px) * 1000)); height: 32px; }
+.suite-current, .suites-floor { display: flex; align-items: center; gap: 4px; padding: 0 7px 0 9px; border: 1px solid transparent; white-space: nowrap; }
+.suite-current {
+  width: fit-content; max-width: 100%; height: 30px; margin-top: 1px;
+  border-color: var(--apidocs-rule-strong); border-radius: var(--apidocs-radius);
+  color: var(--apidocs-fg); list-style: none; cursor: pointer;
+}
+.suite-current::-webkit-details-marker { display: none; }
+.suite-current .icon { flex: none; vertical-align: 0; color: var(--apidocs-muted); }
+.suite-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.suite-current:hover, .suite-menu[open] > .suite-current { background: var(--apidocs-subtle); }
+.suites-floor { width: max-content; height: 0; overflow: clip; visibility: hidden; }
+/* With the script (SUITES_BOOT in chrome.tsx), the switcher is as wide as what it shows, and the one out of view is
+   hidden from assistive technology and the keyboard too. */
+.suites[data-fit] { flex: 0 1 var(--apidocs-suites-width); }
+.suites[data-fit="row"] { min-width: 0; }
+/* Out of the bar, but still laid out, so the script can measure its labels the next time: no width, no gap, unseen. */
+.suites[data-fit="none"] { flex: 0 0 0; min-width: 0; margin-right: -10px; overflow: clip; visibility: hidden; }
+.suites[data-fit="row"] .suite-menu, .suites[data-fit="menu"] .suites-row { visibility: hidden; }
+.suite-list {
+  position: absolute; left: -1px; top: calc(100% + 6px); z-index: 12;
+  min-width: 12rem; margin: 0; padding: 4px; list-style: none;
+  background: var(--apidocs-surface); border: 1px solid var(--apidocs-rule-strong);
+  border-radius: calc(var(--apidocs-radius) + 2px); box-shadow: 0 12px 32px -12px rgb(0 0 0 / 0.28);
+  line-height: 1.5;
+}
+.suite-list a { display: block; padding: 5px 10px; border-radius: 4px; color: var(--apidocs-fg); white-space: nowrap; }
+.suite-list a:hover { background: var(--apidocs-subtle); text-decoration: none; }
+.suite-list a[aria-current="true"] { color: var(--apidocs-accent); font-weight: 600; }
+
+.search { position: relative; display: block; flex: 1000 1 0; min-width: var(--apidocs-search-floor); max-width: 19rem; margin-left: auto; }
 .search input {
-  width: 19rem; max-width: 46vw;
+  width: 100%; text-overflow: ellipsis;
   font: inherit; font-size: var(--apidocs-size-sm);
   color: var(--apidocs-fg);
   background: var(--apidocs-surface);
@@ -361,9 +413,17 @@ html[data-emoji] .theme-switch[data-mode="dark"] .theme-emoji::before { content:
 .nav-row[data-open] { font-weight: 600; }
 .nav-package[data-open] { color: var(--apidocs-accent); }
 .nav-package[data-open] .nav-dot { color: inherit; opacity: 0.6; }
-.nav-row[aria-current="page"] { background: var(--apidocs-accent-soft); color: var(--apidocs-accent); font-weight: 600; }
-.nav-row[aria-current="page"] .nav-count { color: inherit; }
+.nav-row[aria-current="page"], .nav-row[aria-current="true"] { background: var(--apidocs-accent-soft); color: var(--apidocs-accent); font-weight: 600; }
+.nav-row[aria-current] .nav-count { color: inherit; }
 .nav-nested { margin: 1px 0 4px 15px; padding-left: 6px; border-left: 1px solid var(--apidocs-rule); }
+/* The sites, first in the drawer only: on a wide screen the top bar's switcher has them. */
+.nav-suites { display: none; }
+/* The module's indexes: one line of links when they fit the narrowest navigator (NAV_INDEX_ROW_MAX in chrome.tsx),
+   else rows under "Reference". */
+.nav-index { display: flex; gap: 2px; margin: 0 0 14px; padding: 0; list-style: none; font-size: var(--apidocs-size-sm); white-space: nowrap; user-select: none; -webkit-user-select: none; }
+.nav-index a { display: block; padding: 3px 8px; border-radius: 5px; color: var(--apidocs-muted); }
+.nav-index a:hover { color: var(--apidocs-fg); background: var(--apidocs-subtle); text-decoration: none; }
+.nav-index a[aria-current="page"] { color: var(--apidocs-accent); background: var(--apidocs-accent-soft); font-weight: 600; }
 .nav-filter, .toc-filter { margin: 0 0 12px; }
 .nav-filter {
   position: sticky; top: -14px; z-index: 1;
@@ -801,15 +861,28 @@ td .badge { margin-right: 6px; }
 @media (max-width: 860px) {
   html { font-size: 15px; }
   .layout { grid-template-columns: minmax(0, 1fr); }
+  /* The drawer fills the space under the bar and scrolls. Stretch, not the wide layout's start: an absolutely
+     positioned box aligned to the start takes its content's height and, taller than the screen, is moved up behind
+     the bar, where it cannot scroll. */
   .sidebar {
-    display: none; position: fixed; z-index: 9; inset: var(--apidocs-topbar) 0 0 0; height: auto;
+    display: none; position: fixed; z-index: 9; inset: var(--apidocs-topbar) 0 0 0; height: auto; align-self: stretch;
     background: var(--apidocs-bg); border-right: 0; padding: 14px 12px 40px;
   }
   body:has(.nav-toggle:checked) .layout .sidebar { display: block; }
   .content { padding: 18px 16px 72px; }
   .topbar { padding: 0 12px; gap: 10px; }
   .module-version { display: none; }
-  .search input { width: 100%; max-width: 52vw; }
+  /* The drawer lists the sites, so the switcher shows its row when it fits and leaves the bar when it does not. Once
+     it has left (or where there is none), the search field may narrow further, to 5rem. The tools' floor is then the
+     search field's narrowest, the theme switch and the gaps, not the switcher's labels. */
+  .topbar-tools { gap: 10px; min-width: calc(5rem + 52px); }
+  .suites { min-width: 0; margin-left: 0; overflow: clip; }
+  .suite-menu, .suites-floor { display: none; }
+  .topbar-tools:not(:has(> .suites:not([data-fit="none"]))) .search { min-width: 5rem; }
+  .search-key { display: none; }
+  .search input { padding-right: 10px; }
+  .nav-suites { display: block; margin-bottom: 14px; }
+  .nav-suites + .nav-filter { margin-top: 0; }
   .page-head h1 { font-size: var(--apidocs-size-2xl); }
   .sig-large pre { font-size: var(--apidocs-size-sm); padding: 14px 16px; }
   .lineage > div, .fact { grid-template-columns: minmax(0, 1fr); gap: 0; }

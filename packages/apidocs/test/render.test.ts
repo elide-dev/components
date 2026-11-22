@@ -11,7 +11,8 @@ import type { Model, Token } from "../src/model";
 import { render } from "../src/render";
 import { sanitize } from "../src/sanitize";
 import { layoutSignature } from "../src/signature";
-import { sharedPrefix } from "../src/components/chrome";
+import { navIndexes, sharedPrefix, suites } from "../src/components/chrome";
+import { buildSite } from "../src/site";
 import { checkSite } from "./check";
 import { validate } from "./validate";
 
@@ -138,6 +139,49 @@ describe("layout", () => {
     const html = java["index.html"] as string;
     expect(html).toContain('<input type="checkbox" id="apidocs-nav-toggle"');
     expect(html).toContain('for="apidocs-nav-toggle"');
+  });
+  test("theme links are resolved from the site root on pages at any depth, header and footer alike", () => {
+    const out = render(samples.java, { links: { header: [{ label: "Guide", url: "guides/concepts.html" }, { label: "Here", url: "./", current: true }], footer: [{ label: "Notes", url: "guides/concepts.html" }, { label: "Root", url: "/docs/" }, { label: "Elsewhere", url: "https://example.com/x" }] } });
+    const footer = (page: string) => between(out[page] as string, '<p class="footer-links">', "</p>");
+    expect(footer("index.html")).toContain('href="guides/concepts.html"');
+    expect(footer("com/example/geo/Shapes.html")).toContain('href="../../../guides/concepts.html"');
+    expect(footer("com/example/geo/Shapes.html")).toContain('href="/docs/"');
+    expect(footer("com/example/geo/Shapes.html")).toContain('href="https://example.com/x"');
+    expect(between(out["com/example/geo/Shapes.html"] as string, '<nav class="suites-row"', "</nav>")).toContain('href="../../../guides/concepts.html"');
+    expect(checkSite(out, { allowed: [...allowed(samples.java), "/docs/"] }).filter(e => !e.includes("/docs/"))).toEqual([]);
+  });
+  test("the suite switcher marks the current site, given or inferred, and is left out with nothing to switch to", () => {
+    const sites = [{ label: "Guide", url: "https://example.com/guide/" }, { label: "API", url: "https://example.com/api/" }];
+    expect(suites({ links: { header: sites } }, "index").map(s => s.current)).toEqual([false, false]);
+    expect(suites({ links: { header: [sites[0]!, { ...sites[1]!, current: true }] } }, "a/B").map(s => [s.current, s.href])).toEqual([[false, "https://example.com/guide/"], [true, "../index.html"]]);
+    // Inferred from the base URL, or from a link to the site's own root.
+    expect(suites({ baseUrl: "https://example.com/api/", links: { header: sites } }, "index").map(s => s.current)).toEqual([false, true]);
+    expect(suites({ links: { header: [sites[0]!, { label: "API", url: "index.html" }] } }, "index").map(s => s.current)).toEqual([false, true]);
+    // Only this site, or no links: no switcher.
+    expect(suites({ links: { header: [{ label: "API", url: "./" }] } }, "index")).toEqual([]);
+    expect(suites({}, "index")).toEqual([]);
+    expect(java["index.html"]).not.toContain('class="suites"');
+    const html = render(samples.java, { extends: "elide", links: { header: [...sites, { label: "Here", url: "./", current: true }] } })["com/example/geo/Shapes.html"] as string;
+    expect(between(html, '<nav class="suites-row"', "</nav>")).toContain('<a href="../../../index.html" aria-current="true">Here</a>');
+    expect(between(html, '<section class="nav-section nav-suites"', "</section>")).toContain(">Guide<");
+  });
+  test("the navigator lists the indexes: rows under Reference past two, the current one marked; none on a guides-only site", () => {
+    const site = buildSite(samples.java);
+    expect(navIndexes(site, "types").map(e => [e.label, e.current])).toEqual([["Overview", false], ["Packages", false], ["All types", true], ["Index", false], ["Deprecated", false]]);
+    const nav = between(java["com/example/geo/Shapes.html"] as string, '<nav class="sidebar"', "</nav>");
+    expect(nav).toContain('<section class="nav-section nav-reference"><h2 class="nav-heading"><span>Reference</span></h2>');
+    expect(between(java["types.html"] as string, '<section class="nav-section nav-reference"', "</section>")).toContain('<a class="nav-row" href="types.html" aria-current="page">');
+    expect(java["index.html"]).not.toContain('class="topbar-nav"');
+    // A guides-only site whose overview is a guide has none: the overview is the first guide row.
+    const guides = render({ ...samples.java, packages: [], module: { ...samples.java.module, overview: samples.java.module.guides![0]!.id } });
+    expect(guides["index.html"]).not.toMatch(/nav-reference|nav-index/);
+    // One with a generated overview has a one-link row.
+    const plain = render({ ...samples.java, packages: [], module: { ...samples.java.module, overview: undefined } });
+    expect(between(plain["index.html"] as string, '<ul class="nav-index"', "</ul>")).toContain(">Overview<");
+    // The filter is there on guides-only sites too, and filters guides and types, never sites, indexes or packages.
+    expect(plain["index.html"]).toContain("data-nav-filter");
+    expect(nav).toContain('<section class="nav-section nav-guides" data-nav-filterable');
+    expect(nav).not.toMatch(/nav-packages" data-nav-filterable|nav-reference" data-nav-filterable/);
   });
   test("font preloads are added at run time off file://, upright faces only", () => {
     const head = between(java["com/example/geo/Shapes.html"] as string, "<head>", "</head>");

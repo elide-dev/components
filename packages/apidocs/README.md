@@ -163,6 +163,34 @@ The stylesheet reads only `--apidocs-*` custom properties; `tokens` sets them wi
 `elide` maps the tokens to `@elide/tokens` and takes its logo from `@elide/brand`. A theme can also set `logo`
 (SVG markup for light and dark), `favicon`, `fonts` and `footer`.
 
+### The top bar and the navigator
+
+The top bar holds what belongs to the whole site: the navigator toggle, the brand, the version (or an Astro app's
+version menu), a switcher between sibling documentation sites, search and the theme switch. The module's indexes
+(Overview, Packages, All types, Index, Deprecated, as many as the site has) are at the top of the navigator, under the
+filter: one line of links when there are at most two, else rows under "Reference", the current one marked.
+
+`links.header` lists the sibling sites, such as a user guide, a developer guide and the API reference, in the order
+the switcher shows them. Mark the entry that is this site with `"current": true`; without one, the entry whose URL is
+the site's own root (`""`, `"./"`, `"index.html"`, or the theme's `baseUrl`) is current. The current entry links to
+this site's overview. With no entries, or only this site, there is no switcher. Put other links, such as a
+repository, in `links.footer`. Relative URLs in both lists are resolved from the site's root; a path that starts with
+`/` and an absolute URL are written as given.
+
+```json
+{ "links": { "header": [
+  { "label": "User guide", "url": "https://example.com/user/" },
+  { "label": "API reference", "url": "https://example.com/api/", "current": true }
+] } }
+```
+
+The switcher shows the sites as a row when the bar has room for it, else as one menu button that names the current
+site and opens the list (a `<details>` menu that works without JavaScript; Escape and a click elsewhere close it).
+Where the navigator is a drawer (860px and narrower), the drawer lists the sites first, and the bar shows the row
+only when it fits. Nothing in the bar wraps, overflows or is cut off at any width from 320px: the search field
+narrows first, then the switcher gives way, then the product name ends in an ellipsis. The browser's layout makes
+the choice with no width written down; `src/styles/apidocs.css` (the top bar section) has the details.
+
 ## Astro
 
 `@elide/apidocs/astro` serves the same pages from an Astro app (Astro 7), rendered on request or from models the app
@@ -326,7 +354,7 @@ cached for a year.
 | --- | --- |
 | Search | A Preact island, `client:idle`, in the top bar. Loads `assets/search-index.json` on first focus or keystroke; opens results through the router. The top bar persists, so it hydrates once per site. |
 | Theme switch, navigator toggle and `[`, copy buttons, copy as Markdown, member expand and collapse, open-on-hash, list filters, "On this page" tracking, menus | The static page's functions (`src/client/behaviors.tsx`), started on `astro:page-load` and stopped on `astro:before-swap` through one `AbortController` per page: no listener outlives its page. |
-| Top bar and navigator | `transition:persist`, keyed by the site's base: across pages of one site they are the same elements, so the navigator keeps its scroll position and filter text without a script restoring them. Before each swap the client moves the new page's index links and navigator rows into them. |
+| Top bar and navigator | `transition:persist`, keyed by the site's base: across pages of one site they are the same elements, so the navigator keeps its scroll position and filter text without a script restoring them. Before each swap the client moves the new page's suite switcher and navigator blocks (the sites, the indexes with the current one marked, guides, packages and types) into them, around the kept filter field, and applies the kept filter text to the new rows. A top bar from another site is sized before it paints. |
 | Theme and `data-js` | The head script sets them on first load; the client carries them to each new page's `<html>`, whose attributes the router replaces. |
 | Load bar | Starts on `astro:before-preparation`, finishes on arrival, clears if the navigation is aborted. |
 | Page transition | The router's view transition, with the static stylesheet's `::view-transition` rules: the content fades and rises 6px, the top bar and navigator do not move. The browser's cross-document transitions are off on Astro pages, so the two never both run. With reduced motion nothing animates. |
@@ -343,7 +371,7 @@ The sample app, `apps/apidocs-astro`, serves the Java sample at `/java/2.0/` and
 bun run apidocs:astro:dev            # astro dev on http://127.0.0.1:5190/
 bun run apidocs:astro:build
 bun run apidocs:astro:preview        # wrangler dev on http://127.0.0.1:5190/
-bun run --cwd apps/apidocs-astro test   # builds, serves on 5191, and drives it in Chromium
+bun run --cwd apps/apidocs-astro test   # builds, serves on 5191 (APIDOCS_ASTRO_PORT), and drives it in Chromium
 ```
 
 Astro 7 runs `astro dev` in the background when it detects an AI agent; set `ASTRO_DEV_BACKGROUND=1` to keep it in the
@@ -363,7 +391,8 @@ The dev server renders pages with the production `render()` and the same compone
 `/site/<model>/<preset>/`. Editing a component, the stylesheet, a theme preset, a sample or the `--model` file
 reloads the page. In dev, the islands run as a module; the built pages load the `defer` bundle instead. The bar at the
 top is for development only and is not part of any output. It switches the model (Java sample, Kotlin sample, the
-`--model` file), the theme preset, light or dark, the viewport width, and JavaScript off for the current page.
+`--model` file), the theme preset, the number of sibling sites in the switcher (none, 1, 3 or 5), light or dark, the
+viewport width, and JavaScript off for the current page.
 
 To check the portable output in the same loop, build it exactly as the doclet will:
 
@@ -394,9 +423,11 @@ page that shows it, and says how to add one.
 - the Markdown importer (`test/import.test.ts`): each construct, the diagnostics fixture
   (`test/fixtures/guides-errors`), hostile Markdown and SVG, copied-file rules, the sample suite as a guides-only site
   through the output checker, the CLI, and Komodo's two suites when this package sits inside Komodo;
-- in Chromium, a site built with `dist/runner.mjs` opened from `file://` with JavaScript on and off, and axe on the
-  page shell in light and dark; the same for the Markdown sample suite built with `apidocs guides`
-  (`test/guides-browser.test.ts`). Locally, point `PLAYWRIGHT_BROWSERS_PATH` at a Playwright 1.65 browser directory, or
+- in Chromium, a site built with `dist/runner.mjs` opened from `file://` with JavaScript on and off, and axe on every
+  page kind in light and dark; the same for the Markdown sample suite built with `apidocs guides`
+  (`test/guides-browser.test.ts`); and the top bar (`test/topbar.test.ts`) at every width from 320 to 1600px in steps
+  of 20, in the static and the Astro markup, with zero to five sibling sites, with and without a version menu, and
+  with a long product name: nothing wraps, overflows or is cut off, and the switcher's menu and layout stability. Locally, point `PLAYWRIGHT_BROWSERS_PATH` at a Playwright 1.65 browser directory, or
   install one with `bunx playwright install chromium`.
 - the Astro helpers (`test/astro.test.ts`): every page and text file of every sample resolves in both URL forms and
   renders as the static renderer does, head metadata equals the static page's apart from the URL form, and hostile

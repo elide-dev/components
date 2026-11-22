@@ -11,6 +11,13 @@ import type { SymbolMode } from "./symbols";
 export interface ThemeLink {
   label: string;
   url: string;
+  /**
+   * In `links.header`: this entry is the site being rendered. Header links are the sibling documentation sites
+   * (a user guide, a developer guide, the API reference), shown as a switcher with the current one marked. When no
+   * entry sets it, the renderer marks the entry whose URL is this site's own root: "", "./", "index.html", or the
+   * theme's baseUrl.
+   */
+  current?: boolean;
 }
 
 export interface FontFace {
@@ -39,6 +46,10 @@ export interface Theme {
   tokens?: { light?: Record<string, string>; dark?: Record<string, string> };
   /** Font files the pages load. Families are set through the font-* tokens. */
   fonts?: FontFace[];
+  /**
+   * `header`: the sibling documentation sites, as a switcher in the top bar (see ThemeLink.current); other links,
+   * such as a repository, belong in `footer`. Relative URLs in both are resolved from the site's root.
+   */
   links?: { header?: ThemeLink[]; footer?: ThemeLink[] };
   /** Text at the foot of every page, such as a copyright line. */
   footer?: string;
