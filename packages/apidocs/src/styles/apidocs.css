@@ -426,7 +426,7 @@ html[data-emoji] .theme-switch[data-mode="dark"] .theme-emoji::before { content:
 .nav-module { justify-content: space-between; }
 .nav-module > a { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--apidocs-font-mono); text-transform: none; letter-spacing: 0; font-size: var(--apidocs-size-sm); color: var(--apidocs-fg); }
 .nav-index { display: flex; flex: none; gap: 2px; text-transform: none; letter-spacing: 0; font-weight: 450; }
-.nav-index a { padding-block: 0; padding-inline: 5px; border-radius: 4px; color: var(--apidocs-muted); }
+.nav-index a { display: inline-flex; align-items: center; min-block-size: 24px; padding-block: 0; padding-inline: 6px; border-radius: 4px; color: var(--apidocs-muted); }
 .nav-index a[aria-current="page"] { color: var(--apidocs-accent); background: var(--apidocs-accent-soft); }
 /* The tree: a twisty, then the row. A folded branch hides its children only when the script runs, which can open it
    again; a filter with text opens the branches that lead to its matches. */
@@ -434,7 +434,8 @@ html[data-emoji] .theme-switch[data-mode="dark"] .theme-emoji::before { content:
 .nav-branch-row { display: flex; align-items: center; }
 .nav-branch-row > .nav-row { flex: 1; min-width: 0; }
 .nav-twisty {
-  flex: none; display: grid; place-items: center; width: 20px; height: 28px; padding: 0; margin: 0;
+  /* 24px wide: the smallest target WCAG 2.2 accepts (2.5.8). */
+  flex: none; display: grid; place-items: center; width: 24px; height: 28px; padding: 0; margin: 0;
   background: none; border: 0; border-radius: 4px; color: var(--apidocs-faint); cursor: pointer;
 }
 @media (hover: hover) and (pointer: fine) { button.nav-twisty:hover { color: var(--apidocs-fg); background: var(--apidocs-subtle); } }
@@ -443,8 +444,8 @@ button.nav-twisty:active { color: var(--apidocs-fg); background: var(--apidocs-s
 html[data-js] .nav-branch[data-folded]:not([data-filter-open]) > .nav-branch-row > .nav-twisty svg { transform: none; }
 html[data-js] .nav-branch[data-folded]:not([data-filter-open]) > .nav-branch-row > .nav-twisty svg:dir(rtl) { transform: scaleX(-1); }
 html[data-js] .nav-branch[data-folded]:not([data-filter-open]) > .nav-children { display: none; }
-.nav-item > .nav-row { margin-inline-start: 20px; }
-.nav-children { margin-inline-start: 9px; padding-inline-start: 0; border-inline-start: 1px solid var(--apidocs-rule); }
+.nav-item > .nav-row { margin-inline-start: 24px; }
+.nav-children { margin-inline-start: 11px; padding-inline-start: 0; border-inline-start: 1px solid var(--apidocs-rule); }
 .nav-children .nav-list { margin: 0; }
 .nav-group-row { color: var(--apidocs-muted); }
 .nav-heading {
@@ -849,7 +850,7 @@ td .badge { margin-inline-end: 6px; }
 .decls-nested { margin-block: 6px 0; margin-inline: 8px 0; padding-inline-start: 14px; border-inline-start: 1px solid var(--apidocs-rule); }
 .decls-nested .decl-item { padding-block: 6px; }
 .decls-nested .decl-item:last-child { border-block-end: 0; }
-.decl { display: flex; align-items: center; gap: 8px; min-width: 0; color: var(--apidocs-fg); }
+.decl { display: flex; align-items: center; gap: 8px; min-width: 0; min-block-size: 24px; color: var(--apidocs-fg); }
 @media (hover: hover) and (pointer: fine) { .decl:hover { text-decoration: none; } .decl:hover .tk-n { color: var(--apidocs-link); text-decoration: underline; text-underline-offset: 3px; } }
 .decl:active .tk-n { color: var(--apidocs-link); }
 /* good-css exception (overflow-clip): hidden, not clip, so the ellipsis shows in every target browser, Safari before 16 among them. */

@@ -92,6 +92,8 @@ details.version-menu > .version-current:active, .version-list a:active { backgro
 /* The regular-expression switch sits in the field, before the "/" key. */
 .search-mode {
   position: absolute; inset-inline-end: 30px; inset-block-start: 50%; transform: translateY(-50%);
+  /* 24px square at least: the smallest target WCAG 2.2 accepts (2.5.8). */
+  min-inline-size: 24px; min-block-size: 24px; display: grid; place-items: center;
   padding-block: 0; padding-inline: 5px; border: 1px solid transparent; border-radius: 4px;
   background: none; color: var(--apidocs-faint); font-family: var(--apidocs-font-mono); font-size: var(--apidocs-size-xs); line-height: 1.5; cursor: pointer;
 }
