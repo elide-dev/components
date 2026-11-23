@@ -698,6 +698,30 @@ blockquote { margin-block: 0.8em; margin-inline: 0; padding-block: 2px; padding-
 .hl-p { color: var(--apidocs-syn-param); }
 
 .table-scroll { overflow-x: auto; margin-block: 0.8em; margin-inline: 0; }
+
+/* Diagrams: SVG the importer drew from Mermaid source. Their colors are classes, set here from the tokens, so one SVG
+   follows the light and dark schemes and any theme. Labels were measured in the monospace font. */
+.diagram { margin-block: 1.2em; margin-inline: 0; }
+.diagram-scroll { overflow-x: auto; }
+.diagram-scroll > svg { display: block; max-width: 100%; height: auto; margin-inline: auto; }
+.diagram text { font-family: var(--apidocs-font-mono); }
+.diagram-caption { margin-top: 0.5em; color: var(--apidocs-muted); font-size: var(--apidocs-size-sm); text-align: center; }
+.diagram .d-fill-surface { fill: var(--apidocs-surface); }
+.diagram .d-fill-subtle { fill: var(--apidocs-subtle); }
+.diagram .d-fill-accent-soft { fill: var(--apidocs-accent-soft); }
+.diagram .d-fill-fg { fill: var(--apidocs-fg); }
+.diagram .d-fill-muted { fill: var(--apidocs-muted); }
+.diagram .d-fill-rule { fill: var(--apidocs-rule); }
+.diagram .d-fill-rule-strong { fill: var(--apidocs-rule-strong); }
+.diagram .d-fill-accent { fill: var(--apidocs-accent); }
+.diagram .d-stroke-fg { stroke: var(--apidocs-fg); }
+.diagram .d-stroke-muted { stroke: var(--apidocs-muted); }
+.diagram .d-stroke-rule { stroke: var(--apidocs-rule); }
+.diagram .d-stroke-rule-strong { stroke: var(--apidocs-rule-strong); }
+.diagram .d-stroke-accent { stroke: var(--apidocs-accent); }
+.diagram .d-text-fg { fill: var(--apidocs-fg); }
+.diagram .d-text-muted { fill: var(--apidocs-muted); }
+.diagram .d-text-accent { fill: var(--apidocs-accent); }
 table { border-collapse: collapse; width: 100%; font-size: var(--apidocs-size-sm); line-height: 1.5; }
 caption { text-align: start; color: var(--apidocs-muted); font-size: var(--apidocs-size-sm); padding-block-end: 6px; }
 th, td { text-align: start; vertical-align: top; padding-block: 7px; padding-inline: 0 12px; border-block-end: 1px solid var(--apidocs-rule); }

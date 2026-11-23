@@ -42,6 +42,13 @@ export function checkSite(out: Output, options: CheckOptions): string[] {
       if (/\bimport\s*\(/.test(bare)) errors.push(`${file}: dynamic import`);
     }
     if (!file.endsWith(".html")) continue;
+    // A drawn diagram is inline SVG: it carries no stylesheet, inline style, foreign content or script of its own.
+    for (const figure of content.matchAll(/<figure class="diagram">([\s\S]*?)<\/figure>/g)) {
+      const body = figure[1]!;
+      for (const [pattern, what] of [[/<style\b/i, "a style element"], [/\sstyle="/i, "a style attribute"], [/<foreignObject\b/i, "foreignObject"], [/<script\b/i, "a script"]] as const) {
+        if (pattern.test(body)) errors.push(`${file}: diagram with ${what}`);
+      }
+    }
     // A tag runs to the first > outside a quoted value; attribute names are read with the values blanked, so text
     // such as onerror= inside an escaped value is not mistaken for an attribute.
     for (const tag of content.matchAll(/<[a-zA-Z](?:[^>"']|"[^"]*"|'[^']*')*>/g)) {

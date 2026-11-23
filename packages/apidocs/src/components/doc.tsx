@@ -6,6 +6,8 @@ import { Callout } from "./callout";
 import { highlight } from "../highlight";
 import type { Block, Inline, Token } from "../model";
 import { sanitize } from "../sanitize";
+import { sanitizeSvg } from "../import/svg";
+import { namespaceSvg } from "../diagram";
 import { safeUrl } from "../url";
 import { resolve, resolveRef, resolveToken } from "../site";
 import { layoutSignature } from "../signature";
@@ -79,6 +81,17 @@ function BlockNode({ node, offset }: { node: Block; offset: number }): JSX.Eleme
       return node.ordered ? <ol>{items}</ol> : <ul>{items}</ul>;
     }
     case "code": return <CodeBlock code={node.text} language={node.language ?? ctx.language} />;
+    case "diagram": {
+      // A model can come from any producer, so the SVG is checked again here; one that fails shows its source.
+      const svg = node.svg === undefined ? undefined : sanitizeSvg(node.svg);
+      if (!svg?.ok) return <CodeBlock code={node.source} language={node.language} />;
+      return (
+        <figure class="diagram">
+          <div class="diagram-scroll" dangerouslySetInnerHTML={{ __html: namespaceSvg(svg.svg) }} />
+          {node.title && <figcaption class="diagram-caption">{node.title}</figcaption>}
+        </figure>
+      );
+    }
     case "admonition":
       return (
         <Callout kind={node.tone} label={node.title?.length ? <Inlines nodes={node.title} /> : ADMONITION_LABEL[node.tone]}>

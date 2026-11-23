@@ -77,6 +77,7 @@ function block(md: Md, node: Block, depth: number): string {
     case "paragraph": return inlines(md, node.children);
     case "heading": return `${"#".repeat(Math.min(6, Math.max(2, node.level) + depth - 2))} ${inlines(md, node.children)}`;
     case "code": return fence(node.text, node.language ?? md.language);
+    case "diagram": return fence(node.source, node.language);
     case "raw": return esc(node.text);
     case "quote": return blocks(md, node.children, depth).split("\n").map(l => `> ${l}`).join("\n");
     case "admonition": {

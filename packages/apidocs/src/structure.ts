@@ -91,6 +91,7 @@ export function blockText(nodes: Block[] | undefined): string {
       case "heading": return inlineText(node.children);
       case "code":
       case "raw": return node.text;
+      case "diagram": return [node.title, node.description].filter(Boolean).join(" ");
       case "quote": return blockText(node.children);
       case "admonition": return `${inlineText(node.title)} ${blockText(node.children)}`.trim();
       case "list": return (node.items ?? []).map(blockText).join(" ");

@@ -307,7 +307,8 @@
         { "$ref": "#/$defs/Heading" },
         { "$ref": "#/$defs/Quote" },
         { "$ref": "#/$defs/Admonition" },
-        { "$ref": "#/$defs/RawBlock" }
+        { "$ref": "#/$defs/RawBlock" },
+        { "$ref": "#/$defs/Diagram" }
       ]
     },
     "Paragraph": {
@@ -379,6 +380,20 @@
         "tone": { "$ref": "#/$defs/AdmonitionTone" },
         "title": { "$ref": "#/$defs/Inlines", "description": "A title; absent for the tone's own label." },
         "children": { "$ref": "#/$defs/Blocks" }
+      }
+    },
+    "Diagram": {
+      "description": "A diagram written as text: its source, and the SVG the importer drew from it.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "language", "source"],
+      "properties": {
+        "kind": { "const": "diagram" },
+        "language": { "const": "mermaid", "description": "The diagram language." },
+        "source": { "type": "string", "description": "The diagram's source text, unchanged." },
+        "svg": { "type": "string", "description": "The drawn diagram: sanitized SVG markup whose colors are d-* classes. Absent when it was not drawn; the page then shows the source." },
+        "title": { "type": "string", "description": "The diagram's accessible title (Mermaid's accTitle)." },
+        "description": { "type": "string", "description": "The diagram's accessible description (Mermaid's accDescr)." }
       }
     },
     "RawBlock": {
