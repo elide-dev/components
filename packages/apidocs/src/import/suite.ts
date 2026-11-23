@@ -5,6 +5,7 @@
 import type { Model } from "../model";
 import { type Output, render } from "../render";
 import type { Theme } from "../theme";
+import { type DiagramRenderer, drawDiagrams } from "./diagrams";
 import { readSuite } from "./files";
 import { type CopiedFile, type Diagnostic, guidesModel, importMarkdown, type ImportResult, type LinkMapping } from "./markdown";
 
@@ -24,6 +25,11 @@ export interface SuiteSiteOptions {
   links?: LinkMapping[];
   includeDrafts?: boolean;
   extraKeys?: string[];
+  /**
+   * How to draw the suite's Mermaid diagrams: a factory for a renderer, or false to leave them undrawn (their pages
+   * show the source). The default starts Chromium (mermaidRenderer) only when the suite has a diagram.
+   */
+  diagrams?: (() => Promise<DiagramRenderer>) | false;
 }
 
 export interface SuiteSite {
@@ -36,7 +42,7 @@ export interface SuiteSite {
   diagnostics: Diagnostic[];
 }
 
-export function suiteSite(dir: string, options: SuiteSiteOptions): SuiteSite {
+export async function suiteSite(dir: string, options: SuiteSiteOptions): Promise<SuiteSite> {
   const { files, assets } = readSuite(dir);
   const result = importMarkdown(files, {
     suite: options.id,
@@ -46,6 +52,18 @@ export function suiteSite(dir: string, options: SuiteSiteOptions): SuiteSite {
     ...(options.extraKeys ? { extraKeys: options.extraKeys } : {}),
     ...(options.sourceRoot ? { sourceRoot: options.sourceRoot } : {}),
   });
+  if (result.diagrams.length && options.diagrams !== false) {
+    const factory = options.diagrams ?? (async () => (await import("./mermaid")).mermaidRenderer());
+    let renderer: DiagramRenderer | undefined;
+    try {
+      renderer = await factory();
+    } catch (failure) {
+      const cause = failure instanceof Error ? failure.message.split("\n")[0] : String(failure);
+      const first = result.diagrams[0]!;
+      result.diagnostics.push({ file: first.path, line: first.line, severity: "error", message: `Mermaid diagrams need Chromium: run bunx playwright install chromium (${cause})` });
+    }
+    if (renderer) await drawDiagrams(result, renderer);
+  }
   const model = guidesModel(result, { name: options.title, ...(options.version ? { version: options.version } : {}) });
   const theme: Theme = {
     ...options.theme,

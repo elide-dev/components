@@ -100,7 +100,7 @@ function assetSource(name: string, assets: string | undefined): string {
   throw new Error(`no source for the asset ${name}`);
 }
 
-function guides(argv: string[]): number {
+async function guides(argv: string[]): Promise<number> {
   const args = parseArgs(argv);
   // Relative paths are the caller's: the directory a package script started in, else this process's.
   const cwd = process.env.npm_lifecycle_event && process.env.INIT_CWD ? process.env.INIT_CWD : process.cwd();
@@ -114,7 +114,7 @@ function guides(argv: string[]): number {
   const warnOnly = args.flags.has("warn-only");
   const opt = (key: string) => args.values.get(key);
 
-  const site = suiteSite(src, {
+  const site = await suiteSite(src, {
     id: opt("id")!,
     title: opt("title")!,
     ...(opt("version") ? { version: opt("version")! } : {}),
@@ -168,10 +168,10 @@ function guides(argv: string[]): number {
   return 0;
 }
 
-function main(argv: string[]): number {
+async function main(argv: string[]): Promise<number> {
   const [command, ...rest] = argv;
   try {
-    if (command === "guides") return guides(rest);
+    if (command === "guides") return await guides(rest);
     if (command === "--help" || command === "-h" || command === "help") {
       process.stdout.write(USAGE + "\n");
       return 0;
@@ -187,4 +187,4 @@ function main(argv: string[]): number {
   }
 }
 
-process.exit(main(process.argv.slice(2)));
+process.exit(await main(process.argv.slice(2)));
