@@ -136,6 +136,10 @@ describe.skipIf(!existsSync(chromium.executablePath()))("the Mermaid renderer", 
         expect("error" in drawn ? drawn.error : sanitizeSvg(drawn.svg).ok).toBe(true);
       }
       expect(await renderer.draw("flowchart LR\n  A -->", "e.md#0")).toMatchObject({ error: expect.stringContaining("Parse error on line") });
+      // Labels break only where the author breaks them.
+      const wrapped = await renderer.draw('flowchart TB\n  a["Your application<br/>and its own Kotlin compiler"]', "w.md#0");
+      if ("error" in wrapped) throw new Error(wrapped.error);
+      expect(wrapped.svg.match(/dy="1.1em"/g)?.length).toBe(2);
     } finally {
       await renderer.close();
     }

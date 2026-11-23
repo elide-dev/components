@@ -127,7 +127,7 @@ async function drawInPage({ source, seed, themeVariables, palette, roles }: Draw
   const id = `d${hash.toString(36)}`;
   mermaid.initialize({
     startOnLoad: false, securityLevel: "strict", deterministicIds: true, deterministicIDSeed: seed, htmlLabels: false,
-    look: "classic", flowchart: { htmlLabels: false }, class: { htmlLabels: false }, state: { htmlLabels: false }, theme: "base",
+    look: "classic", markdownAutoWrap: false, flowchart: { htmlLabels: false, wrappingWidth: 400 }, class: { htmlLabels: false }, state: { htmlLabels: false }, theme: "base",
     themeVariables, fontFamily: themeVariables.fontFamily,
   });
   let markup: string;
