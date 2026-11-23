@@ -19,7 +19,7 @@ import { fromMarkdown } from "mdast-util-from-markdown";
 import { gfmFromMarkdown } from "mdast-util-gfm";
 import { gfm } from "micromark-extension-gfm";
 import { parseDocument } from "yaml";
-import type { AdmonitionTone, Block, Guide, Heading, Image, Inline, Link, Model } from "../model";
+import type { AdmonitionTone, Block, Diagram, Guide, Heading, Image, Inline, Link, Model } from "../model";
 import { tokenize } from "../sanitize";
 import { SHELL_IDS } from "../site";
 import { guideAnchors, inlineText, slugify } from "../structure";
@@ -90,6 +90,17 @@ export interface ImportResult {
   /** Draft pages left out. */
   drafts: string[];
   diagnostics: Diagnostic[];
+  /** The Mermaid diagrams of the included pages, in page and reading order, still to be drawn (see drawDiagrams). */
+  diagrams: PendingDiagram[];
+}
+
+/** A diagram block the importer created, and where its fence is: drawDiagrams fills in its SVG. */
+export interface PendingDiagram {
+  block: Diagram;
+  /** The page's path in the suite. */
+  path: string;
+  /** The fence's first line. */
+  line: number;
 }
 
 /** Where a suite's own files go in the site, below its root. */
@@ -170,11 +181,12 @@ export function importMarkdown(files: SuiteFile[], options: ImportOptions = {}):
 
   // ---- Parse the included pages.
   const pending: PendingLink[] = [];
+  const diagrams: PendingDiagram[] = [];
   for (const page of pages.values()) {
     if (!page.included) continue;
     const tree = parse(page, report);
     if (!tree) continue;
-    const ctx: Ctx = { page, report, pending, defs: definitions(tree), image: (url, alt, title, line) => image(url, alt, title, line, page) };
+    const ctx: Ctx = { page, report, pending, diagrams, defs: definitions(tree), image: (url, alt, title, line) => image(url, alt, title, line, page) };
     page.blocks = blocks(tree.children, ctx);
     page.fragments = fragments(page.blocks);
   }
@@ -222,6 +234,7 @@ export function importMarkdown(files: SuiteFile[], options: ImportOptions = {}):
     files: [...copied.values()],
     drafts: [...pages.values()].filter(p => !p.included).map(p => p.path),
     diagnostics,
+    diagrams,
   };
 
   /** The page a suite path names, "asset" for another file of the suite, or undefined (reported) when there is none. */
@@ -448,6 +461,7 @@ interface Ctx {
   page: Page;
   report: (file: string, line: number, severity: Diagnostic["severity"], message: string) => void;
   pending: PendingLink[];
+  diagrams: PendingDiagram[];
   defs: Map<string, Definition>;
   image: (url: string, alt: string, title: string | null | undefined, line: number) => Inline;
 }
@@ -494,7 +508,16 @@ function blocks(nodes: RootContent[], ctx: Ctx): Block[] {
           }),
         });
         break;
-      case "code": out.push({ kind: "code", language: node.lang?.toLowerCase() || "text", text: node.value }); break;
+      case "code": {
+        if (node.lang?.toLowerCase() === "mermaid") {
+          const block: Diagram = { kind: "diagram", language: "mermaid", source: node.value };
+          ctx.diagrams.push({ block, path: ctx.page.path, line: node.position?.start.line ?? 1 });
+          out.push(block);
+          break;
+        }
+        out.push({ kind: "code", language: node.lang?.toLowerCase() || "text", text: node.value });
+        break;
+      }
       case "html": {
         const html = withoutComments(node.value);
         if (html.trim()) out.push({ kind: "raw", html, text: htmlText(html) });

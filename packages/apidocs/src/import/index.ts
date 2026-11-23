@@ -4,8 +4,11 @@
  * render.js and the client bundle never include it.
  */
 export { formatDiagnostic, guidesModel, importMarkdown, mapLink, SUITE_FILES } from "./markdown";
-export type { CopiedFile, Diagnostic, ImportOptions, ImportResult, LinkMapping, SuiteAsset, SuiteFile } from "./markdown";
+export type { CopiedFile, Diagnostic, ImportOptions, ImportResult, LinkMapping, PendingDiagram, SuiteAsset, SuiteFile } from "./markdown";
 export { readSuite } from "./files";
+export { drawDiagrams } from "./diagrams";
+export type { DiagramRenderer, DrawResult } from "./diagrams";
+export { mermaidRenderer } from "./mermaid";
 export type { Suite } from "./files";
 export { imageSize } from "./images";
 export { suiteSite } from "./suite";

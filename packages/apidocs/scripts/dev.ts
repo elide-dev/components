@@ -62,7 +62,7 @@ async function site(server: ViteDevServer, model: string, presetAndSuites: strin
     const { suiteSite } = await server.ssrLoadModule("/src/import/suite.ts");
     const { formatDiagnostic } = await server.ssrLoadModule("/src/import/markdown.ts");
     const started = performance.now();
-    const built = suiteSite(suites[model], {
+    const built = await suiteSite(suites[model], {
       id: model,
       title: model === "markdown" ? "Geo user guide" : (guidesPath!.split("/").filter(Boolean).pop() ?? "Guides"),
       theme,

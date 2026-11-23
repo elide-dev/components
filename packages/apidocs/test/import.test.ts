@@ -449,8 +449,9 @@ describe("hostile Markdown", () => {
   });
 });
 
+const sampleSite = await suiteSite(SAMPLE, { id: "geo", title: "Geo user guide", version: "2.1.0", baseUrl: "https://docs.example.com/geo/", links: SAMPLE_LINKS, theme: { extends: "elide" } });
 describe("guides-only site", () => {
-  const site = suiteSite(SAMPLE, { id: "geo", title: "Geo user guide", version: "2.1.0", baseUrl: "https://docs.example.com/geo/", links: SAMPLE_LINKS, theme: { extends: "elide" } });
+  const site = sampleSite;
   const out: Output = { ...site.output, ...Object.fromEntries(site.copies.map(c => [c.to, ""])) };
   const html = (path: string) => out[path] as string;
   test("the sample suite imports cleanly; its model validates", () => {
@@ -530,13 +531,13 @@ const komodo = join(root, "../../../../../docs");
 describe.skipIf(!existsSync(join(komodo, "user/index.md")) || !existsSync(join(komodo, "developer/index.md")))("Komodo's suites", () => {
   for (const [suite, other] of [["user", "developer"], ["developer", "user"]] as const) {
     for (const includeDrafts of [false, true]) {
-      test(`${suite}${includeDrafts ? " with drafts" : ""} imports without errors and passes the output checker`, () => {
-        const site = suiteSite(join(komodo, suite), { id: suite, title: `Komodo ${suite} guide`, includeDrafts, links: [{ prefix: `../${other}/`, target: `https://example.com/${other}/` }] });
+      test(`${suite}${includeDrafts ? " with drafts" : ""} imports without errors and passes the output checker`, async () => {
+        const site = await suiteSite(join(komodo, suite), { id: suite, title: `Komodo ${suite} guide`, includeDrafts, links: [{ prefix: `../${other}/`, target: `https://example.com/${other}/` }] });
         expect(site.diagnostics.filter(d => d.severity === "error").map(d => formatDiagnostic(d))).toEqual([]);
         expect(site.model.module.overview).toBe(`guide:${suite}/index`);
         const out = { ...site.output, ...Object.fromEntries(site.copies.map(c => [c.to, ""])) };
         expect(checkSite(out, { allowed: ["https://"] })).toEqual([]);
-      });
+      }, 60_000);
     }
   }
 });
