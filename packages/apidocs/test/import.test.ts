@@ -478,9 +478,10 @@ describe("guides-only site", () => {
     expect(alerts).toMatch(/<span class="nav-label">Alerts<\/span>/);
     expect(alerts).toContain('<span class="nav-row nav-group-row"><span class="nav-label">Concepts › Advanced topics</span></span>');
     const order = site.model.module.guides!.map(g => g.slug);
-    expect(order).toEqual(["index", "getting-started", "concepts/index", "concepts/alerts", "concepts/images", "concepts/advanced/index", "concepts/advanced/custom-shapes"]);
+    expect(order).toEqual(["index", "getting-started", "concepts/index", "concepts/alerts", "concepts/images", "concepts/diagrams", "concepts/advanced/index", "concepts/advanced/custom-shapes"]);
     expect(html("index.html")).toContain('rel="next" href="guides/getting-started.html"');
-    expect(html("guides/concepts/images.html")).toContain('rel="next" href="advanced/index.html"');
+    expect(html("guides/concepts/images.html")).toContain('rel="next" href="diagrams.html"');
+    expect(html("guides/concepts/diagrams.html")).toContain('rel="next" href="advanced/index.html"');
     expect(html("guides/concepts/index.html")).toContain('rel="prev" href="../getting-started.html"');
     expect(html("guides/getting-started.html")).toContain('rel="prev" href="../index.html"');
   });
@@ -498,7 +499,7 @@ describe("guides-only site", () => {
     expect(html("sitemap.xml")).toContain("<loc>https://docs.example.com/geo/guides/concepts/images.html</loc>");
   });
   test("snapshots", () => {
-    for (const path of ["index.md", "guides/getting-started.md", "guides/concepts/alerts.md", "guides/concepts/images.md", "guides/concepts/alerts.html"]) expect(out[path]).toMatchSnapshot(path);
+    for (const path of ["index.md", "guides/getting-started.md", "guides/concepts/alerts.md", "guides/concepts/images.md", "guides/concepts/diagrams.md", "guides/concepts/alerts.html"]) expect(out[path]).toMatchSnapshot(path);
   });
   test("a guides-only model without an overview lists its guides, with no empty package lists", () => {
     const model: Model = { schema: "apidocs/1", module: { name: "m", guides: [{ id: "guide:a", slug: "a", title: "A" }] } };
@@ -514,7 +515,7 @@ describe("guides-only site", () => {
       const run = spawnSync(process.execPath, [join(root, "src/cli.ts"), "guides", "--src", SAMPLE, "--id", "geo", "--title", "Geo user guide", "--out", dir, "--version", "2.1.0",
         "--source-link", "https://example.com/src/{path}#L{line}", "--source-root", "docs/user", ...SAMPLE_LINKS.flatMap(l => ["--link", `${l.prefix}=${l.target}`])], { encoding: "utf8" });
       expect(run.status).toBe(0);
-      expect(JSON.parse(run.stdout)).toMatchObject({ pages: 7, guides: 7, drafts: 2, errors: 0, warnings: 0 });
+      expect(JSON.parse(run.stdout)).toMatchObject({ pages: 8, guides: 8, drafts: 2, errors: 0, warnings: 0 });
       for (const file of ["index.html", "index.md", "llms.txt", "llms-full.txt", "api.json", "assets/search-index.js", "assets/apidocs.css", "assets/apidocs.js", "guides/concepts/swatch.png", "guides/concepts/diagram.svg"]) {
         expect(existsSync(join(dir, file))).toBe(true);
       }

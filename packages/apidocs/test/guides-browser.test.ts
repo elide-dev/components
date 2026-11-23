@@ -55,9 +55,9 @@ describe("a guides-only site from file://", () => {
     const { page, requests } = await open("guides/concepts/alerts.html", { javaScriptEnabled: false });
     expect(await page.getByRole("heading", { level: 1 }).textContent()).toBe("Callouts");
     expect(await page.locator(".callout").count()).toBe(5);
-    expect(await page.getByRole("navigation", { name: "Guides" }).locator("a.nav-row").count()).toBe(7);
+    expect(await page.getByRole("navigation", { name: "Guides" }).locator("a.nav-row").count()).toBe(8);
     // Without the script nothing is folded: every guide is reachable.
-    expect(await page.getByRole("navigation", { name: "Guides" }).locator("a.nav-row:visible").count()).toBe(7);
+    expect(await page.getByRole("navigation", { name: "Guides" }).locator("a.nav-row:visible").count()).toBe(8);
     expect(await page.locator(".nav-packages").count()).toBe(0);
     for (const control of await page.locator("[data-js-only]").all()) expect(await control.isVisible()).toBe(false);
     expect(requests.every(r => r.startsWith("file://"))).toBe(true);
@@ -104,8 +104,39 @@ describe("a guides-only site from file://", () => {
     await page.context().close();
   });
 
+  for (const colorScheme of ["light", "dark"] as const) {
+    test(`diagrams draw in the ${colorScheme} scheme's colors and fit their column`, async () => {
+      const { page, errors } = await open("guides/concepts/diagrams.html", { colorScheme, javaScriptEnabled: false });
+      const figures = page.locator("figure.diagram");
+      expect(await figures.count()).toBe(4);
+      expect(await page.locator("figure.diagram figcaption").first().textContent()).toBe("Measuring a shape");
+      for (const figure of await figures.all()) {
+        expect(await figure.isVisible()).toBe(true);
+        // The figure never widens the page: a wide diagram scrolls inside its own box.
+        expect(await figure.evaluate(f => f.scrollWidth <= (f.parentElement as HTMLElement).clientWidth + 1)).toBe(true);
+      }
+      const colors = await page.evaluate(() => {
+        const probe = document.createElement("span");
+        probe.style.color = "var(--apidocs-fg)";
+        document.body.append(probe);
+        const fg = getComputedStyle(probe).color;
+        probe.style.color = "var(--apidocs-surface)";
+        const surface = getComputedStyle(probe).color;
+        const text = document.querySelector("figure.diagram .d-text-fg")!;
+        const box = document.querySelector("figure.diagram .d-fill-surface")!;
+        return { fg, surface, text: getComputedStyle(text).fill, box: getComputedStyle(box).fill };
+      });
+      expect(colors.text).toBe(colors.fg);
+      expect(colors.box).toBe(colors.surface);
+      expect(errors).toEqual([]);
+      await page.context().close();
+    });
+  }
+
   test("previous and next follow reading order across groups", async () => {
     const { page } = await open("guides/concepts/images.html", { javaScriptEnabled: false });
+    await page.locator("a.guide-next").click();
+    await page.waitForURL(/concepts\/diagrams\.html$/);
     await page.locator("a.guide-next").click();
     await page.waitForURL(/concepts\/advanced\/index\.html$/);
     expect(await page.getByRole("heading", { level: 1 }).textContent()).toBe("Advanced topics");
@@ -115,7 +146,7 @@ describe("a guides-only site from file://", () => {
 
 describe("accessibility of a guides-only site", () => {
   for (const colorScheme of ["light", "dark"] as const) {
-    for (const path of ["index.html", "guides/getting-started.html", "guides/concepts/alerts.html", "guides/concepts/images.html"]) {
+    for (const path of ["index.html", "guides/getting-started.html", "guides/concepts/alerts.html", "guides/concepts/images.html", "guides/concepts/diagrams.html"]) {
       test(`${path} in ${colorScheme} has no axe violations`, async () => {
         const { page } = await open(path, { colorScheme });
         await page.addScriptTag({ path: require.resolve("axe-core/axe.min.js") });

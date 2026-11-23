@@ -85,6 +85,7 @@ suite" in `bun run dev`. The diagnostics the importer reports live in a separate
 | The five GitHub alerts, a plain quote, `{#id}`, raw HTML (`kbd`, `sub`, `sup`, `dl`), a rule | `concepts/alerts.md` | `guides/concepts/alerts.html` |
 | `sidebar.label` as the navigator label | `concepts/alerts.md` | the navigator ("Alerts") |
 | PNG and SVG images with their size, a title, a link to a suite file | `concepts/images.md` | `guides/concepts/images.html` |
+| Mermaid diagrams (flowchart, sequence, class, state) drawn at build time as SVG figures themed by the tokens, with `accTitle` as the caption; the Markdown twin keeps the source | `concepts/diagrams.md` | `guides/concepts/diagrams.html` |
 | Links: same page, other page, section by GitHub slug and by `{#id}`, up a directory, mapped to a sibling suite and an API reference, absolute | `index.md`, `getting-started.md`, `concepts/` | throughout |
 | Drafts left out (a whole group) | `reference/` | absent; `--include-drafts` adds it |
 | Breadcrumbs through the group, previous and next across groups | every guide | foot of each guide |
