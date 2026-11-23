@@ -161,7 +161,7 @@ const SHOWN_MODIFIERS = new Set(["static", "abstract", "default", "suspend", "in
  * reads as a list. Open, it shows everything. The anchor sits inside the folded part, so a link to the member,
  * and the browser's find-in-page when it matches text in there, open it without any script.
  */
-export function MemberDetail({ member, summary }: { member: Member; summary?: ComponentChildren }) {
+export function MemberDetail({ member, summary, overload }: { member: Member; summary?: ComponentChildren; overload?: boolean }) {
   const ctx = usePage();
   const doc = member.doc;
   const statics = (member.modifiers ?? []).filter(m => SHOWN_MODIFIERS.has(m));
@@ -173,7 +173,8 @@ export function MemberDetail({ member, summary }: { member: Member; summary?: Co
   // than "No description."
   const describedElsewhere = !brief && !doc?.body?.length && !!member.overrides;
   return (
-    <details class={member.deprecated ? "member is-deprecated" : "member"} data-kind={member.kind} open={open}>
+    // An overload of the row above it says so: the rows read as one name with its forms.
+    <details class={["member", member.deprecated && "is-deprecated", overload && "is-overload"].filter(Boolean).join(" ")} data-kind={member.kind} open={open}>
       <summary class="member-row">
         <svg class="member-chevron" viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M6 3.75 10.25 8 6 12.25" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" /></svg>
         <span class="member-sig">{summary ?? <code class="summary-sig">{member.name}</code>}</span>

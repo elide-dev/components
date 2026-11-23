@@ -1,7 +1,7 @@
 /** The three page kinds: the module overview, a package, and a type. */
 import { usePage } from "./context";
-import type { Member, Package, Token, Type } from "./model";
-import { INDEX, indexPages, overviewGuide, packagePage, refLabel, relative, resolve, rootOf, typePage } from "./site";
+import type { Inherited, Member, Package, Ref, Token, Type } from "./model";
+import { INDEX, indexPages, overviewGuide, packagePage, refLabel, relative, resolve, rootOf, type Site, typePage } from "./site";
 import { compactTokens, memberGroups, memberTitle, summaryText, typeGroups, typeKindWord } from "./structure";
 import { Badge, Blocks, Inlines, Signature, TokenList } from "./components/doc";
 import type { Crumb, TocItem } from "./components/chrome";
@@ -211,6 +211,13 @@ export function TypePage({ type }: { type: Type }) {
   const pkg = entry.pkg;
   const description = summaryText(type.doc) || `The ${type.name} ${typeKindWord(type)}.`;
   const groups = memberGroups(type);
+  const inherited = inheritedMembers(site, type);
+  // Inherited members by group, in the groups' order; a group may hold only inherited members.
+  const inheritedGroups = new Map(memberGroups({ ...type, members: inherited.resolved.map(r => r.member) }).map(g => [g.id, g.members]));
+  const fromOf = new Map(inherited.resolved.map(r => [r.member, r.from]));
+  const allGroups = memberGroups({ ...type, members: [...(type.members ?? []), ...inherited.resolved.map(r => r.member)] })
+    .map(g => ({ id: g.id, title: g.title, declared: groups.find(d => d.id === g.id)?.members ?? [], inherited: inheritedGroups.get(g.id) ?? [] }));
+  const extensions = extensionsOf(site, type);
   const crumbs: Crumb[] = [
     { label: site.model.module.name, page: INDEX },
     { label: pkg.name, page: packagePage(pkg) },
@@ -226,7 +233,8 @@ export function TypePage({ type }: { type: Type }) {
     toc.push({ id: group.id, label: group.title, depth: 1 });
     for (const member of group.members) toc.push({ id: member.anchor, label: memberTitle(member), depth: 2, code: true });
   }
-  if (type.inherited?.length) toc.push({ id: "inherited-members", label: "Inherited members", depth: 1 });
+  if (extensions.length) toc.push({ id: "extension-details", label: "Extensions", depth: 1 });
+  if (inherited.external.length) toc.push({ id: "inherited-members", label: "Inherited members", depth: 1 });
 
   return (
     <Shell title={`${type.name} (${moduleTitle()})`} description={description} crumbs={crumbs} toc={toc} jsonLd={jsonLd(type.name, description, typeKindWord(type))}
@@ -259,12 +267,22 @@ export function TypePage({ type }: { type: Type }) {
       <TypeParams params={type.typeParams} level={2} />
       <SeeAlso doc={type.doc} level={2} />
 
-      {groups.map(group => (
-        <section key={group.id} id={group.id} class="section members">
-          <MembersHeading title={group.title} count={group.members.length} />
-          {group.members.map(member => <MemberDetail key={member.id} member={member} summary={<MemberSummarySignature member={member} />} />)}
+      {inherited.resolved.length > 0 && <MembersFilter count={inherited.resolved.length} />}
+      {allGroups.map(group => (
+        <section key={group.id} id={group.id} class="section members" data-inherited-only={group.declared.length ? undefined : ""}>
+          <MembersHeading title={group.title} count={group.declared.length} inherited={group.inherited.length} />
+          {group.declared.map((member, i) => (
+            <MemberDetail key={member.id} member={member} overload={i > 0 && group.declared[i - 1]!.name === member.name} summary={<MemberSummarySignature member={member} />} />
+          ))}
+          {group.inherited.map(member => <LinkedRow key={member.id} member={member} mark={`from ${refLabel(site, fromOf.get(member)!)}`} inherited />)}
         </section>
       ))}
+      {extensions.length > 0 && (
+        <section id="extension-details" class="section members">
+          <MembersHeading title="Extensions" count={extensions.length} toggle={false} />
+          {extensions.map(({ member, pkg: at }) => <LinkedRow key={member.id} member={member} mark={`in ${at.name}`} />)}
+        </section>
+      )}
       {/* Said, not left to an absent heading: a type that only holds nested types must not read as one whose nested
           types are its members. */}
       {groups.length === 0 && (
@@ -278,10 +296,10 @@ export function TypePage({ type }: { type: Type }) {
         </section>
       )}
 
-      {type.inherited?.length ? (
+      {inherited.external.length ? (
         <section id="inherited-members" class="section">
           <h2>Inherited members</h2>
-          {type.inherited.map(group => (
+          {inherited.external.map(group => (
             <div key={group.from.id} class="inherited">
               <h3>From {group.kind} <RefLink refValue={group.from} /></h3>
               <p class="inherited-list">
@@ -298,13 +316,89 @@ export function TypePage({ type }: { type: Type }) {
 }
 
 /** A member group's heading: its title, how many it holds, and a control that opens or folds them all. */
-function MembersHeading({ title, count }: { title: string; count: number }) {
+function MembersHeading({ title, count, inherited = 0, toggle = true }: { title: string; count: number; inherited?: number; toggle?: boolean }) {
   return (
     <h2 class="members-heading">
       <span>{title}</span>
-      <span class="members-count">{count}</span>
-      <button type="button" class="members-toggle" data-expand-all data-js-only aria-expanded="false">Expand all</button>
+      <span class="members-count">{count}{inherited > 0 && <span class="members-inherited-count"> + {inherited} inherited</span>}</span>
+      {toggle && <button type="button" class="members-toggle" data-expand-all data-js-only aria-expanded="false">Expand all</button>}
     </h2>
+  );
+}
+
+/**
+ * A type's inherited members: those this site documents, as members (with the type they come from), and the groups
+ * whose members it does not, such as a JDK class's, which the page lists by name.
+ */
+export function inheritedMembers(site: Site, type: Type): { resolved: { member: Member; from: Ref }[]; external: Inherited[] } {
+  const resolved: { member: Member; from: Ref }[] = [];
+  const external: Inherited[] = [];
+  for (const group of type.inherited ?? []) {
+    const owner = site.types.get(group.from.id)?.type;
+    const left: Ref[] = [];
+    for (const ref of group.members ?? []) {
+      const member = owner && site.types.get(ref.id.split("#")[0]!)?.type.members?.find(m => m.id === ref.id);
+      if (member) resolved.push({ member, from: { id: ref.id.split("#")[0]! } });
+      else left.push(ref);
+    }
+    if (left.length) external.push({ ...group, members: left });
+  }
+  return { resolved, external };
+}
+
+/**
+ * The Kotlin extensions this site documents whose receiver is the type itself (not a type built from it, such as a
+ * list of it), in package order: a Kotlin reader looks for them with the type's members.
+ */
+export function extensionsOf(site: Site, type: Type): { member: Member; pkg: Package }[] {
+  const out: { member: Member; pkg: Package }[] = [];
+  for (const pkg of site.packages) {
+    for (const member of [...(pkg.functions ?? []), ...(pkg.properties ?? [])]) {
+      if (member.receiver?.type.find(token => token.kind === "type")?.ref === type.id) out.push({ member, pkg });
+    }
+  }
+  return out;
+}
+
+/**
+ * Which members the type page shows: those the type declares, or those with the ones it inherits from this site's
+ * types. Two radio buttons and :has(), so it works without the script, which keeps the choice and puts it in the URL.
+ */
+function MembersFilter({ count }: { count: number }) {
+  return (
+    <>
+      <fieldset class="members-filter">
+        <legend class="visually-hidden">Members shown</legend>
+        <label><input type="radio" name="apidocs-members" value="declared" data-members-filter checked /> Declared</label>
+        <label><input type="radio" name="apidocs-members" value="all" data-members-filter /> With {count} inherited</label>
+      </fieldset>
+      {/* Before the rows are parsed, so a reader who chose all members never sees them arrive. */}
+      <script dangerouslySetInnerHTML={{ __html: MEMBERS_BOOT }} />
+    </>
+  );
+}
+
+/** The switch's state from the URL (?members=) or the reader's last choice; membersFilter in behaviors.tsx keeps it. */
+const MEMBERS_BOOT =
+  '(function(){var v=new URLSearchParams(location.search).get("members");if(v!=="all"&&v!=="declared")try{v=localStorage.getItem("apidocs-members")}catch(e){}' +
+  'if(v==="all"){var r=document.querySelector(\'input[data-members-filter][value="all"]\');if(r)r.checked=true}})()';
+
+/**
+ * A member documented elsewhere, as a row that links to its entry: an inherited member, with the type it comes from,
+ * or an extension, with the package that declares it.
+ */
+function LinkedRow({ member, mark, inherited }: { member: Member; mark: string; inherited?: boolean }) {
+  const { site, page } = usePage();
+  const brief = summaryText(member.doc);
+  return (
+    <div class={inherited ? "member member-linked member-inherited" : "member member-linked"} data-kind={member.kind}>
+      <a class="member-row" href={resolve(site, page, ".html", member.id)}>
+        <span class="member-chevron" aria-hidden="true" />
+        <span class="member-sig"><MemberSummarySignature member={member} /></span>
+        <span class="member-brief" data-brief={brief || undefined} />
+        <span class="member-marks"><span class="member-from">{mark}</span></span>
+      </a>
+    </div>
   );
 }
 

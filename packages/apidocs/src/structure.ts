@@ -55,7 +55,19 @@ export function memberGroups(type: Type): MemberGroup[] {
     annotationElement: groups[4]!, method: groups[5]!, function: groups[6]!,
   };
   for (const member of type.members ?? []) by[member.kind].members.push(member);
+  for (const group of groups) group.members = overloadsTogether(group.members);
   return groups.filter(g => g.members.length > 0);
+}
+
+/** Members in their order, each name's overloads moved up to its first: a reader compares them side by side. */
+export function overloadsTogether(members: Member[]): Member[] {
+  const byName = new Map<string, Member[]>();
+  for (const member of members) {
+    const same = byName.get(member.name);
+    if (same) same.push(member);
+    else byName.set(member.name, [member]);
+  }
+  return [...byName.values()].flat();
 }
 
 export function inlineText(nodes: Inline[] | undefined): string {

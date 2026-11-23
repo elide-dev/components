@@ -221,15 +221,15 @@ a > code { color: inherit; }
 :is(.prose, .callout, .fact dd, .lede, .index-summary, td) a:has(> code:only-child):active { text-decoration-line: underline; }
 .summary-sig a { text-decoration: none; }
 /* Where a link leads, in a character after its text: another site, or a file to download. Not read aloud (the empty
-   alternative text), and never underlined. The format menu labels its own
-   entries. */
-:is(.content, .footer) a:is([href^="http://"], [href^="https://"]):not(.formats-list a)::after,
-:is(.content, .footer) a:is([download], [href$=".zip"], [href$=".jar"], [href$=".tgz"], [href$=".tar.gz"], [href$=".pdf"]):not(.formats-list a)::after {
+   alternative text), and never underlined. The format menu labels its own entries, and code (signatures, the
+   inheritance line, parameter types) has none: there a mark on every JDK type would be clutter. */
+:is(.content, .footer) a:is([href^="http://"], [href^="https://"]):not(.formats-list a, .sig a, .lineage a, .fact dt a)::after,
+:is(.content, .footer) a:is([download], [href$=".zip"], [href$=".jar"], [href$=".tgz"], [href$=".tar.gz"], [href$=".pdf"]):not(.formats-list a, .sig a, .lineage a, .fact dt a)::after {
   display: inline-block; margin-inline-start: 0.15em; text-decoration: none;
   font-family: var(--apidocs-font-sans); font-size: 0.85em; font-weight: 400; color: var(--apidocs-faint);
 }
-:is(.content, .footer) a:is([href^="http://"], [href^="https://"]):not(.formats-list a)::after { content: "\2197\FE0E" / ""; }
-:is(.content, .footer) a:is([download], [href$=".zip"], [href$=".jar"], [href$=".tgz"], [href$=".tar.gz"], [href$=".pdf"]):not(.formats-list a)::after { content: "\2913" / ""; }
+:is(.content, .footer) a:is([href^="http://"], [href^="https://"]):not(.formats-list a, .sig a, .lineage a, .fact dt a)::after { content: "\2197\FE0E" / ""; }
+:is(.content, .footer) a:is([download], [href$=".zip"], [href$=".jar"], [href$=".tgz"], [href$=".tar.gz"], [href$=".pdf"]):not(.formats-list a, .sig a, .lineage a, .fact dt a)::after { content: "\2913" / ""; }
 
 h1, h2, h3, h4 { font-family: var(--apidocs-font-display); line-height: 1.2; margin: 0; text-wrap: balance; }
 p, li, dd { text-wrap: pretty; }
@@ -915,7 +915,7 @@ td .badge { margin-inline-end: 6px; }
    which opens the fold (folds() in client/behaviors.tsx). */
 html[data-js] .fold:not([data-open]):not([data-short]) > .fold-body {
   max-height: calc(4lh + 1.2em); overflow: hidden;
-  mask-image: linear-gradient(to bottom, #000 60%, transparent);
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 2.6lh), transparent calc(100% - 1lh));
 }
 /* Folded, the body is a scroll container (above), which keeps its children's margins inside it. Open, it is a flow root
    too, and its first and last children have no outer margin, so the fold is as tall either way and the
@@ -1204,3 +1204,33 @@ dialog.keys td:first-child { white-space: nowrap; inline-size: 6rem; }
 }
 .card:not(:popover-open) { opacity: 0; }
 @media print { .card { display: none !important; } }
+
+/* ---- Overloads and inherited members ---- */
+
+/* A name's overloads sit together (memberGroups): the rows after the first keep the name quieter, so the parameters,
+   which are what differ, are what the eye meets, and the rule between them is fainter. */
+.member.is-overload > .member-row .member-key { color: var(--apidocs-muted); font-weight: 500; }
+.members > .member:has(+ .member.is-overload) { border-block-end-color: color-mix(in oklch, var(--apidocs-rule) 45%, transparent); }
+
+/* Declared, or with inherited members: two radio buttons styled as one control. */
+.members-filter {
+  display: flex; gap: 2px; inline-size: fit-content; min-inline-size: 0; margin-block: 32px 0; margin-inline: 0; padding: 2px;
+  border: 1px solid var(--apidocs-rule-strong); border-radius: var(--apidocs-radius);
+  font-size: var(--apidocs-size-sm); user-select: none; -webkit-user-select: none;
+}
+.members-filter label { display: flex; align-items: center; min-block-size: 26px; padding-inline: 10px; border-radius: var(--apidocs-radius); color: var(--apidocs-muted); cursor: pointer; }
+.members-filter input { position: absolute; opacity: 0; pointer-events: none; }
+.members-filter label:has(:checked) { color: var(--apidocs-accent); background: var(--apidocs-accent-soft); font-weight: 600; }
+.members-filter label:has(:focus-visible) { outline: 2px solid var(--apidocs-focus); outline-offset: 1px; }
+@media (hover: hover) and (pointer: fine) { .members-filter label:not(:has(:checked)):hover { color: var(--apidocs-fg); background: var(--apidocs-subtle); } }
+.members-filter label:not(:has(:checked)):active { color: var(--apidocs-fg); background: var(--apidocs-subtle); }
+.members-filter + .section { margin-block-start: 16px; }
+body:has([data-members-filter][value="declared"]:checked) :is(.member-inherited, section[data-inherited-only], .members-inherited-count) { display: none; }
+
+/* A member documented elsewhere (an inherited member, an extension): a row that links to its entry, with a mark. */
+.member-linked > .member-row { color: var(--apidocs-fg); }
+@media (hover: hover) and (pointer: fine) { .member-linked > .member-row:hover { text-decoration: none; } }
+.member-linked > .member-row:active { text-decoration: none; }
+.member-linked .member-key { color: var(--apidocs-fg); }
+.member-from { color: var(--apidocs-faint); font-size: var(--apidocs-size-xs); white-space: nowrap; }
+.members-inherited-count { color: var(--apidocs-faint); }

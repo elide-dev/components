@@ -687,7 +687,8 @@ export function openShortcuts() {
 
 /** The next or previous member: the one after (or before) the focused member, or the first below the top bar. */
 function memberStep(dir: 1 | -1) {
-  const rows = [...document.querySelectorAll<HTMLElement>(".members > .member > .member-row")];
+  // The rows shown: inherited ones are hidden while the page shows declared members only.
+  const rows = [...document.querySelectorAll<HTMLElement>(".members > .member > .member-row")].filter(r => r.getClientRects().length > 0);
   if (!rows.length) return;
   const focused = rows.findIndex(r => r === document.activeElement);
   let at: number;
@@ -731,6 +732,42 @@ export function shortcuts(signal?: AbortSignal) {
     else return;
     event.preventDefault();
   }, { signal });
+}
+
+// ---- Declared or all members: the type page's switch, kept across pages and in the URL (?members=all), so a link
+// shows what its writer saw.
+
+export const MEMBERS_STORAGE = "apidocs-members";
+
+export function membersFilter(signal?: AbortSignal) {
+  const radios = [...document.querySelectorAll<HTMLInputElement>("input[data-members-filter]")];
+  if (!radios.length) return;
+  const set = (value: string) => {
+    for (const radio of radios) radio.checked = radio.value === value;
+  };
+  const fromUrl = new URL(location.href).searchParams.get("members");
+  let stored: string | null = null;
+  try {
+    stored = window.localStorage.getItem(MEMBERS_STORAGE);
+  } catch {
+    /* storage blocked */
+  }
+  const initial = fromUrl === "all" || fromUrl === "declared" ? fromUrl : stored === "all" ? "all" : "declared";
+  set(initial);
+  for (const radio of radios) {
+    radio.addEventListener("change", () => {
+      if (!radio.checked) return;
+      try {
+        window.localStorage.setItem(MEMBERS_STORAGE, radio.value);
+      } catch {
+        /* storage blocked */
+      }
+      const url = new URL(location.href);
+      if (radio.value === "all") url.searchParams.set("members", "all");
+      else url.searchParams.delete("members");
+      history.replaceState(history.state, "", url);
+    }, { signal });
+  }
 }
 
 // ---- The navigator toggle: remember "hidden" on wide screens; "[" toggles it.
@@ -779,4 +816,5 @@ export function pageBehaviors(signal?: AbortSignal) {
   navigatorFolds(signal);
   folds(signal);
   shortcuts(signal);
+  membersFilter(signal);
 }
