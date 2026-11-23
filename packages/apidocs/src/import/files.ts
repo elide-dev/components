@@ -21,6 +21,8 @@ export function readSuite(dir: string): Suite {
   const walk = (rel: string) => {
     for (const name of readdirSync(join(dir, rel)).sort()) {
       if (name.startsWith(".") || name === "node_modules") continue;
+      // A folder's README.md is GitHub's landing page for it, not a page of the suite.
+      if (/^readme\.md$/i.test(name)) continue;
       const path = rel ? `${rel}/${name}` : name;
       const stat = lstatSync(join(dir, path));
       if (stat.isSymbolicLink()) continue;

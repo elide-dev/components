@@ -74,7 +74,8 @@ group's title, as a suite's `index.md` does.
 
 `apidocs guides` builds a documentation site from a directory of Markdown files, with the same components, design and
 outputs as an API reference. The importer (`src/import/markdown.ts`) reads the layout and frontmatter of Astro
-Starlight's docs collection, so a suite written for Starlight imports unchanged.
+Starlight's docs collection, so a suite written for Starlight imports unchanged. A `README.md` in any folder is
+GitHub's landing page for that folder: the suite leaves it out.
 
 ```sh
 bun src/cli.ts guides --src docs/user --id user --title "Komodo user guide" --out site/user \
