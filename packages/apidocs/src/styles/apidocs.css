@@ -5,7 +5,9 @@
  */
 
 :root {
-  color-scheme: light;
+  /* One set of tokens for both schemes: each color is light-dark(light, dark), resolved by the root's color-scheme,
+     which follows the reader's system unless the theme switch pins it (data-theme). */
+  color-scheme: light dark;
   /* System stacks. A theme puts its own families in front of these; it never replaces them, so a character the
      theme's font lacks (a symbol, an emoji, another script) always has a font that was chosen for it. */
   --apidocs-font-system: system-ui, -apple-system, "Segoe UI Variable Text", "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", Arial, sans-serif;
@@ -28,38 +30,38 @@
   --apidocs-code-scale: 0.9em;
   --apidocs-tracking-display: -0.015em;
   --apidocs-tracking-caps: 0.04em;
-  --apidocs-bg: oklch(99.059% 0.0017 247.839);
-  --apidocs-surface: oklch(100% 0 none);
-  --apidocs-subtle: oklch(96.648% 0.00454 258.325);
-  --apidocs-fg: oklch(21.685% 0.01509 261.617);
-  --apidocs-muted: oklch(45.541% 0.02655 263.037);
-  --apidocs-faint: oklch(51.195% 0.0243 261.702);
-  --apidocs-rule: oklch(91.83% 0.00875 264.52);
-  --apidocs-rule-strong: oklch(84.433% 0.01492 264.488);
-  --apidocs-accent: oklch(49.4% 0.08141 208.54);
-  --apidocs-accent-soft: oklch(49.4% 0.08141 208.54 / 0.08);
-  --apidocs-link: oklch(44.632% 0.07384 210.379);
-  --apidocs-focus: oklch(49.4% 0.08141 208.54);
-  --apidocs-note-api: oklch(49.4% 0.08141 208.54);
-  --apidocs-note-api-soft: oklch(49.4% 0.08141 208.54 / 0.08);
-  --apidocs-note-spec: oklch(46.754% 0.14115 262.814);
-  --apidocs-note-spec-soft: oklch(46.754% 0.14115 262.814 / 0.07);
-  --apidocs-note-impl: oklch(51.195% 0.0243 261.702);
-  --apidocs-note-impl-soft: oklch(21.685% 0.01509 261.617 / 0.03);
-  --apidocs-deprecated: oklch(49.291% 0.15737 31.846);
-  --apidocs-deprecated-soft: oklch(49.291% 0.15737 31.846 / 0.07);
-  --apidocs-nullable: oklch(49.402% 0.10925 66.906);
-  --apidocs-non-null: oklch(47.294% 0.10194 148.797);
-  --apidocs-code-bg: oklch(96.948% 0.00454 258.325);
-  --apidocs-code-fg: oklch(25.906% 0.02487 261.09);
-  --apidocs-syn-comment: oklch(51.195% 0.0243 261.702);
-  --apidocs-syn-keyword: oklch(46.111% 0.16624 315.205);
-  --apidocs-syn-string: oklch(47.612% 0.10049 157.022);
-  --apidocs-syn-number: oklch(50.112% 0.12797 52.531);
-  --apidocs-syn-type: oklch(44.632% 0.07384 210.379);
-  --apidocs-syn-function: oklch(45.846% 0.16697 265.949);
-  --apidocs-syn-annotation: oklch(49.402% 0.10925 66.906);
-  --apidocs-syn-param: oklch(43.405% 0.14897 358.998);
+  --apidocs-bg: light-dark(oklch(99.059% 0.0017 247.839), oklch(18.079% 0.00953 255.642));
+  --apidocs-surface: light-dark(oklch(100% 0 none), oklch(21.25% 0.01517 261.609));
+  --apidocs-subtle: light-dark(oklch(96.648% 0.00454 258.325), oklch(23.785% 0.01713 259.757));
+  --apidocs-fg: light-dark(oklch(21.685% 0.01509 261.617), oklch(93.061% 0.00581 264.531));
+  --apidocs-muted: light-dark(oklch(45.541% 0.02655 263.037), oklch(73.897% 0.0208 260.165));
+  --apidocs-faint: light-dark(oklch(51.195% 0.0243 261.702), oklch(67.698% 0.02312 259.192));
+  --apidocs-rule: light-dark(oklch(91.83% 0.00875 264.52), oklch(29.114% 0.01854 258.368));
+  --apidocs-rule-strong: light-dark(oklch(84.433% 0.01492 264.488), oklch(37.364% 0.02265 261.232));
+  --apidocs-accent: light-dark(oklch(49.4% 0.08141 208.54), oklch(76.813% 0.09823 203.685));
+  --apidocs-accent-soft: light-dark(oklch(49.4% 0.08141 208.54 / 0.08), oklch(76.813% 0.09823 203.685 / 0.1));
+  --apidocs-link: light-dark(oklch(44.632% 0.07384 210.379), oklch(80.181% 0.09233 203.396));
+  --apidocs-focus: light-dark(oklch(49.4% 0.08141 208.54), oklch(76.813% 0.09823 203.685));
+  --apidocs-note-api: light-dark(oklch(49.4% 0.08141 208.54), oklch(76.813% 0.09823 203.685));
+  --apidocs-note-api-soft: light-dark(oklch(49.4% 0.08141 208.54 / 0.08), oklch(76.813% 0.09823 203.685 / 0.1));
+  --apidocs-note-spec: light-dark(oklch(46.754% 0.14115 262.814), oklch(75.722% 0.0996 263.17));
+  --apidocs-note-spec-soft: light-dark(oklch(46.754% 0.14115 262.814 / 0.07), oklch(75.722% 0.0996 263.17 / 0.09));
+  --apidocs-note-impl: light-dark(oklch(51.195% 0.0243 261.702), oklch(67.698% 0.02312 259.192));
+  --apidocs-note-impl-soft: light-dark(oklch(21.685% 0.01509 261.617 / 0.03), oklch(93.061% 0.00581 264.531 / 0.03));
+  --apidocs-deprecated: light-dark(oklch(49.291% 0.15737 31.846), oklch(73.872% 0.12799 30.977));
+  --apidocs-deprecated-soft: light-dark(oklch(49.291% 0.15737 31.846 / 0.07), oklch(73.872% 0.12799 30.977 / 0.1));
+  --apidocs-nullable: light-dark(oklch(49.402% 0.10925 66.906), oklch(79.118% 0.11843 79.713));
+  --apidocs-non-null: light-dark(oklch(47.294% 0.10194 148.797), oklch(77.004% 0.115 150.059));
+  --apidocs-code-bg: light-dark(oklch(96.948% 0.00454 258.325), oklch(21.154% 0.01586 256.82));
+  --apidocs-code-fg: light-dark(oklch(25.906% 0.02487 261.09), oklch(89.621% 0.00927 258.337));
+  --apidocs-syn-comment: light-dark(oklch(51.195% 0.0243 261.702), oklch(66.055% 0.02327 259.192));
+  --apidocs-syn-keyword: light-dark(oklch(46.111% 0.16624 315.205), oklch(76.528% 0.11869 315.718));
+  --apidocs-syn-string: light-dark(oklch(47.612% 0.10049 157.022), oklch(80.46% 0.09072 155.262));
+  --apidocs-syn-number: light-dark(oklch(50.112% 0.12797 52.531), oklch(81.27% 0.10204 64.602));
+  --apidocs-syn-type: light-dark(oklch(44.632% 0.07384 210.379), oklch(80.181% 0.09233 203.396));
+  --apidocs-syn-function: light-dark(oklch(45.846% 0.16697 265.949), oklch(78.123% 0.11032 268.427));
+  --apidocs-syn-annotation: light-dark(oklch(49.402% 0.10925 66.906), oklch(79.118% 0.11843 79.713));
+  --apidocs-syn-param: light-dark(oklch(43.405% 0.14897 358.998), oklch(78.337% 0.11238 351.953));
   --apidocs-radius: 2px;
   --apidocs-topbar: 52px;
   /* Sizes that grow with the screen: the narrow value at 480px wide and below, the wide one from 1000px, a straight
@@ -79,79 +81,8 @@
   --apidocs-size-specimen: clamp(var(--apidocs-size-sm), 0.385vw + 0.744rem, var(--apidocs-size-md));
 }
 
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    color-scheme: dark;
-    --apidocs-bg: oklch(18.079% 0.00953 255.642);
-    --apidocs-surface: oklch(21.25% 0.01517 261.609);
-    --apidocs-subtle: oklch(23.785% 0.01713 259.757);
-    --apidocs-fg: oklch(93.061% 0.00581 264.531);
-    --apidocs-muted: oklch(73.897% 0.0208 260.165);
-    --apidocs-faint: oklch(67.698% 0.02312 259.192);
-    --apidocs-rule: oklch(29.114% 0.01854 258.368);
-    --apidocs-rule-strong: oklch(37.364% 0.02265 261.232);
-    --apidocs-accent: oklch(76.813% 0.09823 203.685);
-    --apidocs-accent-soft: oklch(76.813% 0.09823 203.685 / 0.1);
-    --apidocs-link: oklch(80.181% 0.09233 203.396);
-    --apidocs-focus: oklch(76.813% 0.09823 203.685);
-    --apidocs-note-api: oklch(76.813% 0.09823 203.685);
-    --apidocs-note-api-soft: oklch(76.813% 0.09823 203.685 / 0.1);
-    --apidocs-note-spec: oklch(75.722% 0.0996 263.17);
-    --apidocs-note-spec-soft: oklch(75.722% 0.0996 263.17 / 0.09);
-    --apidocs-note-impl: oklch(67.698% 0.02312 259.192);
-    --apidocs-note-impl-soft: oklch(93.061% 0.00581 264.531 / 0.03);
-    --apidocs-deprecated: oklch(73.872% 0.12799 30.977);
-    --apidocs-deprecated-soft: oklch(73.872% 0.12799 30.977 / 0.1);
-    --apidocs-nullable: oklch(79.118% 0.11843 79.713);
-    --apidocs-non-null: oklch(77.004% 0.115 150.059);
-    --apidocs-code-bg: oklch(21.154% 0.01586 256.82);
-    --apidocs-code-fg: oklch(89.621% 0.00927 258.337);
-    --apidocs-syn-comment: oklch(66.055% 0.02327 259.192);
-    --apidocs-syn-keyword: oklch(76.528% 0.11869 315.718);
-    --apidocs-syn-string: oklch(80.46% 0.09072 155.262);
-    --apidocs-syn-number: oklch(81.27% 0.10204 64.602);
-    --apidocs-syn-type: oklch(80.181% 0.09233 203.396);
-    --apidocs-syn-function: oklch(78.123% 0.11032 268.427);
-    --apidocs-syn-annotation: oklch(79.118% 0.11843 79.713);
-    --apidocs-syn-param: oklch(78.337% 0.11238 351.953);
-  }
-}
-
-:root[data-theme="dark"] {
-  color-scheme: dark;
-  --apidocs-bg: oklch(18.079% 0.00953 255.642);
-  --apidocs-surface: oklch(21.25% 0.01517 261.609);
-  --apidocs-subtle: oklch(23.785% 0.01713 259.757);
-  --apidocs-fg: oklch(93.061% 0.00581 264.531);
-  --apidocs-muted: oklch(73.897% 0.0208 260.165);
-  --apidocs-faint: oklch(67.698% 0.02312 259.192);
-  --apidocs-rule: oklch(29.114% 0.01854 258.368);
-  --apidocs-rule-strong: oklch(37.364% 0.02265 261.232);
-  --apidocs-accent: oklch(76.813% 0.09823 203.685);
-  --apidocs-accent-soft: oklch(76.813% 0.09823 203.685 / 0.1);
-  --apidocs-link: oklch(80.181% 0.09233 203.396);
-  --apidocs-focus: oklch(76.813% 0.09823 203.685);
-  --apidocs-note-api: oklch(76.813% 0.09823 203.685);
-  --apidocs-note-api-soft: oklch(76.813% 0.09823 203.685 / 0.1);
-  --apidocs-note-spec: oklch(75.722% 0.0996 263.17);
-  --apidocs-note-spec-soft: oklch(75.722% 0.0996 263.17 / 0.09);
-  --apidocs-note-impl: oklch(67.698% 0.02312 259.192);
-  --apidocs-note-impl-soft: oklch(93.061% 0.00581 264.531 / 0.03);
-  --apidocs-deprecated: oklch(73.872% 0.12799 30.977);
-  --apidocs-deprecated-soft: oklch(73.872% 0.12799 30.977 / 0.1);
-  --apidocs-nullable: oklch(79.118% 0.11843 79.713);
-  --apidocs-non-null: oklch(77.004% 0.115 150.059);
-  --apidocs-code-bg: oklch(21.154% 0.01586 256.82);
-  --apidocs-code-fg: oklch(89.621% 0.00927 258.337);
-  --apidocs-syn-comment: oklch(66.055% 0.02327 259.192);
-  --apidocs-syn-keyword: oklch(76.528% 0.11869 315.718);
-  --apidocs-syn-string: oklch(80.46% 0.09072 155.262);
-  --apidocs-syn-number: oklch(81.27% 0.10204 64.602);
-  --apidocs-syn-type: oklch(80.181% 0.09233 203.396);
-  --apidocs-syn-function: oklch(78.123% 0.11032 268.427);
-  --apidocs-syn-annotation: oklch(79.118% 0.11843 79.713);
-  --apidocs-syn-param: oklch(78.337% 0.11238 351.953);
-}
+:root[data-theme="light"] { color-scheme: light; }
+:root[data-theme="dark"] { color-scheme: dark; }
 
 /* ---- Base ---- */
 
@@ -1237,3 +1168,13 @@ body:has([data-members-filter][value="declared"]:checked) :is(.member-inherited,
 
 /* A sentence a search result opened the page at (a text fragment): the accent's tint, the text's own color. */
 ::target-text { background: color-mix(in oklch, var(--apidocs-accent) 22%, transparent); color: inherit; }
+
+/* The top bar lifts off the page once it scrolls: a soft shadow over the first 48px of scrolling, driven by the
+   scroll position alone (no script, nothing laid out again). At the top of a page the bar sits flat on it, and with
+   reduced motion it always does. */
+@supports (animation-timeline: scroll()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .topbar { animation: apidocs-topbar-lift linear both; animation-timeline: scroll(root block); animation-range: 0 48px; }
+  }
+}
+@keyframes apidocs-topbar-lift { from { box-shadow: 0 0 0 0 oklch(0% 0 none / 0); } to { box-shadow: 0 8px 20px -14px oklch(0% 0 none / 0.32); } }

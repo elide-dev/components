@@ -32,12 +32,21 @@ function delta(css: string, hex: string): number {
 }
 
 const css = readFileSync(new URL("../src/styles/apidocs.css", import.meta.url), "utf8");
-/** The token values in a block of apidocs.css: the :root defaults, or the explicit dark theme. */
-function tokens(block: string): Record<string, string> {
-  return Object.fromEntries([...block.matchAll(/--apidocs-([a-z0-9-]+): (oklch\([^)]*\));/g)].map(m => [m[1]!, m[2]!]));
+/**
+ * The :root defaults' color tokens in one scheme: a token is one oklch() color, the same in both, or
+ * light-dark(light, dark), which gives each its own.
+ */
+function tokens(block: string, scheme: "light" | "dark"): Record<string, string> {
+  const color = "oklch\\([^)]*\\)";
+  const out: Record<string, string> = {};
+  for (const m of block.matchAll(new RegExp(`--apidocs-([a-z0-9-]+): (?:light-dark\\((${color}), (${color})\\)|(${color}));`, "g"))) {
+    out[m[1]!] = m[4] ?? (scheme === "light" ? m[2]! : m[3]!);
+  }
+  return out;
 }
-const light = tokens(css.slice(css.indexOf(":root {"), css.indexOf("@media (prefers-color-scheme: dark)")));
-const dark = tokens(css.slice(css.indexOf(':root[data-theme="dark"]'), css.indexOf("/* ---- Base ---- */")));
+const root = css.slice(css.indexOf(":root {"), css.indexOf("/* ---- Base ---- */"));
+const light = tokens(root, "light");
+const dark = tokens(root, "dark");
 
 describe("the conversion", () => {
   test("is within half an 8-bit step on a random sample of sRGB", () => {

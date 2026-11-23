@@ -91,8 +91,9 @@ describe("render", () => {
     expect(site["assets/fonts/jetbrains-mono-latin-wght-normal.woff2"]).toEqual({ asset: "fonts/jetbrains-mono-latin-wght-normal.woff2" });
     // Prose and headings use the reader's system fonts: no other font file ships.
     expect(Object.keys(site).filter(f => f.startsWith("assets/fonts/")).sort()).toEqual(["assets/fonts/jetbrains-mono-latin-wght-italic.woff2", "assets/fonts/jetbrains-mono-latin-wght-normal.woff2"]);
-    // @elide/tokens' purple[700], #6d28d9, written as oklch().
-    expect(site["assets/theme.css"]).toContain("--apidocs-accent:oklch(49.067% 0.24123 292.581);");
+    // @elide/tokens' purple[700], #6d28d9, written as oklch(), with its dark value: one token for both schemes.
+    expect(site["assets/theme.css"]).toContain("--apidocs-accent:light-dark(oklch(49.067% 0.24123 292.581),oklch(81.116% 0.10129 293.571));");
+    expect(site["assets/theme.css"]).not.toContain("prefers-color-scheme");
   });
   test("notes render as distinct callouts, the API note first", () => {
     const html = out["fixture/java/Geometry.html"] as string;
