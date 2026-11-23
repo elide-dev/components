@@ -60,7 +60,7 @@
   --apidocs-syn-function: oklch(45.846% 0.16697 265.949);
   --apidocs-syn-annotation: oklch(49.402% 0.10925 66.906);
   --apidocs-syn-param: oklch(43.405% 0.14897 358.998);
-  --apidocs-radius: 6px;
+  --apidocs-radius: 2px;
   --apidocs-topbar: 52px;
   /* Sizes that grow with the screen: the narrow value at 480px wide and below, the wide one from 1000px, a straight
      line between. Spacing only, and two sizes of the fallback type scale: a theme whose type is set to exact pixels
@@ -172,10 +172,10 @@ html {
   font-size: 15px;
   line-height: 1.6;
   font-synthesis: none;
+  /* Names are set in a monospace font with programming ligatures, so ligatures are off by default; prose turns the
+     common ones back on. */
   font-variant-ligatures: none;
   font-kerning: normal;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
   scroll-padding-block-start: calc(var(--apidocs-topbar) + 16px);
@@ -185,34 +185,61 @@ html {
 
 body { margin: 0; min-height: 100vh; font-size: var(--apidocs-size-md); }
 
-a { color: var(--apidocs-link); text-decoration: none; }
-@media (hover: hover) and (pointer: fine) { a:hover { text-decoration: underline; text-underline-offset: 2px; } }
-a:active { text-decoration: underline; text-underline-offset: 2px; }
-:focus-visible { outline: 2px solid var(--apidocs-focus); outline-offset: 2px; border-radius: 3px; }
+/* Links. Color marks every link, and a visited link keeps it: no rule styles :visited. An underline marks a link only
+   in running text, where color alone would not set it apart from the words around it (WCAG 1.4.1): faint, clear of
+   descenders, and full on hover. Navigation, lists and tables of names, and signatures have no underline until pointed
+   at. A link whose whole text is code is set in the code font itself, which sets it apart without an underline. */
+a { color: var(--apidocs-link); text-decoration: none; text-decoration-thickness: 1px; text-underline-offset: 0.22em; text-decoration-skip-ink: auto; }
+@media (hover: hover) and (pointer: fine) { a:hover { text-decoration-line: underline; } }
+a:active { text-decoration-line: underline; }
+:focus-visible { outline: 2px solid var(--apidocs-focus); outline-offset: 2px; border-radius: var(--apidocs-radius); }
 
 code, kbd, pre { font-family: var(--apidocs-font-mono); font-size: var(--apidocs-code-scale); font-variant-ligatures: none; }
 /* Code reads left to right on a right-to-left page too. Only there: isolating inline code moves line breaks. */
 code:dir(rtl), kbd:dir(rtl), pre:dir(rtl) { direction: ltr; unicode-bidi: isolate; }
 :not(pre) > code {
   background: var(--apidocs-subtle);
-  border-radius: 3px;
+  border-radius: var(--apidocs-radius);
   /* Tight, so a chip sits in its sentence like a word: wide padding reads as extra space between the words. */
   padding-block: 0.04em; padding-inline: 0.18em;
   overflow-wrap: anywhere;
 }
-/* A link's code needs no chip: the link's color and underline already set it apart. */
+/* A link's code needs no chip: the link's color and font already set it apart. */
 .prose a > code, .callout a > code, .fact dd a > code, .lede a > code, .see-list a > code, .decl-summary a > code, .package-summary a > code { background: none; padding: 0; }
 a > code { color: inherit; }
-.prose a, .callout a, .fact dd a, td a:not(.type-link), .lede a, .inherited-list a, .see-list a, .index-summary a {
-  text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px;
-  text-decoration-color: color-mix(in srgb, currentColor 45%, transparent);
+/* Running text. */
+:is(.prose, .callout, .fact dd, .lede, .index-summary, td) a:not(.type-link) {
+  text-decoration-line: underline; text-decoration-color: color-mix(in srgb, currentColor 30%, transparent);
 }
-@media (hover: hover) and (pointer: fine) { .prose a:hover, .callout a:hover, .fact dd a:hover, td a:not(.type-link):hover, .lede a:hover, .inherited-list a:hover, .see-list a:hover, .index-summary a:hover { text-decoration-color: currentColor; } }
-.prose a:active, .callout a:active, .fact dd a:active, td a:not(.type-link):active, .lede a:active, .inherited-list a:active, .see-list a:active, .index-summary a:active { text-decoration-color: currentColor; }
+@media (hover: hover) and (pointer: fine) { :is(.prose, .callout, .fact dd, .lede, .index-summary, td) a:not(.type-link):hover { text-decoration-color: currentColor; } }
+:is(.prose, .callout, .fact dd, .lede, .index-summary, td) a:not(.type-link):active { text-decoration-color: currentColor; }
+/* A name in running text: the code font, no underline until pointed at. The link takes the code's font and size, and
+   the code inside it keeps them, so the line is as tall as with the code alone. */
+:is(.prose, .callout, .fact dd, .lede, .index-summary, td) a:has(> code:only-child) { font-family: var(--apidocs-font-mono); font-size: var(--apidocs-code-scale); text-decoration-line: none; }
+:is(.prose, .callout, .fact dd, .lede, .index-summary, td) a:has(> code:only-child) > code { font-size: 1em; }
+@media (hover: hover) and (pointer: fine) { :is(.prose, .callout, .fact dd, .lede, .index-summary, td) a:has(> code:only-child):hover { text-decoration-line: underline; } }
+:is(.prose, .callout, .fact dd, .lede, .index-summary, td) a:has(> code:only-child):active { text-decoration-line: underline; }
 .summary-sig a { text-decoration: none; }
+/* Where a link leads, in a character after its text: another site, or a file to download. Not read aloud (the empty
+   alternative text), and never underlined. The format menu labels its own
+   entries. */
+:is(.content, .footer) a:is([href^="http://"], [href^="https://"]):not(.formats-list a)::after,
+:is(.content, .footer) a:is([download], [href$=".zip"], [href$=".jar"], [href$=".tgz"], [href$=".tar.gz"], [href$=".pdf"]):not(.formats-list a)::after {
+  display: inline-block; margin-inline-start: 0.15em; text-decoration: none;
+  font-family: var(--apidocs-font-sans); font-size: 0.85em; font-weight: 400; color: var(--apidocs-faint);
+}
+:is(.content, .footer) a:is([href^="http://"], [href^="https://"]):not(.formats-list a)::after { content: "\2197\FE0E" / ""; }
+:is(.content, .footer) a:is([download], [href$=".zip"], [href$=".jar"], [href$=".tgz"], [href$=".tar.gz"], [href$=".pdf"]):not(.formats-list a)::after { content: "\2913" / ""; }
 
 h1, h2, h3, h4 { font-family: var(--apidocs-font-display); line-height: 1.2; margin: 0; text-wrap: balance; }
 p, li, dd { text-wrap: pretty; }
+/* Grayscale smoothing only for light text on a dark page, where subpixel smoothing makes it look heavy. */
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; } }
+:root[data-theme="dark"] { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+/* Prose has the common ligatures (code inside it keeps them off), and hangs a leading quote or a trailing stop in the
+   margin where the browser can. Counts and tables have figures of one width, so numbers line up. */
+.prose, .lede, .guide-summary, .callout-body { font-variant-ligatures: common-ligatures; hanging-punctuation: first allow-end; }
+table, .nav-count, .members-count, .package-count, .version { font-variant-numeric: tabular-nums; }
 
 .visually-hidden {
   position: absolute; width: 1px; height: 1px; overflow: clip;
@@ -315,10 +342,10 @@ p, li, dd { text-wrap: pretty; }
   position: absolute; inset-inline-start: -1px; inset-block-start: calc(100% + 6px); z-index: 12;
   min-width: 12rem; margin: 0; padding: 4px; list-style: none;
   background: var(--apidocs-surface); border: 1px solid var(--apidocs-rule-strong);
-  border-radius: calc(var(--apidocs-radius) + 2px); box-shadow: 0 12px 32px -12px oklch(0% 0 none / 0.28);
+  border-radius: var(--apidocs-radius); box-shadow: 0 12px 32px -12px oklch(0% 0 none / 0.28);
   line-height: 1.5;
 }
-.suite-list a { display: block; padding-block: 5px; padding-inline: 10px; border-radius: 4px; color: var(--apidocs-fg); white-space: nowrap; }
+.suite-list a { display: block; padding-block: 5px; padding-inline: 10px; border-radius: var(--apidocs-radius); color: var(--apidocs-fg); white-space: nowrap; }
 @media (hover: hover) and (pointer: fine) { .suite-list a:hover { background: var(--apidocs-subtle); text-decoration: none; } }
 .suite-list a:active { background: var(--apidocs-subtle); text-decoration: none; }
 .suite-list a[aria-current="true"] { color: var(--apidocs-accent); font-weight: 600; }
@@ -337,7 +364,7 @@ p, li, dd { text-wrap: pretty; }
 .search-key {
   position: absolute; inset-inline-end: 8px; inset-block-start: 50%; transform: translateY(-50%);
   font-size: var(--apidocs-size-xs); color: var(--apidocs-faint);
-  border: 1px solid var(--apidocs-rule-strong); border-radius: 4px; padding-block: 0; padding-inline: 5px; line-height: 1.4;
+  border: 1px solid var(--apidocs-rule-strong); border-radius: var(--apidocs-radius); padding-block: 0; padding-inline: 5px; line-height: 1.4;
 }
 .search-results {
   position: absolute; inset-inline-end: 0; inset-block-start: calc(100% + 6px);
@@ -350,7 +377,7 @@ p, li, dd { text-wrap: pretty; }
 }
 .search-results li a {
   display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0 12px;
-  padding-block: 7px; padding-inline: 10px; border-radius: 4px; color: var(--apidocs-fg);
+  padding-block: 7px; padding-inline: 10px; border-radius: var(--apidocs-radius); color: var(--apidocs-fg);
 }
 @media (hover: hover) and (pointer: fine) { .search-results li a:hover { text-decoration: none; } }
 .search-results li a:active { text-decoration: none; }
@@ -426,7 +453,7 @@ html[data-emoji] .theme-switch[data-mode="dark"] .theme-emoji::before { content:
 .nav-module { justify-content: space-between; }
 .nav-module > a { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--apidocs-font-mono); text-transform: none; letter-spacing: 0; font-size: var(--apidocs-size-sm); color: var(--apidocs-fg); }
 .nav-index { display: flex; flex: none; gap: 2px; text-transform: none; letter-spacing: 0; font-weight: 450; }
-.nav-index a { display: inline-flex; align-items: center; min-block-size: 24px; padding-block: 0; padding-inline: 6px; border-radius: 4px; color: var(--apidocs-muted); }
+.nav-index a { display: inline-flex; align-items: center; min-block-size: 24px; padding-block: 0; padding-inline: 6px; border-radius: var(--apidocs-radius); color: var(--apidocs-muted); }
 .nav-index a[aria-current="page"] { color: var(--apidocs-accent); background: var(--apidocs-accent-soft); }
 /* The tree: a twisty, then the row. A folded branch hides its children only when the script runs, which can open it
    again; a filter with text opens the branches that lead to its matches. */
@@ -436,7 +463,7 @@ html[data-emoji] .theme-switch[data-mode="dark"] .theme-emoji::before { content:
 .nav-twisty {
   /* 24px wide: the smallest target WCAG 2.2 accepts (2.5.8). */
   flex: none; display: grid; place-items: center; width: 24px; height: 28px; padding: 0; margin: 0;
-  background: none; border: 0; border-radius: 4px; color: var(--apidocs-faint); cursor: pointer;
+  background: none; border: 0; border-radius: var(--apidocs-radius); color: var(--apidocs-faint); cursor: pointer;
 }
 @media (hover: hover) and (pointer: fine) { button.nav-twisty:hover { color: var(--apidocs-fg); background: var(--apidocs-subtle); } }
 button.nav-twisty:active { color: var(--apidocs-fg); background: var(--apidocs-subtle); }
@@ -460,7 +487,7 @@ html[data-js] .nav-branch[data-folded]:not([data-filter-open]) > .nav-children {
 .nav-list { list-style: none; margin: 0; padding: 0; }
 .nav-row {
   display: flex; align-items: center; gap: 8px;
-  height: 28px; padding-block: 0; padding-inline: 8px; border-radius: 5px;
+  height: 28px; padding-block: 0; padding-inline: 8px; border-radius: var(--apidocs-radius);
   color: var(--apidocs-fg); white-space: nowrap;
 }
 @media (hover: hover) and (pointer: fine) { .nav-row:hover { background: var(--apidocs-subtle); text-decoration: none; } }
@@ -501,7 +528,7 @@ html[data-js] .nav-branch[data-folded]:not([data-filter-open]) > .nav-children {
 /* Kind glyphs: one letter in a small tile, colored by kind. */
 .glyph {
   flex: none; width: 17px; height: 17px; display: inline-grid; place-items: center;
-  border-radius: 4px; font-family: var(--apidocs-font-mono); font-size: var(--apidocs-size-xs); font-weight: 700; line-height: 1;
+  border-radius: var(--apidocs-radius); font-family: var(--apidocs-font-mono); font-size: var(--apidocs-size-xs); font-weight: 700; line-height: 1;
   color: var(--glyph, var(--apidocs-muted));
   background: color-mix(in srgb, var(--glyph, var(--apidocs-muted)) 13%, transparent);
 }
@@ -514,13 +541,13 @@ html[data-js] .nav-branch[data-folded]:not([data-filter-open]) > .nav-children {
 .glyph[data-tone="exception"] { --glyph: var(--apidocs-deprecated); }
 .glyph[data-tone="guide"] { --glyph: var(--apidocs-accent); font-family: var(--apidocs-font-system); }
 .nav-subheading { margin-block: 8px 2px; margin-inline: 0; padding-block: 0; padding-inline: 8px; font-size: var(--apidocs-size-xs); color: var(--apidocs-faint); user-select: none; -webkit-user-select: none; }
-.glyph-large { width: 28px; height: 28px; border-radius: 7px; font-size: var(--apidocs-size-md); }
+.glyph-large { width: 28px; height: 28px; border-radius: var(--apidocs-radius); font-size: var(--apidocs-size-md); }
 
 /* The row above the title: where you are, and the page's other forms. */
 .page-tools { display: flex; align-items: center; gap: 12px; min-height: 30px; margin-block-end: 14px; }
 .page-tools .crumbs { flex: 1; min-width: 0; }
 .page-tools .crumbs ol { margin: 0; }
-/* The formats control: a mark and an arrow in one quiet pill. */
+/* The formats control: a mark and an arrow in one quiet box. */
 .formats {
   display: flex; align-items: stretch; flex: none; margin-inline-start: auto; position: relative; height: 30px;
   border: 1px solid var(--apidocs-rule-strong); border-radius: var(--apidocs-radius);
@@ -544,10 +571,10 @@ html[data-js] .nav-branch[data-folded]:not([data-filter-open]) > .nav-children {
   position: absolute; inset-inline-end: -1px; inset-block-start: calc(100% + 6px); z-index: 8; width: max-content; min-width: 16rem;
   margin: 0; padding: 4px; list-style: none;
   background: var(--apidocs-surface); border: 1px solid var(--apidocs-rule-strong);
-  border-radius: calc(var(--apidocs-radius) + 2px); box-shadow: 0 12px 32px -12px oklch(0% 0 none / 0.28);
+  border-radius: var(--apidocs-radius); box-shadow: 0 12px 32px -12px oklch(0% 0 none / 0.28);
   font-size: var(--apidocs-size-sm); line-height: 1.5;
 }
-.formats-list a { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; padding-block: 5px; padding-inline: 10px; border-radius: 4px; color: var(--apidocs-fg); }
+.formats-list a { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; padding-block: 5px; padding-inline: 10px; border-radius: var(--apidocs-radius); color: var(--apidocs-fg); }
 @media (hover: hover) and (pointer: fine) { .formats-list a:hover { background: var(--apidocs-subtle); text-decoration: none; } }
 .formats-list a:active { background: var(--apidocs-subtle); text-decoration: none; }
 .formats-list code { background: none; padding: 0; }
@@ -604,7 +631,7 @@ html[data-js] .nav-branch[data-folded]:not([data-filter-open]) > .nav-children {
   margin-block: 18px 20px; margin-inline: 0; padding-block: var(--apidocs-specimen-pad-block); padding-inline: var(--apidocs-specimen-pad-inline);
   font-size: clamp(11px, (100cqi - 2 * var(--apidocs-specimen-pad-inline)) / 60.6, var(--apidocs-size-specimen)); line-height: 1.6;
   border: 1px solid var(--apidocs-rule);
-  border-radius: calc(var(--apidocs-radius) + 4px);
+  border-radius: var(--apidocs-radius);
 }
 .sig-annotation { color: var(--apidocs-syn-annotation); }
 .tk-k { color: var(--apidocs-syn-keyword); }
@@ -624,7 +651,7 @@ a.tk-t:active, a.tk-a:active { text-decoration-color: currentColor; }
   padding-block: 5px; padding-inline: 7px;
   color: var(--apidocs-muted);
   background: var(--apidocs-surface);
-  border: 1px solid var(--apidocs-rule-strong); border-radius: 4px;
+  border: 1px solid var(--apidocs-rule-strong); border-radius: var(--apidocs-radius);
   cursor: pointer; opacity: 0;
 }
 .copy:focus-visible, .copy[data-copied] { opacity: 1; }
@@ -645,7 +672,7 @@ a.tk-t:active, a.tk-a:active { text-decoration-color: currentColor; }
 .badge {
   display: inline-block;
   font-size: var(--apidocs-size-xs); line-height: 1.5; font-weight: 550;
-  padding-block: 0; padding-inline: 7px; border-radius: 999px;
+  padding-block: 0; padding-inline: 7px; border-radius: var(--apidocs-radius);
   border: 1px solid var(--apidocs-rule-strong);
   color: var(--apidocs-muted); white-space: nowrap;
 }
@@ -654,7 +681,7 @@ a.tk-t:active, a.tk-a:active { text-decoration-color: currentColor; }
 .badge-nullable { color: var(--apidocs-nullable); border-color: color-mix(in srgb, var(--apidocs-nullable) 40%, transparent); }
 .badge-non-null { color: var(--apidocs-non-null); border-color: color-mix(in srgb, var(--apidocs-non-null) 40%, transparent); }
 
-/* Callouts: an icon tile, a label and the text in a soft rounded panel. No side bars. The kind sets the tone
+/* Callouts: an icon tile, a label and the text in a tinted panel. No side bars. The kind sets the tone
    and the weight: API notes and deprecations are filled, implementation notes are an outline. */
 .callout {
   --tone: var(--apidocs-note-api);
@@ -663,11 +690,11 @@ a.tk-t:active, a.tk-a:active { text-decoration-color: currentColor; }
   margin-block: 16px; margin-inline: 0; padding-block: 12px 13px; padding-inline: 12px 18px;
   background: var(--tone-soft);
   border: 1px solid color-mix(in srgb, var(--tone) 16%, transparent);
-  border-radius: calc(var(--apidocs-radius) + 4px);
+  border-radius: var(--apidocs-radius);
 }
 .callout-icon {
   width: 26px; height: 26px; display: grid; place-items: center;
-  border-radius: calc(var(--apidocs-radius) + 1px);
+  border-radius: var(--apidocs-radius);
   color: var(--tone);
   background: color-mix(in srgb, var(--tone) 13%, transparent);
 }
@@ -769,7 +796,7 @@ h4.guide-heading { font-size: var(--apidocs-size-md); font-weight: 650; margin-b
 .guide-pager { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-block-start: 56px; max-width: 46rem; }
 .guide-pager-link {
   display: grid; gap: 2px; padding-block: 12px; padding-inline: 16px;
-  border: 1px solid var(--apidocs-rule-strong); border-radius: calc(var(--apidocs-radius) + 4px);
+  border: 1px solid var(--apidocs-rule-strong); border-radius: var(--apidocs-radius);
   color: var(--apidocs-fg);
 }
 @media (hover: hover) and (pointer: fine) { .guide-pager-link:hover { border-color: var(--apidocs-accent); background: var(--apidocs-accent-soft); text-decoration: none; } }
@@ -783,7 +810,7 @@ h4.guide-heading { font-size: var(--apidocs-size-md); font-weight: 650; margin-b
 .guide-cards { list-style: none; margin-block: 12px 0; margin-inline: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: 12px; }
 .guide-card {
   position: relative; padding-block: 14px 15px; padding-inline: 16px;
-  border: 1px solid var(--apidocs-rule-strong); border-radius: calc(var(--apidocs-radius) + 4px);
+  border: 1px solid var(--apidocs-rule-strong); border-radius: var(--apidocs-radius);
   background: var(--apidocs-surface);
 }
 .guide-card:focus-within { border-color: var(--apidocs-accent); }
@@ -892,7 +919,7 @@ html[data-js] .fold:not([data-open]):not([data-short]) > .fold-body {
 .members-count { font-size: var(--apidocs-size-sm); font-weight: 400; color: var(--apidocs-faint); user-select: none; -webkit-user-select: none; }
 .members-toggle {
   margin-inline-start: auto; font: inherit; font-size: var(--apidocs-size-xs); font-weight: 400; color: var(--apidocs-muted);
-  background: none; border: 0; padding-block: 2px; padding-inline: 4px; border-radius: 4px; cursor: pointer; user-select: none; -webkit-user-select: none;
+  background: none; border: 0; padding-block: 2px; padding-inline: 4px; border-radius: var(--apidocs-radius); cursor: pointer; user-select: none; -webkit-user-select: none;
 }
 @media (hover: hover) and (pointer: fine) { .members-toggle:hover { color: var(--apidocs-fg); background: var(--apidocs-subtle); } }
 .members-toggle:active { color: var(--apidocs-fg); background: var(--apidocs-subtle); }
@@ -1057,7 +1084,7 @@ html[data-js] .fold:not([data-open]):not([data-short]) > .fold-body {
   background: linear-gradient(90deg, transparent 0%, var(--apidocs-loadbar-tail, var(--apidocs-accent)) 55%, var(--apidocs-loadbar-head, var(--apidocs-accent)) 100%);
 }
 .loadbar::after {
-  content: ""; position: absolute; inset-inline-end: 0; inset-block-start: -2px; width: 96px; height: 6px; border-radius: 3px;
+  content: ""; position: absolute; inset-inline-end: 0; inset-block-start: -2px; width: 96px; height: 6px; border-radius: var(--apidocs-radius);
   background: linear-gradient(90deg, transparent, var(--apidocs-loadbar-head, var(--apidocs-accent)));
   filter: blur(3px); opacity: 0.9;
 }
