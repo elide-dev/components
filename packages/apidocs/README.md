@@ -224,6 +224,30 @@ only when it fits. Nothing in the bar wraps, overflows or is cut off at any widt
 narrows first, then the switcher gives way, then the product name ends in an ellipsis. The browser's layout makes
 the choice with no width written down; `src/styles/apidocs.css` (the top bar section) has the details.
 
+The navigator stays under the top bar to the end of the page, footer included: the footer is the layout's last row,
+in the content's column. Only the navigator's own list scrolls inside it.
+
+### The keyboard
+
+| Key | Does |
+| --- | --- |
+| `/` | Search |
+| `[` | Show or hide the navigator |
+| `j`, `k` | Next or previous member |
+| `n`, `p` | Next or previous page, in the navigator's order |
+| `u` | Up: the package, or the overview |
+| `?` | The list of shortcuts, also opened by the footer's "Keyboard shortcuts" |
+
+The keys work outside text fields. The list has a switch that turns single-key shortcuts off, for the reader whose
+speech input or tremor would type them by accident (WCAG 2.2, 2.1.4); the choice is kept in `localStorage`.
+
+Tab goes through the page in this order: the skip link, the top bar (the navigator toggle, the brand, the switcher,
+search, the theme switch, and an Astro app's menus), the navigator's filter and fold button, the module's heading and
+index links, the tree, then the content and the footer. The tree is one stop: Tab enters it at the current page's row,
+and the arrow keys move inside it. Up and Down move between the rows shown; Right opens a folded branch, or enters an
+open one; Left folds an open branch, or goes to the row's parent; Home and End go to the first and last rows. Without
+the script every row is a stop of its own.
+
 ## Astro
 
 `@elide/apidocs/astro` serves the same pages from an Astro app (Astro 7), rendered on request or from models the app
@@ -389,7 +413,7 @@ cached for a year.
 | Behavior | How it runs on an Astro page |
 | --- | --- |
 | Search | A Preact island, `client:idle`, in the top bar. Loads `assets/search-index.json` on first focus or keystroke; opens results through the router. The top bar persists, so it hydrates once per site. With `<ApidocsPage search={...}>` it races a search service: local results at once, the service's added as they arrive, a scope switch (this site or all), the other sites' results when this one has none, a regex mode, and an `apidocs:search` event with counts and timings for analytics. |
-| Theme switch, navigator toggle and `[`, copy buttons, copy as Markdown, member expand and collapse, open-on-hash, navigator folding and filter, "Show more", the suite switcher's memory, menus | The static page's functions (`src/client/behaviors.tsx`), started on `astro:page-load` and stopped on `astro:before-swap` through one `AbortController` per page: no listener outlives its page. |
+| Theme switch, navigator toggle, the keyboard (shortcuts and the navigator's arrow keys), copy buttons, copy as Markdown, member expand and collapse, open-on-hash, navigator folding and filter, "Show more" (find in page opens it), the suite switcher's memory, menus | The static page's functions (`src/client/behaviors.tsx`), started on `astro:page-load` and stopped on `astro:before-swap` through one `AbortController` per page: no listener outlives its page. |
 | Top bar and navigator | `transition:persist`, keyed by the site's base: across pages of one site they are the same elements, so the navigator keeps its scroll position and filter text without a script restoring them. Before each swap the client moves the new page's suite switcher and navigator blocks (the sites, the indexes with the current one marked, guides, packages and types) into them, around the kept filter field, and applies the kept filter text to the new rows. A top bar from another site is sized before it paints. |
 | Theme and `data-js` | The head script sets them on first load; the client carries them to each new page's `<html>`, whose attributes the router replaces. |
 | Load bar | Starts on `astro:before-preparation`, finishes on arrival, clears if the navigation is aborted. |

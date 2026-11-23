@@ -140,10 +140,22 @@ function Highlight({ text, query }: { text: string; query: string }) {
   return <>{text.slice(0, at)}<mark>{text.slice(at, end)}</mark>{text.slice(end)}</>;
 }
 
-/** Whether a key press is the given shortcut, typed outside a text field. */
+/** The storage key that turns single-key shortcuts off (WCAG 2.2, 2.1.4): "off" when the reader has. */
+export const KEYS_STORAGE = "apidocs-keys";
+
+/** Whether the reader turned single-key shortcuts off. */
+export function shortcutsOff(): boolean {
+  try {
+    return window.localStorage.getItem(KEYS_STORAGE) === "off";
+  } catch {
+    return false;
+  }
+}
+
+/** Whether a key press is the given shortcut, typed outside a text field, with shortcuts on. */
 export function isShortcut(event: KeyboardEvent, key: string): boolean {
   const target = event.target as HTMLElement;
-  return event.key === key && !event.metaKey && !event.ctrlKey && !event.altKey && !/^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName) && !target.isContentEditable;
+  return event.key === key && !event.metaKey && !event.ctrlKey && !event.altKey && !/^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName) && !target.isContentEditable && !shortcutsOff();
 }
 
 export function searchBox(signal?: AbortSignal) {
@@ -475,6 +487,16 @@ export function folds(signal?: AbortSignal) {
       button.setAttribute("aria-expanded", String(open));
       button.textContent = open ? "Show less" : "Show more";
     }, { signal });
+    // Find in page scrolls a folded body to show a match in its hidden part: the body is a scroll container for
+    // this (overflow: hidden). Open the fold there instead, and move the page by as much, so the match stays where
+    // the reader saw it.
+    body.addEventListener("scroll", () => {
+      const by = body.scrollTop;
+      if (by === 0 || fold.hasAttribute("data-open")) return;
+      body.scrollTop = 0;
+      button.click();
+      window.scrollBy(0, by);
+    }, { signal, passive: true });
   }
   // A link into a folded description opens it.
   const reveal = () => {
@@ -531,6 +553,185 @@ export function members(signal?: AbortSignal) {
   reveal();
 }
 
+// ---- The keyboard. One key each, typed outside a text field, and listed by "?" or the footer's link, where the
+// reader can turn them off. The navigator's tree is one stop in the tab order, moved through with the arrow keys, so
+// Tab goes from the top bar to the navigator's filter, its tree and the content in a few presses.
+
+/** Every shortcut, in the order the list shows them. */
+export const SHORTCUTS: readonly { keys: string[]; what: string }[] = [
+  { keys: ["/"], what: "Search" },
+  { keys: ["["], what: "Show or hide the navigator" },
+  { keys: ["j", "k"], what: "Next or previous member" },
+  { keys: ["n", "p"], what: "Next or previous page, in the navigator's order" },
+  { keys: ["u"], what: "Up: the package, or the overview" },
+  { keys: ["?"], what: "This list" },
+];
+
+/** The rows a reader can reach in the navigator now: shown, not filtered out, not inside a folded branch. */
+function visibleRows(nav: Element): HTMLElement[] {
+  return [...nav.querySelectorAll<HTMLElement>(".nav-tree .nav-row, .nav-list .nav-row")].filter(row => row.offsetParent !== null || row.getClientRects().length > 0);
+}
+
+/**
+ * The navigator's tree as one tab stop: the current page's row (or the first one shown) takes focus from Tab, and the
+ * arrow keys move between rows: up and down, right to open a branch or enter it, left to fold it or reach its parent,
+ * Home and End. Enter follows the row's link. Without the script every row is a stop, as links are.
+ */
+export function navigatorKeys(signal?: AbortSignal) {
+  const nav = document.getElementById("apidocs-nav");
+  if (!nav) return;
+  const tree = (): HTMLElement[] => [...nav.querySelectorAll<HTMLElement>(".nav-row")];
+  for (const twisty of nav.querySelectorAll<HTMLElement>("button.nav-twisty")) twisty.tabIndex = -1;
+  let active: HTMLElement | undefined;
+  const settle = (row?: HTMLElement) => {
+    const shown = visibleRows(nav);
+    const next = row && shown.includes(row) ? row
+      : active && shown.includes(active) ? active
+      : shown.find(r => r.hasAttribute("aria-current")) ?? shown[0];
+    for (const r of tree()) r.tabIndex = r === next ? 0 : -1;
+    active = next;
+  };
+  settle();
+  // Folding and filtering change which rows are shown; the stop moves to one that is.
+  const observer = new MutationObserver(() => settle());
+  observer.observe(nav, { subtree: true, attributes: true, attributeFilter: ["data-folded", "data-filtered-out", "data-filter-open", "hidden"] });
+  signal?.addEventListener("abort", () => observer.disconnect());
+  const branchOf = (row: HTMLElement) => {
+    const branch = row.closest<HTMLElement>(".nav-branch");
+    return branch && branch.querySelector(":scope > .nav-branch-row > .nav-row") === row ? branch : null;
+  };
+  const go = (row: HTMLElement | undefined) => {
+    if (!row) return;
+    settle(row);
+    row.focus();
+  };
+  nav.addEventListener("focusin", event => {
+    const row = (event.target as HTMLElement).closest?.<HTMLElement>(".nav-row");
+    if (row) settle(row);
+  }, { signal });
+  nav.addEventListener("keydown", event => {
+    const row = (event.target as HTMLElement).closest?.<HTMLElement>(".nav-row");
+    if (!row || event.altKey || event.ctrlKey || event.metaKey) return;
+    const shown = visibleRows(nav);
+    const at = shown.indexOf(row);
+    const branch = branchOf(row);
+    const folded = branch?.hasAttribute("data-folded") && !branch.hasAttribute("data-filter-open");
+    const rtl = getComputedStyle(nav).direction === "rtl";
+    const key = rtl && event.key === "ArrowRight" ? "ArrowLeft" : rtl && event.key === "ArrowLeft" ? "ArrowRight" : event.key;
+    switch (key) {
+      case "ArrowDown": go(shown[at + 1]); break;
+      case "ArrowUp": go(shown[at - 1]); break;
+      case "Home": go(shown[0]); break;
+      case "End": go(shown[shown.length - 1]); break;
+      case "ArrowRight":
+        if (branch && folded) {
+          setFolded(branch, false);
+          syncFoldAll(nav);
+        } else if (branch) go(shown[at + 1]);
+        else return;
+        break;
+      case "ArrowLeft": {
+        if (branch && !folded) {
+          setFolded(branch, true);
+          syncFoldAll(nav);
+          break;
+        }
+        const parent = row.closest(".nav-children")?.closest<HTMLElement>(".nav-branch");
+        const parentRow = parent?.querySelector<HTMLElement>(":scope > .nav-branch-row > .nav-row");
+        if (!parentRow) return;
+        go(parentRow);
+        break;
+      }
+      default: return;
+    }
+    event.preventDefault();
+  }, { signal });
+}
+
+/** The shortcut list: a dialog made the first time it is asked for. */
+function shortcutDialog(): HTMLDialogElement {
+  const existing = document.querySelector<HTMLDialogElement>("dialog.keys");
+  if (existing) return existing;
+  const dialog = document.createElement("dialog");
+  dialog.className = "keys";
+  dialog.setAttribute("aria-labelledby", "apidocs-keys-title");
+  const rows = SHORTCUTS.map(s => `<tr><td>${s.keys.map(k => `<kbd>${k}</kbd>`).join(" ")}</td><td>${s.what}</td></tr>`).join("");
+  // Markup from SHORTCUTS, constant text, so innerHTML takes nothing a reader or a page wrote.
+  dialog.innerHTML =
+    `<form method="dialog"><h2 id="apidocs-keys-title">Keyboard shortcuts</h2>` +
+    `<table><tbody>${rows}<tr><td><kbd>Tab</kbd></td><td>The top bar, the navigator's filter, its tree (arrow keys inside), then the page</td></tr></tbody></table>` +
+    `<label class="keys-switch"><input type="checkbox" data-keys-switch> Single-key shortcuts</label>` +
+    `<button class="keys-close" value="close">Close</button></form>`;
+  document.body.append(dialog);
+  const box = dialog.querySelector<HTMLInputElement>("[data-keys-switch]")!;
+  box.addEventListener("change", () => {
+    try {
+      window.localStorage.setItem(KEYS_STORAGE, box.checked ? "on" : "off");
+    } catch {
+      /* storage blocked: the choice lasts for this page */
+    }
+  });
+  // A click on the backdrop closes it.
+  dialog.addEventListener("click", event => {
+    if (event.target === dialog) dialog.close();
+  });
+  return dialog;
+}
+
+export function openShortcuts() {
+  const dialog = shortcutDialog();
+  dialog.querySelector<HTMLInputElement>("[data-keys-switch]")!.checked = !shortcutsOff();
+  if (!dialog.open) dialog.showModal();
+}
+
+/** The next or previous member: the one after (or before) the focused member, or the first below the top bar. */
+function memberStep(dir: 1 | -1) {
+  const rows = [...document.querySelectorAll<HTMLElement>(".members > .member > .member-row")];
+  if (!rows.length) return;
+  const focused = rows.findIndex(r => r === document.activeElement);
+  let at: number;
+  if (focused >= 0) at = focused + dir;
+  else {
+    const top = document.querySelector<HTMLElement>(".topbar")?.offsetHeight ?? 0;
+    const below = rows.findIndex(r => r.getBoundingClientRect().top > top + 1);
+    at = below < 0 ? (dir > 0 ? rows.length : rows.length - 1) : dir > 0 ? below : below - 1;
+  }
+  const row = rows[Math.max(0, Math.min(rows.length - 1, at))];
+  row?.focus();
+  row?.scrollIntoView({ block: "nearest" });
+}
+
+/** The page after or before this one in the navigator, folded branches included. */
+function pageStep(dir: 1 | -1) {
+  const rows = [...document.querySelectorAll<HTMLAnchorElement>("#apidocs-nav a.nav-row[href]")];
+  const at = rows.findIndex(r => r.getAttribute("aria-current") === "page");
+  const next = at >= 0 ? rows[at + dir] : undefined;
+  if (next) next.click();
+}
+
+/** Up a level: the breadcrumbs' last link, which is the package for a type and the overview for a package. */
+function up() {
+  const links = document.querySelectorAll<HTMLAnchorElement>(".crumbs a[href]");
+  links[links.length - 1]?.click();
+}
+
+export function shortcuts(signal?: AbortSignal) {
+  navigatorKeys(signal);
+  document.addEventListener("click", event => {
+    if ((event.target as HTMLElement).closest?.("[data-keys-open]")) openShortcuts();
+  }, { signal });
+  document.addEventListener("keydown", event => {
+    if (isShortcut(event, "?")) openShortcuts();
+    else if (isShortcut(event, "j")) memberStep(1);
+    else if (isShortcut(event, "k")) memberStep(-1);
+    else if (isShortcut(event, "n")) pageStep(1);
+    else if (isShortcut(event, "p")) pageStep(-1);
+    else if (isShortcut(event, "u")) up();
+    else return;
+    event.preventDefault();
+  }, { signal });
+}
+
 // ---- The navigator toggle: remember "hidden" on wide screens; "[" toggles it.
 
 export function navigatorToggle(signal?: AbortSignal) {
@@ -576,4 +777,5 @@ export function pageBehaviors(signal?: AbortSignal) {
   navigatorFilter(signal);
   navigatorFolds(signal);
   folds(signal);
+  shortcuts(signal);
 }

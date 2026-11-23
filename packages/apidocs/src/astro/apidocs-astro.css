@@ -38,12 +38,12 @@ details.version-menu > .version-current:active, .version-list a:active { backgro
   position: absolute; inset-inline-start: -1px; inset-block-start: calc(100% + 6px); z-index: 12;
   min-inline-size: 12rem; margin: 0; padding: 4px; list-style: none;
   background: var(--apidocs-surface); border: 1px solid var(--apidocs-rule-strong);
-  border-radius: calc(var(--apidocs-radius) + 2px); box-shadow: 0 12px 32px -12px oklch(0% 0 none / 0.28);
+  border-radius: var(--apidocs-radius); box-shadow: 0 12px 32px -12px oklch(0% 0 none / 0.28);
   line-height: 1.5;
 }
 .version-list a {
   display: flex; align-items: baseline; justify-content: space-between; gap: 20px;
-  padding: 5px 10px; border-radius: 4px; color: var(--apidocs-fg);
+  padding: 5px 10px; border-radius: var(--apidocs-radius); color: var(--apidocs-fg);
 }
 .version-list a[aria-current="page"] { color: var(--apidocs-accent); font-weight: 600; }
 .version-list small { color: var(--apidocs-faint); font-size: var(--apidocs-size-xs); font-weight: 400; }
@@ -82,7 +82,7 @@ details.version-menu > .version-current:active, .version-list a:active { backgro
   border-block-end: 1px solid var(--apidocs-rule); font-size: var(--apidocs-size-sm);
 }
 .search-scopes button {
-  padding-block: 3px; padding-inline: 9px; border: 1px solid transparent; border-radius: 999px;
+  padding-block: 3px; padding-inline: 9px; border: 1px solid transparent; border-radius: var(--apidocs-radius);
   background: none; color: var(--apidocs-muted); font: inherit; cursor: pointer;
 }
 .search-scopes button[aria-pressed="true"] { color: var(--apidocs-accent); background: var(--apidocs-accent-soft); font-weight: 600; }
@@ -94,7 +94,7 @@ details.version-menu > .version-current:active, .version-list a:active { backgro
   position: absolute; inset-inline-end: 30px; inset-block-start: 50%; transform: translateY(-50%);
   /* 24px square at least: the smallest target WCAG 2.2 accepts (2.5.8). */
   min-inline-size: 24px; min-block-size: 24px; display: grid; place-items: center;
-  padding-block: 0; padding-inline: 5px; border: 1px solid transparent; border-radius: 4px;
+  padding-block: 0; padding-inline: 5px; border: 1px solid transparent; border-radius: var(--apidocs-radius);
   background: none; color: var(--apidocs-faint); font-family: var(--apidocs-font-mono); font-size: var(--apidocs-size-xs); line-height: 1.5; cursor: pointer;
 }
 .search-mode[aria-pressed="true"] { color: var(--apidocs-accent); background: var(--apidocs-accent-soft); border-color: color-mix(in srgb, var(--apidocs-accent) 30%, transparent); }
