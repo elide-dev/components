@@ -14,7 +14,7 @@
 import { navigate } from "astro:transitions/client";
 import { useEffect, useRef, useState } from "preact/hooks";
 import { isShortcut, siteRoot } from "../client/behaviors";
-import { type Entry, search } from "../client/search";
+import { type Entry, search, textFragment } from "../client/search";
 import { loadIndex } from "./search-index";
 
 /** A search service, as an app configures it. */
@@ -37,6 +37,8 @@ interface Hit {
   context: string;
   summary: string;
   path: string;
+  /** The sentence that matched, when the query is not the hit's name. */
+  match?: string;
 }
 
 /** A result row: an index entry, a path from the site root or from the server root (absolute), and its group. */
@@ -47,6 +49,8 @@ interface Item {
   context: string;
   summary: string;
   group: "here" | "elsewhere";
+  /** The sentence that matched; the href then ends in a text fragment for it. */
+  match?: string;
 }
 
 const LIMIT = 40;
@@ -76,17 +80,19 @@ function hostedItems(hits: Hit[], base: string, labels: Map<string, string>, gro
   return hits.map(h => ({
     label: h.title,
     kind: h.kind,
-    href: base + h.path,
+    href: base + h.path + (h.match ? textFragment(h.match, h.path.includes("#")) : ""),
     context: [withSuite ? labels.get(h.suite) ?? h.suite : "", h.context].filter(Boolean).join(" · "),
     summary: h.summary,
     group,
+    ...(h.match ? { match: h.match } : {}),
   }));
 }
 
 /** Paths without their fragment's encoding differences, to tell a local result and a hosted one apart. */
 function key(href: string): string {
   try {
-    return decodeURIComponent(new URL(href, location.href).pathname + new URL(href, location.href).hash);
+    const url = new URL(href, location.href);
+    return decodeURIComponent(url.pathname + url.hash.replace(/:~:.*$/, "").replace(/^#$/, ""));
   } catch {
     return href;
   }
@@ -212,7 +218,9 @@ export default function Search({ api, hosted }: { api: boolean; hosted?: HostedS
 
   const go = (item: Item) => {
     setOpen(false);
-    void navigate(item.href);
+    // A browser opens a text fragment only on a page load, so a result at a sentence loads its page; the rest swap.
+    if (item.match) window.location.assign(item.href);
+    else void navigate(item.href);
   };
 
   const onKeyDown = (event: KeyboardEvent) => {
@@ -298,7 +306,7 @@ function HostedResults({ items, active, query, pending, regex, here, onPick }: {
         }}>
           <span class="result-label">{regex ? item.label : <Highlight text={item.label} query={query} />}</span>
           <span class="result-kind">{item.kind}</span>
-          {(item.context || item.summary) && <span class="result-context">{[item.context, item.summary].filter(Boolean).join(": ")}</span>}
+          {(item.context || item.summary || item.match) && <span class="result-context">{[item.context, item.match ?? item.summary].filter(Boolean).join(": ")}</span>}
         </a>
       </li>,
     );

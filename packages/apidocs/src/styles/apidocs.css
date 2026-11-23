@@ -1234,3 +1234,6 @@ body:has([data-members-filter][value="declared"]:checked) :is(.member-inherited,
 .member-linked .member-key { color: var(--apidocs-fg); }
 .member-from { color: var(--apidocs-faint); font-size: var(--apidocs-size-xs); white-space: nowrap; }
 .members-inherited-count { color: var(--apidocs-faint); }
+
+/* A sentence a search result opened the page at (a text fragment): the accent's tint, the text's own color. */
+::target-text { background: color-mix(in oklch, var(--apidocs-accent) 22%, transparent); color: inherit; }
