@@ -362,8 +362,9 @@ export function Shell({ title, description, crumbs, toc, jsonLd, meta, children 
             {astro && <HoleMark name="notice" />}
             {children}
           </main>
+          {/* In the layout, under the content: the navigator spans both rows, so it stays put to the page's end. */}
+          <Footer />
         </div>
-        <Footer />
       </body>
     </html>
   );
@@ -420,9 +421,9 @@ export function TopBar() {
   const product = theme.productName ?? site.model.module.name;
   return (
     <header class="topbar" {...persistAttr(variant, "apidocs-topbar")}>
-      <input type="checkbox" id="apidocs-nav-toggle" class="nav-toggle visually-hidden" aria-label="Toggle navigation" autocomplete="off" />
+      <input type="checkbox" id="apidocs-nav-toggle" class="nav-toggle visually-hidden" aria-label="Hide the navigator" aria-keyshortcuts="[" autocomplete="off" />
       <script dangerouslySetInnerHTML={{ __html: NAV_STATE_BOOT }} />
-      <label class="nav-button" for="apidocs-nav-toggle" title="Toggle navigation" aria-hidden="true">
+      <label class="nav-button" for="apidocs-nav-toggle" title="Show or hide the navigator ([)" aria-hidden="true">
         <svg viewBox="0 0 16 16" width="16" height="16"><rect x="2" y="2.75" width="12" height="10.5" rx="2.25" /><path d="M6.25 2.75v10.5" /></svg>
       </label>
       <a class="brand" href={theme.homeUrl ? hrefFor(page, theme.homeUrl) : relative(page, INDEX, ".html")}>
@@ -565,6 +566,7 @@ export function Footer() {
         <a href={`${root}llms.txt`}>llms.txt</a>
         {", "}
         <a href={`${root}api.json`}>api.json</a>
+        <span data-js-only>{", "}<button type="button" class="footer-keys" data-keys-open aria-keyshortcuts="?">Keyboard shortcuts</button></span>
       </p>
       {(theme.links?.footer ?? []).length > 0 && (
         <p class="footer-links">{theme.links!.footer!.map(link => <a key={link.url} href={hrefFor(page, link.url)}>{link.label}</a>)}</p>

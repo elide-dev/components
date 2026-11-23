@@ -180,6 +180,69 @@ describe("from file:// with JavaScript on", () => {
     await page.context().close();
   });
 
+  test("the navigator's tree is one tab stop, moved through with the arrow keys", async () => {
+    const { page, errors } = await open("com/example/geo/Shapes.html", { viewport: { width: 1440, height: 900 } });
+    const focused = () => page.evaluate(() => document.activeElement?.textContent?.trim() ?? "");
+    // One row takes Tab: the current page's.
+    expect(await page.locator("#apidocs-nav .nav-row[tabindex='0']").count()).toBe(1);
+    await page.locator("#apidocs-nav .nav-row[aria-current='page']").focus();
+    expect(await focused()).toContain("Shapes");
+    await page.keyboard.press("ArrowDown");
+    const below = await focused();
+    expect(below).not.toContain("Shapes");
+    await page.keyboard.press("ArrowUp");
+    expect(await focused()).toContain("Shapes");
+    expect(await page.locator("#apidocs-nav .nav-row[tabindex='0']").count()).toBe(1);
+    // Left folds the open branch; Left again goes to the package.
+    await page.keyboard.press("ArrowLeft");
+    expect(await page.locator("#apidocs-nav .nav-row[aria-current='page']").locator("xpath=ancestor::li[contains(@class,'nav-branch')][1]").getAttribute("data-folded")).toBe("");
+    await page.keyboard.press("ArrowLeft");
+    expect(await focused()).toMatch(/^\.geo/);
+    // Tab leaves the tree for the content.
+    await page.keyboard.press("Tab");
+    expect(await page.evaluate(() => !!document.activeElement?.closest("#apidocs-nav"))).toBe(false);
+    expect(errors).toEqual([]);
+    await page.context().close();
+  });
+
+  test("? lists the shortcuts, whose switch turns single keys off; j moves to a member", async () => {
+    const { page, errors } = await open("com/example/geo/Shapes.html", { viewport: { width: 1440, height: 900 } });
+    await page.locator("main").click({ position: { x: 5, y: 5 } });
+    await page.keyboard.press("j");
+    expect(await page.evaluate(() => document.activeElement?.classList.contains("member-row"))).toBe(true);
+    await page.keyboard.press("?");
+    const dialog = page.locator("dialog.keys");
+    expect(await dialog.isVisible()).toBe(true);
+    await dialog.getByLabel("Single-key shortcuts").uncheck();
+    await page.keyboard.press("Escape");
+    expect(await dialog.isVisible()).toBe(false);
+    await page.keyboard.press("[");
+    expect(await page.locator("#apidocs-nav").isVisible()).toBe(true);
+    await page.getByRole("button", { name: "Keyboard shortcuts" }).click();
+    expect(await dialog.isVisible()).toBe(true);
+    expect(errors).toEqual([]);
+    await page.context().close();
+  });
+
+  test("find in page opens a folded description: scrolling its body to a match opens it", async () => {
+    const { page } = await open("com/example/geo/Shapes.html", { viewport: { width: 1440, height: 900 } });
+    const fold = page.locator("[data-fold]:not([data-short])").first();
+    expect(await fold.getAttribute("data-open")).toBeNull();
+    await fold.locator(".fold-body").evaluate(body => { body.scrollTop = 30; });
+    await page.waitForSelector("[data-fold][data-open]");
+    expect(await fold.locator(".fold-body").evaluate(body => body.scrollTop)).toBe(0);
+    await page.context().close();
+  });
+
+  test("the navigator stays under the top bar to the page's end", async () => {
+    const { page } = await open("com/example/geo/Shapes.html", { viewport: { width: 1440, height: 600 } });
+    await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+    const top = await page.locator("#apidocs-nav").evaluate(nav => nav.getBoundingClientRect().top);
+    const bar = await page.locator(".topbar").evaluate(bar => bar.getBoundingClientRect().height);
+    expect(Math.round(top)).toBe(Math.round(bar));
+    await page.context().close();
+  });
+
   test("the navigator toggle shows it on a narrow screen", async () => {
     const { page } = await open("com/example/geo/Shapes.html", { viewport: { width: 390, height: 844 } });
     const nav = page.locator("#apidocs-nav");

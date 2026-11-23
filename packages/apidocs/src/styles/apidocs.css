@@ -414,9 +414,14 @@ html[data-emoji] .theme-switch[data-mode="dark"] .theme-emoji::before { content:
      keeps its own measure beside it. */
   display: grid;
   grid-template-columns: 17.5rem minmax(0, 1fr);
+  /* The content, then the footer. On a page shorter than the navigator, the content's row takes the extra height, so the
+     footer sits at the bottom of the window. */
+  grid-template-rows: 1fr auto;
 }
 /* Scrolling over the navigator scrolls it, and once it is at its end the page scrolls on: no overscroll-behavior. */
 .sidebar {
+  /* Both rows, the content and the footer under it: stuck under the bar to the page's very end. */
+  grid-row: 1 / span 2;
   position: sticky; inset-block-start: var(--apidocs-topbar);
   align-self: start;
   height: calc(100vh - var(--apidocs-topbar));
@@ -443,8 +448,10 @@ html[data-emoji] .theme-switch[data-mode="dark"] .theme-emoji::before { content:
   body:has(.nav-toggle:checked) .layout .sidebar { display: none; }
   /* good-css exception (fluid-clamp): a layout, not a size step: with the navigator hidden, the text is centered. */
   body:has(.nav-toggle:checked) .layout .content { padding-inline-start: max(var(--apidocs-gutter), calc((100% - 62rem) / 2)); }
+  /* good-css exception (fluid-clamp): see above. */
+  body:has(.nav-toggle:checked) .layout .footer { margin-inline-start: max(var(--apidocs-gutter), calc((100% - 62rem) / 2)); }
 }
-.nav-section + .nav-section { margin-block-start: 18px; }
+.nav-section + .nav-section { margin-block-start: 22px; }
 /* The module's heading is its overview's link; the index pages that hold more sit beside it. */
 .nav-heading a { color: inherit; }
 @media (hover: hover) and (pointer: fine) { .nav-heading a:hover { color: var(--apidocs-fg); text-decoration: none; } }
@@ -471,13 +478,18 @@ button.nav-twisty:active { color: var(--apidocs-fg); background: var(--apidocs-s
 html[data-js] .nav-branch[data-folded]:not([data-filter-open]) > .nav-branch-row > .nav-twisty svg { transform: none; }
 html[data-js] .nav-branch[data-folded]:not([data-filter-open]) > .nav-branch-row > .nav-twisty svg:dir(rtl) { transform: scaleX(-1); }
 html[data-js] .nav-branch[data-folded]:not([data-filter-open]) > .nav-children { display: none; }
-.nav-item > .nav-row { margin-inline-start: 24px; }
-.nav-children { margin-inline-start: 11px; padding-inline-start: 0; border-inline-start: 1px solid var(--apidocs-rule); }
+/* A leaf has no twisty. Among branches that have glyphs (types with nested types), and under one, it keeps the twisty's room, so the
+   glyphs line up in one column. Elsewhere (guides, a group, packages) it takes none: its glyph sits in the twisties'
+   column, under the heading's first letter, and its name lines up with the branches' names. A branch's children hang
+   from a rule under its twisty, indented so their glyphs sit under the branch's name. */
+.nav-list:has(> .nav-branch > .nav-branch-row .glyph) > .nav-item > .nav-row,
+.nav-branch:has(> .nav-branch-row .glyph) > .nav-children .nav-item > .nav-row { margin-inline-start: 24px; }
+.nav-list.nav-children { margin-inline-start: 11px; padding-inline-start: 12px; border-inline-start: 1px solid var(--apidocs-rule); }
 .nav-children .nav-list { margin: 0; }
 .nav-group-row { color: var(--apidocs-muted); }
 .nav-heading {
   display: flex; align-items: baseline; gap: 8px;
-  margin-block: 0 4px; margin-inline: 0; padding-block: 0; padding-inline: 8px;
+  margin-block: 0 8px; margin-inline: 0; padding-block: 0; padding-inline: 8px;
   font-family: var(--apidocs-font-sans); font-size: var(--apidocs-size-xs); font-weight: 650;
   letter-spacing: var(--apidocs-tracking-caps); text-transform: uppercase; color: var(--apidocs-faint);
 }
@@ -593,10 +605,12 @@ html[data-js] .nav-branch[data-folded]:not([data-filter-open]) > .nav-children {
 .crumbs li + li::before { content: "/"; margin-inline-end: 4px; color: var(--apidocs-rule-strong); }
 .crumbs a { color: var(--apidocs-muted); }
 
+/* The footer is the layout's last row, in the content's column and lined up with its text. */
 .footer {
+  grid-column: -2 / -1; min-width: 0; max-width: 62rem;
   border-block-start: 1px solid var(--apidocs-rule);
-  padding-block: 20px 32px; padding-inline: 24px; color: var(--apidocs-muted); font-size: var(--apidocs-size-sm);
-  max-width: 94rem; margin-block: 0; margin-inline: auto;
+  padding-block: 20px 32px; padding-inline: 0; color: var(--apidocs-muted); font-size: var(--apidocs-size-sm);
+  margin-block: 0; margin-inline: var(--apidocs-gutter);
 }
 .footer p { margin-block: 0 6px; margin-inline: 0; }
 .footer-links { display: flex; gap: 16px; flex-wrap: wrap; }
@@ -774,9 +788,8 @@ thead th { color: var(--apidocs-muted); font-weight: 600; font-size: var(--apido
 h2.guide-heading { font-size: var(--apidocs-size-xl); font-weight: 700; margin-block: 0 12px; margin-inline: 0; padding-block-end: 8px; border-block-end: 1px solid var(--apidocs-rule-strong); }
 h3.guide-heading { font-size: var(--apidocs-size-lg); font-weight: 650; margin-block: 30px 8px; margin-inline: 0; }
 h4.guide-heading { font-size: var(--apidocs-size-md); font-weight: 650; margin-block: 22px 4px; margin-inline: 0; color: var(--apidocs-muted); }
-/* Paragraphs in a guide breathe a little more than reference text, and lists stand out from the paragraphs. */
+/* Paragraphs in a guide breathe a little more than reference text. */
 .guide-body p { margin-block: 0.75em; }
-.guide-body li::marker { color: var(--apidocs-accent); }
 .guide-body .callout { margin-block: 20px; }
 /* The section link sits in the margin and shows when the heading is pointed at or the link has focus. */
 .heading-anchor {
@@ -898,10 +911,18 @@ td .badge { margin-inline-end: 6px; }
 
 /* A long description shows its first lines; "Show more" opens the rest. Folded only with the script, which shows the
    control and opens the fold for a link into it. */
+/* good-css exception (overflow-clip): hidden, not clip, so find in page can scroll the body to a match in its hidden part,
+   which opens the fold (folds() in client/behaviors.tsx). */
 html[data-js] .fold:not([data-open]):not([data-short]) > .fold-body {
-  max-height: calc(4lh + 1.2em); overflow: clip;
+  max-height: calc(4lh + 1.2em); overflow: hidden;
   mask-image: linear-gradient(to bottom, #000 60%, transparent);
 }
+/* Folded, the body is a scroll container (above), which keeps its children's margins inside it. Open, it is a flow root
+   too, and its first and last children have no outer margin, so the fold is as tall either way and the
+   script marking a short description moves nothing. */
+.fold-body { display: flow-root; }
+.fold-body > :first-child { margin-block-start: 0; }
+.fold-body > :last-child { margin-block-end: 0; }
 /* Folded, the control sits over the faded last line, so showing it (once the script finds the description long)
    moves nothing on the page; open, it follows the text. */
 .fold { position: relative; }
@@ -1008,8 +1029,10 @@ html[data-js] .fold:not([data-open]):not([data-short]) > .fold-body {
 @media (max-width: 860px), (pointer: coarse) {
   .nav-row, .nav-twisty { height: 40px; }
   .nav-twisty { width: 32px; }
-  .nav-item > .nav-row { margin-inline-start: 32px; }
-  .nav-children { margin-inline-start: 15px; }
+  .nav-list.nav-children { margin-inline-start: 15px; padding-inline-start: 16px; }
+  /* good-css exception (fluid-clamp): a layout, not a size step: the twisty's room, as wide as the wider twisty. */
+  .nav-list:has(> .nav-branch > .nav-branch-row .glyph) > .nav-item > .nav-row,
+  .nav-branch:has(> .nav-branch-row .glyph) > .nav-children .nav-item > .nav-row { margin-inline-start: 32px; }
   .member-row { padding-block: 12px; }
   .decl-item { padding-block: 12px; }
   .nav-fold-all { width: 40px; }
@@ -1125,3 +1148,30 @@ html[data-js] .fold:not([data-open]):not([data-short]) > .fold-body {
   .loadbar, .readbar { display: none; }
   * { scroll-behavior: auto !important; }
 }
+
+/* ---- Keyboard ---- */
+
+/* The footer's link to the shortcut list: a button that reads as a link. */
+.footer-keys { padding: 0; border: 0; background: none; font: inherit; color: var(--apidocs-link); cursor: pointer; }
+@media (hover: hover) and (pointer: fine) { .footer-keys:hover { text-decoration-line: underline; text-underline-offset: 0.22em; } }
+.footer-keys:active { text-decoration-line: underline; text-underline-offset: 0.22em; }
+kbd {
+  display: inline-block; min-inline-size: 1.6em; padding-block: 0.05em; padding-inline: 0.35em; text-align: center;
+  border: 1px solid var(--apidocs-rule-strong); border-block-end-width: 2px; border-radius: var(--apidocs-radius);
+  background: var(--apidocs-surface); color: var(--apidocs-fg); line-height: 1.4;
+}
+dialog.keys {
+  inline-size: min(30rem, calc(100vw - 32px)); padding-block: 18px 16px; padding-inline: 20px;
+  border: 1px solid var(--apidocs-rule-strong); border-radius: var(--apidocs-radius);
+  background: var(--apidocs-surface); color: var(--apidocs-fg); box-shadow: 0 16px 40px -16px oklch(0% 0 none / 0.35);
+}
+dialog.keys::backdrop { background: oklch(0% 0 none / 0.35); }
+dialog.keys h2 { margin-block: 0 10px; font-size: var(--apidocs-size-lg); }
+dialog.keys td:first-child { white-space: nowrap; inline-size: 6rem; }
+.keys-switch { display: flex; align-items: center; gap: 8px; margin-block: 14px 0; font-size: var(--apidocs-size-sm); accent-color: var(--apidocs-accent); }
+.keys-close {
+  float: inline-end; margin-block-start: -24px; padding-block: 4px; padding-inline: 12px; font: inherit; font-size: var(--apidocs-size-sm);
+  border: 1px solid var(--apidocs-rule-strong); border-radius: var(--apidocs-radius); background: var(--apidocs-surface); color: var(--apidocs-fg); cursor: pointer;
+}
+@media (hover: hover) and (pointer: fine) { .keys-close:hover { background: var(--apidocs-subtle); } }
+.keys-close:active { background: var(--apidocs-subtle); }
