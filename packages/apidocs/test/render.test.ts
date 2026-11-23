@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { samples } from "../samples";
 import { generate } from "../scripts/gen-types";
-import { search } from "../src/client/search";
+import { search, textFragment } from "../src/client/search";
 import { highlight } from "../src/highlight";
 import type { Model, Token } from "../src/model";
 import { render } from "../src/render";
@@ -127,6 +127,16 @@ describe("members", () => {
     const site = buildSite(samples.kotlin);
     const shape = [...site.types.values()].find(e => e.type.name === "Shape")!.type;
     expect(extensionsOf(site, shape).map(e => e.member.name).sort()).toEqual(["isDegenerate", "scaled"]);
+  });
+});
+
+describe("text fragments", () => {
+  test("a short sentence whole, a long one by its first and last words, its syntax encoded", () => {
+    expect(textFragment("Install it once.", false)).toBe("#:~:text=Install%20it%20once.");
+    expect(textFragment("Run a well-formed, small program & see.", true)).toBe(":~:text=Run%20a%20well%2Dformed%2C%20small%20program%20%26%20see.");
+    expect(textFragment("one two three four five six seven eight nine ten", false)).toBe("#:~:text=one%20two%20three%20four,seven%20eight%20nine%20ten");
+    // A cut sentence ends at its last whole word.
+    expect(textFragment("one two three four five six seven eight nine…", false)).toBe("#:~:text=one%20two%20three%20four,six%20seven%20eight%20nine");
   });
 });
 

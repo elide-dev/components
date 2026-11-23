@@ -35,3 +35,19 @@ function wordStart(label: string, q: string): boolean {
   return starts.includes(q) || label.toLowerCase().split(/[.(\s]/).some(part => part.startsWith(q));
 }
 
+/** A text directive's term: percent-encoded, with the directive's own syntax ("-", ",", "&") encoded too. */
+function term(text: string): string {
+  return encodeURIComponent(text).replace(/-/g, "%2D").replace(/,/g, "%2C").replace(/&/g, "%26");
+}
+
+/**
+ * A URL fragment that opens the page at `sentence`, highlighted (a text fragment): the whole sentence when it is short,
+ * else its first and last four words, which the browser matches across what lies between. A cut sentence ("…") ends at
+ * its last whole word. After an anchor it follows the anchor: "#member:~:text=...".
+ */
+export function textFragment(sentence: string, afterAnchor: boolean): string {
+  const words = sentence.replace(/…$/, "").trim().split(/\s+/).filter(Boolean);
+  if (!words.length) return "";
+  const directive = words.length <= 8 ? term(words.join(" ")) : `${term(words.slice(0, 4).join(" "))},${term(words.slice(-4).join(" "))}`;
+  return `${afterAnchor ? "" : "#"}:~:text=${directive}`;
+}
