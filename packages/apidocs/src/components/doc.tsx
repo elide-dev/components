@@ -7,6 +7,7 @@ import { highlight } from "../highlight";
 import type { Block, Inline, Token } from "../model";
 import { sanitize } from "../sanitize";
 import { sanitizeSvg } from "../import/svg";
+import { namespaceSvg } from "../diagram";
 import { safeUrl } from "../url";
 import { resolve, resolveRef, resolveToken } from "../site";
 import { layoutSignature } from "../signature";
@@ -86,7 +87,7 @@ function BlockNode({ node, offset }: { node: Block; offset: number }): JSX.Eleme
       if (!svg?.ok) return <CodeBlock code={node.source} language={node.language} />;
       return (
         <figure class="diagram">
-          <div class="diagram-scroll" dangerouslySetInnerHTML={{ __html: svg.svg }} />
+          <div class="diagram-scroll" dangerouslySetInnerHTML={{ __html: namespaceSvg(svg.svg) }} />
           {node.title && <figcaption class="diagram-caption">{node.title}</figcaption>}
         </figure>
       );

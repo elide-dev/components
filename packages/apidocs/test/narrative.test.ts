@@ -6,6 +6,7 @@ import type { Guide, Model } from "../src/model";
 import { render } from "../src/render";
 import { buildSite, orderGuides } from "../src/site";
 import { blockText, compactTokens, guideAnchors } from "../src/structure";
+import { namespaceSvg } from "../src/diagram";
 import { checkSite } from "./check";
 import { validate } from "./validate";
 
@@ -178,5 +179,20 @@ describe("diagrams", () => {
       const out = { "guides/x.html": `<figure class="diagram"><svg>${bad}</svg></figure>` };
       expect(checkSite(out, { allowed: [] }).some(e => e.includes("diagram with"))).toBe(true);
     }
+  });
+});
+
+describe("diagram namespacing", () => {
+  test("ids and their references get a namespace; only d-* classes survive", () => {
+    const svg = '<svg xmlns="http://www.w3.org/2000/svg" aria-labelledby="t"><title id="t">T</title><defs><marker id="m"><path d="M0 0"></path></marker></defs><path class="node d-fill-surface edge" marker-end="url(#m)" d="M0 0"></path><use href="#m"></use><rect class="search" width="1" height="1"></rect></svg>';
+    const out = namespaceSvg(svg);
+    const ns = /id="(dg[a-z0-9]+-)t"/.exec(out)![1]!;
+    expect(out).toContain(`aria-labelledby="${ns}t"`);
+    expect(out).toContain(`id="${ns}m"`);
+    expect(out).toContain(`url(#${ns}m)`);
+    expect(out).toContain(`href="#${ns}m"`);
+    expect(out).toContain('class="d-fill-surface"');
+    expect(out).not.toContain("search");
+    expect(out).not.toMatch(/\sid="(t|m)"/);
   });
 });
