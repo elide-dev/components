@@ -227,6 +227,14 @@ the choice with no width written down; `src/styles/apidocs.css` (the top bar sec
 The navigator stays under the top bar to the end of the page, footer included: the footer is the layout's last row,
 in the content's column. Only the navigator's own list scrolls inside it.
 
+### Hover cards
+
+A link in the content to a declaration or a guide of the same site shows a card when the pointer rests on it (400ms) or the
+keyboard focuses it: the target's kind and where it is declared, its name, and its first sentence, from the site's
+search index. The index loads on the first link pointed at. Escape, leaving the link or following it closes the card;
+the pointer can cross into it. A screen reader hears it as the link's description. Touch screens show none. Links in the
+navigator, breadcrumbs, menus and declaration lists, which already say what they lead to, have no card.
+
 ### The keyboard
 
 | Key | Does |
@@ -414,6 +422,7 @@ cached for a year.
 | --- | --- |
 | Search | A Preact island, `client:idle`, in the top bar. Loads `assets/search-index.json` on first focus or keystroke; opens results through the router. The top bar persists, so it hydrates once per site. With `<ApidocsPage search={...}>` it races a search service: local results at once, the service's added as they arrive, a scope switch (this site or all), the other sites' results when this one has none, a regex mode, and an `apidocs:search` event with counts and timings for analytics. |
 | Theme switch, navigator toggle, the keyboard (shortcuts and the navigator's arrow keys), copy buttons, copy as Markdown, member expand and collapse, open-on-hash, navigator folding and filter, "Show more" (find in page opens it), the suite switcher's memory, menus | The static page's functions (`src/client/behaviors.tsx`), started on `astro:page-load` and stopped on `astro:before-swap` through one `AbortController` per page: no listener outlives its page. |
+| Hover cards | `client/cards.ts`, started with the page's other behaviors: a link in the content to a declaration or guide of the site shows its kind, owner, name and first sentence, from `assets/search-index.json` (fetched once per site, shared with the search island) on the first link pointed at. One manual popover per page, placed by CSS anchor positioning where the browser has it, and removed when the page's controller aborts. |
 | Top bar and navigator | `transition:persist`, keyed by the site's base: across pages of one site they are the same elements, so the navigator keeps its scroll position and filter text without a script restoring them. Before each swap the client moves the new page's suite switcher and navigator blocks (the sites, the indexes with the current one marked, guides, packages and types) into them, around the kept filter field, and applies the kept filter text to the new rows. A top bar from another site is sized before it paints. |
 | Theme and `data-js` | The head script sets them on first load; the client carries them to each new page's `<html>`, whose attributes the router replaces. |
 | Load bar | Starts on `astro:before-preparation`, finishes on arrival, clears if the navigation is aborted. |

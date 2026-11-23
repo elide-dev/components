@@ -1175,3 +1175,32 @@ dialog.keys td:first-child { white-space: nowrap; inline-size: 6rem; }
 }
 @media (hover: hover) and (pointer: fine) { .keys-close:hover { background: var(--apidocs-subtle); } }
 .keys-close:active { background: var(--apidocs-subtle); }
+
+/* ---- Hover cards (client/cards.ts) ---- */
+
+/* A link's card: kind and owner, name, first sentence. One element, a manual popover; the script places it from the
+   link's box unless the browser has anchor positioning, which places it below the link and flips it at the window's
+   edges. */
+.card {
+  inset: auto; margin: 0; inline-size: max-content; max-inline-size: min(26rem, calc(100vw - 16px));
+  padding-block: 9px 10px; padding-inline: 12px;
+  border: 1px solid var(--apidocs-rule-strong); border-radius: var(--apidocs-radius);
+  background: var(--apidocs-surface); color: var(--apidocs-fg); box-shadow: 0 10px 28px -14px oklch(0% 0 none / 0.35);
+  font-family: var(--apidocs-font-sans); font-size: var(--apidocs-size-sm); line-height: 1.5; text-align: start;
+}
+@supports (anchor-name: --apidocs-card) {
+  .card {
+    position-anchor: --apidocs-card; position-area: block-end span-inline-end; margin-block: 6px;
+    position-try-fallbacks: flip-block, flip-inline, flip-block flip-inline;
+  }
+}
+.card p { margin: 0; }
+.card-kind { color: var(--apidocs-faint); font-size: var(--apidocs-size-xs); user-select: none; -webkit-user-select: none; }
+.card-name { font-family: var(--apidocs-font-mono); font-weight: 650; overflow-wrap: anywhere; }
+.card-summary { margin-block-start: 3px !important; color: var(--apidocs-muted); text-wrap: pretty; }
+@media (prefers-reduced-motion: no-preference) {
+  .card { transition: opacity 120ms ease-out, display 120ms allow-discrete, overlay 120ms allow-discrete; }
+  @starting-style { .card:popover-open { opacity: 0; } }
+}
+.card:not(:popover-open) { opacity: 0; }
+@media print { .card { display: none !important; } }

@@ -15,6 +15,7 @@ import { navigate } from "astro:transitions/client";
 import { useEffect, useRef, useState } from "preact/hooks";
 import { isShortcut, siteRoot } from "../client/behaviors";
 import { type Entry, search } from "../client/search";
+import { loadIndex } from "./search-index";
 
 /** A search service, as an app configures it. */
 export interface HostedSearch {
@@ -46,19 +47,6 @@ interface Item {
   context: string;
   summary: string;
   group: "here" | "elsewhere";
-}
-
-/** Each site's index, by URL: the client router can move between sites (versions) without a page load. */
-const indexes = new Map<string, Promise<Entry[]>>();
-
-function loadIndex(root: string): Promise<Entry[]> {
-  const url = `${root}assets/search-index.json`;
-  let index = indexes.get(url);
-  if (!index) {
-    index = fetch(url).then(r => (r.ok ? (r.json() as Promise<Entry[]>) : [])).catch(() => []);
-    indexes.set(url, index);
-  }
-  return index;
 }
 
 const LIMIT = 40;

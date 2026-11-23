@@ -13,6 +13,8 @@
  * - runs the load bar from astro:before-preparation and finishes it on arrival.
  */
 import { filterTree, pageBehaviors, saveNavigatorScroll, setFolded, siteRoot, syncFoldAll } from "../client/behaviors";
+import { hoverCards } from "../client/cards";
+import { loadIndex } from "./search-index";
 import { pathUnder } from "./versions";
 
 /** The <html> attributes the page's own scripts set, which the router's swap would drop. */
@@ -25,6 +27,7 @@ function start() {
   page?.abort();
   page = new AbortController();
   pageBehaviors(page.signal);
+  hoverCards(() => loadIndex(siteRoot()), siteRoot(), page.signal);
   versionMenus(page.signal);
 }
 

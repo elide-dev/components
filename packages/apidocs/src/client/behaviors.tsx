@@ -104,7 +104,8 @@ export function copyButtons(signal?: AbortSignal) {
 
 // ---- Search over the lazily loaded index.
 
-function loadIndex(): Promise<Entry[]> {
+/** The static site's index: a script that assigns window.apidocsSearch, loaded once. */
+export function loadIndex(): Promise<Entry[]> {
   if (window.apidocsSearch) return Promise.resolve(window.apidocsSearch);
   return new Promise((resolve, reject) => {
     const script = document.createElement("script");
