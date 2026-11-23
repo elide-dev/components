@@ -149,6 +149,26 @@ read at import.
 A host should serve the copied files under `guides/` with `X-Content-Type-Options: nosniff`, and anything that is not
 an image the pages embed with `Content-Security-Policy: sandbox`.
 
+### Diagrams
+
+A fenced block in [Mermaid](https://mermaid.js.org/) (```` ```mermaid ````) becomes a `diagram` block. The guides
+command draws every diagram at import time, in one headless Chromium page (Playwright) holding the pinned Mermaid
+from `node_modules`, with no network. The model stores the SVG, so `render.js` stays pure and pages need no
+JavaScript; GitHub draws the same fences from the Markdown source.
+
+- **Theming.** Mermaid draws with a placeholder palette; each color then becomes a `d-fill-*`, `d-stroke-*` or
+  `d-text-*` class that `apidocs.css` maps to an `--apidocs-*` token, so one SVG follows the light and dark schemes and
+  any theme. Labels are plain SVG text laid out in JetBrains Mono, the font the page sets them in.
+- **Accessibility.** `accTitle` becomes the SVG's title and the figure's caption; `accDescr` its description.
+- **Safety.** The SVG passes the same allowlist as a suite's SVG files, at import and again in the renderer, which
+  also gives its ids a namespace of their own and keeps only the `d-*` classes.
+- **Determinism.** Ids are seeded by the page and the diagram's position, so a suite always builds to the same bytes.
+- **Errors.** A diagram Mermaid cannot parse is an error at its line; with `--warn-only` the page shows its source.
+  Drawing needs a Playwright Chromium (`bunx playwright install chromium`); a suite without diagrams never starts one.
+  `suiteSite(dir, { diagrams: false })` leaves diagrams undrawn, and `diagrams: () => renderer` supplies another
+  `DiagramRenderer`.
+- **Markdown.** The Markdown twin, `llms-full.txt` and "copy as Markdown" keep the Mermaid source.
+
 ### Not supported
 
 - MDX (`.mdx` pages are an error) and Starlight components and asides (`:::note`); use GitHub alerts.
