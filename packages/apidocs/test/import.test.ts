@@ -32,6 +32,25 @@ const bodyOf = (markdown: string, options: ImportOptions = {}): Block[] => {
 const first = (blocks: Block[]) => blocks[0]!;
 const inl = (markdown: string): Inline[] => (first(bodyOf(markdown)) as { children: Inline[] }).children;
 
+describe("suite files", () => {
+  test("readSuite skips README.md at any depth", () => {
+    const dir = mkdtempSync(join(tmpdir(), "apidocs-readme-"));
+    try {
+      writeFileSync(join(dir, "index.md"), "---\ntitle: Home\ndescription: The home page.\n---\n\nHello.\n");
+      writeFileSync(join(dir, "README.md"), "## Not a page\n");
+      mkdirSync(join(dir, "group"));
+      writeFileSync(join(dir, "group", "readme.md"), "## Not a page either\n");
+      const suite = readSuite(dir);
+      expect(suite.files.map(f => f.path)).toEqual(["index.md"]);
+      expect(suite.assets).toEqual([]);
+      const result = importMarkdown(suite.files);
+      expect(result.diagnostics).toEqual([]);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+});
+
 describe("frontmatter", () => {
   test("title, description, sidebar.label and sidebar.order", () => {
     const result = imp({
