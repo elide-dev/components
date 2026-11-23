@@ -284,7 +284,7 @@ export type Blocks = Block[];
 
 export type Inlines = Inline[];
 
-export type Block = Paragraph | ListBlock | CodeBlock | Table | Heading | Quote | Admonition | RawBlock;
+export type Block = Paragraph | ListBlock | CodeBlock | Table | Heading | Quote | Admonition | RawBlock | Diagram;
 
 export interface Paragraph {
   kind: "paragraph";
@@ -336,6 +336,21 @@ export interface Admonition {
   /** A title; absent for the tone's own label. */
   title?: Inlines;
   children?: Blocks;
+}
+
+/** A diagram written as text: its source, and the SVG the importer drew from it. */
+export interface Diagram {
+  kind: "diagram";
+  /** The diagram language. */
+  language: "mermaid";
+  /** The diagram's source text, unchanged. */
+  source: string;
+  /** The drawn diagram: sanitized SVG markup whose colors are d-* classes. Absent when it was not drawn; the page then shows the source. */
+  svg?: string;
+  /** The diagram's accessible title (Mermaid's accTitle). */
+  title?: string;
+  /** The diagram's accessible description (Mermaid's accDescr). */
+  description?: string;
 }
 
 export interface RawBlock {

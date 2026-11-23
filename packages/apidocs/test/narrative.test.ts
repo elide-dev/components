@@ -5,7 +5,7 @@ import { samples } from "../samples";
 import type { Guide, Model } from "../src/model";
 import { render } from "../src/render";
 import { buildSite, orderGuides } from "../src/site";
-import { compactTokens, guideAnchors } from "../src/structure";
+import { blockText, compactTokens, guideAnchors } from "../src/structure";
 import { checkSite } from "./check";
 import { validate } from "./validate";
 
@@ -139,5 +139,44 @@ describe("hostile guides", () => {
   });
   test("the hostile section becomes an encoded fragment", () => {
     expect(out["guides/x.html"] as string).toContain('href="x.html#%22%20onmouseover%3D%22alert(6)"');
+  });
+});
+
+describe("diagrams", () => {
+  const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10" role="img"><rect class="d-fill-surface d-stroke-rule-strong" width="10" height="10"></rect><text class="d-text-fg" x="1" y="5">a &lt; b</text></svg>';
+  const diagram = (extra: Record<string, string> = {}) => ({ kind: "diagram" as const, language: "mermaid" as const, source: "flowchart LR\n  a --> b", ...extra });
+  const page = (model: Model) => render(model)["guides/d.html"] as string;
+
+  test("a drawn diagram is a figure with its SVG and title", () => {
+    const model = withGuides([g("d", { body: [diagram({ svg, title: "Pipeline", description: "From a to b" })] })]);
+    expect(validate(model)).toEqual([]);
+    const html = page(model);
+    expect(html).toContain('<figure class="diagram"><div class="diagram-scroll"><svg');
+    expect(html).toContain('class="d-fill-surface d-stroke-rule-strong"');
+    expect(html).toContain('<figcaption class="diagram-caption">Pipeline</figcaption>');
+    expect(checkSite(render(model), { allowed: allowed(model) })).toEqual([]);
+  });
+  test("an undrawn diagram, or one whose SVG fails the sanitizer, shows its source", () => {
+    for (const body of [diagram(), diagram({ svg: "<svg><script>alert(1)</script" })]) {
+      const html = page(withGuides([g("d", { body: [body] })]));
+      expect(html).not.toContain('<figure class="diagram">');
+      expect(html).toContain("flowchart LR");
+      expect(html).not.toContain("<script>alert");
+    }
+  });
+  test("the Markdown twin keeps the Mermaid source", () => {
+    const md = render(withGuides([g("d", { body: [diagram({ svg })] })]))["guides/d.md"] as string;
+    expect(md).toContain("```mermaid\nflowchart LR\n  a --> b\n```");
+    expect(md).not.toContain("<svg");
+  });
+  test("search text is the title and description, never the source", () => {
+    const text = blockText([diagram({ svg, title: "Pipeline", description: "From a to b" })]);
+    expect(text).toBe("Pipeline From a to b");
+  });
+  test("the checker rejects a diagram with a style element, style attribute, foreignObject or script", () => {
+    for (const bad of ["<style>x{}</style>", '<g style="fill:red"></g>', "<foreignObject></foreignObject>", "<script></script>"]) {
+      const out = { "guides/x.html": `<figure class="diagram"><svg>${bad}</svg></figure>` };
+      expect(checkSite(out, { allowed: [] }).some(e => e.includes("diagram with"))).toBe(true);
+    }
   });
 });
