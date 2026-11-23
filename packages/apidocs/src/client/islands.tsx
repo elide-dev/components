@@ -3,12 +3,14 @@
  * started once per page load. Classic script, no modules, no fetch: the search index is a script that assigns
  * window.apidocsSearch, loaded on first use. Astro pages use src/astro/client.ts instead.
  */
-import { leaving, navigatorScroll, pageBehaviors, searchBox } from "./behaviors";
+import { leaving, loadIndex, navigatorScroll, pageBehaviors, searchBox, siteRoot } from "./behaviors";
+import { hoverCards } from "./cards";
 
 function start() {
   document.documentElement.dataset.js = "";
   pageBehaviors();
   searchBox();
+  hoverCards(loadIndex, siteRoot());
   navigatorScroll();
   leaving();
 }

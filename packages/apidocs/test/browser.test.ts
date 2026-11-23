@@ -234,6 +234,27 @@ describe("from file:// with JavaScript on", () => {
     await page.context().close();
   });
 
+  test("a link to a declaration shows its card on hover and on keyboard focus, and Escape closes it", async () => {
+    const { page, errors } = await open("com/example/geo/Shapes.html", { viewport: { width: 1440, height: 900 } });
+    const card = page.locator("#apidocs-card");
+    const link = page.locator("main .prose a[href='Shape.html']").first();
+    await link.hover();
+    await page.waitForFunction(() => document.getElementById("apidocs-card")?.matches(":popover-open"));
+    expect(await card.textContent()).toContain("Shape");
+    expect(await link.getAttribute("aria-describedby")).toBe("apidocs-card");
+    await page.keyboard.press("Escape");
+    expect(await card.evaluate(c => c.matches(":popover-open"))).toBe(false);
+    expect(await link.getAttribute("aria-describedby")).toBeNull();
+    // Keyboard focus shows it too.
+    await page.mouse.move(1, 1);
+    await link.focus();
+    await page.keyboard.press("Shift+Tab");
+    await page.keyboard.press("Tab");
+    await page.waitForFunction(() => document.getElementById("apidocs-card")?.matches(":popover-open"));
+    expect(errors).toEqual([]);
+    await page.context().close();
+  });
+
   test("the navigator stays under the top bar to the page's end", async () => {
     const { page } = await open("com/example/geo/Shapes.html", { viewport: { width: 1440, height: 600 } });
     await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
