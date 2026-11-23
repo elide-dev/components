@@ -255,6 +255,33 @@ describe("from file:// with JavaScript on", () => {
     await page.context().close();
   });
 
+  test("a name's overloads sit together, the later ones marked as overloads", async () => {
+    const { page } = await open("com/example/geo/Shapes.html", { viewport: { width: 1440, height: 900 } });
+    const names = await page.locator("#method-details > .member").evaluateAll(rows => rows.map(r => ({ name: r.querySelector(".member-key")?.textContent, overload: r.classList.contains("is-overload") })));
+    const area = names.findIndex(n => n.name === "area");
+    expect(names[area + 1]).toEqual({ name: "area", overload: true });
+    expect(names[area]!.overload).toBe(false);
+    await page.context().close();
+  });
+
+  test("the members switch shows inherited members, keeps the choice and puts it in the URL", async () => {
+    const { page, errors } = await open("com/example/geo/Circle.html", { viewport: { width: 1440, height: 900 }, http: true });
+    const inherited = page.locator(".member-inherited");
+    expect(await inherited.count()).toBe(2);
+    expect(await inherited.first().isVisible()).toBe(false);
+    await page.locator(".members-filter label", { hasText: "inherited" }).click();
+    expect(await inherited.first().isVisible()).toBe(true);
+    expect(await inherited.first().textContent()).toContain("from Shape");
+    expect(new URL(page.url()).searchParams.get("members")).toBe("all");
+    // The choice is kept for the next page, and a URL that says otherwise wins.
+    await page.goto(page.url().split("?")[0]!);
+    expect(await inherited.first().isVisible()).toBe(true);
+    await page.goto(`${page.url().split("?")[0]!}?members=declared`);
+    expect(await inherited.first().isVisible()).toBe(false);
+    expect(errors).toEqual([]);
+    await page.context().close();
+  });
+
   test("the navigator stays under the top bar to the page's end", async () => {
     const { page } = await open("com/example/geo/Shapes.html", { viewport: { width: 1440, height: 600 } });
     await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));

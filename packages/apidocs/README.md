@@ -227,6 +227,24 @@ the choice with no width written down; `src/styles/apidocs.css` (the top bar sec
 The navigator stays under the top bar to the end of the page, footer included: the footer is the layout's last row,
 in the content's column. Only the navigator's own list scrolls inside it.
 
+### Members
+
+A type page lists its members by kind (constructors, properties, methods and so on), in their source order, except
+that a name's overloads move up to its first: they sit together, and the rows after the first keep the name quieter, so
+the parameters, which are what differ, stand out. Each overload has its own anchor, named by its parameter types
+(`compile(dev.elide.kotlin.api.Source)`), so a link to one survives a reordering.
+
+When the type inherits members this site documents, a switch above the members shows them or not: "Declared" (the
+default) or "With N inherited". Inherited members are rows in their kind's group, after the declared ones, with their
+summary sentence and the type they come from, linking to their entry. The switch is two radio buttons and works without
+the script; the script keeps the reader's choice in `localStorage` and puts it in the URL (`?members=all`), and an
+inline script sets it before the rows are parsed, so nothing moves. Members inherited from types the site does not
+document (the JDK's, say) stay a list by name under "Inherited members".
+
+A Kotlin extension this site documents is listed on its receiver's page too, under "Extensions", always shown: a row
+with its signature (receiver first), its summary sentence and the package that declares it, linking to its entry in
+that package. Only an extension on the type itself counts, not on a type built from it, such as a list of it.
+
 ### Hover cards
 
 A link in the content to a declaration or a guide of the same site shows a card when the pointer rests on it (400ms) or the

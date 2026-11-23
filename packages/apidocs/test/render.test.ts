@@ -13,6 +13,8 @@ import { sanitize } from "../src/sanitize";
 import { layoutSignature } from "../src/signature";
 import { navIndexes, sharedPrefix, suites } from "../src/components/chrome";
 import { buildSite, isThrowable } from "../src/site";
+import { overloadsTogether } from "../src/structure";
+import { extensionsOf, inheritedMembers } from "../src/pages";
 import { checkSite } from "./check";
 import { validate } from "./validate";
 
@@ -100,6 +102,31 @@ describe("render", () => {
     expect(parse.indexOf("callout-apiNote")).toBeGreaterThan(0);
     expect(parse.indexOf("callout-apiNote")).toBeLessThan(parse.indexOf("callout-implNote"));
     expect(render(samples.java, { symbols: "none" })["com/example/geo/Shapes.md"]).toContain("> **API note**");
+  });
+});
+
+describe("members", () => {
+  test("overloads move up to their name's first member, and the rest keep their order", () => {
+    const m = (name: string, id: string) => ({ name, id }) as Parameters<typeof overloadsTogether>[0][number];
+    const order = overloadsTogether([m("a", "a1"), m("b", "b1"), m("a", "a2"), m("c", "c1"), m("b", "b2")]).map(x => x.id);
+    expect(order).toEqual(["a1", "a2", "b1", "b2", "c1"]);
+  });
+
+  test("inherited members this site documents become rows; the rest stay a list by name", () => {
+    const site = buildSite(samples.java);
+    const circle = site.types.get("com.example.geo.Circle")!.type;
+    const { resolved, external } = inheritedMembers(site, circle);
+    expect(resolved.map(r => r.member.name).sort()).toEqual(["compareTo", "name"]);
+    expect(resolved.every(r => r.from.id === "com.example.geo.Shape")).toBe(true);
+    expect(external).toEqual([]);
+    const shape = site.types.get("com.example.geo.AbstractShape")!.type;
+    expect(inheritedMembers(site, shape).external.length).toBeGreaterThan(0);
+  });
+
+  test("a Kotlin extension on a type is listed on that type's page", () => {
+    const site = buildSite(samples.kotlin);
+    const shape = [...site.types.values()].find(e => e.type.name === "Shape")!.type;
+    expect(extensionsOf(site, shape).map(e => e.member.name).sort()).toEqual(["isDegenerate", "scaled"]);
   });
 });
 
