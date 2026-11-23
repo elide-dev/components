@@ -152,14 +152,21 @@ export function themeCss(theme: Theme, root = ":root"): string {
         "}",
     );
   }
-  const block = (tokens: Record<string, string> | undefined) =>
-    Object.entries(tokens ?? {}).map(([k, v]) => `--apidocs-${k}:${v};`).join("");
-  const light = block(theme.tokens?.light);
-  const dark = block(theme.tokens?.dark);
-  if (light) out.push(`${root}{${light}}`);
-  if (dark) {
-    out.push(`@media (prefers-color-scheme:dark){${root}:not([data-theme=light]){${dark}}}`);
-    out.push(`${root}[data-theme=dark]{${dark}}`);
+  // One set of tokens: a token with a light and a different dark value is light-dark(light, dark), which the root's
+  // color-scheme resolves (the stylesheet sets it from the system, or from the theme switch). Only colors take
+  // light-dark(), and only colors differ between the schemes.
+  const light = theme.tokens?.light ?? {};
+  const dark = theme.tokens?.dark ?? {};
+  const tokens = Object.entries(light).map(([k, l]) => {
+    const d = dark[k];
+    return `--apidocs-${k}:${d !== undefined && d !== l ? `light-dark(${l},${d})` : l};`;
+  }).join("");
+  if (tokens) out.push(`${root}{${tokens}}`);
+  // A token a theme gives for dark alone keeps the stylesheet's light value, so it is set only where dark applies.
+  const darkOnly = Object.entries(dark).filter(([k]) => !(k in light)).map(([k, d]) => `--apidocs-${k}:${d};`).join("");
+  if (darkOnly) {
+    out.push(`@media (prefers-color-scheme:dark){${root}:not([data-theme=light]){${darkOnly}}}`);
+    out.push(`${root}[data-theme=dark]{${darkOnly}}`);
   }
   if (theme.css) out.push(theme.css);
   return out.join("\n") + "\n";

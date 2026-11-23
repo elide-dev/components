@@ -184,7 +184,11 @@ The stylesheet reads only `--apidocs-*` custom properties; `tokens` sets them wi
 
 Colors are written as `oklch()`: the neutral defaults, converted exactly from their former hex values, and the Elide
 preset's, converted from `@elide/tokens` when the preset loads (`src/color.ts`; each is the same 8-bit color). A theme
-may use any CSS color. The stylesheet uses logical properties, so a page laid out right to left (`dir="rtl"`) mirrors.
+may use any CSS color. There is one set of tokens for both color schemes: a color with a different dark value is
+`light-dark(light, dark)`, in the stylesheet's defaults and in a theme's CSS alike, and the root's `color-scheme`
+picks one (`light dark` from the reader's system, or `light` or `dark` when the theme switch pins it with
+`data-theme`). A token a theme gives only a dark value is set only where dark applies. The stylesheet uses logical
+properties, so a page laid out right to left (`dir="rtl"`) mirrors.
 Spacing grows with the screen (`--apidocs-gutter` and the other fluid tokens at the top of the stylesheet); the type
 scale stays exact, and a theme that sets its type in exact pixels sets `size-title` and `size-specimen` too, as the
 Elide preset does.
