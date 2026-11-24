@@ -18,6 +18,11 @@ export interface ThemeLink {
    * theme's baseUrl.
    */
   current?: boolean;
+  /**
+   * In `links.header`: where this entry leads, as a menu, such as each module of an API reference. The entry opens
+   * the menu instead of following its URL, which stays the link where there is no menu (a page without script).
+   */
+  children?: ThemeLink[];
 }
 
 export interface FontFace {

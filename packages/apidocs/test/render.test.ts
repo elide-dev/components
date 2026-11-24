@@ -191,6 +191,19 @@ describe("agent readiness", () => {
     expect(members).not.toContain('tk-vis">public<');
     expect(render(samples.java)["com/example/geo/index.html"]).toContain('tk-vis">public<');
   });
+  test("a header entry with children opens a menu of them, in the row and in the narrow menu", () => {
+    const page = render(samples.java, { links: { header: [
+      { label: "Guide", url: "https://example.com/guide/" },
+      { label: "API", url: "./", current: true, children: [{ label: "core", url: "https://example.com/core/", current: true }, { label: "extra", url: "https://example.com/extra/" }] },
+    ] } })["index.html"] as string;
+    const row = page.split('class="suites-row"')[1]!.split("</nav>")[0]!;
+    expect(row).toContain('class="suite-group-button" popovertarget="apidocs-suite-1" aria-current="true"');
+    expect(row).toContain('popover="auto"');
+    expect(row).toContain('<a href="https://example.com/core/" aria-current="true">core</a>');
+    const menu = page.split('class="suite-list"')[1]!;
+    expect(menu).toContain('<span class="suite-list-group">API</span>');
+    expect(menu).toContain('<a href="https://example.com/extra/">extra</a>');
+  });
   test("a theme can withhold source links while keeping their template", () => {
     const template = { sourceLink: "https://example.com/{ref}/{path}#L{line}" };
     const shown = Object.entries(render(samples.java, template)).filter(([, c]) => typeof c === "string" && c.includes("https://example.com/main/"));

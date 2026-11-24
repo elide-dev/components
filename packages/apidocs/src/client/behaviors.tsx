@@ -434,6 +434,20 @@ export function copyMarkdown(signal?: AbortSignal) {
 const MENUS = "details.formats-menu[open], details.suite-menu[open], details.version-menu[open]";
 
 export function menus(signal?: AbortSignal) {
+  // A header entry's menu (SuiteSwitcher): a popover placed under its button by CSS anchor positioning; where the
+  // browser lacks it, place it from the button's box when it opens.
+  if (!CSS.supports?.("anchor-name", "--a")) {
+    document.addEventListener("toggle", event => {
+      const menu = event.target as HTMLElement;
+      if (!menu.matches?.(".suite-popover:popover-open")) return;
+      const button = document.querySelector<HTMLElement>(`[popovertarget="${CSS.escape(menu.id)}"]`);
+      if (!button) return;
+      const box = button.getBoundingClientRect();
+      menu.style.position = "fixed";
+      menu.style.top = `${box.bottom + 6}px`;
+      menu.style.left = `${Math.max(8, Math.min(box.left, window.innerWidth - menu.offsetWidth - 8))}px`;
+    }, { capture: true, signal });
+  }
   const open = () => document.querySelectorAll<HTMLDetailsElement>(MENUS);
   document.addEventListener("click", event => {
     for (const menu of open()) if (!menu.contains(event.target as Node)) menu.open = false;

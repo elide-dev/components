@@ -469,6 +469,8 @@ export interface Suite {
    * the script can remember the last page read in each site under it (suiteMemory in client/behaviors.tsx).
    */
   key: string;
+  /** Where the entry leads, as a menu (ThemeLink.children), linked from the page. */
+  children?: { label: string; href: string; current: boolean }[];
 }
 
 /**
@@ -493,7 +495,9 @@ export function suites(theme: Theme, page: string): Suite[] {
   const list = links.map(link => {
     const current = !found && (marked ? !!link.current : isOwnRoot(link.url));
     found ||= current;
-    return { label: link.label, href: current ? relative(page, INDEX, ".html") : hrefFor(page, link.url), current, key: hrefFor(page, link.url) };
+    const children = link.children?.map(child => ({ label: child.label, href: hrefFor(page, child.url), current: !!child.current }));
+    return { label: link.label, href: current ? relative(page, INDEX, ".html") : hrefFor(page, link.url), current, key: hrefFor(page, link.url),
+      ...(children?.length ? { children } : {}) };
   });
   return list.some(entry => !entry.current) ? list : [];
 }
@@ -524,9 +528,18 @@ export function SuiteSwitcher() {
       <div class="suites-fit">
         {/* Empty and zero-wide, so that even a first label wider than the switcher moves to a second line. */}
         <span class="suites-probe" aria-hidden="true" />
-        {list.map((entry, i) => <span key={i} class="suites-ghost" data-current={entry.current ? "" : undefined} aria-hidden="true">{entry.label}</span>)}
+        {list.map((entry, i) => <span key={i} class="suites-ghost" data-current={entry.current ? "" : undefined} aria-hidden="true">{entry.label}{entry.children && CHEVRON}</span>)}
         <nav class="suites-row" aria-label="Documentation">
-          {list.map((entry, i) => <a key={i} href={entry.href} data-suite={entry.key} aria-current={entry.current ? "true" : undefined}>{entry.label}</a>)}
+          {list.map((entry, i) => entry.children ? (
+            // A menu of where the entry leads: a popover in the top layer, so the row's clipping does not cut it.
+            <span key={i} class="suite-group">
+              <button type="button" class="suite-group-button" popovertarget={`apidocs-suite-${i}`} aria-current={entry.current ? "true" : undefined}
+                style={`anchor-name: --apidocs-suite-${i}`}>{entry.label}{CHEVRON}</button>
+              <ul id={`apidocs-suite-${i}`} class="suite-list suite-popover" popover="auto" style={`position-anchor: --apidocs-suite-${i}`}>
+                {entry.children.map((child, j) => <li key={j}><a href={child.href} aria-current={child.current ? "true" : undefined}>{child.label}</a></li>)}
+              </ul>
+            </span>
+          ) : <a key={i} href={entry.href} data-suite={entry.key} aria-current={entry.current ? "true" : undefined}>{entry.label}</a>)}
         </nav>
         <details class="suite-menu">
           <summary class="suite-current" aria-label={`${label}: other documentation`} title="Other documentation">
@@ -534,7 +547,12 @@ export function SuiteSwitcher() {
             {CHEVRON}
           </summary>
           <ul class="suite-list">
-            {list.map((entry, i) => <li key={i}><a href={entry.href} data-suite={entry.key} aria-current={entry.current ? "true" : undefined}>{entry.label}</a></li>)}
+            {list.map((entry, i) => entry.children ? (
+              <li key={i}>
+                <span class="suite-list-group">{entry.label}</span>
+                <ul>{entry.children.map((child, j) => <li key={j}><a href={child.href} aria-current={child.current ? "true" : undefined}>{child.label}</a></li>)}</ul>
+              </li>
+            ) : <li key={i}><a href={entry.href} data-suite={entry.key} aria-current={entry.current ? "true" : undefined}>{entry.label}</a></li>)}
           </ul>
         </details>
       </div>

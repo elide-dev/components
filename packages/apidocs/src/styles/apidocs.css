@@ -280,6 +280,23 @@ table, .nav-count, .members-count, .package-count, .version { font-variant-numer
 @media (hover: hover) and (pointer: fine) { .suite-list a:hover { background: var(--apidocs-subtle); text-decoration: none; } }
 .suite-list a:active { background: var(--apidocs-subtle); text-decoration: none; }
 .suite-list a[aria-current="true"] { color: var(--apidocs-accent); font-weight: 600; }
+/* An entry with a menu (ThemeLink.children): a button in the row, its menu a popover under it. */
+.suite-group { display: contents; }
+.suite-group-button {
+  display: inline-flex; align-items: center; gap: 4px; padding-block: 5px; padding-inline: 9px 7px;
+  font: inherit; color: var(--apidocs-fg); background: none; border: 0; border-radius: var(--apidocs-radius); white-space: nowrap; cursor: pointer;
+}
+.suite-group-button .icon { color: var(--apidocs-muted); }
+@media (hover: hover) and (pointer: fine) { .suite-group-button:hover { background: var(--apidocs-subtle); } }
+.suite-group-button:active, .suite-group-button:has(+ :popover-open) { background: var(--apidocs-subtle); }
+.suite-group-button[aria-current="true"] { color: var(--apidocs-accent); background: var(--apidocs-accent-soft); font-weight: 600; }
+.suite-popover { inset: auto; margin: 0; font-size: var(--apidocs-size-sm); }
+@supports (anchor-name: --a) {
+  .suite-popover { position-area: block-end span-inline-end; margin-block-start: 6px; }
+}
+.suite-list-group { display: block; padding-block: 5px 2px; padding-inline: 10px; color: var(--apidocs-faint); font-size: var(--apidocs-size-xs); user-select: none; -webkit-user-select: none; }
+.suite-list ul { margin: 0; padding: 0; list-style: none; }
+.suite-list ul a { padding-inline-start: 18px; }
 
 .search { position: relative; display: block; flex: 1000 1 0; min-width: var(--apidocs-search-floor); max-width: 19rem; margin-inline-start: auto; }
 .search input {
@@ -566,7 +583,7 @@ html[data-js] .nav-branch[data-folded]:not([data-filter-open]) > .nav-children {
 }
 .page-head h1 code { background: none; padding: 0; font-size: calc(var(--apidocs-code-scale) * 0.92); }
 .page-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin-block: 8px 0; margin-inline: 0; color: var(--apidocs-muted); font-size: var(--apidocs-size-sm); }
-.kind-word { font-weight: 600; color: var(--apidocs-fg); }
+.kind-word { font-weight: 600; color: var(--apidocs-fg); user-select: none; -webkit-user-select: none; }
 .lede { font-size: var(--apidocs-size-lg); color: var(--apidocs-muted); }
 
 .sig { position: relative; container-type: inline-size; }
@@ -940,6 +957,13 @@ html[data-js] .fold:not([data-open]):not([data-short]) > .fold-body {
   font-size: var(--apidocs-size-sm); line-height: 1.5;
 }
 .member-row::-webkit-details-marker { display: none; }
+/* The chevron has no baseline: it sits on the first line, beside the signature's start, however tall the row. */
+.member-row > .member-chevron { align-self: start; margin-block-start: calc((1lh - 12px) / 2); }
+/* A long signature stays on one line and ends in an ellipsis, so the row stays one line tall and its types never
+   break; pointing at the row, focusing it or opening it shows the whole signature. */
+.member-sig .summary-sig { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+:is(.member-row:hover, .member-row:focus-visible, .member[open] > .member-row) .summary-sig { overflow: visible; white-space: normal; }
+@media (hover: hover) and (pointer: fine) { .member-row:hover .summary-sig .tk-t { color: var(--apidocs-syn-type); } }
 @media (hover: hover) and (pointer: fine) { .member-row:hover { background: color-mix(in srgb, var(--apidocs-subtle) 60%, transparent); } }
 .member-row:active { background: color-mix(in srgb, var(--apidocs-subtle) 60%, transparent); }
 .member-chevron { align-self: center; color: var(--apidocs-faint); }
