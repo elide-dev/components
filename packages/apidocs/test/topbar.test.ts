@@ -220,7 +220,9 @@ describe("the suite switcher", () => {
     expect(await open()).toBe(false);
     expect(await page.evaluate(() => document.activeElement?.classList.contains("suite-current"))).toBe(true);
     await page.locator(".suite-current").click();
-    await page.locator("main h1").click();
+    // A click outside the menu, at the window's bottom corner: the open list can cover the heading, whose center
+    // moves with the fonts the machine has.
+    await page.mouse.click(980, 680);
     expect(await open()).toBe(false);
     await page.close();
   });
