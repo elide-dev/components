@@ -127,6 +127,13 @@ document.addEventListener("astro:before-preparation", event => {
   event.signal.addEventListener("abort", () => root.removeAttribute("data-leaving"), { once: true });
 });
 
+// A link out of the router's pages (to a page without the client router, such as a site's root page) starts as a
+// router navigation, which sets data-leaving, and ends as a full page load. Back then restores this page from the
+// back-forward cache as it was left, bar and all: clear it, or it stays stopped near the end.
+window.addEventListener("pageshow", event => {
+  if (event.persisted) document.documentElement.removeAttribute("data-leaving");
+});
+
 document.addEventListener("astro:before-swap", event => {
   firstLoadPending = false;
   page?.abort();
