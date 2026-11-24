@@ -174,7 +174,8 @@ export function TokenList({ tokens, plain, cardTitle }: { tokens: Token[] | unde
       continue;
     }
     switch (token.kind) {
-      case "punct": out.push(token.text); break;
+      // A long type may wrap after the "<" of its type arguments, rather than wherever the line runs out.
+      case "punct": out.push(token.text); if (token.text === "<" && !plain) out.push(<wbr key={`w${i}`} />); break;
       case "type":
       case "annotation": {
         const resolved = resolveToken(ctx.site, ctx.page, ".html", token);
