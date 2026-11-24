@@ -241,10 +241,14 @@ describe("behaviors across navigations", () => {
     expect(narrowed).toBeGreaterThan(0);
     expect(narrowed).toBeLessThan(all);
     await page.locator("#apidocs-nav-filter").fill("");
-    await page.locator("[data-nav-fold-all]").click();
-    expect(await page.locator(".sidebar .nav-branch[data-folded]").count()).toBe(0);
-    await page.locator("[data-nav-fold-all]").click();
+    const foldedKeys = () => page.locator(".sidebar .nav-branch[data-folded]").evaluateAll(rows => rows.map(row => row.getAttribute("data-nav-key")));
+    const saved = await foldedKeys();
+    await page.getByRole("button", { name: "Collapse all", exact: true }).and(page.locator("[data-nav-fold-all]")).click();
     expect(await page.locator(".sidebar .nav-branch:not([data-folded])").count()).toBe(0);
+    await page.getByRole("button", { name: "Expand all", exact: true }).and(page.locator("[data-nav-fold-all]")).click();
+    expect(await foldedKeys()).toEqual([]);
+    await page.getByRole("button", { name: "Restore previous layout" }).click();
+    expect(await foldedKeys()).toEqual(saved);
     // The navigator toggle.
     await page.locator(".nav-button").click();
     expect(await page.locator("#apidocs-nav").isVisible()).toBe(false);
