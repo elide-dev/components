@@ -201,7 +201,7 @@ A theme is JSON:
 The stylesheet reads only `--apidocs-*` custom properties; `tokens` sets them without the prefix (see the top of
 `src/styles/apidocs.css` for the names). `extends` picks a preset. `neutral` is the default and is unbranded.
 `elide` maps the tokens to `@elide/tokens` and takes its logo from `@elide/brand`. A theme can also set `logo`
-(SVG markup for light and dark), `favicon`, `fonts` and `footer`.
+(SVG markup for light and dark), `favicon`, `fonts` and `footer`. Set `footer` to `false` to omit the footer.
 
 Colors are written as `oklch()`: the neutral defaults, converted exactly from their former hex values, and the Elide
 preset's, converted from `@elide/tokens` when the preset loads (`src/color.ts`; each is the same 8-bit color). A theme
@@ -225,6 +225,8 @@ The navigator is one tree, under a filter and a button that folds or opens every
 module, whose heading leads to its overview (which lists every package with its types) and has the A to Z index and the
 deprecated list beside it; then each package, with its types, and each type with its nested types as `.Name`. The
 current page's path is open and the rest is folded; a reader's own folding is kept across an Astro app's pages. The
+fold button collapses the tree, expands it, then restores the previous mix of open and closed branches. Changing an
+individual branch starts a new cycle. A guide group links to its first page. The
 filter matches packages, types and guides and opens the branches that lead to a match. The packages and types index
 pages still exist at their URLs but are not linked. There is no "On this page" rail.
 

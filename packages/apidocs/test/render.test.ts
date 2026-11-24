@@ -68,6 +68,15 @@ describe("render", () => {
     expect(html).toContain('id="read(java.io.InputStream)"');
     expect(out["fixture/java/Polygon.html"] as string).toContain('id="&lt;init>(double...)"');
   });
+  test("a documented nonconstant property shows its nullness without an empty Value row", () => {
+    const pages = render(samples.kotlin);
+    const shape = pages["org/example/kgeo/Shape.html"] as string;
+    const property = shape.match(/<details class="member" data-kind="property".*?<\/details>/s)![0];
+    expect(property).toContain("The area in square meters");
+    expect(property).toContain('title="Never null"');
+    expect(property).not.toContain("No description.");
+    expect(pages["org/example/kgeo/Circle.Companion.html"]).toContain("Constant: <code>1.0</code>");
+  });
   test("HTML snapshots", () => {
     for (const page of ["fixture/java/Geometry.html", "fixture/java/Circle.html", "fixture/java/index.html", "index.html"]) {
       expect(out[page]).toMatchSnapshot(page);
@@ -217,6 +226,17 @@ describe("exceptions", () => {
   test("a class that merely has Throwable in its name is not one", () => {
     expect(isThrowable(type("com.example.ThrowableFactory", ["java.lang.Object"]))).toBe(false);
     expect(isThrowable(type("org.example/Wrapper///PointingToDeclaration/", ["org.example/ThrowableHolder///PointingToDeclaration/", "my.Throwable", "kotlin/Any///PointingToDeclaration/"]))).toBe(false);
+  });
+  test("Kotlin declaration badges and names reach the type page", () => {
+    const pages = render(samples.kotlin);
+    for (const [name, label, badge] of [
+      ["Circle", "data class", "Dc"], ["LengthUnit", "enum class", "Ec"],
+      ["Shape", "sealed class", "Sc"], ["Meters", "value class", "Vc"],
+    ]) {
+      const html = pages[`org/example/kgeo/${name}.html`] as string;
+      expect(html).toContain(`aria-hidden="true">${badge}</span>${name}</h1>`);
+      expect(html).toContain(`<span class="kind-word">${label}</span>`);
+    }
   });
   test("the Kotlin sample's exception gets the exception glyph and group", () => {
     const html = render(samples.kotlin)["org/example/kgeo/ShapeParseException.html"] as string;

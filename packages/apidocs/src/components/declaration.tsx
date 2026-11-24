@@ -164,6 +164,7 @@ const SHOWN_MODIFIERS = new Set(["static", "abstract", "default", "suspend", "in
 export function MemberDetail({ member, summary, overload }: { member: Member; summary?: ComponentChildren; overload?: boolean }) {
   const ctx = usePage();
   const doc = member.doc;
+  const field = member.kind === "field" || member.kind === "property";
   const statics = (member.modifiers ?? []).filter(m => SHOWN_MODIFIERS.has(m));
   const open = ctx.theme.memberDetails === "expanded";
   const noted = (doc?.notes ?? []).some(note => note.kind === "apiNote");
@@ -199,6 +200,7 @@ export function MemberDetail({ member, summary, overload }: { member: Member; su
         </h3>
         <span class="member-badges">
           {statics.map(m => <Badge key={m}>{m}</Badge>)}
+          {field && member.constant === undefined && <NullnessBadge nullness={member.nullness} />}
           {member.implicit && <Badge title="Declared by the compiler">implicit</Badge>}
           {member.since && <Badge tone="since" title={`Since ${member.since}`}>since {member.since}</Badge>}
           {member.source && <SourceLink path={member.source.path} line={member.source.line} />}
@@ -226,14 +228,14 @@ export function MemberDetail({ member, summary, overload }: { member: Member; su
           facts={[{ type: member.returns.type, badges: <NullnessBadge nullness={member.returns.nullness} />, doc: member.returns.doc }]}
         />
       )}
-      {(member.kind === "field" || member.kind === "property") && member.type && (member.nullness || member.constant) && (
+      {field && member.type && member.constant !== undefined && (
         <FactTable
           title="Value"
           names={false}
           facts={[{
             type: member.type,
             badges: <NullnessBadge nullness={member.nullness} />,
-            doc: member.constant ? [{ kind: "paragraph", children: [{ kind: "text", text: "Constant: " }, { kind: "code", text: member.constant }] }] : undefined,
+            doc: [{ kind: "paragraph", children: [{ kind: "text", text: "Constant: " }, { kind: "code", text: member.constant }] }],
           }]}
         />
       )}

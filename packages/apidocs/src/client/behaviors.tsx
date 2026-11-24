@@ -326,21 +326,31 @@ export function setFolded(branch: HTMLElement, folded: boolean) {
   }
 }
 
-/** The fold-all button's look: it opens everything when anything is folded, else folds everything. */
+type FoldAction = "collapse" | "expand" | "restore";
+const foldLabels = { collapse: "Collapse all", expand: "Expand all", restore: "Restore previous layout" } as const;
+
+// The Astro router keeps the sidebar element across pages but replaces its branches.
+const priorFolds = new WeakMap<Element, Set<string>>();
+
+function foldAction(button: HTMLButtonElement, action: FoldAction) {
+  button.dataset.action = action;
+  button.setAttribute("aria-label", foldLabels[action]);
+  button.title = foldLabels[action];
+}
+
+/** An individual change starts a fresh cycle with the tree as it now stands. */
 export function syncFoldAll(nav: Element) {
   const button = nav.querySelector<HTMLButtonElement>("[data-nav-fold-all]");
   if (!button) return;
-  const anyFolded = !!nav.querySelector(".nav-branch[data-folded]");
-  const label = anyFolded ? "Expand all" : "Collapse all";
-  button.dataset.state = anyFolded ? "folded" : "open";
-  button.setAttribute("aria-label", label);
-  button.title = label;
+  priorFolds.delete(nav);
+  const anyOpen = nav.querySelector(".nav-branch:not([data-folded])");
+  foldAction(button, anyOpen ? "collapse" : "expand");
 }
 
 export function navigatorFolds(signal?: AbortSignal) {
   const nav = document.querySelector<HTMLElement>(".sidebar");
   if (!nav) return;
-  syncFoldAll(nav);
+  if (!priorFolds.has(nav)) syncFoldAll(nav);
   nav.addEventListener("click", event => {
     const target = event.target as Element;
     const twisty = target.closest?.("button.nav-twisty");
@@ -350,13 +360,37 @@ export function navigatorFolds(signal?: AbortSignal) {
       syncFoldAll(nav);
       return;
     }
-    const all = target.closest?.("[data-nav-fold-all]");
-    if (all) {
-      const fold = (all as HTMLElement).dataset.state === "open";
-      for (const branch of nav.querySelectorAll<HTMLElement>(".nav-branch")) setFolded(branch, fold);
-      syncFoldAll(nav);
+    const all = target.closest?.<HTMLButtonElement>("[data-nav-fold-all]");
+    if (!all) return;
+    const branches = [...nav.querySelectorAll<HTMLElement>(".nav-branch")];
+    const action = all.dataset.action;
+    if (action === "collapse") {
+      const folded = branches.filter(branch => branch.hasAttribute("data-folded"));
+      if (folded.length) priorFolds.set(nav, new Set(folded.map(branch => branch.dataset.navKey!)));
     }
+    for (const branch of branches) {
+      setFolded(branch, action === "collapse" || (action === "restore" && !!priorFolds.get(nav)?.has(branch.dataset.navKey!)));
+    }
+    if (action === "expand" && priorFolds.has(nav)) foldAction(all, "restore");
+    else if (action === "collapse") foldAction(all, "expand");
+    else syncFoldAll(nav);
   }, { signal });
+}
+
+function navigatorScrollbar(signal?: AbortSignal) {
+  const nav = document.querySelector<HTMLElement>(".sidebar");
+  if (!nav) return;
+  let timer: ReturnType<typeof setTimeout>;
+  const idle = () => {
+    clearTimeout(timer);
+    nav.removeAttribute("data-scrolling");
+  };
+  nav.addEventListener("scroll", () => {
+    clearTimeout(timer);
+    nav.setAttribute("data-scrolling", "");
+    timer = setTimeout(idle, 180);
+  }, { passive: true, signal });
+  signal?.addEventListener("abort", idle, { once: true });
 }
 
 // ---- Copy the page as Markdown: read the Markdown file beside the page and put it on the clipboard.
@@ -705,7 +739,7 @@ function memberStep(dir: 1 | -1) {
 
 /** The page after or before this one in the navigator, folded branches included. */
 function pageStep(dir: 1 | -1) {
-  const rows = [...document.querySelectorAll<HTMLAnchorElement>("#apidocs-nav a.nav-row[href]")];
+  const rows = [...document.querySelectorAll<HTMLAnchorElement>("#apidocs-nav a.nav-row[href]:not(.nav-group-row)")];
   const at = rows.findIndex(r => r.getAttribute("aria-current") === "page");
   const next = at >= 0 ? rows[at + dir] : undefined;
   if (next) next.click();
@@ -814,6 +848,7 @@ export function pageBehaviors(signal?: AbortSignal) {
   suiteMemory(signal);
   navigatorFilter(signal);
   navigatorFolds(signal);
+  navigatorScrollbar(signal);
   folds(signal);
   shortcuts(signal);
   membersFilter(signal);

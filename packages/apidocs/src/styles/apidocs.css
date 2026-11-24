@@ -361,6 +361,9 @@ html[data-emoji] .theme-switch[data-mode="dark"] .theme-emoji::before { content:
   font-size: var(--apidocs-size-sm); line-height: 1.5;
   padding-block: 14px 40px; padding-inline: 10px 10px; border-inline-end: 1px solid var(--apidocs-rule);
 }
+/* Keep the native scrollbar's dimensions and dragging behavior when its thumb is idle. */
+html[data-js] .sidebar:not([data-scrolling]) { scrollbar-color: transparent transparent; }
+.nav-guides .nav-row { user-select: none; -webkit-user-select: none; }
 .content { padding-block: var(--apidocs-content-top) var(--apidocs-content-bottom); padding-inline: var(--apidocs-gutter); min-width: 0; }
 .content > * { max-width: 62rem; }
 
@@ -457,7 +460,9 @@ html[data-js] .nav-branch[data-folded]:not([data-filter-open]) > .nav-children {
   background: var(--apidocs-surface); border: 1px solid var(--apidocs-rule-strong); border-radius: var(--apidocs-radius);
   color: var(--apidocs-muted); cursor: pointer;
 }
-.nav-fold-all[data-state="open"] .fold-all-expand, .nav-fold-all:not([data-state="open"]) .fold-all-collapse { display: none; }
+.nav-fold-all:not([data-action="collapse"]) .fold-all-collapse,
+.nav-fold-all:not([data-action="expand"]) .fold-all-expand,
+.nav-fold-all:not([data-action="restore"]) .fold-all-restore { display: none; }
 @media (hover: hover) and (pointer: fine) { .nav-fold-all:hover { color: var(--apidocs-fg); background: var(--apidocs-subtle); } }
 .nav-fold-all:active { color: var(--apidocs-fg); background: var(--apidocs-subtle); }
 .nav-filter input {
@@ -586,7 +591,7 @@ html[data-js] .nav-branch[data-folded]:not([data-filter-open]) > .nav-children {
 .tk-a { color: var(--apidocs-syn-annotation); }
 .tk-l { color: var(--apidocs-syn-string); }
 .tk-p { color: var(--apidocs-syn-param); }
-a.tk-t, a.tk-a { text-decoration: underline; text-decoration-color: color-mix(in srgb, currentColor 30%, transparent); text-underline-offset: 3px; }
+a.tk-t, a.tk-a { color: var(--apidocs-link); text-decoration: underline; text-decoration-color: color-mix(in srgb, currentColor 30%, transparent); text-underline-offset: 3px; }
 @media (hover: hover) and (pointer: fine) { a.tk-t:hover, a.tk-a:hover { text-decoration-color: currentColor; } }
 a.tk-t:active, a.tk-a:active { text-decoration-color: currentColor; }
 
