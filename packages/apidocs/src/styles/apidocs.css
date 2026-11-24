@@ -603,7 +603,11 @@ html[data-js] .nav-branch[data-folded]:not([data-filter-open]) > .nav-children {
   border-radius: var(--apidocs-radius);
 }
 .sig-annotation { color: var(--apidocs-syn-annotation); }
-.sig-large { user-select: none; -webkit-user-select: none; }
+/* A signature is copied whole with its button, not selected in pieces. The button sits inside the box's corner,
+   below the box's top margin. */
+.sig pre { user-select: none; -webkit-user-select: none; }
+.sig .copy { inset-block-start: 18px; }
+.sig-large .copy { inset-block-start: 26px; inset-inline-end: 8px; }
 .tk-k { color: var(--apidocs-syn-keyword); }
 .tk-n { color: var(--apidocs-code-fg); font-weight: 700; }
 .tk-t { color: var(--apidocs-syn-type); }
