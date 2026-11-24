@@ -105,11 +105,29 @@ export function summaryText(doc: Doc | undefined): string {
   return inlineText(doc?.summary).replace(/\s+/g, " ").trim();
 }
 
+const KOTLIN_MODIFIERS = [
+  ["data", "D"], ["value", "V"], ["sealed", "S"], ["fun", "F"], ["companion", "C"],
+  ["inner", "I"], ["abstract", "A"], ["open", "O"],
+] as const;
+
+/** Kotlin's specialized declaration names and their navigator badges, from the public model's modifiers. */
+export function kotlinKind(type: Type): { name: string; letter: string } | undefined {
+  if (type.language !== "kotlin") return;
+  const modifiers = type.modifiers ?? [];
+  if (type.kind === "enum") return { name: "enum class", letter: "Ec" };
+  if (type.kind === "annotation") return { name: "annotation class", letter: "Ac" };
+  for (const [modifier, initial] of KOTLIN_MODIFIERS) {
+    if (modifiers.includes(modifier)) return { name: modifier + " " + type.kind, letter: initial + type.kind[0] };
+  }
+}
+
 /** The visible kind of a type: "class", "sealed interface", "exception", ... */
 export function typeKindWord(type: Type): string {
   const sealed = (type.modifiers ?? []).includes("sealed") ? "sealed " : "";
   const abstract = type.kind === "class" && (type.modifiers ?? []).includes("abstract") ? "abstract " : "";
   if (type.kind === "class" && isThrowable(type)) return `${abstract}exception`;
+  const specialized = kotlinKind(type);
+  if (specialized) return specialized.name;
   if (type.kind === "annotation") return "annotation interface";
   return `${sealed}${abstract}${type.kind === "enum" ? "enum class" : type.kind}`;
 }

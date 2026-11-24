@@ -150,11 +150,24 @@ describe("from file:// with JavaScript on", () => {
     await other.locator(":scope > .nav-branch-row > .nav-twisty").click();
     expect(await other.getAttribute("data-folded")).toBeNull();
     expect(await visible()).toBeGreaterThan(before);
-    // Expand all, then collapse all.
-    await nav.locator("[data-nav-fold-all]").click();
-    expect(await nav.locator(".nav-branch[data-folded]").count()).toBe(0);
-    await nav.locator("[data-nav-fold-all]").click();
+    const foldedKeys = () => nav.locator(".nav-branch[data-folded]").evaluateAll(rows => rows.map(row => row.getAttribute("data-nav-key")));
+    const saved = await foldedKeys();
+    const all = nav.locator("[data-nav-fold-all]");
+    await all.click();
     expect(await nav.locator(".nav-branch:not([data-folded])").count()).toBe(0);
+    await all.click();
+    expect(await foldedKeys()).toEqual([]);
+    expect(await all.getAttribute("aria-label")).toBe("Restore previous layout");
+    await all.click();
+    expect(await foldedKeys()).toEqual(saved);
+    await all.click();
+    await other.locator(":scope > .nav-branch-row > .nav-twisty").click();
+    const edited = await foldedKeys();
+    expect(edited).not.toEqual(saved);
+    await all.click();
+    await all.click();
+    await all.click();
+    expect(await foldedKeys()).toEqual(edited);
     // The filter matches a package's name and keeps its types; it finds a nested type inside folded branches.
     await page.locator("#apidocs-nav-filter").fill("Option");
     expect(await nav.locator("a.nav-row:visible").allTextContents()).toContainEqual(expect.stringContaining("Option"));

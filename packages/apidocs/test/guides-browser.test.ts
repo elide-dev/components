@@ -55,9 +55,9 @@ describe("a guides-only site from file://", () => {
     const { page, requests } = await open("guides/concepts/alerts.html", { javaScriptEnabled: false });
     expect(await page.getByRole("heading", { level: 1 }).textContent()).toBe("Callouts");
     expect(await page.locator(".callout").count()).toBe(5);
-    expect(await page.getByRole("navigation", { name: "Guides" }).locator("a.nav-row").count()).toBe(8);
+    expect(await page.getByRole("navigation", { name: "Guides" }).locator("a.nav-row:not(.nav-group-row)").count()).toBe(8);
     // Without the script nothing is folded: every guide is reachable.
-    expect(await page.getByRole("navigation", { name: "Guides" }).locator("a.nav-row:visible").count()).toBe(8);
+    expect(await page.getByRole("navigation", { name: "Guides" }).locator("a.nav-row:not(.nav-group-row):visible").count()).toBe(8);
     expect(await page.locator(".nav-packages").count()).toBe(0);
     for (const control of await page.locator("[data-js-only]").all()) expect(await control.isVisible()).toBe(false);
     expect(requests.every(r => r.startsWith("file://"))).toBe(true);
@@ -92,9 +92,21 @@ describe("a guides-only site from file://", () => {
     await page.context().close();
   });
 
+  test("a guide group opens its first page and leaves folding to the chevron", async () => {
+    const { page } = await open("guides/concepts/alerts.html");
+    const group = page.locator("a.nav-group-row").getByText("Concepts", { exact: true });
+    const branch = page.locator('[data-nav-key="g:Concepts"]');
+    const first = branch.locator(".nav-children a.nav-row").first();
+    expect(await group.evaluate(el => getComputedStyle(el).userSelect)).toBe("none");
+    expect(await first.evaluate(el => getComputedStyle(el).userSelect)).toBe("none");
+    const href = await first.evaluate(el => (el as HTMLAnchorElement).href);
+    await group.click();
+    expect(page.url()).toBe(href);
+    await page.context().close();
+  });
   test("the navigator's filter narrows the guides", async () => {
     const { page } = await open("guides/getting-started.html");
-    const links = page.locator(".nav-guides a.nav-row:visible");
+    const links = page.locator(".nav-guides a.nav-row:not(.nav-group-row):visible");
     const before = await links.count();
     // "Pictures" is in a group folded on this page: the filter opens the branch that leads to it.
     await page.locator("#apidocs-nav-filter").fill("pictures");

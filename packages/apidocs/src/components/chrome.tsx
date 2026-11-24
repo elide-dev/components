@@ -13,6 +13,7 @@ import { type PageContext, usePage } from "../context";
 import type { Package, Type } from "../model";
 import { INDEX, PACKAGES_PAGE, TYPES_PAGE, guideNav, indexPages, isAbsolute, isThrowable, packagePage, relative, rootOf, type Site, typePage } from "../site";
 import type { Theme } from "../theme";
+import { kotlinKind } from "../structure";
 import { SYMBOLS, sym } from "../symbols";
 
 export interface Crumb {
@@ -363,7 +364,7 @@ export function Shell({ title, description, crumbs, toc, jsonLd, meta, children 
             {children}
           </main>
           {/* In the layout, under the content: the navigator spans both rows, so it stays put to the page's end. */}
-          <Footer />
+          {theme.footer !== false && <Footer />}
         </div>
       </body>
     </html>
@@ -698,6 +699,8 @@ export function sharedPrefix(names: string[]): string {
 /** One letter per kind, as IDEs show them. Read with the row's title; hidden from assistive technology. */
 export function kindGlyph(type: Type): { letter: string; tone: string } {
   if (type.kind === "class" && isThrowable(type)) return { letter: SYMBOLS.exception.utf, tone: "exception" };
+  const specialized = kotlinKind(type);
+  if (specialized) return { letter: specialized.letter, tone: type.kind };
   switch (type.kind) {
     case "interface": return { letter: "I", tone: "interface" };
     case "record": return { letter: "R", tone: "record" };
@@ -746,9 +749,10 @@ export function Navigation() {
         <div class="nav-filter" data-nav-filter data-js-only>
           <label class="visually-hidden" for="apidocs-nav-filter">{site.packages.length ? "Filter packages, types and guides" : "Filter guides"}</label>
           <input id="apidocs-nav-filter" type="search" placeholder="Filter" autocomplete="off" spellcheck={false} />
-          <button type="button" class="nav-fold-all" data-nav-fold-all aria-label="Expand all" title="Expand all" data-state="folded">
+          <button type="button" class="nav-fold-all" data-nav-fold-all aria-label="Expand all" title="Expand all" data-action="expand">
             {/* Chevrons apart: open everything; chevrons together: fold everything. */}
             <svg class="icon fold-all-expand" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M4.5 6 8 2.5 11.5 6M4.5 10 8 13.5 11.5 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
+            <svg class="icon fold-all-restore" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M2.5 3v4h4M3 7a5 5 0 1 1 1 5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
             <svg class="icon fold-all-collapse" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M4.5 2.5 8 6l3.5-3.5M4.5 13.5 8 10l3.5 3.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
           </button>
         </div>
@@ -770,7 +774,7 @@ export function Navigation() {
               const open = group.guides.some(guide => guide.current);
               return (
                 <NavBranch key={i} id={`g:${group.title}`} open={open} label={group.title}
-                  row={<span class="nav-row nav-group-row"><span class="nav-label">{group.title}</span></span>}>
+                  row={<a class="nav-row nav-group-row" href={group.guides[0]!.href}><span class="nav-label">{group.title}</span></a>}>
                   {rows}
                 </NavBranch>
               );

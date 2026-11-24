@@ -218,6 +218,17 @@ describe("exceptions", () => {
     expect(isThrowable(type("com.example.ThrowableFactory", ["java.lang.Object"]))).toBe(false);
     expect(isThrowable(type("org.example/Wrapper///PointingToDeclaration/", ["org.example/ThrowableHolder///PointingToDeclaration/", "my.Throwable", "kotlin/Any///PointingToDeclaration/"]))).toBe(false);
   });
+  test("Kotlin declaration badges and names reach the type page", () => {
+    const pages = render(samples.kotlin);
+    for (const [name, label, badge] of [
+      ["Circle", "data class", "Dc"], ["LengthUnit", "enum class", "Ec"],
+      ["Shape", "sealed class", "Sc"], ["Meters", "value class", "Vc"],
+    ]) {
+      const html = pages[`org/example/kgeo/${name}.html`] as string;
+      expect(html).toContain(`aria-hidden="true">${badge}</span>${name}</h1>`);
+      expect(html).toContain(`<span class="kind-word">${label}</span>`);
+    }
+  });
   test("the Kotlin sample's exception gets the exception glyph and group", () => {
     const html = render(samples.kotlin)["org/example/kgeo/ShapeParseException.html"] as string;
     expect(html).toContain('data-tone="exception"');

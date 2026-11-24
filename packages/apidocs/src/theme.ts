@@ -65,7 +65,7 @@ export interface Theme {
    */
   links?: { header?: ThemeLink[]; footer?: ThemeLink[] };
   /** Text at the foot of every page, such as a copyright line. */
-  footer?: string;
+  footer?: string | false;
   /** Source links: {path}, {line} and {ref} are filled in, such as https://github.com/o/r/blob/{ref}/{path}#L{line}. */
   sourceLink?: string;
   /** The value of {ref} in sourceLink. */

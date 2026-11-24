@@ -87,7 +87,9 @@ function refreshNavigator(kept: HTMLElement, next: HTMLElement) {
     const folded = folding.get(branch.dataset.navKey!);
     if (folded !== undefined && !branch.hasAttribute("data-path")) setFolded(branch, folded);
   }
-  syncFoldAll(kept);
+  const branches = kept.querySelectorAll<HTMLElement>(".nav-branch[data-nav-key]");
+  if (branches.length !== folding.size || [...branches].some(branch =>
+    folding.get(branch.dataset.navKey!) !== branch.hasAttribute("data-folded"))) syncFoldAll(kept);
   const query = filter?.querySelector("input")?.value;
   if (query?.trim()) filterTree(kept, query);
   kept.scrollTop = top;
