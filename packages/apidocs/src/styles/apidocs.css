@@ -522,9 +522,10 @@ html[data-js] .nav-branch[data-folded]:not([data-filter-open]) > .nav-children {
   border-radius: var(--apidocs-radius); box-shadow: 0 12px 32px -12px oklch(0% 0 none / 0.28);
   font-size: var(--apidocs-size-sm); line-height: 1.5;
 }
-.formats-list a { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; padding-block: 5px; padding-inline: 10px; border-radius: var(--apidocs-radius); color: var(--apidocs-fg); }
-@media (hover: hover) and (pointer: fine) { .formats-list a:hover { background: var(--apidocs-subtle); text-decoration: none; } }
-.formats-list a:active { background: var(--apidocs-subtle); text-decoration: none; }
+.formats-list button { background: none; border: 0; inline-size: 100%; font: inherit; cursor: pointer; }
+.formats-list :is(a, button) { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; padding-block: 5px; padding-inline: 10px; border-radius: var(--apidocs-radius); color: var(--apidocs-fg); }
+@media (hover: hover) and (pointer: fine) { .formats-list :is(a, button):hover { background: var(--apidocs-subtle); text-decoration: none; } }
+.formats-list :is(a, button):active { background: var(--apidocs-subtle); text-decoration: none; }
 .formats-list code { background: none; padding: 0; }
 .formats-list small { color: var(--apidocs-faint); font-size: var(--apidocs-size-xs); }
 .formats-sep { margin-block-start: 4px; padding-block-start: 4px; border-block-start: 1px solid var(--apidocs-rule); }
