@@ -18,16 +18,18 @@ function transform(context: CanvasRenderingContext2D, text: string, font: string
   const known = fitted.get(key);
   if (known !== undefined) return known;
   context.font = font;
-  context.textAlign = "center";
-  context.textBaseline = "middle";
+  context.textAlign = "left";
+  context.textBaseline = "alphabetic";
   const m = context.measureText(text);
   const width = m.actualBoundingBoxLeft + m.actualBoundingBoxRight;
   const height = m.actualBoundingBoxAscent + m.actualBoundingBoxDescent;
   let value = "";
   if (width > 0 && height > 0) {
-    // The ink's center, from the em box's center; the tile centers the em box.
-    const dx = (m.actualBoundingBoxLeft - m.actualBoundingBoxRight) / 2;
-    const dy = (m.actualBoundingBoxAscent - m.actualBoundingBoxDescent) / 2;
+    // The tile centers the symbol's line box, one font size tall (line-height: 1), and the line box places the
+    // baseline by the primary font's ascent and descent, whichever font draws the symbol. From the tile's center:
+    const baseline = (m.fontBoundingBoxAscent - m.fontBoundingBoxDescent) / 2;
+    const dy = -(baseline + (m.actualBoundingBoxDescent - m.actualBoundingBoxAscent) / 2);
+    const dx = m.width / 2 - (m.actualBoundingBoxRight - m.actualBoundingBoxLeft) / 2;
     const scale = Math.min(MAX, Math.max(MIN, (TARGET * size) / Math.max(width, height)));
     const round = (n: number) => Math.round(n * 100) / 100;
     value = `scale(${round(scale)}) translate(${round(dx)}px, ${round(dy)}px)`;
