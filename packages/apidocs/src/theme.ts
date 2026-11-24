@@ -75,6 +75,17 @@ export interface Theme {
   sourceLink?: string;
   /** The value of {ref} in sourceLink. */
   sourceRef?: string;
+  /**
+   * Whether types, members and guides link to their source. false withholds every source link, as for code readers
+   * cannot open; the template stays, so a host that knows its reader (an Astro site rendering per request, say) can
+   * render with true for those allowed to see the source. Defaults to true.
+   */
+  sourceLinks?: boolean;
+  /**
+   * The narrowest visibility the build documents. "public" (a doclet run with -public) means every declaration shown is
+   * public, so listings and member signatures leave the modifier out; a type's own page keeps it in its header.
+   */
+  visibility?: "public";
   /** The site's absolute URL, with a trailing slash. Enables canonical links and sitemap.xml. */
   baseUrl?: string;
   /**
@@ -177,9 +188,9 @@ export function themeCss(theme: Theme, root = ":root"): string {
   return out.join("\n") + "\n";
 }
 
-/** A source link for a file and line, or undefined without a template. */
+/** A source link for a file and line, or undefined without a template or when the theme withholds source links. */
 export function sourceUrl(theme: Theme, path: string, line: number): string | undefined {
-  if (!theme.sourceLink) return undefined;
+  if (!theme.sourceLink || theme.sourceLinks === false) return undefined;
   return theme.sourceLink
     .replaceAll("{path}", path)
     .replaceAll("{line}", String(line))

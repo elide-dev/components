@@ -179,6 +179,26 @@ describe("agent readiness", () => {
     expect(render(samples.java, { socialImage: { url: "javascript:x", width: 1, height: 1, alt: "" } })["index.html"]).not.toContain("og:image");
     expect(Object.keys(render(samples.java, { socialImage: { asset: "../secret.png", width: 1, height: 1, alt: "" } }))).not.toContain("assets/../secret.png");
   });
+  test("a public-only build leaves public out of listings and member signatures, not out of a type's header", () => {
+    const shown = render(samples.java, { visibility: "public" });
+    const pkg = shown["com/example/geo/index.html"] as string;
+    expect(pkg).toContain('class="decl-sig"');
+    expect(pkg.split('class="decl-sig"')[1]!.split("</code>")[0]).not.toContain(">public<");
+    const type = shown["com/example/geo/Shapes.html"] as string;
+    const header = type.split('class="sig sig-large"')[1]!.split("</code>")[0]!;
+    expect(header).toContain(">public<");
+    const members = type.split('class="sig sig-large"')[1]!.split("</code>").slice(1).join("");
+    expect(members).not.toContain('tk-vis">public<');
+    expect(render(samples.java)["com/example/geo/index.html"]).toContain('tk-vis">public<');
+  });
+  test("a theme can withhold source links while keeping their template", () => {
+    const template = { sourceLink: "https://example.com/{ref}/{path}#L{line}" };
+    const shown = Object.entries(render(samples.java, template)).filter(([, c]) => typeof c === "string" && c.includes("https://example.com/main/"));
+    expect(shown.length).toBeGreaterThan(0);
+    for (const content of Object.values(render(samples.java, { ...template, sourceLinks: false }))) {
+      if (typeof content === "string") expect(content).not.toContain("https://example.com/main/");
+    }
+  });
   test("a theme's brand replaces the product's name in the top bar only", () => {
     const page = render(samples.java, { productName: "Geo", brand: "API Docs", baseUrl: base })["index.html"] as string;
     expect(page).toContain('<span class="product" title="API Docs">API Docs</span>');

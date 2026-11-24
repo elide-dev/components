@@ -72,7 +72,7 @@ export function copyButtons(signal?: AbortSignal) {
   for (const button of document.querySelectorAll<HTMLButtonElement>("[data-copy]")) {
     button.hidden = false;
     button.addEventListener("click", async () => {
-      const text = button.parentElement?.querySelector("pre")?.textContent ?? "";
+      const text = button.dataset.copyText ?? button.parentElement?.querySelector("pre")?.textContent ?? "";
       let ok = false;
       try {
         await navigator.clipboard.writeText(text);
@@ -516,20 +516,46 @@ export function folds(signal?: AbortSignal) {
     const long = body.scrollHeight > body.clientHeight + 2;
     fold.toggleAttribute("data-short", !long);
     button.hidden = !long;
-    button.addEventListener("click", () => {
-      const open = !fold.hasAttribute("data-open");
+    // The blocks wholly below the folded height wait in a part hidden "until found": find in page searches it and,
+    // on a match, fires beforematch there and reveals it, so the fold opens to show the match. The block the fold
+    // cuts through stays, faded as before, so the folded description looks and measures the same.
+    let rest: HTMLElement | null = null;
+    if (long) {
+      // The blocks are the children of the innermost wrapper (the body holds one .prose).
+      let container: HTMLElement = body;
+      while (container.children.length === 1 && container.firstElementChild!.children.length > 1) {
+        container = container.firstElementChild as HTMLElement;
+      }
+      const blocks = [...container.children] as HTMLElement[];
+      const top = body.getBoundingClientRect().top;
+      const cut = blocks.findIndex((block, i) => i > 0 && block.getBoundingClientRect().top - top >= body.clientHeight);
+      if (cut > 0) {
+        rest = document.createElement("div");
+        rest.className = "fold-rest";
+        rest.append(...blocks.slice(cut));
+        container.append(rest);
+        rest.setAttribute("hidden", "until-found");
+      }
+    }
+    const set = (open: boolean) => {
       fold.toggleAttribute("data-open", open);
       button.setAttribute("aria-expanded", String(open));
       button.textContent = open ? "Show less" : "Show more";
-    }, { signal });
-    // Find in page scrolls a folded body to show a match in its hidden part: the body is a scroll container for
-    // this (overflow: hidden). Open the fold there instead, and move the page by as much, so the match stays where
-    // the reader saw it.
+      if (rest) {
+        if (open) rest.removeAttribute("hidden");
+        else rest.setAttribute("hidden", "until-found");
+      }
+    };
+    button.addEventListener("click", () => set(!fold.hasAttribute("data-open")), { signal });
+    rest?.addEventListener("beforematch", () => set(true), { signal });
+    // A match in the clipped lines of the block the fold cuts through: find in page scrolls the folded body (a scroll container,
+    // overflow: hidden) to show it. Open the fold there instead, and move the page by as much, so the match stays
+    // where the reader saw it.
     body.addEventListener("scroll", () => {
       const by = body.scrollTop;
       if (by === 0 || fold.hasAttribute("data-open")) return;
       body.scrollTop = 0;
-      button.click();
+      set(true);
       window.scrollBy(0, by);
     }, { signal, passive: true });
   }

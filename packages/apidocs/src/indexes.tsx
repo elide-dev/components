@@ -14,7 +14,7 @@ import { DEPRECATED_PAGE, INDEX, INDEX_ALL_PAGE, PACKAGES_PAGE, packagePage, rel
 function IndexShell({ page, title, description, toc, children }: { page: string; title: string; description: string; toc: TocItem[]; children: ComponentChildren }) {
   const { site } = usePage();
   const m = site.model.module;
-  const crumbs: Crumb[] = [{ label: m.name, page: INDEX }, { label: title }];
+  const crumbs: Crumb[] = [{ label: m.name, page: INDEX, symbol: true }, { label: title }];
   const keywords = [m.name, title, "API reference", "index"];
   return (
     <Shell

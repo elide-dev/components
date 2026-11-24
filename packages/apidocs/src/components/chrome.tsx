@@ -19,6 +19,8 @@ import { SYMBOLS, sym } from "../symbols";
 export interface Crumb {
   label: string;
   page?: string;
+  /** A name from the API (a module, package or type), set in the code face like every other symbol. */
+  symbol?: boolean;
 }
 
 export interface TocItem {
@@ -673,8 +675,8 @@ export function Breadcrumbs({ crumbs }: { crumbs: Crumb[] }) {
         {crumbs.map((crumb, i) => (
           <li key={i}>
             {crumb.page && i < crumbs.length - 1
-              ? <a href={relative(page, crumb.page, ".html")}>{crumb.label}</a>
-              : <span aria-current={i === crumbs.length - 1 ? "page" : undefined}>{crumb.label}</span>}
+              ? <a class={crumb.symbol ? "crumb-symbol" : undefined} href={relative(page, crumb.page, ".html")}>{crumb.label}</a>
+              : <span class={crumb.symbol ? "crumb-symbol" : undefined} aria-current={i === crumbs.length - 1 ? "page" : undefined}>{crumb.label}</span>}
           </li>
         ))}
       </ol>
@@ -788,7 +790,9 @@ export function Navigation() {
       {site.packages.length > 0 && (
         <section class="nav-section nav-packages" data-nav-filterable>
           <h2 class="nav-heading nav-module">
-            <a href={overview} aria-current={page === INDEX ? "page" : undefined} title={`${site.model.module.name}: overview`}>{site.model.module.name}</a>
+            {/* The packages below show only what follows their shared prefix (".api"), so the heading shows that prefix,
+                which they continue; without one, the module's name. Either way it leads to the module's overview. */}
+            <a href={overview} aria-current={page === INDEX ? "page" : undefined} title={`${site.model.module.name}: overview`}>{prefix || site.model.module.name}</a>
             {indexes.length > 0 && (
               <span class="nav-index">
                 {indexes.map(entry => <a key={entry.page} href={entry.href} aria-current={entry.current ? "page" : undefined}>{entry.label}</a>)}
@@ -880,7 +884,7 @@ function NavTypes({ types, pkg, chain, depth = 0 }: { types: Type[]; pkg: Packag
         const glyph = kindGlyph(type);
         const simple = type.name.split(".").pop()!;
         const row = (
-          <a class="nav-row" href={relative(page, target, ".html")} title={`${type.name} (${type.kind})`}
+          <a class="nav-row nav-type" href={relative(page, target, ".html")} title={`${type.name} (${type.kind})`}
             aria-current={target === page ? "page" : undefined} data-open={chain.has(type.id) ? "" : undefined}>
             <span class="glyph" data-tone={glyph.tone} aria-hidden="true">{glyph.letter}</span>
             {/* A nested type reads as a member of its enclosing type's name: ".Inner" under "Outer". */}

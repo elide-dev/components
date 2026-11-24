@@ -440,7 +440,8 @@ html[data-js] .nav-branch[data-folded]:not([data-filter-open]) > .nav-children {
 .nav-row:active { background: var(--apidocs-subtle); text-decoration: none; }
 /* good-css exception (overflow-clip): hidden, not clip, so the ellipsis shows in every target browser, Safari before 16 among them. */
 .nav-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
-.nav-package .nav-label { font-family: var(--apidocs-font-mono); font-size: var(--apidocs-size-sm); }
+/* Every name from the API is set in the code face: packages, types, and their breadcrumbs. */
+:is(.nav-package, .nav-type) .nav-label, .crumb-symbol { font-family: var(--apidocs-font-mono); font-size: var(--apidocs-size-sm); }
 .nav-count { flex: none; font-size: var(--apidocs-size-xs); font-variant-numeric: tabular-nums; color: var(--apidocs-faint); }
 .nav-row[data-open] { font-weight: 600; }
 .nav-package[data-open] { color: var(--apidocs-accent); }
@@ -592,6 +593,22 @@ html[data-js] .nav-branch[data-folded]:not([data-filter-open]) > .nav-children {
 .tk-a { color: var(--apidocs-syn-annotation); }
 .tk-l { color: var(--apidocs-syn-string); }
 .tk-p { color: var(--apidocs-syn-param); }
+/* A declaration is quiet at rest, in shades of gray: its keywords darker, its visibility (public, private) and a
+   listing's punctuation lighter, its name in the text color, bold, and its type references in the text color.
+   Pointing at a declaration brings out its syntax: keywords in the keyword color, type references as links. */
+.decl-sig, :is(.decl-sig, .sig) .tk-vis { color: var(--apidocs-muted); }
+:is(.decl-sig, .sig) .tk-k:not(.tk-vis) { color: color-mix(in oklab, var(--apidocs-fg) 65%, var(--apidocs-muted)); }
+.sig a.tk-t { color: var(--apidocs-fg); text-decoration-line: none; }
+@media (prefers-reduced-motion: no-preference) { :is(.decl-sig, .sig) :is(.tk-k, a.tk-t) { transition: color 120ms ease-out; } }
+/* A member's row reads the same way: its types in the darker gray, its name in the text color. */
+.summary-sig :is(.tk-t, .tk-k) { color: color-mix(in oklab, var(--apidocs-fg) 65%, var(--apidocs-muted)); }
+.member-row .member-key { color: var(--apidocs-fg); }
+@media (prefers-reduced-motion: no-preference) { :is(.summary-sig .tk-t, .member-row .member-key) { transition: color 120ms ease-out; } }
+@media (hover: hover) and (pointer: fine) {
+  :is(.decl:hover, .sig:hover, .member-row:hover) .tk-k:not(.tk-vis) { color: var(--apidocs-syn-keyword); }
+  .sig:hover a.tk-t { color: var(--apidocs-link); }
+  .member-row:hover .member-key { color: var(--apidocs-link); }
+}
 a.tk-t, a.tk-a { color: var(--apidocs-link); text-decoration: underline; text-decoration-color: color-mix(in srgb, currentColor 30%, transparent); text-underline-offset: 3px; }
 @media (hover: hover) and (pointer: fine) { a.tk-t:hover, a.tk-a:hover { text-decoration-color: currentColor; } }
 a.tk-t:active, a.tk-a:active { text-decoration-color: currentColor; }
@@ -606,6 +623,11 @@ a.tk-t:active, a.tk-a:active { text-decoration-color: currentColor; }
   cursor: pointer; opacity: 0;
 }
 .copy:focus-visible, .copy[data-copied] { opacity: 1; }
+/* A package's or type's name in its page heading: the reader copies it with the button that appears on pointing at
+   it, which copies the qualified name, so the name itself is not selectable text. */
+.page-name { display: flex; align-items: center; gap: 12px; user-select: none; -webkit-user-select: none; }
+.page-name .copy { position: static; flex: none; }
+@media (hover: hover) and (pointer: fine) { .page-name:hover .copy { opacity: 1; } }
 @media (hover: hover) and (pointer: fine) { .sig:hover .copy, .code-block:hover .copy { opacity: 1; } }
 .sig:active .copy, .code-block:active .copy { opacity: 1; }
 @media (hover: none) { .copy { opacity: 1; } }
@@ -852,7 +874,7 @@ td .badge { margin-inline-end: 6px; }
 .decls-nested .decl-item { padding-block: 6px; }
 .decls-nested .decl-item:last-child { border-block-end: 0; }
 .decl { display: flex; align-items: center; gap: 8px; min-width: 0; min-block-size: 24px; color: var(--apidocs-fg); }
-@media (hover: hover) and (pointer: fine) { .decl:hover { text-decoration: none; } .decl:hover .tk-n { color: var(--apidocs-link); text-decoration: underline; text-underline-offset: 3px; } }
+@media (hover: hover) and (pointer: fine) { .decl:hover { text-decoration: none; } .decl:hover .tk-n { color: var(--apidocs-link); } }
 .decl:active .tk-n { color: var(--apidocs-link); }
 /* good-css exception (overflow-clip): hidden, not clip, so the ellipsis shows in every target browser, Safari before 16 among them. */
 .decl-sig { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; background: none !important; padding: 0 !important; font-size: var(--apidocs-size-sm); }
@@ -882,6 +904,9 @@ html[data-js] .fold:not([data-open]):not([data-short]) > .fold-body {
    too, and its first and last children have no outer margin, so the fold is as tall either way and the
    script marking a short description moves nothing. */
 .fold-body { display: flow-root; }
+/* The part below the folded height (folds() in client/behaviors.tsx) ends the description: its last block has no outer
+   margin, as the body's last child has none, so the fold is as tall as before it was split. */
+.fold-rest > :last-child { margin-block-end: 0; }
 .fold-body > :first-child { margin-block-start: 0; }
 .fold-body > :last-child { margin-block-end: 0; }
 /* Folded, the control sits over the faded last line, so showing it (once the script finds the description long)
@@ -1156,7 +1181,8 @@ dialog.keys td:first-child { white-space: nowrap; inline-size: 6rem; }
   }
 }
 .card p { margin: 0; }
-.card-kind { color: var(--apidocs-faint); font-size: var(--apidocs-size-xs); user-select: none; -webkit-user-select: none; }
+.card-kind { display: flex; align-items: center; gap: 6px; margin-block-end: 2px !important; color: var(--apidocs-faint); font-size: var(--apidocs-size-xs); user-select: none; -webkit-user-select: none; }
+.card-kind code { background: none; padding: 0; font-size: var(--apidocs-size-xs); color: inherit; }
 .card-name { font-family: var(--apidocs-font-mono); font-weight: 650; overflow-wrap: anywhere; }
 .card-summary { margin-block-start: 3px !important; color: var(--apidocs-muted); text-wrap: pretty; }
 @media (prefers-reduced-motion: no-preference) {

@@ -134,8 +134,9 @@ export function CodeBlock({ code, language }: { code: string; language: string |
 }
 
 /** A copy button: hidden until the client script shows it, so pages without JavaScript carry no dead control. */
-export function CopyButton({ label }: { label: string }) {
-  return <button type="button" class="copy" data-copy hidden aria-label={label} title={label}>Copy</button>;
+/** A copy button: it copies `text`, or without it the code block or signature it sits in. */
+export function CopyButton({ label, text }: { label: string; text?: string }) {
+  return <button type="button" class="copy" data-copy data-copy-text={text} hidden aria-label={label} title={label}>Copy</button>;
 }
 
 /** Tokens as code: types link to their pages, or to external documentation. */
@@ -149,11 +150,17 @@ export function TokenList({ tokens, plain }: { tokens: Token[] | undefined; plai
           case "punct": return token.text;
           case "type":
           case "annotation": {
-            const href = plain ? undefined : resolveToken(ctx.site, ctx.page, ".html", token);
+            const resolved = resolveToken(ctx.site, ctx.page, ".html", token);
             const cls = token.kind === "type" ? "tk-t" : "tk-a";
-            return href ? <a key={i} class={cls} href={href}>{token.text}</a> : <span key={i} class={cls}>{token.text}</span>;
+            // Plain text holds no links, but a type in it still shows its hover card (client/cards.ts).
+            if (plain) return <span key={i} class={cls} data-card-href={resolved}>{token.text}</span>;
+            return resolved ? <a key={i} class={cls} href={resolved}>{token.text}</a> : <span key={i} class={cls}>{token.text}</span>;
           }
-          default: return <span key={i} class={TOKEN_CLASS[token.kind]}>{token.text}</span>;
+          default: {
+            // Visibility reads as context, not as part of what a declaration is: it is styled apart (.tk-vis).
+            const cls = token.kind === "keyword" && VISIBILITY.has(token.text) ? "tk-k tk-vis" : TOKEN_CLASS[token.kind];
+            return <span key={i} class={cls}>{token.text}</span>;
+          }
         }
       })}
     </>
@@ -164,13 +171,36 @@ const TOKEN_CLASS: Record<string, string> = {
   keyword: "tk-k", name: "tk-n", typeParam: "tk-tp", literal: "tk-l", param: "tk-p",
 };
 
+const VISIBILITY = new Set(["public", "protected", "private", "internal"]);
+
+/**
+ * A declaration's tokens without its "public" modifier, when the theme says every declaration documented is public
+ * (`visibility: "public"`): there it says nothing. Listings and member signatures use this; a page's own header keeps
+ * the full declaration.
+ */
+export function withoutImpliedVisibility(tokens: Token[], theme: { visibility?: string }): Token[] {
+  if (theme.visibility !== "public") return tokens;
+  const out: Token[] = [];
+  for (let i = 0; i < tokens.length; i++) {
+    const token = tokens[i]!;
+    if (token.kind === "keyword" && token.text === "public") {
+      if (tokens[i + 1]?.kind === "punct" && /^\s+$/.test(tokens[i + 1]!.text)) i++;
+      continue;
+    }
+    out.push(token);
+  }
+  return out;
+}
+
 /** A declaration signature, laid out over several lines when long, with a copy button. */
 export function Signature({ tokens, annotations, large }: { tokens: Token[]; annotations?: Token[][]; large?: boolean }) {
+  const { theme } = usePage();
+  const shown = large ? tokens : withoutImpliedVisibility(tokens, theme);
   return (
     <div class={large ? "sig sig-large" : "sig"}>
       <pre><code>
         {(annotations ?? []).map((a, i) => <span key={i} class="sig-annotation"><TokenList tokens={a} />{"\n"}</span>)}
-        <TokenList tokens={layoutSignature(tokens)} />
+        <TokenList tokens={layoutSignature(shown)} />
       </code></pre>
       <CopyButton label="Copy signature" />
     </div>
