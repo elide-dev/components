@@ -62,7 +62,8 @@ function refreshPersisted(newDocument: Document) {
 }
 
 function refreshNavigator(kept: HTMLElement, next: HTMLElement) {
-  const focused = kept.contains(document.activeElement) ? (document.activeElement as HTMLAnchorElement).getAttribute?.("href") : null;
+  const active = document.activeElement;
+  const focused = active instanceof HTMLAnchorElement && kept.contains(active) ? active : null;
   const top = kept.scrollTop;
   // The reader's folding, by branch: kept for the new page's tree, except that the new page's own path opens.
   const folding = new Map<string, boolean>();
@@ -89,12 +90,15 @@ function refreshNavigator(kept: HTMLElement, next: HTMLElement) {
   }
   const branches = kept.querySelectorAll<HTMLElement>(".nav-branch[data-nav-key]");
   if (branches.length !== folding.size || [...branches].some(branch =>
-    folding.get(branch.dataset.navKey!) !== branch.hasAttribute("data-folded"))) syncFoldAll(kept);
+    !folding.has(branch.dataset.navKey!))) syncFoldAll(kept);
   const query = filter?.querySelector("input")?.value;
   if (query?.trim()) filterTree(kept, query);
   kept.scrollTop = top;
   // Keyboard users who chose a row stay on it.
-  if (focused) kept.querySelector<HTMLElement>(`a[href="${CSS.escape(focused)}"]`)?.focus({ preventScroll: true });
+  if (focused) {
+    const role = focused.matches(".nav-group-row") ? ".nav-group-row" : ":not(.nav-group-row)";
+    kept.querySelector<HTMLAnchorElement>(`a${role}[href="${CSS.escape(focused.getAttribute("href")!)}"]`)?.focus({ preventScroll: true });
+  }
   // The current page's row comes into view if it is out of it, as on a first load.
   const current = kept.querySelector<HTMLElement>('[aria-current="page"]');
   if (current && (current.offsetTop < kept.scrollTop || current.offsetTop > kept.scrollTop + kept.clientHeight - 40)) {

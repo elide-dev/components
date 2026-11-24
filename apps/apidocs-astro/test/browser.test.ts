@@ -204,6 +204,32 @@ describe("the persisted top bar and navigator", () => {
     await page.context().close();
   });
 
+  test("opening a guide group preserves saved folds and distinguishes focus on its first child", async () => {
+    const { page } = await open(TYPE);
+    const nav = page.locator(".sidebar");
+    const foldedKeys = () => nav.locator(".nav-branch[data-folded]").evaluateAll(rows => rows.map(row => row.getAttribute("data-nav-key")));
+    const saved = await foldedKeys();
+    const button = nav.locator("[data-nav-fold-all]");
+    await button.click();
+    const group = nav.locator('[data-nav-key="g:Advanced"]');
+    const heading = group.locator(".nav-group-row");
+    await afterLoad(page, () => heading.press("Enter"));
+    expect(await heading.evaluate(el => el === document.activeElement)).toBe(true);
+    expect(await button.getAttribute("aria-label")).toBe("Expand all");
+    await button.click();
+    await button.click();
+    expect(await foldedKeys()).toEqual(saved);
+
+    const children = group.locator(".nav-children a.nav-row");
+    await group.locator(".nav-twisty").click();
+    await afterLoad(page, () => children.nth(1).click());
+    await afterLoad(page, () => children.first().press("Enter"));
+    expect(await children.first().evaluate(el => el === document.activeElement)).toBe(true);
+    await page.keyboard.press("ArrowDown");
+    expect(await children.nth(1).evaluate(el => el === document.activeElement)).toBe(true);
+    await page.context().close();
+  });
+
   test("the elements are the same objects after a navigation", async () => {
     const { page } = await open(TYPE);
     await page.evaluate(() => ((window as unknown as { kept: Element[] }).kept = [document.querySelector(".topbar")!, document.querySelector(".sidebar")!]));

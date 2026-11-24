@@ -631,6 +631,8 @@ export function packageLanguages(pkg: Package, fallback: string[] | undefined): 
  * a plain link to the Markdown file and looks the same.
  */
 export function PageActions({ name, root, canonical, title }: { name: string; root: string; canonical: string | undefined; title: string }) {
+  const { theme } = usePage();
+  const menuLabel = theme.footer === false ? "Page options" : "Other formats";
   const markdown = canonical ? canonical.replace(/\.html$/, ".md") : undefined;
   const ask = markdown ? encodeURIComponent(`Read ${markdown} so that I can ask questions about ${title}.`) : undefined;
   const out = sym("utf", "external");
@@ -645,7 +647,7 @@ export function PageActions({ name, root, canonical, title }: { name: string; ro
         <MarkdownIcon />
       </a>
       <details class="formats-menu">
-        <summary aria-label="Other formats of this page" title="Other formats">
+        <summary aria-label={theme.footer === false ? menuLabel : "Other formats of this page"} title={menuLabel}>
           <svg class="icon" viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M4 6.25 8 10.25l4-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" /></svg>
         </summary>
         <ul class="formats-list">
@@ -653,6 +655,7 @@ export function PageActions({ name, root, canonical, title }: { name: string; ro
           <li><a href={`${root}llms.txt`}><code>llms.txt</code><small>index of every page</small></a></li>
           <li><a href={`${root}llms-full.txt`}><code>llms-full.txt</code><small>the whole reference</small></a></li>
           <li><a href={`${root}api.json`}><code>api.json</code><small>the model</small></a></li>
+          {theme.footer === false && <li class="formats-sep" data-js-only><button type="button" data-keys-open aria-keyshortcuts="?">Keyboard shortcuts</button></li>}
           {ask && <li class="formats-sep"><a href={`https://claude.ai/new?q=${ask}`} rel="noopener"><span>Open in Claude</span><small>{out}</small></a></li>}
           {ask && <li><a href={`https://chatgpt.com/?q=${ask}`} rel="noopener"><span>Open in ChatGPT</span><small>{out}</small></a></li>}
         </ul>

@@ -77,6 +77,12 @@ describe("render", () => {
     expect(property).not.toContain("No description.");
     expect(pages["org/example/kgeo/Circle.Companion.html"]).toContain("Constant: <code>1.0</code>");
   });
+  test("a footerless page keeps shortcut settings in its page menu", () => {
+    const page = render(fixture, { footer: false })["index.html"] as string;
+    expect(page).not.toContain("<footer");
+    expect(page).toContain('aria-label="Page options"');
+    expect(page).toContain('data-keys-open');
+  });
   test("HTML snapshots", () => {
     for (const page of ["fixture/java/Geometry.html", "fixture/java/Circle.html", "fixture/java/index.html", "index.html"]) {
       expect(out[page]).toMatchSnapshot(page);
