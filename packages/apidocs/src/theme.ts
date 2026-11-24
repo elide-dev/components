@@ -49,8 +49,13 @@ export interface Theme {
   extends?: "neutral" | "elide";
   /** The theme's own name, for diagnostics. */
   name?: string;
-  /** The product the pages belong to; shown in the header. Defaults to the module's name. */
+  /** The product the pages belong to: link previews, structured data and the header. Defaults to the module's name. */
   productName?: string;
+  /**
+   * The words beside the logo in the top bar, such as "Docs" or "API Docs" when the logo already names the product.
+   * Defaults to productName.
+   */
+  brand?: string;
   /** Logo artwork as SVG markup, for light and dark surfaces. */
   logo?: { light?: string; dark?: string; alt?: string };
   /** A small square mark used as the favicon, as SVG markup. */

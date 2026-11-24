@@ -179,6 +179,13 @@ describe("agent readiness", () => {
     expect(render(samples.java, { socialImage: { url: "javascript:x", width: 1, height: 1, alt: "" } })["index.html"]).not.toContain("og:image");
     expect(Object.keys(render(samples.java, { socialImage: { asset: "../secret.png", width: 1, height: 1, alt: "" } }))).not.toContain("assets/../secret.png");
   });
+  test("a theme's brand replaces the product's name in the top bar only", () => {
+    const page = render(samples.java, { productName: "Geo", brand: "API Docs", baseUrl: base })["index.html"] as string;
+    expect(page).toContain('<span class="product" title="API Docs">API Docs</span>');
+    expect(head(page)).toContain('<meta property="og:site_name" content="Geo"/>');
+    const plain = render(samples.java, { productName: "Geo" })["index.html"] as string;
+    expect(plain).toContain('<span class="product" title="Geo">Geo</span>');
+  });
   test("the overview's JSON-LD lists the guides and packages, every page's has a url", () => {
     const parts = graph(elide["index.html"] as string)[0].hasPart as { "@type": string; name: string; url: string }[];
     expect(parts[0]).toEqual({ "@type": "TechArticle", name: "Getting started", url: `${base}guides/getting-started.html` });

@@ -434,7 +434,7 @@ export function TopBar() {
             <img class="logo logo-dark" src={`${root}assets/logo-${theme.logo.dark ? "dark" : "light"}.svg`} alt={theme.logo.alt ?? ""} height={22} width={logoWidth(theme.logo.dark ?? theme.logo.light, 22)} />
           </>
         )}
-        <span class="product" title={product}>{product}</span>
+        <span class="product" title={theme.brand ?? product}>{theme.brand ?? product}</span>
       </a>
       {astro ? <HoleMark name="topbar" /> : <ModuleVersion />}
       <div class="topbar-tools">
