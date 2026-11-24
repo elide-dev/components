@@ -24,6 +24,8 @@ import type { PageMeta, TocItem } from "./components/chrome";
 import { Shell } from "./components/chrome";
 import { SourceLink } from "./components/declaration";
 import { Blocks, Inlines } from "./components/doc";
+import { SYMBOLS } from "./symbols";
+import { guideIcon } from "./theme";
 
 export { ADMONITION_LABEL, guideCrumbs, guideNav };
 export type { GuideGroup, GuideLink, GuideNav } from "./site";
@@ -157,7 +159,7 @@ function GuideBlock({ entry, node }: { entry: GuideEntry; node: Block }) {
  * guides. For the overview page (src/pages.tsx) to place, with a rail entry { id: "guides", label: "Guides" }.
  */
 export function GuideIndex({ level = 2 }: { level?: number }) {
-  const { site, page } = usePage();
+  const { site, page, theme } = usePage();
   const { groups } = guideNav(site, page);
   if (!groups.length) return null;
   const Heading = `h${level}` as "h2";
@@ -171,7 +173,9 @@ export function GuideIndex({ level = 2 }: { level?: number }) {
           <ul class="guide-cards">
             {group.guides.map(guide => (
               <li key={guide.id} class="guide-card">
-                <a class="guide-card-link" href={guide.href}><span class="guide-card-title">{guide.title}</span></a>
+                <a class="guide-card-link" href={guide.href}>
+                  {theme.guideIcons && <span class="glyph" data-tone="guide" aria-hidden="true">{guideIcon(theme, guide.slug, SYMBOLS.guide.utf)}</span>}
+                  <span class="guide-card-title">{guide.title}</span></a>
                 {guide.summary && <p class="guide-card-summary">{guide.summary}</p>}
               </li>
             ))}

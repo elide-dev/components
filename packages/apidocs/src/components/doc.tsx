@@ -202,7 +202,8 @@ export function Signature({ tokens, annotations, large }: { tokens: Token[]; ann
         {(annotations ?? []).map((a, i) => <span key={i} class="sig-annotation"><TokenList tokens={a} />{"\n"}</span>)}
         <TokenList tokens={layoutSignature(shown)} />
       </code></pre>
-      <CopyButton label="Copy signature" />
+      {/* A page's own declaration is its title in code: it has neither a copy button nor selectable text. */}
+      {!large && <CopyButton label="Copy signature" />}
     </div>
   );
 }

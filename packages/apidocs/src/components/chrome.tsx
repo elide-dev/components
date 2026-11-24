@@ -12,7 +12,7 @@ import { useContext } from "preact/hooks";
 import { type PageContext, usePage } from "../context";
 import type { Package, Type } from "../model";
 import { INDEX, PACKAGES_PAGE, TYPES_PAGE, guideNav, indexPages, isAbsolute, isThrowable, packagePage, relative, rootOf, type Site, typePage } from "../site";
-import type { Theme } from "../theme";
+import { guideIcon, type Theme } from "../theme";
 import { kotlinKind } from "../structure";
 import { SYMBOLS, sym } from "../symbols";
 
@@ -788,7 +788,7 @@ export function Navigation() {
               const rows = group.guides.map(guide => (
                 <li key={guide.id} class="nav-item">
                   <a class="nav-row" href={guide.href} title={guide.summary || guide.title} aria-current={guide.current ? "page" : undefined}>
-                    <span class="glyph" data-tone="guide" aria-hidden="true">{SYMBOLS.guide.utf}</span>
+                    <span class="glyph" data-tone="guide" aria-hidden="true">{guideIcon(theme, guide.slug, SYMBOLS.guide.utf)}</span>
                     <span class="nav-label">{guide.label}</span>
                   </a>
                 </li>
@@ -797,7 +797,9 @@ export function Navigation() {
               const open = group.guides.some(guide => guide.current);
               return (
                 <NavBranch key={i} id={`g:${group.title}`} open={open} label={group.title}
-                  row={<a class="nav-row nav-group-row" href={group.guides[0]!.href}><span class="nav-label">{group.title}</span></a>}>
+                  row={<a class="nav-row nav-group-row" href={group.guides[0]!.href}>
+                    {theme.guideIcons && <span class="glyph" data-tone="guide" aria-hidden="true">{guideIcon(theme, group.guides[0]!.slug, SYMBOLS.guide.utf)}</span>}
+                    <span class="nav-label">{group.title}</span></a>}>
                   {rows}
                 </NavBranch>
               );

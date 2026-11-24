@@ -91,6 +91,12 @@ export interface Theme {
    * public, so listings and member signatures leave the modifier out; a type's own page keeps it in its header.
    */
   visibility?: "public";
+  /**
+   * A symbol for each guide, by its slug ("getting-started/installation"), shown in the navigator and on the
+   * overview's guide cards in place of the generic guide mark; a section's introduction lends its symbol to the
+   * section's row. Short text symbols suit the glyph's tile best; add U+FE0E where a symbol would render as an emoji.
+   */
+  guideIcons?: Record<string, string>;
   /** The site's absolute URL, with a trailing slash. Enables canonical links and sitemap.xml. */
   baseUrl?: string;
   /**
@@ -191,6 +197,11 @@ export function themeCss(theme: Theme, root = ":root"): string {
   }
   if (theme.css) out.push(theme.css);
   return out.join("\n") + "\n";
+}
+
+/** A guide's symbol: the theme's for its slug, else the generic guide mark. */
+export function guideIcon(theme: Theme, slug: string, fallback: string): string {
+  return theme.guideIcons?.[slug] ?? fallback;
 }
 
 /** A source link for a file and line, or undefined without a template or when the theme withholds source links. */

@@ -156,6 +156,8 @@ export function overviewGuide(site: Site): GuideEntry | undefined {
 /** One guide in a list, linked from a page. */
 export interface GuideLink {
   id: string;
+  /** The guide's slug ("getting-started/installation"), which a theme's guideIcons names it by. */
+  slug: string;
   title: string;
   /** The navigator's label: the guide's navTitle, else its title. */
   label: string;
@@ -186,6 +188,7 @@ export interface GuideNav {
 export function guideNav(site: Site, page: string): GuideNav {
   const link = (entry: GuideEntry): GuideLink => ({
     id: entry.guide.id,
+    slug: entry.guide.slug,
     title: entry.guide.title,
     label: entry.guide.navTitle || entry.guide.title,
     href: relative(page, entry.page, ".html"),

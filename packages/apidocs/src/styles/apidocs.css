@@ -603,6 +603,7 @@ html[data-js] .nav-branch[data-folded]:not([data-filter-open]) > .nav-children {
   border-radius: var(--apidocs-radius);
 }
 .sig-annotation { color: var(--apidocs-syn-annotation); }
+.sig-large { user-select: none; -webkit-user-select: none; }
 .tk-k { color: var(--apidocs-syn-keyword); }
 .tk-n { color: var(--apidocs-code-fg); font-weight: 700; }
 .tk-t { color: var(--apidocs-syn-type); }
