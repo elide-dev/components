@@ -63,10 +63,11 @@ export function GuidePage({ entry, children, extraToc = [] }: { entry: GuideEntr
   const meta: PageMeta = { kind: overview ? "module" : "guide", id: g.id, keywords: [g.title, ...(entry.group ? [entry.group] : []), ...entry.sections.map(s => s.text)] };
   const title = overview && g.title === m.name ? moduleTitle() : `${g.title} (${moduleTitle()})`;
   return (
-    <Shell title={title} description={description} crumbs={crumbs} toc={[...guideToc(entry), ...extraToc]} jsonLd={jsonLd} meta={meta}>
+    <Shell title={title} description={description} crumbs={crumbs} heading={g.title} toc={[...guideToc(entry), ...extraToc]} jsonLd={jsonLd} meta={meta}>
       <article class="guide" data-guide-id={g.id} data-reading-progress>
         <header class="page-head guide-head">
-          {!overview && <p class="guide-kicker">{entry.group ?? "Guide"}</p>}
+          {/* The section's name, unless this is the section's own page, whose title already says it. */}
+          {!overview && entry.group !== g.title && <p class="guide-kicker">{entry.group ?? "Guide"}</p>}
           <h1>{g.title}</h1>
           {g.summary?.length ? <p class="lede guide-summary"><Inlines nodes={g.summary} /></p> : null}
           {g.source && <p class="page-meta"><SourceLink path={g.source.path} line={g.source.line} /></p>}

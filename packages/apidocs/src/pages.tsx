@@ -144,7 +144,7 @@ export function PackagePage({ pkg }: { pkg: Package }) {
     <Shell
       title={`${pkg.name} (${moduleTitle()})`}
       description={description}
-      crumbs={[{ label: usePage().site.model.module.name, page: INDEX, symbol: true }, { label: pkg.name, symbol: true }]}
+      crumbs={[{ label: usePage().site.model.module.name, page: INDEX, symbol: true }, { label: pkg.name, symbol: true }]} heading={pkg.name || "(default package)"}
       toc={toc}
       jsonLd={jsonLd(pkg.name, description, "package")}
       meta={{ kind: "package", id: pkg.id, package: pkg.name, keywords: [pkg.name, ...tops.map(t => t.name)].slice(0, 24) }}
@@ -240,7 +240,7 @@ export function TypePage({ type }: { type: Type }) {
   if (inherited.external.length) toc.push({ id: "inherited-members", label: "Inherited members", depth: 1 });
 
   return (
-    <Shell title={`${type.name} (${moduleTitle()})`} description={description} crumbs={crumbs} toc={toc} jsonLd={jsonLd(type.name, description, typeKindWord(type))}
+    <Shell title={`${type.name} (${moduleTitle()})`} description={description} crumbs={crumbs} heading={type.name} toc={toc} jsonLd={jsonLd(type.name, description, typeKindWord(type))}
       meta={{
         kind: "type", id: type.id, package: pkg.name, language: type.language,
         keywords: [type.name, `${pkg.name}.${type.name}`, typeKindWord(type), ...new Set((type.members ?? []).map(member => member.name))].slice(0, 32),

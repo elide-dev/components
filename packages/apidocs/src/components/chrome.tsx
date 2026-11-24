@@ -138,6 +138,8 @@ export interface ShellProps {
   title: string;
   description: string;
   crumbs: Crumb[];
+  /** The page's heading. The last breadcrumb is left out when it says the same. */
+  heading?: string;
   toc: TocItem[];
   jsonLd: object;
   /** What the page documents, for machine-readable metadata. */
@@ -322,7 +324,7 @@ export function JsonLd({ head }: { head: HeadData }) {
   return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(head.jsonLd).replace(/</g, "\\u003c") }} />;
 }
 
-export function Shell({ title, description, crumbs, toc, jsonLd, meta, children }: ShellProps) {
+export function Shell({ title, description, crumbs, heading, toc, jsonLd, meta, children }: ShellProps) {
   const ctx = usePage();
   const variant = useVariant();
   const { theme, page } = ctx;
@@ -361,7 +363,7 @@ export function Shell({ title, description, crumbs, toc, jsonLd, meta, children 
           <script dangerouslySetInnerHTML={{ __html: NAV_BOOT }} />
           <main id="content" class="content">
             <AgentNote formats={head.formats} />
-            <PageTools crumbs={crumbs} canonical={head.canonical} title={title} />
+            <PageTools crumbs={crumbs} heading={heading} canonical={head.canonical} title={title} />
             {astro && <HoleMark name="notice" />}
             {children}
           </main>
@@ -563,11 +565,11 @@ export function SuiteSwitcher() {
 }
 
 /** The row above the page's title: where the page is, and its other forms. */
-export function PageTools({ crumbs, canonical, title }: { crumbs: Crumb[]; canonical: string | undefined; title: string }) {
+export function PageTools({ crumbs, heading, canonical, title }: { crumbs: Crumb[]; heading?: string; canonical: string | undefined; title: string }) {
   const { page } = usePage();
   return (
     <div class="page-tools">
-      <Breadcrumbs crumbs={crumbs} />
+      <Breadcrumbs crumbs={crumbs} heading={heading} />
       <PageActions name={page.split("/").pop()!} root={rootOf(page)} canonical={canonical} title={title} />
     </div>
   );
@@ -684,13 +686,15 @@ export function PageActions({ name, root, canonical, title }: { name: string; ro
   );
 }
 
-export function Breadcrumbs({ crumbs }: { crumbs: Crumb[] }) {
+export function Breadcrumbs({ crumbs, heading }: { crumbs: Crumb[]; heading?: string }) {
   const { page } = usePage();
   if (crumbs.length < 2) return null;
+  // The last crumb is this page. When the heading below says the same, the heading stands for it.
+  const shown = heading !== undefined && crumbs.at(-1)!.label === heading ? crumbs.slice(0, -1) : crumbs;
   return (
     <nav class="crumbs" aria-label="Breadcrumbs">
       <ol>
-        {crumbs.map((crumb, i) => (
+        {shown.map((crumb, i) => (
           <li key={i}>
             {crumb.page && i < crumbs.length - 1
               ? <a class={crumb.symbol ? "crumb-symbol" : undefined} href={relative(page, crumb.page, ".html")}>{crumb.label}</a>
@@ -785,7 +789,9 @@ export function Navigation() {
           <h2 class="nav-heading">{site.packages.length > 0 ? <span>Guides</span> : <a href={overview} aria-current={page === INDEX ? "page" : undefined}>Guides</a>}</h2>
           <ul class="nav-list nav-tree">
             {guides.groups.map((group, i) => {
-              const rows = group.guides.map(guide => (
+              // A section's row leads to its first guide, its overview, so that guide is not listed again under it.
+              const [first, ...rest] = group.guides;
+              const rows = (group.title ? rest : group.guides).map(guide => (
                 <li key={guide.id} class="nav-item">
                   <a class="nav-row" href={guide.href} title={guide.summary || guide.title} aria-current={guide.current ? "page" : undefined}>
                     <span class="glyph" data-tone="guide" aria-hidden="true">{guideIcon(theme, guide.slug, SYMBOLS.guide.utf)}</span>
@@ -796,9 +802,10 @@ export function Navigation() {
               if (!group.title) return rows;
               const open = group.guides.some(guide => guide.current);
               return (
-                <NavBranch key={i} id={`g:${group.title}`} open={open} label={group.title}
-                  row={<a class="nav-row nav-group-row" href={group.guides[0]!.href}>
-                    {theme.guideIcons && <span class="glyph" data-tone="guide" aria-hidden="true">{guideIcon(theme, group.guides[0]!.slug, SYMBOLS.guide.utf)}</span>}
+                <NavBranch key={i} id={`g:${group.title}`} open={open} label={group.title} empty={rest.length === 0}
+                  row={<a class="nav-row nav-group-row" href={first!.href} title={first!.summary || group.title}
+                    aria-current={first!.current ? "page" : undefined}>
+                    {theme.guideIcons && <span class="glyph" data-tone="guide" aria-hidden="true">{guideIcon(theme, first!.slug, SYMBOLS.guide.utf)}</span>}
                     <span class="nav-label">{group.title}</span></a>}>
                   {rows}
                 </NavBranch>

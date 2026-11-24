@@ -474,9 +474,12 @@ describe("guides-only site", () => {
   });
   test("navigator, breadcrumbs and reading order across groups", () => {
     const alerts = html("guides/concepts/alerts.html");
-    expect(alerts).toContain('<nav class="crumbs" aria-label="Breadcrumbs"><ol><li><a href="../../index.html">Geo user guide</a></li><li><a href="index.html">Concepts</a></li><li><span aria-current="page">Callouts</span></li></ol></nav>');
+    // The last crumb, "Callouts", is the heading's text, so the heading stands for it.
+    expect(alerts).toContain('<nav class="crumbs" aria-label="Breadcrumbs"><ol><li><a href="../../index.html">Geo user guide</a></li><li><a href="index.html">Concepts</a></li></ol></nav>');
     expect(alerts).toMatch(/<span class="nav-label">Alerts<\/span>/);
-    expect(alerts).toContain('<a class="nav-row nav-group-row" href="advanced/index.html"><span class="nav-label">Concepts › Advanced topics</span></a>');
+    expect(alerts).toMatch(/<a class="nav-row nav-group-row" href="advanced\/index.html" title="[^"]*"><span class="nav-label">Concepts › Advanced topics<\/span><\/a>/);
+    // A section's row leads to its overview, which is not listed again under it.
+    expect(alerts).not.toMatch(/nav-children[^]*?<a class="nav-row" href="index.html"/);
     const order = site.model.module.guides!.map(g => g.slug);
     expect(order).toEqual(["index", "getting-started", "concepts/index", "concepts/alerts", "concepts/images", "concepts/diagrams", "concepts/advanced/index", "concepts/advanced/custom-shapes"]);
     expect(html("index.html")).toContain('rel="next" href="guides/getting-started.html"');

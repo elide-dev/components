@@ -183,11 +183,15 @@ table, .nav-count, .members-count, .package-count, .version { font-variant-numer
 }
 .skip:focus-visible { inset-block-start: 8px; }
 
-/* Labels, counts, marks and controls are furniture, not content: a selection skips them, so copying a name or a
-   paragraph gives that text and nothing else. */
+/* Labels, counts, marks, controls and navigation (the top bar, the navigator, breadcrumbs, pagers) are furniture,
+   not content: a selection skips them, so copying a name or a paragraph gives that text and nothing else. */
 .nav-heading, .nav-count, .glyph, .badge, .nav-twisty, .nav-fold-all, .fold-toggle, thead th, .facts-title,
 .callout-icon, .callout-label, .copy, .search-key, .nav-button, .theme-switch, .skip, .kind-cell, .source-link,
-.crumbs li + li::before, .footer, .member-badges, caption { user-select: none; -webkit-user-select: none; }
+.crumbs, .footer, .member-badges, caption, .topbar, .sidebar, .page-tools, .formats, .guide-kicker, .guide-pager,
+.heading-anchor, .member-marks, .members-count, .members-inherited-count, .members-toggle, .package-count, .lang,
+.guide-card-link, .loadbar, .readbar { user-select: none; -webkit-user-select: none; }
+/* Text typed into the top bar's search and the navigator's filter stays selectable. */
+:is(.topbar, .sidebar) input { user-select: text; -webkit-user-select: text; }
 
 /* ---- Top bar ---- */
 
@@ -620,7 +624,9 @@ html[data-js] .nav-branch[data-folded]:not([data-filter-open]) > .nav-children {
 .tk-p { color: var(--apidocs-syn-param); }
 /* A declaration is quiet at rest, in shades of gray: its keywords darker, its visibility (public, private) and a
    listing's punctuation lighter, its name in the text color, bold, and its type references in the text color.
-   Pointing at a declaration brings out its syntax: keywords in the keyword color, type references as links. */
+   Pointing at a declaration brings out its syntax: keywords in the keyword color. Its name and type references
+   stay in the text color, as an editor shows them, and show that they are links with a dotted underline; in the
+   link color they would run together with the keywords. */
 .decl-sig, :is(.decl-sig, .sig) .tk-vis { color: var(--apidocs-muted); }
 :is(.decl-sig, .sig) .tk-k:not(.tk-vis) { color: color-mix(in oklab, var(--apidocs-fg) 65%, var(--apidocs-muted)); }
 .sig a.tk-t { color: var(--apidocs-fg); text-decoration-line: none; }
@@ -631,8 +637,11 @@ html[data-js] .nav-branch[data-folded]:not([data-filter-open]) > .nav-children {
 @media (prefers-reduced-motion: no-preference) { :is(.summary-sig .tk-t, .member-row .member-key) { transition: color 120ms ease-out; } }
 @media (hover: hover) and (pointer: fine) {
   :is(.decl:hover, .sig:hover, .member-row:hover) .tk-k:not(.tk-vis) { color: var(--apidocs-syn-keyword); }
-  .sig:hover a.tk-t { color: var(--apidocs-link); }
-  .member-row:hover .member-key { color: var(--apidocs-link); }
+  :is(.decl-item:not(.is-deprecated) .decl:hover .tk-n, .sig:hover a.tk-t) {
+    text-decoration-line: underline; text-decoration-style: dotted; text-decoration-thickness: 1px;
+    text-decoration-color: color-mix(in srgb, currentColor 55%, transparent); text-underline-offset: 3px;
+  }
+  .sig a.tk-t:hover { text-decoration-color: currentColor; }
 }
 a.tk-t, a.tk-a { color: var(--apidocs-link); text-decoration: underline; text-decoration-color: color-mix(in srgb, currentColor 30%, transparent); text-underline-offset: 3px; }
 @media (hover: hover) and (pointer: fine) { a.tk-t:hover, a.tk-a:hover { text-decoration-color: currentColor; } }
@@ -899,8 +908,7 @@ td .badge { margin-inline-end: 6px; }
 .decls-nested .decl-item { padding-block: 6px; }
 .decls-nested .decl-item:last-child { border-block-end: 0; }
 .decl { display: flex; align-items: center; gap: 8px; min-width: 0; min-block-size: 24px; color: var(--apidocs-fg); }
-@media (hover: hover) and (pointer: fine) { .decl:hover { text-decoration: none; } .decl:hover .tk-n { color: var(--apidocs-link); } }
-.decl:active .tk-n { color: var(--apidocs-link); }
+@media (hover: hover) and (pointer: fine) { .decl:hover { text-decoration: none; } }
 /* good-css exception (overflow-clip): hidden, not clip, so the ellipsis shows in every target browser, Safari before 16 among them. */
 .decl-sig { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; background: none !important; padding: 0 !important; font-size: var(--apidocs-size-sm); }
 .decl-item.is-deprecated .tk-n { text-decoration: line-through; text-decoration-color: var(--apidocs-deprecated); }
@@ -913,6 +921,11 @@ td .badge { margin-inline-end: 6px; }
 .package-block { margin-block-start: 26px; }
 .package-name { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; font-size: var(--apidocs-size-lg); font-weight: 650; }
 .package-name code { background: none; padding: 0; }
+/* A package's name is a symbol, so it reads as code, in dark gray, and turns the link color when pointed at. */
+.package-name a { color: color-mix(in oklab, var(--apidocs-fg) 80%, var(--apidocs-muted)); text-decoration: none; }
+@media (prefers-reduced-motion: no-preference) { .package-name a { transition: color 120ms ease-out; } }
+@media (hover: hover) and (pointer: fine) { .package-name a:hover { color: var(--apidocs-link); } }
+.package-name a:active { color: var(--apidocs-link); }
 .package-count { font-family: var(--apidocs-font-sans); font-size: var(--apidocs-size-sm); font-weight: 400; color: var(--apidocs-faint); }
 .package-summary { margin-block: 4px 0; margin-inline: 0; color: var(--apidocs-muted); }
 .empty { color: var(--apidocs-muted); font-style: italic; margin-block: 24px 0; }

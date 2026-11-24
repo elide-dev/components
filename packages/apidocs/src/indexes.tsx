@@ -21,6 +21,7 @@ function IndexShell({ page, title, description, toc, children }: { page: string;
       title={`${title} (${m.version ? `${m.name} ${m.version}` : m.name})`}
       description={description}
       crumbs={crumbs}
+      heading={title}
       toc={toc}
       meta={{ kind: "index", keywords }}
       jsonLd={{ "@context": "https://schema.org", "@type": "CollectionPage", name: `${title} of ${m.name}`, description }}
