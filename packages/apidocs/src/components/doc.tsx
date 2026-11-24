@@ -1,7 +1,7 @@
 /** Documentation trees, signatures and code blocks as static markup. */
 import type { ComponentChildren, JSX } from "preact";
 import { usePage } from "../context";
-import { ADMONITION_LABEL } from "../structure";
+import { ADMONITION_LABEL, optionalEnd, splitAngles } from "../structure";
 import { Callout } from "./callout";
 import { highlight } from "../highlight";
 import type { Block, Inline, Token } from "../model";
@@ -9,7 +9,7 @@ import { sanitize } from "../sanitize";
 import { sanitizeSvg } from "../import/svg";
 import { namespaceSvg } from "../diagram";
 import { safeUrl } from "../url";
-import { resolve, resolveRef, resolveToken } from "../site";
+import { resolve, resolveRef, resolveToken, tokenText } from "../site";
 import { layoutSignature } from "../signature";
 
 export function Inlines({ nodes }: { nodes: Inline[] | undefined }) {
@@ -134,44 +134,105 @@ export function CodeBlock({ code, language }: { code: string; language: string |
 }
 
 /** A copy button: hidden until the client script shows it, so pages without JavaScript carry no dead control. */
-export function CopyButton({ label }: { label: string }) {
-  return <button type="button" class="copy" data-copy hidden aria-label={label} title={label}>Copy</button>;
+/** A copy button: it copies `text`, or without it the code block or signature it sits in. */
+export function CopyButton({ label, text }: { label: string; text?: string }) {
+  return <button type="button" class="copy" data-copy data-copy-text={text} hidden aria-label={label} title={label}>Copy</button>;
 }
 
 /** Tokens as code: types link to their pages, or to external documentation. */
 /** `plain` writes type references as text, for places that must hold no links, such as a disclosure's summary. */
-export function TokenList({ tokens, plain }: { tokens: Token[] | undefined; plain?: boolean }) {
+/**
+ * Tokens as code. A type is a link, or in `plain` text (a member's row, which may hold no links) a span that still
+ * shows the type's hover card (client/cards.ts).
+ *
+ * An `Optional<X>` is about its X: its hover card shows X's documentation under the title `Optional<X>` (`X?` on a
+ * Kotlin page). A row (`plain`) on a Kotlin page, or on a Java page when the theme says so (`optionalAsNullable`),
+ * writes it as `X?`; the full signature keeps the declared form.
+ */
+export function TokenList({ tokens, plain, cardTitle }: { tokens: Token[] | undefined; plain?: boolean; cardTitle?: string }) {
   const ctx = usePage();
-  return (
-    <>
-      {(tokens ?? []).map((token, i) => {
-        switch (token.kind) {
-          case "punct": return token.text;
-          case "type":
-          case "annotation": {
-            const href = plain ? undefined : resolveToken(ctx.site, ctx.page, ".html", token);
-            const cls = token.kind === "type" ? "tk-t" : "tk-a";
-            return href ? <a key={i} class={cls} href={href}>{token.text}</a> : <span key={i} class={cls}>{token.text}</span>;
-          }
-          default: return <span key={i} class={TOKEN_CLASS[token.kind]}>{token.text}</span>;
-        }
-      })}
-    </>
-  );
+  const list = splitAngles(tokens);
+  const out: ComponentChildren[] = [];
+  let title = cardTitle;
+  for (let i = 0; i < list.length; i++) {
+    const token = list[i]!;
+    const end = optionalEnd(list, i);
+    if (end !== undefined) {
+      const inner = list.slice(i + 2, end);
+      const head = inner.find(t => t.kind === "type");
+      const kotlin = ctx.language === "kotlin";
+      const card = kotlin ? `${tokenText(inner)}?` : tokenText(list.slice(i, end + 1));
+      if (plain && (kotlin || ctx.theme.optionalAsNullable)) {
+        out.push(<TokenList key={i} plain tokens={inner} cardTitle={card} />, "?");
+        i = end;
+        continue;
+      }
+      const resolved = resolveToken(ctx.site, ctx.page, ".html", token);
+      const cardHref = (head && resolveToken(ctx.site, ctx.page, ".html", head)) || undefined;
+      const attrs = { class: "tk-t", "data-card-href": cardHref ?? (plain ? resolved : undefined), "data-card-title": cardHref ? card : undefined };
+      out.push(resolved && !plain ? <a key={i} href={resolved} {...attrs}>{token.text}</a> : <span key={i} {...attrs}>{token.text}</span>);
+      continue;
+    }
+    switch (token.kind) {
+      // A long type may wrap after the "<" of its type arguments, rather than wherever the line runs out.
+      case "punct": out.push(token.text); if (token.text === "<" && !plain) out.push(<wbr key={`w${i}`} />); break;
+      case "type":
+      case "annotation": {
+        const resolved = resolveToken(ctx.site, ctx.page, ".html", token);
+        const cls = token.kind === "type" ? "tk-t" : "tk-a";
+        // The first type in an Optional's argument carries the Optional's card title.
+        const named = token.kind === "type" ? title : undefined;
+        if (token.kind === "type") title = undefined;
+        if (plain) out.push(<span key={i} class={cls} data-card-href={resolved} data-card-title={resolved ? named : undefined}>{token.text}</span>);
+        else out.push(resolved ? <a key={i} class={cls} href={resolved} data-card-title={named}>{token.text}</a> : <span key={i} class={cls}>{token.text}</span>);
+        break;
+      }
+      default: {
+        // Visibility reads as context, not as part of what a declaration is: it is styled apart (.tk-vis).
+        const cls = token.kind === "keyword" && VISIBILITY.has(token.text) ? "tk-k tk-vis" : TOKEN_CLASS[token.kind];
+        out.push(<span key={i} class={cls}>{token.text}</span>);
+      }
+    }
+  }
+  return <>{out}</>;
 }
 
 const TOKEN_CLASS: Record<string, string> = {
   keyword: "tk-k", name: "tk-n", typeParam: "tk-tp", literal: "tk-l", param: "tk-p",
 };
 
+const VISIBILITY = new Set(["public", "protected", "private", "internal"]);
+
+/**
+ * A declaration's tokens without its "public" modifier, when the theme says every declaration documented is public
+ * (`visibility: "public"`): there it says nothing. Listings and member signatures use this; a page's own header keeps
+ * the full declaration.
+ */
+export function withoutImpliedVisibility(tokens: Token[], theme: { visibility?: string }): Token[] {
+  if (theme.visibility !== "public") return tokens;
+  const out: Token[] = [];
+  for (let i = 0; i < tokens.length; i++) {
+    const token = tokens[i]!;
+    if (token.kind === "keyword" && token.text === "public") {
+      if (tokens[i + 1]?.kind === "punct" && /^\s+$/.test(tokens[i + 1]!.text)) i++;
+      continue;
+    }
+    out.push(token);
+  }
+  return out;
+}
+
 /** A declaration signature, laid out over several lines when long, with a copy button. */
 export function Signature({ tokens, annotations, large }: { tokens: Token[]; annotations?: Token[][]; large?: boolean }) {
+  const { theme } = usePage();
+  const shown = large ? tokens : withoutImpliedVisibility(tokens, theme);
   return (
     <div class={large ? "sig sig-large" : "sig"}>
       <pre><code>
         {(annotations ?? []).map((a, i) => <span key={i} class="sig-annotation"><TokenList tokens={a} />{"\n"}</span>)}
-        <TokenList tokens={layoutSignature(tokens)} />
+        <TokenList tokens={layoutSignature(shown)} />
       </code></pre>
+      {/* A page's own declaration is its title in code: it has neither a copy button nor selectable text. */}
       <CopyButton label="Copy signature" />
     </div>
   );

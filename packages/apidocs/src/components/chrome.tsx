@@ -12,13 +12,15 @@ import { useContext } from "preact/hooks";
 import { type PageContext, usePage } from "../context";
 import type { Package, Type } from "../model";
 import { INDEX, PACKAGES_PAGE, TYPES_PAGE, guideNav, indexPages, isAbsolute, isThrowable, packagePage, relative, rootOf, type Site, typePage } from "../site";
-import type { Theme } from "../theme";
+import { guideIcon, type Theme } from "../theme";
 import { kotlinKind } from "../structure";
 import { SYMBOLS, sym } from "../symbols";
 
 export interface Crumb {
   label: string;
   page?: string;
+  /** A name from the API (a module, package or type), set in the code face like every other symbol. */
+  symbol?: boolean;
 }
 
 export interface TocItem {
@@ -136,6 +138,8 @@ export interface ShellProps {
   title: string;
   description: string;
   crumbs: Crumb[];
+  /** The page's heading. The last breadcrumb is left out when it says the same. */
+  heading?: string;
   toc: TocItem[];
   jsonLd: object;
   /** What the page documents, for machine-readable metadata. */
@@ -320,7 +324,7 @@ export function JsonLd({ head }: { head: HeadData }) {
   return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(head.jsonLd).replace(/</g, "\\u003c") }} />;
 }
 
-export function Shell({ title, description, crumbs, toc, jsonLd, meta, children }: ShellProps) {
+export function Shell({ title, description, crumbs, heading, toc, jsonLd, meta, children }: ShellProps) {
   const ctx = usePage();
   const variant = useVariant();
   const { theme, page } = ctx;
@@ -359,7 +363,7 @@ export function Shell({ title, description, crumbs, toc, jsonLd, meta, children 
           <script dangerouslySetInnerHTML={{ __html: NAV_BOOT }} />
           <main id="content" class="content">
             <AgentNote formats={head.formats} />
-            <PageTools crumbs={crumbs} canonical={head.canonical} title={title} />
+            <PageTools crumbs={crumbs} heading={heading} canonical={head.canonical} title={title} />
             {astro && <HoleMark name="notice" />}
             {children}
           </main>
@@ -434,7 +438,7 @@ export function TopBar() {
             <img class="logo logo-dark" src={`${root}assets/logo-${theme.logo.dark ? "dark" : "light"}.svg`} alt={theme.logo.alt ?? ""} height={22} width={logoWidth(theme.logo.dark ?? theme.logo.light, 22)} />
           </>
         )}
-        <span class="product" title={product}>{product}</span>
+        <span class="product" title={theme.brand ?? product}>{theme.brand ?? product}</span>
       </a>
       {astro ? <HoleMark name="topbar" /> : <ModuleVersion />}
       <div class="topbar-tools">
@@ -467,6 +471,8 @@ export interface Suite {
    * the script can remember the last page read in each site under it (suiteMemory in client/behaviors.tsx).
    */
   key: string;
+  /** Where the entry leads, as a menu (ThemeLink.children), linked from the page. */
+  children?: { label: string; href: string; current: boolean }[];
 }
 
 /**
@@ -491,7 +497,9 @@ export function suites(theme: Theme, page: string): Suite[] {
   const list = links.map(link => {
     const current = !found && (marked ? !!link.current : isOwnRoot(link.url));
     found ||= current;
-    return { label: link.label, href: current ? relative(page, INDEX, ".html") : hrefFor(page, link.url), current, key: hrefFor(page, link.url) };
+    const children = link.children?.map(child => ({ label: child.label, href: hrefFor(page, child.url), current: !!child.current }));
+    return { label: link.label, href: current ? relative(page, INDEX, ".html") : hrefFor(page, link.url), current, key: hrefFor(page, link.url),
+      ...(children?.length ? { children } : {}) };
   });
   return list.some(entry => !entry.current) ? list : [];
 }
@@ -522,9 +530,18 @@ export function SuiteSwitcher() {
       <div class="suites-fit">
         {/* Empty and zero-wide, so that even a first label wider than the switcher moves to a second line. */}
         <span class="suites-probe" aria-hidden="true" />
-        {list.map((entry, i) => <span key={i} class="suites-ghost" data-current={entry.current ? "" : undefined} aria-hidden="true">{entry.label}</span>)}
+        {list.map((entry, i) => <span key={i} class="suites-ghost" data-current={entry.current ? "" : undefined} aria-hidden="true">{entry.label}{entry.children && CHEVRON}</span>)}
         <nav class="suites-row" aria-label="Documentation">
-          {list.map((entry, i) => <a key={i} href={entry.href} data-suite={entry.key} aria-current={entry.current ? "true" : undefined}>{entry.label}</a>)}
+          {list.map((entry, i) => entry.children ? (
+            // A menu of where the entry leads: a popover in the top layer, so the row's clipping does not cut it.
+            <span key={i} class="suite-group">
+              <button type="button" class="suite-group-button" popovertarget={`apidocs-suite-${i}`} aria-current={entry.current ? "true" : undefined}
+                style={`anchor-name: --apidocs-suite-${i}`}>{entry.label}{CHEVRON}</button>
+              <ul id={`apidocs-suite-${i}`} class="suite-list suite-popover" popover="auto" style={`position-anchor: --apidocs-suite-${i}`}>
+                {entry.children.map((child, j) => <li key={j}><a href={child.href} aria-current={child.current ? "true" : undefined}>{child.label}</a></li>)}
+              </ul>
+            </span>
+          ) : <a key={i} href={entry.href} data-suite={entry.key} aria-current={entry.current ? "true" : undefined}>{entry.label}</a>)}
         </nav>
         <details class="suite-menu">
           <summary class="suite-current" aria-label={`${label}: other documentation`} title="Other documentation">
@@ -532,7 +549,12 @@ export function SuiteSwitcher() {
             {CHEVRON}
           </summary>
           <ul class="suite-list">
-            {list.map((entry, i) => <li key={i}><a href={entry.href} data-suite={entry.key} aria-current={entry.current ? "true" : undefined}>{entry.label}</a></li>)}
+            {list.map((entry, i) => entry.children ? (
+              <li key={i}>
+                <span class="suite-list-group">{entry.label}</span>
+                <ul>{entry.children.map((child, j) => <li key={j}><a href={child.href} aria-current={child.current ? "true" : undefined}>{child.label}</a></li>)}</ul>
+              </li>
+            ) : <li key={i}><a href={entry.href} data-suite={entry.key} aria-current={entry.current ? "true" : undefined}>{entry.label}</a></li>)}
           </ul>
         </details>
       </div>
@@ -543,11 +565,11 @@ export function SuiteSwitcher() {
 }
 
 /** The row above the page's title: where the page is, and its other forms. */
-export function PageTools({ crumbs, canonical, title }: { crumbs: Crumb[]; canonical: string | undefined; title: string }) {
+export function PageTools({ crumbs, heading, canonical, title }: { crumbs: Crumb[]; heading?: string; canonical: string | undefined; title: string }) {
   const { page } = usePage();
   return (
     <div class="page-tools">
-      <Breadcrumbs crumbs={crumbs} />
+      <Breadcrumbs crumbs={crumbs} heading={heading} />
       <PageActions name={page.split("/").pop()!} root={rootOf(page)} canonical={canonical} title={title} />
     </div>
   );
@@ -664,17 +686,19 @@ export function PageActions({ name, root, canonical, title }: { name: string; ro
   );
 }
 
-export function Breadcrumbs({ crumbs }: { crumbs: Crumb[] }) {
+export function Breadcrumbs({ crumbs, heading }: { crumbs: Crumb[]; heading?: string }) {
   const { page } = usePage();
   if (crumbs.length < 2) return null;
+  // The last crumb is this page. When the heading below says the same, the heading stands for it.
+  const shown = heading !== undefined && crumbs.at(-1)!.label === heading ? crumbs.slice(0, -1) : crumbs;
   return (
     <nav class="crumbs" aria-label="Breadcrumbs">
       <ol>
-        {crumbs.map((crumb, i) => (
+        {shown.map((crumb, i) => (
           <li key={i}>
             {crumb.page && i < crumbs.length - 1
-              ? <a href={relative(page, crumb.page, ".html")}>{crumb.label}</a>
-              : <span aria-current={i === crumbs.length - 1 ? "page" : undefined}>{crumb.label}</span>}
+              ? <a class={crumb.symbol ? "crumb-symbol" : undefined} href={relative(page, crumb.page, ".html")}>{crumb.label}</a>
+              : <span class={crumb.symbol ? "crumb-symbol" : undefined} aria-current={i === crumbs.length - 1 ? "page" : undefined}>{crumb.label}</span>}
           </li>
         ))}
       </ol>
@@ -765,10 +789,15 @@ export function Navigation() {
           <h2 class="nav-heading">{site.packages.length > 0 ? <span>Guides</span> : <a href={overview} aria-current={page === INDEX ? "page" : undefined}>Guides</a>}</h2>
           <ul class="nav-list nav-tree">
             {guides.groups.map((group, i) => {
-              const rows = group.guides.map(guide => (
+              // A section's row leads to its first guide. When that guide is the section's own page (its index), it is
+              // not listed again under the row; any other first guide keeps its own row.
+              const [first, ...others] = group.guides;
+              const overview = !!group.title && /(^|\/)index$/.test(first!.slug);
+              const rest = overview ? others : group.guides;
+              const rows = (group.title ? rest : group.guides).map(guide => (
                 <li key={guide.id} class="nav-item">
                   <a class="nav-row" href={guide.href} title={guide.summary || guide.title} aria-current={guide.current ? "page" : undefined}>
-                    <span class="glyph" data-tone="guide" aria-hidden="true">{SYMBOLS.guide.utf}</span>
+                    <span class="glyph" data-tone="guide" aria-hidden="true">{guideIcon(theme, guide.slug, SYMBOLS.guide.utf)}</span>
                     <span class="nav-label">{guide.label}</span>
                   </a>
                 </li>
@@ -776,8 +805,11 @@ export function Navigation() {
               if (!group.title) return rows;
               const open = group.guides.some(guide => guide.current);
               return (
-                <NavBranch key={i} id={`g:${group.title}`} open={open} label={group.title}
-                  row={<a class="nav-row nav-group-row" href={group.guides[0]!.href}><span class="nav-label">{group.title}</span></a>}>
+                <NavBranch key={i} id={`g:${group.title}`} open={open} label={group.title} empty={rest.length === 0}
+                  row={<a class="nav-row nav-group-row" href={first!.href} title={first!.summary || group.title}
+                    aria-current={overview && first!.current ? "page" : undefined}>
+                    {theme.guideIcons && <span class="glyph" data-tone="guide" aria-hidden="true">{guideIcon(theme, first!.slug, SYMBOLS.guide.utf)}</span>}
+                    <span class="nav-label">{group.title}</span></a>}>
                   {rows}
                 </NavBranch>
               );
@@ -788,7 +820,9 @@ export function Navigation() {
       {site.packages.length > 0 && (
         <section class="nav-section nav-packages" data-nav-filterable>
           <h2 class="nav-heading nav-module">
-            <a href={overview} aria-current={page === INDEX ? "page" : undefined} title={`${site.model.module.name}: overview`}>{site.model.module.name}</a>
+            {/* The packages below show only what follows their shared prefix (".api"), so the heading shows that prefix,
+                which they continue; without one, the module's name. Either way it leads to the module's overview. */}
+            <a href={overview} aria-current={page === INDEX ? "page" : undefined} title={`${site.model.module.name}: overview`}>{prefix || site.model.module.name}</a>
             {indexes.length > 0 && (
               <span class="nav-index">
                 {indexes.map(entry => <a key={entry.page} href={entry.href} aria-current={entry.current ? "page" : undefined}>{entry.label}</a>)}
@@ -880,7 +914,7 @@ function NavTypes({ types, pkg, chain, depth = 0 }: { types: Type[]; pkg: Packag
         const glyph = kindGlyph(type);
         const simple = type.name.split(".").pop()!;
         const row = (
-          <a class="nav-row" href={relative(page, target, ".html")} title={`${type.name} (${type.kind})`}
+          <a class="nav-row nav-type" href={relative(page, target, ".html")} title={`${type.name} (${type.kind})`}
             aria-current={target === page ? "page" : undefined} data-open={chain.has(type.id) ? "" : undefined}>
             <span class="glyph" data-tone={glyph.tone} aria-hidden="true">{glyph.letter}</span>
             {/* A nested type reads as a member of its enclosing type's name: ".Inner" under "Outer". */}

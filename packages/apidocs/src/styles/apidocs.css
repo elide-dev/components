@@ -183,11 +183,15 @@ table, .nav-count, .members-count, .package-count, .version { font-variant-numer
 }
 .skip:focus-visible { inset-block-start: 8px; }
 
-/* Labels, counts, marks and controls are furniture, not content: a selection skips them, so copying a name or a
-   paragraph gives that text and nothing else. */
+/* Labels, counts, marks, controls and navigation (the top bar, the navigator, breadcrumbs, pagers) are furniture,
+   not content: a selection skips them, so copying a name or a paragraph gives that text and nothing else. */
 .nav-heading, .nav-count, .glyph, .badge, .nav-twisty, .nav-fold-all, .fold-toggle, thead th, .facts-title,
 .callout-icon, .callout-label, .copy, .search-key, .nav-button, .theme-switch, .skip, .kind-cell, .source-link,
-.crumbs li + li::before, .footer, .member-badges, caption { user-select: none; -webkit-user-select: none; }
+.crumbs, .footer, .member-badges, caption, .topbar, .sidebar, .page-tools, .formats, .guide-kicker, .guide-pager,
+.heading-anchor, .member-marks, .members-count, .members-inherited-count, .members-toggle, .package-count, .lang,
+.guide-card-link, .loadbar, .readbar { user-select: none; -webkit-user-select: none; }
+/* Text typed into the top bar's search and the navigator's filter stays selectable. */
+:is(.topbar, .sidebar) input { user-select: text; -webkit-user-select: text; }
 
 /* ---- Top bar ---- */
 
@@ -280,6 +284,23 @@ table, .nav-count, .members-count, .package-count, .version { font-variant-numer
 @media (hover: hover) and (pointer: fine) { .suite-list a:hover { background: var(--apidocs-subtle); text-decoration: none; } }
 .suite-list a:active { background: var(--apidocs-subtle); text-decoration: none; }
 .suite-list a[aria-current="true"] { color: var(--apidocs-accent); font-weight: 600; }
+/* An entry with a menu (ThemeLink.children): a button in the row, its menu a popover under it. */
+.suite-group { display: contents; }
+.suite-group-button {
+  display: inline-flex; align-items: center; gap: 4px; padding-block: 5px; padding-inline: 9px 7px;
+  font: inherit; color: var(--apidocs-fg); background: none; border: 0; border-radius: var(--apidocs-radius); white-space: nowrap; cursor: pointer;
+}
+.suite-group-button .icon { color: var(--apidocs-muted); }
+@media (hover: hover) and (pointer: fine) { .suite-group-button:hover { background: var(--apidocs-subtle); } }
+.suite-group-button:active, .suite-group-button:has(+ :popover-open) { background: var(--apidocs-subtle); }
+.suite-group-button[aria-current="true"] { color: var(--apidocs-accent); background: var(--apidocs-accent-soft); font-weight: 600; }
+.suite-popover { inset: auto; margin: 0; font-size: var(--apidocs-size-sm); }
+@supports (anchor-name: --a) {
+  .suite-popover { position-area: block-end span-inline-end; margin-block-start: 6px; }
+}
+.suite-list-group { display: block; padding-block: 5px 2px; padding-inline: 10px; color: var(--apidocs-faint); font-size: var(--apidocs-size-xs); user-select: none; -webkit-user-select: none; }
+.suite-list ul { margin: 0; padding: 0; list-style: none; }
+.suite-list ul a { padding-inline-start: 18px; }
 
 .search { position: relative; display: block; flex: 1000 1 0; min-width: var(--apidocs-search-floor); max-width: 19rem; margin-inline-start: auto; }
 .search input {
@@ -390,7 +411,8 @@ html[data-js] .sidebar:not([data-scrolling]) { scrollbar-color: transparent tran
 .nav-heading a { color: inherit; }
 @media (hover: hover) and (pointer: fine) { .nav-heading a:hover { color: var(--apidocs-fg); text-decoration: none; } }
 .nav-heading a:active { color: var(--apidocs-fg); text-decoration: none; }
-.nav-heading a[aria-current="page"] { color: var(--apidocs-accent); }
+/* The heading names the navigator, so it stays gray on its own page too: the current row is marked below it. */
+.nav-heading a[aria-current="page"] { color: inherit; }
 .nav-module { justify-content: space-between; }
 .nav-module > a { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--apidocs-font-mono); text-transform: none; letter-spacing: 0; font-size: var(--apidocs-size-sm); color: var(--apidocs-fg); }
 .nav-index { display: flex; flex: none; gap: 2px; text-transform: none; letter-spacing: 0; font-weight: 450; }
@@ -440,7 +462,8 @@ html[data-js] .nav-branch[data-folded]:not([data-filter-open]) > .nav-children {
 .nav-row:active { background: var(--apidocs-subtle); text-decoration: none; }
 /* good-css exception (overflow-clip): hidden, not clip, so the ellipsis shows in every target browser, Safari before 16 among them. */
 .nav-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
-.nav-package .nav-label { font-family: var(--apidocs-font-mono); font-size: var(--apidocs-size-sm); }
+/* Every name from the API is set in the code face: packages, types, and their breadcrumbs. */
+:is(.nav-package, .nav-type) .nav-label, .crumb-symbol { font-family: var(--apidocs-font-mono); font-size: var(--apidocs-size-sm); }
 .nav-count { flex: none; font-size: var(--apidocs-size-xs); font-variant-numeric: tabular-nums; color: var(--apidocs-faint); }
 .nav-row[data-open] { font-weight: 600; }
 .nav-package[data-open] { color: var(--apidocs-accent); }
@@ -480,6 +503,8 @@ html[data-js] .nav-branch[data-folded]:not([data-filter-open]) > .nav-children {
   color: var(--glyph, var(--apidocs-muted));
   background: color-mix(in srgb, var(--glyph, var(--apidocs-muted)) 13%, transparent);
 }
+/* A guide glyph's symbol, moved and scaled to the tile's center by client/glyphs.ts. */
+.glyph-ink { display: inline-block; }
 .glyph[data-tone="class"] { --glyph: var(--apidocs-syn-function); }
 .glyph[data-tone="interface"] { --glyph: var(--apidocs-syn-type); }
 .glyph[data-tone="record"] { --glyph: var(--apidocs-syn-string); }
@@ -565,7 +590,7 @@ html[data-js] .nav-branch[data-folded]:not([data-filter-open]) > .nav-children {
 }
 .page-head h1 code { background: none; padding: 0; font-size: calc(var(--apidocs-code-scale) * 0.92); }
 .page-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin-block: 8px 0; margin-inline: 0; color: var(--apidocs-muted); font-size: var(--apidocs-size-sm); }
-.kind-word { font-weight: 600; color: var(--apidocs-fg); }
+.kind-word { font-weight: 600; color: var(--apidocs-fg); user-select: none; -webkit-user-select: none; }
 .lede { font-size: var(--apidocs-size-lg); color: var(--apidocs-muted); }
 
 .sig { position: relative; container-type: inline-size; }
@@ -585,6 +610,11 @@ html[data-js] .nav-branch[data-folded]:not([data-filter-open]) > .nav-children {
   border-radius: var(--apidocs-radius);
 }
 .sig-annotation { color: var(--apidocs-syn-annotation); }
+/* A signature is copied whole with its button, not selected in pieces. The button sits inside the box's corner,
+   below the box's top margin. */
+.sig pre { user-select: none; -webkit-user-select: none; }
+.sig .copy { inset-block-start: 18px; }
+.sig-large .copy { inset-block-start: 26px; inset-inline-end: 8px; }
 .tk-k { color: var(--apidocs-syn-keyword); }
 .tk-n { color: var(--apidocs-code-fg); font-weight: 700; }
 .tk-t { color: var(--apidocs-syn-type); }
@@ -592,6 +622,27 @@ html[data-js] .nav-branch[data-folded]:not([data-filter-open]) > .nav-children {
 .tk-a { color: var(--apidocs-syn-annotation); }
 .tk-l { color: var(--apidocs-syn-string); }
 .tk-p { color: var(--apidocs-syn-param); }
+/* A declaration is quiet at rest, in shades of gray: its keywords darker, its visibility (public, private) and a
+   listing's punctuation lighter, its name in the text color, bold, and its type references in the text color.
+   Pointing at a declaration brings out its syntax: keywords in the keyword color. Its name and type references
+   stay in the text color, as an editor shows them, and show that they are links with a dotted underline; in the
+   link color they would run together with the keywords. */
+.decl-sig, :is(.decl-sig, .sig) .tk-vis { color: var(--apidocs-muted); }
+:is(.decl-sig, .sig) .tk-k:not(.tk-vis) { color: color-mix(in oklab, var(--apidocs-fg) 65%, var(--apidocs-muted)); }
+.sig a.tk-t { color: var(--apidocs-fg); text-decoration-line: none; }
+@media (prefers-reduced-motion: no-preference) { :is(.decl-sig, .sig) :is(.tk-k, a.tk-t) { transition: color 120ms ease-out; } }
+/* A member's row reads the same way: its types in the darker gray, its name in the text color. */
+.summary-sig :is(.tk-t, .tk-k) { color: color-mix(in oklab, var(--apidocs-fg) 65%, var(--apidocs-muted)); }
+.member-row .member-key { color: var(--apidocs-fg); }
+@media (prefers-reduced-motion: no-preference) { :is(.summary-sig .tk-t, .member-row .member-key) { transition: color 120ms ease-out; } }
+@media (hover: hover) and (pointer: fine) {
+  :is(.decl:hover, .sig:hover, .member-row:hover) .tk-k:not(.tk-vis) { color: var(--apidocs-syn-keyword); }
+  :is(.decl-item:not(.is-deprecated) .decl:hover .tk-n, .sig:hover a.tk-t) {
+    text-decoration-line: underline; text-decoration-style: dotted; text-decoration-thickness: 1px;
+    text-decoration-color: color-mix(in srgb, currentColor 55%, transparent); text-underline-offset: 3px;
+  }
+  .sig a.tk-t:hover { text-decoration-color: currentColor; }
+}
 a.tk-t, a.tk-a { color: var(--apidocs-link); text-decoration: underline; text-decoration-color: color-mix(in srgb, currentColor 30%, transparent); text-underline-offset: 3px; }
 @media (hover: hover) and (pointer: fine) { a.tk-t:hover, a.tk-a:hover { text-decoration-color: currentColor; } }
 a.tk-t:active, a.tk-a:active { text-decoration-color: currentColor; }
@@ -606,6 +657,11 @@ a.tk-t:active, a.tk-a:active { text-decoration-color: currentColor; }
   cursor: pointer; opacity: 0;
 }
 .copy:focus-visible, .copy[data-copied] { opacity: 1; }
+/* A package's or type's name in its page heading: the reader copies it with the button that appears on pointing at
+   it, which copies the qualified name, so the name itself is not selectable text. */
+.page-name { display: flex; align-items: center; gap: 12px; user-select: none; -webkit-user-select: none; }
+.page-name .copy { position: static; flex: none; }
+@media (hover: hover) and (pointer: fine) { .page-name:hover .copy { opacity: 1; } }
 @media (hover: hover) and (pointer: fine) { .sig:hover .copy, .code-block:hover .copy { opacity: 1; } }
 .sig:active .copy, .code-block:active .copy { opacity: 1; }
 @media (hover: none) { .copy { opacity: 1; } }
@@ -852,8 +908,7 @@ td .badge { margin-inline-end: 6px; }
 .decls-nested .decl-item { padding-block: 6px; }
 .decls-nested .decl-item:last-child { border-block-end: 0; }
 .decl { display: flex; align-items: center; gap: 8px; min-width: 0; min-block-size: 24px; color: var(--apidocs-fg); }
-@media (hover: hover) and (pointer: fine) { .decl:hover { text-decoration: none; } .decl:hover .tk-n { color: var(--apidocs-link); text-decoration: underline; text-underline-offset: 3px; } }
-.decl:active .tk-n { color: var(--apidocs-link); }
+@media (hover: hover) and (pointer: fine) { .decl:hover { text-decoration: none; } }
 /* good-css exception (overflow-clip): hidden, not clip, so the ellipsis shows in every target browser, Safari before 16 among them. */
 .decl-sig { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; background: none !important; padding: 0 !important; font-size: var(--apidocs-size-sm); }
 .decl-item.is-deprecated .tk-n { text-decoration: line-through; text-decoration-color: var(--apidocs-deprecated); }
@@ -866,6 +921,11 @@ td .badge { margin-inline-end: 6px; }
 .package-block { margin-block-start: 26px; }
 .package-name { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; font-size: var(--apidocs-size-lg); font-weight: 650; }
 .package-name code { background: none; padding: 0; }
+/* A package's name is a symbol, so it reads as code, in dark gray, and turns the link color when pointed at. */
+.package-name a { color: color-mix(in oklab, var(--apidocs-fg) 80%, var(--apidocs-muted)); text-decoration: none; }
+@media (prefers-reduced-motion: no-preference) { .package-name a { transition: color 120ms ease-out; } }
+@media (hover: hover) and (pointer: fine) { .package-name a:hover { color: var(--apidocs-link); } }
+.package-name a:active { color: var(--apidocs-link); }
 .package-count { font-family: var(--apidocs-font-sans); font-size: var(--apidocs-size-sm); font-weight: 400; color: var(--apidocs-faint); }
 .package-summary { margin-block: 4px 0; margin-inline: 0; color: var(--apidocs-muted); }
 .empty { color: var(--apidocs-muted); font-style: italic; margin-block: 24px 0; }
@@ -882,6 +942,9 @@ html[data-js] .fold:not([data-open]):not([data-short]) > .fold-body {
    too, and its first and last children have no outer margin, so the fold is as tall either way and the
    script marking a short description moves nothing. */
 .fold-body { display: flow-root; }
+/* The part below the folded height (folds() in client/behaviors.tsx) ends the description: its last block has no outer
+   margin, as the body's last child has none, so the fold is as tall as before it was split. */
+.fold-rest > :last-child { margin-block-end: 0; }
 .fold-body > :first-child { margin-block-start: 0; }
 .fold-body > :last-child { margin-block-end: 0; }
 /* Folded, the control sits over the faded last line, so showing it (once the script finds the description long)
@@ -915,6 +978,13 @@ html[data-js] .fold:not([data-open]):not([data-short]) > .fold-body {
   font-size: var(--apidocs-size-sm); line-height: 1.5;
 }
 .member-row::-webkit-details-marker { display: none; }
+/* The chevron has no baseline: it sits on the first line, beside the signature's start, however tall the row. */
+.member-row > .member-chevron { align-self: start; margin-block-start: calc((1lh - 12px) / 2); }
+/* A long signature stays on one line and ends in an ellipsis, so the row stays one line tall and its types never
+   break; pointing at the row, focusing it or opening it shows the whole signature. */
+.member-sig .summary-sig { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+:is(.member-row:hover, .member-row:focus-visible, .member[open] > .member-row) .summary-sig { overflow: visible; white-space: normal; }
+@media (hover: hover) and (pointer: fine) { .member-row:hover .summary-sig .tk-t { color: var(--apidocs-syn-type); } }
 @media (hover: hover) and (pointer: fine) { .member-row:hover { background: color-mix(in srgb, var(--apidocs-subtle) 60%, transparent); } }
 .member-row:active { background: color-mix(in srgb, var(--apidocs-subtle) 60%, transparent); }
 .member-chevron { align-self: center; color: var(--apidocs-faint); }
@@ -1156,7 +1226,8 @@ dialog.keys td:first-child { white-space: nowrap; inline-size: 6rem; }
   }
 }
 .card p { margin: 0; }
-.card-kind { color: var(--apidocs-faint); font-size: var(--apidocs-size-xs); user-select: none; -webkit-user-select: none; }
+.card-kind { display: flex; align-items: center; gap: 6px; margin-block-end: 2px !important; color: var(--apidocs-faint); font-size: var(--apidocs-size-xs); user-select: none; -webkit-user-select: none; }
+.card-kind code { background: none; padding: 0; font-size: var(--apidocs-size-xs); color: inherit; }
 .card-name { font-family: var(--apidocs-font-mono); font-weight: 650; overflow-wrap: anywhere; }
 .card-summary { margin-block-start: 3px !important; color: var(--apidocs-muted); text-wrap: pretty; }
 @media (prefers-reduced-motion: no-preference) {

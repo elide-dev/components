@@ -179,6 +179,46 @@ describe("agent readiness", () => {
     expect(render(samples.java, { socialImage: { url: "javascript:x", width: 1, height: 1, alt: "" } })["index.html"]).not.toContain("og:image");
     expect(Object.keys(render(samples.java, { socialImage: { asset: "../secret.png", width: 1, height: 1, alt: "" } }))).not.toContain("assets/../secret.png");
   });
+  test("a public-only build leaves public out of listings and member signatures, not out of a type's header", () => {
+    const shown = render(samples.java, { visibility: "public" });
+    const pkg = shown["com/example/geo/index.html"] as string;
+    expect(pkg).toContain('class="decl-sig"');
+    expect(pkg.split('class="decl-sig"')[1]!.split("</code>")[0]).not.toContain(">public<");
+    const type = shown["com/example/geo/Shapes.html"] as string;
+    const header = type.split('class="sig sig-large"')[1]!.split("</code>")[0]!;
+    expect(header).toContain(">public<");
+    const members = type.split('class="sig sig-large"')[1]!.split("</code>").slice(1).join("");
+    expect(members).not.toContain('tk-vis">public<');
+    expect(render(samples.java)["com/example/geo/index.html"]).toContain('tk-vis">public<');
+  });
+  test("a header entry with children opens a menu of them, in the row and in the narrow menu", () => {
+    const page = render(samples.java, { links: { header: [
+      { label: "Guide", url: "https://example.com/guide/" },
+      { label: "API", url: "./", current: true, children: [{ label: "core", url: "https://example.com/core/", current: true }, { label: "extra", url: "https://example.com/extra/" }] },
+    ] } })["index.html"] as string;
+    const row = page.split('class="suites-row"')[1]!.split("</nav>")[0]!;
+    expect(row).toContain('class="suite-group-button" popovertarget="apidocs-suite-1" aria-current="true"');
+    expect(row).toContain('popover="auto"');
+    expect(row).toContain('<a href="https://example.com/core/" aria-current="true">core</a>');
+    const menu = page.split('class="suite-list"')[1]!;
+    expect(menu).toContain('<span class="suite-list-group">API</span>');
+    expect(menu).toContain('<a href="https://example.com/extra/">extra</a>');
+  });
+  test("a theme can withhold source links while keeping their template", () => {
+    const template = { sourceLink: "https://example.com/{ref}/{path}#L{line}" };
+    const shown = Object.entries(render(samples.java, template)).filter(([, c]) => typeof c === "string" && c.includes("https://example.com/main/"));
+    expect(shown.length).toBeGreaterThan(0);
+    for (const content of Object.values(render(samples.java, { ...template, sourceLinks: false }))) {
+      if (typeof content === "string") expect(content).not.toContain("https://example.com/main/");
+    }
+  });
+  test("a theme's brand replaces the product's name in the top bar only", () => {
+    const page = render(samples.java, { productName: "Geo", brand: "API Docs", baseUrl: base })["index.html"] as string;
+    expect(page).toContain('<span class="product" title="API Docs">API Docs</span>');
+    expect(head(page)).toContain('<meta property="og:site_name" content="Geo"/>');
+    const plain = render(samples.java, { productName: "Geo" })["index.html"] as string;
+    expect(plain).toContain('<span class="product" title="Geo">Geo</span>');
+  });
   test("the overview's JSON-LD lists the guides and packages, every page's has a url", () => {
     const parts = graph(elide["index.html"] as string)[0].hasPart as { "@type": string; name: string; url: string }[];
     expect(parts[0]).toEqual({ "@type": "TechArticle", name: "Getting started", url: `${base}guides/getting-started.html` });
@@ -440,6 +480,17 @@ describe("parts", () => {
     const oneLine = [...tokens.slice(0, 15), { kind: "punct" as const, text: ")" }];
     expect(oneLine.reduce((n, t) => n + t.text.length, 0)).toBe(95);
     expect(layoutSignature(oneLine)).toEqual(oneLine);
+  });
+  test("a parameter list the formatter wrapped gets one parameter per line", () => {
+    const t = (kind: "keyword" | "name" | "type" | "param" | "punct", text: string) => ({ kind, text });
+    // google-java-format keeps both components on one continuation line, since they fit there.
+    const record = [t("keyword", "public"), t("punct", " "), t("keyword", "record"), t("punct", " "), t("name", "R"),
+      t("punct", "(\n        "), t("type", "List"), t("punct", " "), t("param", "a"), t("punct", ", "), t("type", "Map"),
+      t("punct", " "), t("param", "b"), t("punct", ")")];
+    expect(layoutSignature(record).map(x => x.text).join("")).toBe("public record R(\n    List a,\n    Map b\n)");
+    // A formatter break elsewhere (before "implements") is kept as it came.
+    const clause = [t("keyword", "class"), t("punct", " "), t("name", "C"), t("punct", "\n    "), t("keyword", "implements"), t("punct", " "), t("type", "I")];
+    expect(layoutSignature(clause)).toEqual(clause);
   });
   test("ranks search results", () => {
     const entries: [string, string, string, string, string][] = [

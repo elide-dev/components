@@ -6,6 +6,7 @@
  * with CSS anchor positioning where the browser has it, and from the link's box where it does not. A screen reader
  * hears the card as the link's description. Touch screens show none: a tap follows the link.
  */
+import { SYMBOLS } from "../symbols";
 import type { Entry } from "./search";
 
 /** Links that never get a card: the navigator and breadcrumbs, heading and member anchors, menus, cards and rows. */
@@ -47,6 +48,24 @@ function kindWord(kind: string): string {
   return KIND_WORD[kind] ?? kind.charAt(0).toUpperCase() + kind.slice(1);
 }
 
+/** The glyph the navigator shows for a kind ("sealed interface", "enum class", "method"), styled by its tone. */
+function glyphFor(kind: string): { letter: string; tone: string } {
+  if (kind === "exception") return { letter: SYMBOLS.exception.utf, tone: "exception" };
+  if (/annotation/.test(kind) && !/element/i.test(kind)) return { letter: "@", tone: "annotation" };
+  if (/interface/.test(kind)) return { letter: "I", tone: "interface" };
+  if (/^record/.test(kind)) return { letter: "R", tone: "record" };
+  if (/^enum/.test(kind) && kind !== "enumConstant") return { letter: "E", tone: "enum" };
+  if (/object/.test(kind)) return { letter: "O", tone: "object" };
+  if (kind === "method" || kind === "function") return { letter: SYMBOLS.function.utf, tone: "member" };
+  if (kind === "constructor") return { letter: SYMBOLS.constructor.utf, tone: "member" };
+  if (kind === "field" || kind === "property" || kind === "enumConstant" || kind === "annotationElement") {
+    return { letter: SYMBOLS.property.utf, tone: "member" };
+  }
+  if (kind === "package") return { letter: SYMBOLS.package.utf, tone: "package" };
+  if (kind === "guide" || kind === "section") return { letter: SYMBOLS.see.utf, tone: "guide" };
+  return { letter: "C", tone: "class" };
+}
+
 export function hoverCards(load: () => Promise<Entry[]>, root: string, signal?: AbortSignal) {
   const content = document.querySelector<HTMLElement>("main.content");
   if (!content || !window.matchMedia("(any-hover: hover)").matches) return;
@@ -62,8 +81,14 @@ export function hoverCards(load: () => Promise<Entry[]>, root: string, signal?: 
   card.id = "apidocs-card";
   card.setAttribute("popover", "manual");
   card.setAttribute("role", "tooltip");
-  const kind = card.appendChild(document.createElement("p"));
-  kind.className = "card-kind";
+  const head = card.appendChild(document.createElement("p"));
+  head.className = "card-kind";
+  const glyph = head.appendChild(document.createElement("span"));
+  glyph.className = "glyph";
+  glyph.setAttribute("aria-hidden", "true");
+  const kind = head.appendChild(document.createElement("span"));
+  // Where it is declared, a package or type, set in the code face like every name from the API.
+  const where = head.appendChild(document.createElement("code"));
   const name = card.appendChild(document.createElement("p"));
   name.className = "card-name";
   const summary = card.appendChild(document.createElement("p"));
@@ -71,15 +96,20 @@ export function hoverCards(load: () => Promise<Entry[]>, root: string, signal?: 
   document.body.append(card);
   signal?.addEventListener("abort", () => card.remove());
 
-  let current: HTMLAnchorElement | undefined;
+  let current: HTMLElement | undefined;
   let showTimer: ReturnType<typeof setTimeout> | undefined;
   let hideTimer: ReturnType<typeof setTimeout> | undefined;
 
-  const entryFor = (link: HTMLAnchorElement): Entry | undefined => {
+  // A link, or an element that names where it would lead (data-card-href: a type in a member's summary row, which
+  // may hold no links, or an Optional, whose card is its type argument's).
+  const target = (element: HTMLElement) => new URL(element.dataset.cardHref || (element as HTMLAnchorElement).href, location.href);
+  const entryFor = (link: HTMLElement): Entry | undefined => {
     if (!index) return undefined;
-    const at = key(new URL(link.href), base);
+    const at = key(target(link), base);
     if (!at || at === here) return undefined;
-    return index.get(at);
+    // The static site's index names pages with .html and an Astro site's without; a data-card-href keeps the
+    // static form either way, since the Astro rewrite reaches only real links.
+    return index.get(at) ?? index.get(at.replace(/\.html(?=#|$)/, "")) ?? index.get(at.replace(/(?=#|$)/, ".html"));
   };
   const hide = () => {
     clearTimeout(showTimer);
@@ -89,14 +119,20 @@ export function hoverCards(load: () => Promise<Entry[]>, root: string, signal?: 
     current = undefined;
     if (card.matches(":popover-open")) card.hidePopover();
   };
-  const show = (link: HTMLAnchorElement) => {
+  const show = (link: HTMLElement) => {
     const entry = entryFor(link);
     if (!entry) return;
     if (current && current !== link) hide();
     current = link;
     const [label, entryKind, , owner, text] = entry;
-    kind.textContent = owner ? `${kindWord(entryKind)} in ${owner}` : kindWord(entryKind);
-    name.textContent = label;
+    const mark = glyphFor(entryKind);
+    glyph.textContent = mark.letter;
+    glyph.dataset.tone = mark.tone;
+    kind.textContent = owner ? `${kindWord(entryKind)} in` : kindWord(entryKind);
+    where.textContent = owner;
+    where.hidden = !owner;
+    // An Optional names itself, around the type whose card it shows (components/doc.tsx, TokenList).
+    name.textContent = link.dataset.cardTitle ?? label;
     summary.textContent = text;
     summary.hidden = !text;
     link.setAttribute("aria-describedby", card.id);
@@ -113,11 +149,11 @@ export function hoverCards(load: () => Promise<Entry[]>, root: string, signal?: 
       card.style.top = `${Math.max(8, top)}px`;
     }
   };
-  const eligible = (target: EventTarget | null): HTMLAnchorElement | undefined => {
-    const link = (target as Element | null)?.closest?.<HTMLAnchorElement>("a[href]");
+  const eligible = (target: EventTarget | null): HTMLElement | undefined => {
+    const link = (target as Element | null)?.closest?.<HTMLElement>("a[href], [data-card-href]");
     return link && content.contains(link) && !link.matches(SKIP) ? link : undefined;
   };
-  const schedule = (link: HTMLAnchorElement) => {
+  const schedule = (link: HTMLElement) => {
     clearTimeout(hideTimer);
     clearTimeout(showTimer);
     showTimer = setTimeout(() => void ensure().then(() => show(link)), current ? 0 : SHOW_MS);

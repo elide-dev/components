@@ -14,6 +14,7 @@
  */
 import { filterTree, pageBehaviors, saveNavigatorScroll, setFolded, siteRoot, syncFoldAll } from "../client/behaviors";
 import { hoverCards } from "../client/cards";
+import { fitGlyphs } from "../client/glyphs";
 import { loadIndex } from "./search-index";
 import { pathUnder } from "./versions";
 
@@ -28,6 +29,7 @@ function start() {
   page = new AbortController();
   pageBehaviors(page.signal);
   hoverCards(() => loadIndex(siteRoot()), siteRoot(), page.signal);
+  fitGlyphs();
   versionMenus(page.signal);
 }
 
@@ -125,6 +127,13 @@ document.addEventListener("astro:before-preparation", event => {
   root.setAttribute("data-leaving", "");
   // A navigation that is aborted (another click, an error) leaves the bar where it was.
   event.signal.addEventListener("abort", () => root.removeAttribute("data-leaving"), { once: true });
+});
+
+// A link out of the router's pages (to a page without the client router, such as a site's root page) starts as a
+// router navigation, which sets data-leaving, and ends as a full page load. Back then restores this page from the
+// back-forward cache as it was left, bar and all: clear it, or it stays stopped near the end.
+window.addEventListener("pageshow", event => {
+  if (event.persisted) document.documentElement.removeAttribute("data-leaving");
 });
 
 document.addEventListener("astro:before-swap", event => {

@@ -2,8 +2,8 @@
 import { usePage } from "./context";
 import type { Inherited, Member, Package, Ref, Token, Type } from "./model";
 import { INDEX, indexPages, overviewGuide, packagePage, refLabel, relative, resolve, rootOf, type Site, typePage } from "./site";
-import { compactTokens, memberGroups, memberTitle, summaryText, typeGroups, typeKindWord } from "./structure";
-import { Badge, Blocks, Inlines, Signature, TokenList } from "./components/doc";
+import { compactTokens, memberGroups, rowTokens, memberTitle, summaryText, typeGroups, typeKindWord } from "./structure";
+import { Badge, CopyButton, Blocks, Inlines, Signature, TokenList, withoutImpliedVisibility } from "./components/doc";
 import type { Crumb, TocItem } from "./components/chrome";
 import { LanguageMark, Shell, kindGlyph, packageLanguages } from "./components/chrome";
 import { GuideIndex, GuidePage } from "./narrative";
@@ -144,13 +144,16 @@ export function PackagePage({ pkg }: { pkg: Package }) {
     <Shell
       title={`${pkg.name} (${moduleTitle()})`}
       description={description}
-      crumbs={[{ label: usePage().site.model.module.name, page: INDEX }, { label: pkg.name }]}
+      crumbs={[{ label: usePage().site.model.module.name, page: INDEX, symbol: true }, { label: pkg.name, symbol: true }]} heading={pkg.name || "(default package)"}
       toc={toc}
       jsonLd={jsonLd(pkg.name, description, "package")}
       meta={{ kind: "package", id: pkg.id, package: pkg.name, keywords: [pkg.name, ...tops.map(t => t.name)].slice(0, 24) }}
     >
       <header class="page-head">
-        <h1><code>{pkg.name || "(default package)"}</code></h1>
+        <div class="page-name">
+          <h1><code>{pkg.name || "(default package)"}</code></h1>
+          {pkg.name && <CopyButton label="Copy the package name" text={pkg.name} />}
+        </div>
         <p class="page-meta">
           {packageLanguages(pkg, usePage().site.model.module.languages).map(l => <LanguageMark key={l} language={l} label />)}
           <span class="kind-word">package</span>
@@ -219,12 +222,12 @@ export function TypePage({ type }: { type: Type }) {
     .map(g => ({ id: g.id, title: g.title, declared: groups.find(d => d.id === g.id)?.members ?? [], inherited: inheritedGroups.get(g.id) ?? [] }));
   const extensions = extensionsOf(site, type);
   const crumbs: Crumb[] = [
-    { label: site.model.module.name, page: INDEX },
-    { label: pkg.name, page: packagePage(pkg) },
+    { label: site.model.module.name, page: INDEX, symbol: true },
+    { label: pkg.name, page: packagePage(pkg), symbol: true },
   ];
   const chain: Type[] = [];
   for (let t: Type | undefined = type; t; t = t.enclosing ? site.types.get(t.enclosing)?.type : undefined) chain.unshift(t);
-  for (const t of chain) crumbs.push({ label: t.name.split(".").pop()!, page: typePage(pkg, t) });
+  for (const t of chain) crumbs.push({ label: t.name.split(".").pop()!, page: typePage(pkg, t), symbol: true });
 
   const toc: TocItem[] = [{ id: "doc-description", label: "Description", depth: 1 }];
   if (type.components?.length) toc.push({ id: "record-components", label: "Record components", depth: 1 });
@@ -237,13 +240,16 @@ export function TypePage({ type }: { type: Type }) {
   if (inherited.external.length) toc.push({ id: "inherited-members", label: "Inherited members", depth: 1 });
 
   return (
-    <Shell title={`${type.name} (${moduleTitle()})`} description={description} crumbs={crumbs} toc={toc} jsonLd={jsonLd(type.name, description, typeKindWord(type))}
+    <Shell title={`${type.name} (${moduleTitle()})`} description={description} crumbs={crumbs} heading={type.name} toc={toc} jsonLd={jsonLd(type.name, description, typeKindWord(type))}
       meta={{
         kind: "type", id: type.id, package: pkg.name, language: type.language,
         keywords: [type.name, `${pkg.name}.${type.name}`, typeKindWord(type), ...new Set((type.members ?? []).map(member => member.name))].slice(0, 32),
       }}>
       <header class="page-head">
-        <h1 data-kind={type.kind}><span class="glyph glyph-large" data-tone={kindGlyph(type).tone} aria-hidden="true">{kindGlyph(type).letter}</span>{type.name}</h1>
+        <div class="page-name">
+          <h1 data-kind={type.kind}><span class="glyph glyph-large" data-tone={kindGlyph(type).tone} aria-hidden="true">{kindGlyph(type).letter}</span>{type.name}</h1>
+          <CopyButton label="Copy the qualified name" text={pkg.name ? `${pkg.name}.${type.name}` : type.name} />
+        </div>
         <p class="page-meta">
           <LanguageMark language={type.language} label />
           <span class="kind-word">{typeKindWord(type)}</span>
@@ -454,19 +460,19 @@ function TokenLists({ lists }: { lists: Token[][] }) {
 function MemberSummarySignature({ member }: { member: Member }) {
   const name = <span class="member-key">{member.name}</span>;
   const statik = (member.modifiers ?? []).includes("static");
-  const receiver = member.receiver ? <><TokenList plain tokens={compactTokens(member.receiver.type)} />.</> : null;
+  const receiver = member.receiver ? <><TokenList plain tokens={rowTokens(member.receiver.type)} />.</> : null;
   if (member.kind === "property") {
-    return <code class="summary-sig">{receiver}{name}: <TokenList plain tokens={compactTokens(member.type)} /></code>;
+    return <code class="summary-sig">{receiver}{name}: <TokenList plain tokens={rowTokens(member.type)} /></code>;
   }
   if (member.kind === "field") {
-    return <code class="summary-sig">{statik && <span class="tk-k">static </span>}<TokenList plain tokens={compactTokens(member.type)} /> {name}</code>;
+    return <code class="summary-sig">{statik && <span class="tk-k">static </span>}<TokenList plain tokens={rowTokens(member.type)} /> {name}</code>;
   }
   if (member.kind === "function") {
     return (
       <code class="summary-sig">
         {(member.modifiers ?? []).includes("suspend") && <span class="tk-k">suspend </span>}
-        {receiver}{name}({(member.params ?? []).map((p, i) => <span key={i}>{i > 0 && ", "}<TokenList plain tokens={compactTokens(p.type)} /></span>)})
-        {member.returns && <>: <TokenList plain tokens={compactTokens(member.returns.type)} /></>}
+        {receiver}{name}({(member.params ?? []).map((p, i) => <span key={i}>{i > 0 && ", "}<TokenList plain tokens={rowTokens(p.type)} /></span>)})
+        {member.returns && <>: <TokenList plain tokens={rowTokens(member.returns.type)} /></>}
       </code>
     );
   }
@@ -474,10 +480,10 @@ function MemberSummarySignature({ member }: { member: Member }) {
   return (
     <code class="summary-sig">
       {statik && <span class="tk-k">static </span>}
-      {member.returns && <><TokenList plain tokens={compactTokens(member.returns.type)} />{" "}</>}
+      {member.returns && <><TokenList plain tokens={rowTokens(member.returns.type)} />{" "}</>}
       {member.kind === "method" && !member.returns && <span class="tk-k">void </span>}
       {name}(
-      {(member.params ?? []).map((p, i) => <span key={i}>{i > 0 && ", "}<TokenList plain tokens={compactTokens(p.type)} /></span>)}
+      {(member.params ?? []).map((p, i) => <span key={i}>{i > 0 && ", "}<TokenList plain tokens={rowTokens(p.type)} /></span>)}
       )
     </code>
   );
@@ -518,7 +524,7 @@ function tokensText(tokens: Token[]): string {
  * A type's nested types hang under it, indented, each beginning with the dot that joins it to its enclosing type.
  */
 function DeclList({ types, pkg, within }: { types: Type[]; pkg: Package; within?: string }) {
-  const { page, site } = usePage();
+  const { page, site, theme } = usePage();
   const mixed = (site.model.module.languages ?? []).length > 1;
   return (
     <ul class={within ? "decls decls-nested" : "decls"}>
@@ -530,7 +536,7 @@ function DeclList({ types, pkg, within }: { types: Type[]; pkg: Package; within?
           <li key={type.id} class={type.deprecated ? "decl-item is-deprecated" : "decl-item"}>
             <a class="decl" href={relative(page, typePage(pkg, type), ".html")} title={tokensText(compactTokens(type.signature))}>
               <span class="glyph" data-tone={glyph.tone} aria-hidden="true">{glyph.letter}</span>
-              <code class="decl-sig"><TokenList plain tokens={head} /></code>
+              <code class="decl-sig"><TokenList plain tokens={withoutImpliedVisibility(head, theme)} /></code>
               {mixed && <LanguageMark language={type.language} />}
             </a>
             <p class="decl-summary">

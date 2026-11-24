@@ -201,7 +201,9 @@ A theme is JSON:
 The stylesheet reads only `--apidocs-*` custom properties; `tokens` sets them without the prefix (see the top of
 `src/styles/apidocs.css` for the names). `extends` picks a preset. `neutral` is the default and is unbranded.
 `elide` maps the tokens to `@elide/tokens` and takes its logo from `@elide/brand`. A theme can also set `logo`
-(SVG markup for light and dark), `favicon`, `fonts` and `footer`. Set `footer` to `false` to omit the footer.
+(SVG markup for light and dark), `brand` (the words beside the logo, such as "API Docs" when the logo already names
+the product; `productName` by default), `sourceLinks` (`false` withholds every source link, as for private code, while
+keeping `sourceLink`'s template for a host that renders per reader), `favicon`, `fonts` and `footer`. Set `footer` to `false` to omit the footer.
 
 Colors are written as `oklch()`: the neutral defaults, converted exactly from their former hex values, and the Elide
 preset's, converted from `@elide/tokens` when the preset loads (`src/color.ts`; each is the same 8-bit color). A theme

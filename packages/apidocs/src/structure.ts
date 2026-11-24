@@ -165,6 +165,63 @@ export function compactTokens(tokens: Token[] | undefined): Token[] {
   return out;
 }
 
+/** Tokens with each angle bracket in a punctuation token of its own, so type arguments can be matched. */
+export function splitAngles(tokens: Token[] | undefined): Token[] {
+  const out: Token[] = [];
+  for (const token of tokens ?? []) {
+    if (token.kind !== "punct" || !/[<>]/.test(token.text)) out.push(token);
+    else for (const part of token.text.split(/([<>])/)) if (part) out.push({ kind: "punct", text: part });
+  }
+  return out;
+}
+
+/**
+ * A type as a member's row shows it: on one line, with its type arguments ("Optional<Map<String, String>>") but
+ * without annotations, which the full signature inside the row keeps.
+ */
+export function rowTokens(tokens: Token[] | undefined): Token[] {
+  const out: Token[] = [];
+  let skipSpace = false;
+  for (const token of splitAngles(tokens)) {
+    if (token.kind === "annotation") {
+      skipSpace = true;
+      continue;
+    }
+    if (token.kind === "punct") {
+      let text = token.text.replace(/\s+/g, " ").replace(/\(\s+/g, "(").replace(/,?\s+\)/g, ")").replace(/<\s+/g, "<");
+      if (skipSpace) text = text.replace(/^\s+/, "");
+      skipSpace = false;
+      if (text) out.push({ kind: "punct", text });
+    } else {
+      skipSpace = false;
+      out.push(token);
+    }
+  }
+  return out;
+}
+
+/** java.util.Optional, by its link or its name. */
+function isOptional(token: Token | undefined): boolean {
+  if (token?.kind !== "type") return false;
+  const target = token.ref ?? token.url ?? "";
+  return token.text === "java.util.Optional" || (token.text === "Optional" && (!target || /java[./]util[./]Optional\b/.test(target)));
+}
+
+/**
+ * For an Optional at `i` in angle-split tokens (splitAngles), the index of its closing ">", or undefined when the
+ * token there is not an Optional with a type argument.
+ */
+export function optionalEnd(tokens: Token[], i: number): number | undefined {
+  if (!isOptional(tokens[i]) || tokens[i + 1]?.text !== "<") return undefined;
+  let depth = 0;
+  for (let j = i + 1; j < tokens.length; j++) {
+    const text = tokens[j]!.kind === "punct" ? tokens[j]!.text : "";
+    if (text === "<") depth++;
+    else if (text === ">" && --depth === 0) return j > i + 2 ? j : undefined;
+  }
+  return undefined;
+}
+
 /** A member's title: its name, with compact parameter types for callables so overloads differ ("read(InputStream)"). */
 export function memberTitle(member: Member): string {
   const receiver = member.receiver ? `${tokenText(compactTokens(member.receiver.type))}.` : "";
