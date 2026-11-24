@@ -789,8 +789,11 @@ export function Navigation() {
           <h2 class="nav-heading">{site.packages.length > 0 ? <span>Guides</span> : <a href={overview} aria-current={page === INDEX ? "page" : undefined}>Guides</a>}</h2>
           <ul class="nav-list nav-tree">
             {guides.groups.map((group, i) => {
-              // A section's row leads to its first guide, its overview, so that guide is not listed again under it.
-              const [first, ...rest] = group.guides;
+              // A section's row leads to its first guide. When that guide is the section's own page (its index), it is
+              // not listed again under the row; any other first guide keeps its own row.
+              const [first, ...others] = group.guides;
+              const overview = !!group.title && /(^|\/)index$/.test(first!.slug);
+              const rest = overview ? others : group.guides;
               const rows = (group.title ? rest : group.guides).map(guide => (
                 <li key={guide.id} class="nav-item">
                   <a class="nav-row" href={guide.href} title={guide.summary || guide.title} aria-current={guide.current ? "page" : undefined}>
@@ -804,7 +807,7 @@ export function Navigation() {
               return (
                 <NavBranch key={i} id={`g:${group.title}`} open={open} label={group.title} empty={rest.length === 0}
                   row={<a class="nav-row nav-group-row" href={first!.href} title={first!.summary || group.title}
-                    aria-current={first!.current ? "page" : undefined}>
+                    aria-current={overview && first!.current ? "page" : undefined}>
                     {theme.guideIcons && <span class="glyph" data-tone="guide" aria-hidden="true">{guideIcon(theme, first!.slug, SYMBOLS.guide.utf)}</span>}
                     <span class="nav-label">{group.title}</span></a>}>
                   {rows}
