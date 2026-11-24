@@ -68,6 +68,15 @@ describe("render", () => {
     expect(html).toContain('id="read(java.io.InputStream)"');
     expect(out["fixture/java/Polygon.html"] as string).toContain('id="&lt;init>(double...)"');
   });
+  test("a documented nonconstant property shows its nullness without an empty Value row", () => {
+    const pages = render(samples.kotlin);
+    const shape = pages["org/example/kgeo/Shape.html"] as string;
+    const property = shape.match(/<details class="member" data-kind="property".*?<\/details>/s)![0];
+    expect(property).toContain("The area in square meters");
+    expect(property).toContain('title="Never null"');
+    expect(property).not.toContain("No description.");
+    expect(pages["org/example/kgeo/Circle.Companion.html"]).toContain("Constant: <code>1.0</code>");
+  });
   test("HTML snapshots", () => {
     for (const page of ["fixture/java/Geometry.html", "fixture/java/Circle.html", "fixture/java/index.html", "index.html"]) {
       expect(out[page]).toMatchSnapshot(page);
