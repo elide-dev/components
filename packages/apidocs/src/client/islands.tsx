@@ -5,12 +5,14 @@
  */
 import { leaving, loadIndex, navigatorScroll, pageBehaviors, searchBox, siteRoot } from "./behaviors";
 import { hoverCards } from "./cards";
+import { fitGlyphs } from "./glyphs";
 
 function start() {
   document.documentElement.dataset.js = "";
   pageBehaviors();
   searchBox();
   hoverCards(loadIndex, siteRoot());
+  fitGlyphs();
   navigatorScroll();
   leaving();
 }

@@ -14,6 +14,7 @@
  */
 import { filterTree, pageBehaviors, saveNavigatorScroll, setFolded, siteRoot, syncFoldAll } from "../client/behaviors";
 import { hoverCards } from "../client/cards";
+import { fitGlyphs } from "../client/glyphs";
 import { loadIndex } from "./search-index";
 import { pathUnder } from "./versions";
 
@@ -28,6 +29,7 @@ function start() {
   page = new AbortController();
   pageBehaviors(page.signal);
   hoverCards(() => loadIndex(siteRoot()), siteRoot(), page.signal);
+  fitGlyphs();
   versionMenus(page.signal);
 }
 

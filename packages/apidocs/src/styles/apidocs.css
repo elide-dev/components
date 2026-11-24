@@ -407,7 +407,8 @@ html[data-js] .sidebar:not([data-scrolling]) { scrollbar-color: transparent tran
 .nav-heading a { color: inherit; }
 @media (hover: hover) and (pointer: fine) { .nav-heading a:hover { color: var(--apidocs-fg); text-decoration: none; } }
 .nav-heading a:active { color: var(--apidocs-fg); text-decoration: none; }
-.nav-heading a[aria-current="page"] { color: var(--apidocs-accent); }
+/* The heading names the navigator, so it stays gray on its own page too: the current row is marked below it. */
+.nav-heading a[aria-current="page"] { color: inherit; }
 .nav-module { justify-content: space-between; }
 .nav-module > a { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--apidocs-font-mono); text-transform: none; letter-spacing: 0; font-size: var(--apidocs-size-sm); color: var(--apidocs-fg); }
 .nav-index { display: flex; flex: none; gap: 2px; text-transform: none; letter-spacing: 0; font-weight: 450; }
@@ -498,6 +499,8 @@ html[data-js] .nav-branch[data-folded]:not([data-filter-open]) > .nav-children {
   color: var(--glyph, var(--apidocs-muted));
   background: color-mix(in srgb, var(--glyph, var(--apidocs-muted)) 13%, transparent);
 }
+/* A guide glyph's symbol, moved and scaled to the tile's center by client/glyphs.ts. */
+.glyph-ink { display: inline-block; }
 .glyph[data-tone="class"] { --glyph: var(--apidocs-syn-function); }
 .glyph[data-tone="interface"] { --glyph: var(--apidocs-syn-type); }
 .glyph[data-tone="record"] { --glyph: var(--apidocs-syn-string); }
