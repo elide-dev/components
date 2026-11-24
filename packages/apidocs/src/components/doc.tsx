@@ -146,8 +146,8 @@ export function CopyButton({ label, text }: { label: string; text?: string }) {
  * shows the type's hover card (client/cards.ts).
  *
  * An `Optional<X>` is about its X: its hover card shows X's documentation under the title `Optional<X>` (`X?` on a
- * Kotlin page). A row (`plain`) writes it as `X?`, Kotlin's nullable type, which says the same in less room; the full
- * signature keeps the declared form.
+ * Kotlin page). A row (`plain`) on a Kotlin page, or on a Java page when the theme says so (`optionalAsNullable`),
+ * writes it as `X?`; the full signature keeps the declared form.
  */
 export function TokenList({ tokens, plain, cardTitle }: { tokens: Token[] | undefined; plain?: boolean; cardTitle?: string }) {
   const ctx = usePage();
@@ -160,16 +160,17 @@ export function TokenList({ tokens, plain, cardTitle }: { tokens: Token[] | unde
     if (end !== undefined) {
       const inner = list.slice(i + 2, end);
       const head = inner.find(t => t.kind === "type");
-      const card = ctx.language === "kotlin" ? `${tokenText(inner)}?` : tokenText(list.slice(i, end + 1));
-      if (plain) {
+      const kotlin = ctx.language === "kotlin";
+      const card = kotlin ? `${tokenText(inner)}?` : tokenText(list.slice(i, end + 1));
+      if (plain && (kotlin || ctx.theme.optionalAsNullable)) {
         out.push(<TokenList key={i} plain tokens={inner} cardTitle={card} />, "?");
         i = end;
         continue;
       }
       const resolved = resolveToken(ctx.site, ctx.page, ".html", token);
-      const cardHref = head && resolveToken(ctx.site, ctx.page, ".html", head);
-      const attrs = { class: "tk-t", "data-card-href": cardHref, "data-card-title": cardHref ? card : undefined };
-      out.push(resolved ? <a key={i} href={resolved} {...attrs}>{token.text}</a> : <span key={i} {...attrs}>{token.text}</span>);
+      const cardHref = (head && resolveToken(ctx.site, ctx.page, ".html", head)) || undefined;
+      const attrs = { class: "tk-t", "data-card-href": cardHref ?? (plain ? resolved : undefined), "data-card-title": cardHref ? card : undefined };
+      out.push(resolved && !plain ? <a key={i} href={resolved} {...attrs}>{token.text}</a> : <span key={i} {...attrs}>{token.text}</span>);
       continue;
     }
     switch (token.kind) {

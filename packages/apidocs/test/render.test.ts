@@ -481,6 +481,17 @@ describe("parts", () => {
     expect(oneLine.reduce((n, t) => n + t.text.length, 0)).toBe(95);
     expect(layoutSignature(oneLine)).toEqual(oneLine);
   });
+  test("a parameter list the formatter wrapped gets one parameter per line", () => {
+    const t = (kind: "keyword" | "name" | "type" | "param" | "punct", text: string) => ({ kind, text });
+    // google-java-format keeps both components on one continuation line, since they fit there.
+    const record = [t("keyword", "public"), t("punct", " "), t("keyword", "record"), t("punct", " "), t("name", "R"),
+      t("punct", "(\n        "), t("type", "List"), t("punct", " "), t("param", "a"), t("punct", ", "), t("type", "Map"),
+      t("punct", " "), t("param", "b"), t("punct", ")")];
+    expect(layoutSignature(record).map(x => x.text).join("")).toBe("public record R(\n    List a,\n    Map b\n)");
+    // A formatter break elsewhere (before "implements") is kept as it came.
+    const clause = [t("keyword", "class"), t("punct", " "), t("name", "C"), t("punct", "\n    "), t("keyword", "implements"), t("punct", " "), t("type", "I")];
+    expect(layoutSignature(clause)).toEqual(clause);
+  });
   test("ranks search results", () => {
     const entries: [string, string, string, string, string][] = [
       ["readAll()", "method", "a", "Reader", ""], ["Reader", "class", "b", "p", ""], ["ShapeReader", "class", "c", "p", ""], ["thread()", "method", "d", "X", ""],

@@ -87,6 +87,11 @@ export interface Theme {
    */
   sourceLinks?: boolean;
   /**
+   * Whether a Java page's member rows write java.util.Optional<X> as X?, Kotlin's nullable type. Off by default:
+   * the two differ in Java. A Kotlin page always writes X?.
+   */
+  optionalAsNullable?: boolean;
+  /**
    * The narrowest visibility the build documents. "public" (a doclet run with -public) means every declaration shown is
    * public, so listings and member signatures leave the modifier out; a type's own page keeps it in its header.
    */

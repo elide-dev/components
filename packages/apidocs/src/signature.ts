@@ -5,22 +5,34 @@
  * so signatures read the same way on every page.
  *
  * A signature the source formatter laid out arrives with its line breaks and is
- * shown as it came. The formatters the JVM tools run (google-java-format, ktfmt)
- * stop at 100 columns and leave a shorter signature on one line, so this uses
- * the same width: a one-line signature of 81 to 100 columns is one the formatter
- * chose to keep, and is not broken again here. The signature box sizes its text
- * so 100 columns fit (apidocs.css, "the declaration specimen").
+ * shown as it came, unless the formatter wrapped its parameter list: then it
+ * gets one parameter per line here too. (google-java-format puts every
+ * parameter on one continuation line when they fit there, which hides them in
+ * a declaration that is read, not edited.) The formatters the JVM tools run
+ * (google-java-format, ktfmt) stop at 100 columns and leave a shorter signature
+ * on one line, so this uses the same width: a one-line signature of 81 to 100
+ * columns is one the formatter chose to keep, and is not broken again here. The
+ * signature box sizes its text so 100 columns fit (apidocs.css, "the
+ * declaration specimen").
  */
 import type { Token } from "./model";
 
 export const WIDTH = 100;
 const INDENT = "    ";
 
-export function layoutSignature(tokens: Token[]): Token[] {
-  // A signature that already has line breaks was laid out by the source formatter: it is shown as it came.
-  if (tokens.some(t => t.text.includes("\n"))) return tokens;
+/** The formatter's line breaks taken out: "(\n    a,\n    b,\n)" becomes "(a, b)". */
+function joined(tokens: Token[]): Token[] {
+  return tokens.map(t => t.kind !== "punct" || !t.text.includes("\n") ? t
+    : { ...t, text: t.text.replace(/\(\s+/g, "(").replace(/,?\s*\n\s*\)/g, ")").replace(/\s*\n\s*/g, " ") });
+}
+
+export function layoutSignature(source: Token[]): Token[] {
+  // Laid out by the source formatter: shown as it came, unless the formatter wrapped the parameters.
+  const wrapped = source.some(t => t.kind === "punct" && /\(\s*\n/.test(t.text));
+  if (!wrapped && source.some(t => t.text.includes("\n"))) return source;
+  const tokens = wrapped ? joined(source) : source;
   const length = tokens.reduce((n, t) => n + t.text.length, 0);
-  if (length <= WIDTH) return tokens;
+  if (!wrapped && length <= WIDTH) return tokens;
   const name = tokens.findIndex(t => t.kind === "name");
   if (name < 0) return tokens;
   const out = tokens.slice(0, name + 1);
