@@ -101,8 +101,8 @@ export function hoverCards(load: () => Promise<Entry[]>, root: string, signal?: 
   let hideTimer: ReturnType<typeof setTimeout> | undefined;
 
   // A link, or an element that names where it would lead (data-card-href: a type in a member's summary row, which
-  // may hold no links).
-  const target = (element: HTMLElement) => new URL((element as HTMLAnchorElement).href || element.dataset.cardHref!, location.href);
+  // may hold no links, or an Optional, whose card is its type argument's).
+  const target = (element: HTMLElement) => new URL(element.dataset.cardHref || (element as HTMLAnchorElement).href, location.href);
   const entryFor = (link: HTMLElement): Entry | undefined => {
     if (!index) return undefined;
     const at = key(target(link), base);
@@ -131,7 +131,8 @@ export function hoverCards(load: () => Promise<Entry[]>, root: string, signal?: 
     kind.textContent = owner ? `${kindWord(entryKind)} in` : kindWord(entryKind);
     where.textContent = owner;
     where.hidden = !owner;
-    name.textContent = label;
+    // An Optional names itself, around the type whose card it shows (components/doc.tsx, TokenList).
+    name.textContent = link.dataset.cardTitle ?? label;
     summary.textContent = text;
     summary.hidden = !text;
     link.setAttribute("aria-describedby", card.id);

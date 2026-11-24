@@ -5,7 +5,7 @@ import { samples } from "../samples";
 import type { Guide, Model } from "../src/model";
 import { render } from "../src/render";
 import { buildSite, orderGuides } from "../src/site";
-import { blockText, compactTokens, guideAnchors } from "../src/structure";
+import { blockText, compactTokens, guideAnchors, optionalEnd, rowTokens } from "../src/structure";
 import { namespaceSvg } from "../src/diagram";
 import { checkSite } from "./check";
 import { validate } from "./validate";
@@ -110,6 +110,18 @@ describe("outputs", () => {
   test("compact tokens put a formatter-wrapped signature on one line", () => {
     const tokens = [{ kind: "name" as const, text: "f" }, { kind: "punct" as const, text: "(\n    " }, { kind: "param" as const, text: "a" }, { kind: "punct" as const, text: ",\n    " }, { kind: "param" as const, text: "b" }, { kind: "punct" as const, text: ",\n)" }];
     expect(compactTokens(tokens).map(t => t.text).join("")).toBe("f(a, b)");
+  });
+  test("a row's type keeps its type arguments and drops annotations", () => {
+    const tokens = [{ kind: "type" as const, text: "Optional", url: "https://docs.oracle.com/java/util/Optional.html" }, { kind: "punct" as const, text: "<" },
+      { kind: "annotation" as const, text: "@Nullable" }, { kind: "punct" as const, text: " " }, { kind: "type" as const, text: "Map" },
+      { kind: "punct" as const, text: "<" }, { kind: "type" as const, text: "String" }, { kind: "punct" as const, text: ",\n    " },
+      { kind: "type" as const, text: "String" }, { kind: "punct" as const, text: ">>" }];
+    const row = rowTokens(tokens);
+    expect(row.map(t => t.text).join("")).toBe("Optional<Map<String, String>>");
+    expect(optionalEnd(row, 0)).toBe(row.length - 1);
+    expect(optionalEnd(row, 2)).toBeUndefined();
+    // Another library's Optional is not java.util.Optional.
+    expect(optionalEnd([{ kind: "type", text: "Optional", ref: "com.example.Optional" }, ...row.slice(1)], 0)).toBeUndefined();
   });
 });
 

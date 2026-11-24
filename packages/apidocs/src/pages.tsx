@@ -2,7 +2,7 @@
 import { usePage } from "./context";
 import type { Inherited, Member, Package, Ref, Token, Type } from "./model";
 import { INDEX, indexPages, overviewGuide, packagePage, refLabel, relative, resolve, rootOf, type Site, typePage } from "./site";
-import { compactTokens, memberGroups, memberTitle, summaryText, typeGroups, typeKindWord } from "./structure";
+import { compactTokens, memberGroups, rowTokens, memberTitle, summaryText, typeGroups, typeKindWord } from "./structure";
 import { Badge, CopyButton, Blocks, Inlines, Signature, TokenList, withoutImpliedVisibility } from "./components/doc";
 import type { Crumb, TocItem } from "./components/chrome";
 import { LanguageMark, Shell, kindGlyph, packageLanguages } from "./components/chrome";
@@ -460,19 +460,19 @@ function TokenLists({ lists }: { lists: Token[][] }) {
 function MemberSummarySignature({ member }: { member: Member }) {
   const name = <span class="member-key">{member.name}</span>;
   const statik = (member.modifiers ?? []).includes("static");
-  const receiver = member.receiver ? <><TokenList plain tokens={compactTokens(member.receiver.type)} />.</> : null;
+  const receiver = member.receiver ? <><TokenList plain tokens={rowTokens(member.receiver.type)} />.</> : null;
   if (member.kind === "property") {
-    return <code class="summary-sig">{receiver}{name}: <TokenList plain tokens={compactTokens(member.type)} /></code>;
+    return <code class="summary-sig">{receiver}{name}: <TokenList plain tokens={rowTokens(member.type)} /></code>;
   }
   if (member.kind === "field") {
-    return <code class="summary-sig">{statik && <span class="tk-k">static </span>}<TokenList plain tokens={compactTokens(member.type)} /> {name}</code>;
+    return <code class="summary-sig">{statik && <span class="tk-k">static </span>}<TokenList plain tokens={rowTokens(member.type)} /> {name}</code>;
   }
   if (member.kind === "function") {
     return (
       <code class="summary-sig">
         {(member.modifiers ?? []).includes("suspend") && <span class="tk-k">suspend </span>}
-        {receiver}{name}({(member.params ?? []).map((p, i) => <span key={i}>{i > 0 && ", "}<TokenList plain tokens={compactTokens(p.type)} /></span>)})
-        {member.returns && <>: <TokenList plain tokens={compactTokens(member.returns.type)} /></>}
+        {receiver}{name}({(member.params ?? []).map((p, i) => <span key={i}>{i > 0 && ", "}<TokenList plain tokens={rowTokens(p.type)} /></span>)})
+        {member.returns && <>: <TokenList plain tokens={rowTokens(member.returns.type)} /></>}
       </code>
     );
   }
@@ -480,10 +480,10 @@ function MemberSummarySignature({ member }: { member: Member }) {
   return (
     <code class="summary-sig">
       {statik && <span class="tk-k">static </span>}
-      {member.returns && <><TokenList plain tokens={compactTokens(member.returns.type)} />{" "}</>}
+      {member.returns && <><TokenList plain tokens={rowTokens(member.returns.type)} />{" "}</>}
       {member.kind === "method" && !member.returns && <span class="tk-k">void </span>}
       {name}(
-      {(member.params ?? []).map((p, i) => <span key={i}>{i > 0 && ", "}<TokenList plain tokens={compactTokens(p.type)} /></span>)}
+      {(member.params ?? []).map((p, i) => <span key={i}>{i > 0 && ", "}<TokenList plain tokens={rowTokens(p.type)} /></span>)}
       )
     </code>
   );
