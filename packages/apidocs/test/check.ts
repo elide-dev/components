@@ -41,7 +41,20 @@ export function checkSite(out: Output, options: CheckOptions): string[] {
       if (/\bfetch\s*\(/.test(bare)) errors.push(`${file}: uses fetch`);
       if (/\bimport\s*\(/.test(bare)) errors.push(`${file}: dynamic import`);
     }
+    // The shared navigator (assets/nav.js) is markup in a string, which pages load with links from the site's root.
+    if (file === "assets/nav.js") {
+      const tree = /^window\.apidocsNav=("(?:[^"\\]|\\.)*");/.exec(content);
+      if (!tree) errors.push(`${file}: no navigator tree`);
+      else checkMarkup(`${file} (tree)`, "index.html", JSON.parse(tree[1]!) as string);
+      continue;
+    }
     if (!file.endsWith(".html")) continue;
+    checkMarkup(file, file, content);
+  }
+  return errors;
+
+  /** Checks the markup in `content`, which is in `file` (for messages) and resolves its links from `base`. */
+  function checkMarkup(file: string, base: string, content: string) {
     // A drawn diagram is inline SVG: it carries no stylesheet, inline style, foreign content or script of its own.
     for (const figure of content.matchAll(/<figure class="diagram">([\s\S]*?)<\/figure>/g)) {
       const body = figure[1]!;
@@ -75,7 +88,7 @@ export function checkSite(out: Output, options: CheckOptions): string[] {
         errors.push(`${file}: link names a directory: ${url}`);
         continue;
       }
-      const target = join(file, decodeURIComponent(path));
+      const target = join(base, decodeURIComponent(path));
       if (!(target in out)) {
         errors.push(`${file}: link to a missing file ${url}`);
         continue;
@@ -85,7 +98,6 @@ export function checkSite(out: Output, options: CheckOptions): string[] {
       }
     }
   }
-  return errors;
 }
 
 function splitAnchor(url: string): [string, string | undefined] {

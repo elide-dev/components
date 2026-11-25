@@ -177,7 +177,7 @@ export function MemberDetail({ member, summary, overload }: { member: Member; su
     // An overload of the row above it says so: the rows read as one name with its forms.
     <details class={["member", member.deprecated && "is-deprecated", overload && "is-overload"].filter(Boolean).join(" ")} data-kind={member.kind} open={open}>
       <summary class="member-row">
-        <svg class="member-chevron" viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M6 3.75 10.25 8 6 12.25" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" /></svg>
+        <span class="member-chevron" aria-hidden="true" />
         <span class="member-sig">{summary ?? <code class="summary-sig">{member.name}</code>}</span>
         {/* The summary sentence is the first sentence of the entry inside, which carries it as text: the row draws it
             from the attribute, so a page with hundreds of members does not hold each sentence twice. It is still in

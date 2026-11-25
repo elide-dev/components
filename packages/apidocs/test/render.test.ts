@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
@@ -12,7 +12,7 @@ import { render } from "../src/render";
 import { sanitize } from "../src/sanitize";
 import { layoutSignature } from "../src/signature";
 import { navIndexes, sharedPrefix, suites } from "../src/components/chrome";
-import { buildSite, isThrowable } from "../src/site";
+import { buildSite, isThrowable, typePage } from "../src/site";
 import { overloadsTogether } from "../src/structure";
 import { extensionsOf, inheritedMembers } from "../src/pages";
 import { checkSite } from "./check";
@@ -329,6 +329,41 @@ describe("layout", () => {
     // The module's heading is its overview's link.
     expect(nav).toContain('<h2 class="nav-heading nav-module"><a href="../../../index.html"');
   });
+  test("a page carries only its path through the navigator; assets/nav.js, which every page shares, has the whole tree", () => {
+    const html = java["com/example/geo/Shapes.Builder.Option.html"] as string;
+    const nav = between(html, '<nav class="sidebar"', "</nav>");
+    // The other packages are rows that lead to their pages, with no children and no twisty to open them yet.
+    expect(nav).toMatch(/data-nav-key="p:com\.example\.geo\.[a-z]+" data-folded><div class="nav-branch-row"><span class="nav-twisty" aria-hidden="true" data-js-only="true"><\/span><a class="nav-row nav-package"/);
+    expect(nav).not.toMatch(/data-folded><div class="nav-branch-row">(?:(?!<\/li>).)*class="nav-list nav-children"/);
+    expect(nav).toContain('<script src="../../../assets/nav.js"></script>');
+    const script = java["assets/nav.js"] as string;
+    const tree = JSON.parse(/^window\.apidocsNav=("(?:[^"\\]|\\.)*");/.exec(script)![1]!) as string;
+    // Every type is in the shared tree, linked from the root, with every branch folded and nothing current.
+    for (const pkg of samples.java.packages ?? []) for (const type of pkg.types ?? []) expect(tree).toContain(` href="${typePage(pkg, type)}.html"`);
+    expect(tree).not.toMatch(/aria-current|data-path|data-open/);
+    expect(tree).not.toContain("<script");
+    expect(tree.length).toBeGreaterThan(nav.length);
+    // The page's copy holds the types of its own package, not the others'.
+    const rows = (markup: string) => markup.split('class="nav-row nav-type"').length - 1;
+    const own = (samples.java.packages ?? []).find(pkg => pkg.name === "com.example.geo")!;
+    expect(rows(nav)).toBeLessThanOrEqual((own.types ?? []).length);
+    expect(rows(tree)).toBe((samples.java.packages ?? []).reduce((n, pkg) => n + (pkg.types ?? []).length, 0));
+  });
+  test("pages link only to the optional files the site has", () => {
+    const bare = render(samples.java, { extends: "elide" }, { markdown: false, llms: false, model: false });
+    expect(Object.keys(bare).filter(file => /\.md$|^llms|^api\.json$/.test(file))).toEqual([]);
+    expect(checkSite(bare, { allowed: [...allowed(samples.java), "https://claude.ai/", "https://chatgpt.com/"] })).toEqual([]);
+    for (const [file, content] of Object.entries(bare)) {
+      if (file.endsWith(".html")) expect(content as string).not.toMatch(/\.md"|llms(-full)?\.txt|api\.json|data-copy-markdown/);
+    }
+    // Without the Markdown twins, llms.txt lists the HTML pages and llms-full.txt still has every page.
+    const html = render(samples.java, { extends: "elide" }, { markdown: false });
+    expect(Object.keys(html).filter(file => file.endsWith(".md"))).toEqual([]);
+    expect(html["llms.txt"]).toContain("(com/example/geo/Shapes.html)");
+    expect(html["llms.txt"]).not.toMatch(/\]\([^)]*\.md\)/);
+    expect(html["llms-full.txt"]).toBe(java["llms-full.txt"]);
+    expect(checkSite(html, { allowed: [...allowed(samples.java), "https://claude.ai/", "https://chatgpt.com/"] })).toEqual([]);
+  });
   test("script-only controls are marked, and the head marks script support before paint", () => {
     const html = java["com/example/geo/Shapes.html"] as string;
     for (const control of ["data-search", "data-theme-switch", "data-nav-filter"]) {
@@ -450,6 +485,22 @@ describe("runner", () => {
       expect(run.stderr).toBe("");
       expect(JSON.parse(run.stdout).files).toBeGreaterThan(40);
       expect(readFileSync(join(work, "out/fixture/java/Geometry.html"), "utf8")).toContain("https://example.com/blob/v1.2.3/fixture/java/Geometry.java#L");
+    } finally {
+      rmSync(work, { recursive: true, force: true });
+    }
+  });
+  test("--no-markdown, --no-llms and --no-model leave those files out", () => {
+    const work = mkdtempSync(join(tmpdir(), "apidocs-runner-"));
+    try {
+      writeFileSync(join(work, "model.json"), JSON.stringify(fixture));
+      const dist = new URL("../dist/", import.meta.url).pathname;
+      const run = spawnSync(process.execPath, [`${dist}runner.mjs`, "--bundle", `${dist}render.js`, "--assets", `${dist}assets`,
+        "--model", join(work, "model.json"), "--no-markdown", "--no-llms", "--out", join(work, "out"), "--no-model"], { encoding: "utf8" });
+      expect(run.stderr).toBe("");
+      const files = readdirSync(join(work, "out"), { recursive: true }).map(String);
+      expect(files).toContain("fixture/java/Geometry.html");
+      expect(files).toContain("assets/nav.js");
+      expect(files.filter(file => /\.md$|llms|api\.json/.test(file))).toEqual([]);
     } finally {
       rmSync(work, { recursive: true, force: true });
     }

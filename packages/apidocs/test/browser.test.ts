@@ -86,6 +86,11 @@ describe("from file:// with JavaScript off", () => {
     for (const control of await page.locator("[data-js-only]").all()) expect(await control.isVisible()).toBe(false);
     expect(await page.locator(".search-fallback").isVisible()).toBe(true);
     expect(await page.locator("[data-copy]").first().isVisible()).toBe(false);
+    // The navigator is the page's own copy: a row for every package, with the page's own package open.
+    const nav = page.locator("#apidocs-nav");
+    expect(await nav.locator("a.nav-package:visible").count()).toBe((samples.java.packages ?? []).length);
+    expect(await nav.locator(".nav-branch[data-path] a.nav-type:visible").count()).toBeGreaterThan(3);
+    expect(await nav.locator('a[aria-current="page"]:visible').count()).toBe(1);
     expect(requests.every(r => r.startsWith("file://"))).toBe(true);
     await page.context().close();
   });
@@ -142,6 +147,11 @@ describe("from file:// with JavaScript on", () => {
   test("the navigator's branches fold and unfold, all at once too, and the filter finds packages and nested types", async () => {
     const { page, errors } = await open("com/example/geo/Shapes.html", { viewport: { width: 1440, height: 900 } });
     const nav = page.locator("#apidocs-nav");
+    // The whole tree is in place (assets/nav.js), with the page's row current and its package open.
+    const types = (samples.java.packages ?? []).reduce((n, pkg) => n + (pkg.types ?? []).length, 0);
+    expect(await nav.locator("a.nav-type").count()).toBe(types);
+    expect(await nav.locator('a[aria-current="page"]').getAttribute("href")).toBe("../../../com/example/geo/Shapes.html");
+    expect(await nav.locator(".nav-branch[data-path] > .nav-branch-row > button.nav-twisty").first().getAttribute("aria-expanded")).toBe("true");
     const visible = () => nav.locator("a.nav-row:visible").count();
     // The current package is open; another package is folded, its types out of view.
     const other = nav.locator(".nav-branch[data-nav-key^='p:']").filter({ hasNot: page.locator("[aria-current]") }).first();

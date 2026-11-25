@@ -50,14 +50,15 @@ for (const [name, model] of Object.entries(models)) {
       }
     });
 
-    test("each text file is the static renderer's, except the Astro-form sitemap and search index", () => {
+    test("each text file is the static renderer's, except the Astro-form sitemap and search index, and the shared navigator Astro pages do not need", () => {
       for (const file of textFiles(model, theme)) {
         expect(resolvePage(model, file, theme)).toEqual({ kind: "file", name: file });
         const text = renderText(model, file, theme);
         if (file === "assets/search-index.json" || file === "sitemap.xml") continue;
         expect(text?.body).toBe(out[file] as string);
       }
-      for (const file of Object.keys(out).filter(f => typeof out[f] === "string" && !f.endsWith(".html") && !f.endsWith(".md"))) {
+      // Astro pages carry the whole navigator, which its client router keeps across pages: they load no assets/nav.js.
+      for (const file of Object.keys(out).filter(f => typeof out[f] === "string" && !f.endsWith(".html") && !f.endsWith(".md") && f !== "assets/nav.js")) {
         expect(textFiles(model, theme)).toContain(file);
       }
     });

@@ -55,12 +55,30 @@ describe("a guides-only site from file://", () => {
     const { page, requests } = await open("guides/concepts/alerts.html", { javaScriptEnabled: false });
     expect(await page.getByRole("heading", { level: 1 }).textContent()).toBe("Callouts");
     expect(await page.locator(".callout").count()).toBe(5);
-    expect(await page.getByRole("navigation", { name: "Guides" }).locator("a.nav-row:not(.nav-group-row)").count()).toBe(6);
-    // Without the script nothing is folded: every guide is reachable.
-    expect(await page.getByRole("navigation", { name: "Guides" }).locator("a.nav-row:not(.nav-group-row):visible").count()).toBe(6);
+    // Without the script, the navigator is the page's own copy: the page's group open, with its guides, and a row
+    // for every other group, which leads to that group's first guide. Nothing in it is hidden.
+    const nav = page.getByRole("navigation", { name: "Guides" });
+    const rows = await nav.locator("a.nav-row").count();
+    expect(rows).toBeGreaterThan(1);
+    expect(await nav.locator("a.nav-row:visible").count()).toBe(rows);
+    expect(await nav.locator(".nav-branch[data-path] a.nav-row:not(.nav-group-row)").count()).toBeGreaterThan(0);
+    expect(await nav.locator('[aria-current="page"]').count()).toBe(1);
     expect(await page.locator(".nav-packages").count()).toBe(0);
     for (const control of await page.locator("[data-js-only]").all()) expect(await control.isVisible()).toBe(false);
     expect(requests.every(r => r.startsWith("file://"))).toBe(true);
+    await page.context().close();
+  });
+
+  test("with JavaScript on, the navigator is the whole tree from assets/nav.js, open along the page's path", async () => {
+    const { page, errors } = await open("guides/concepts/alerts.html");
+    const nav = page.getByRole("navigation", { name: "Guides" });
+    expect(await nav.locator("a.nav-row:not(.nav-group-row)").count()).toBe(6);
+    const current = nav.locator('[aria-current="page"]');
+    expect(await current.count()).toBe(1);
+    expect(await current.isVisible()).toBe(true);
+    expect(await current.getAttribute("href")).toBe("../../guides/concepts/alerts.html");
+    expect(await nav.locator(".nav-branch[data-path] > .nav-branch-row > button.nav-twisty").getAttribute("aria-expanded")).toBe("true");
+    expect(errors).toEqual([]);
     await page.context().close();
   });
 

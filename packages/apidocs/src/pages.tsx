@@ -1,5 +1,5 @@
 /** The three page kinds: the module overview, a package, and a type. */
-import { usePage } from "./context";
+import { outputsOf, usePage } from "./context";
 import type { Inherited, Member, Package, Ref, Token, Type } from "./model";
 import { INDEX, indexPages, overviewGuide, packagePage, refLabel, relative, resolve, rootOf, type Site, typePage } from "./site";
 import { compactTokens, memberGroups, rowTokens, memberTitle, summaryText, typeGroups, typeKindWord } from "./structure";
@@ -32,7 +32,8 @@ function jsonLd(name: string, description: string, kind: string) {
 // ---- The page a host serves for a missing URL (404.html).
 
 export function NotFoundPage() {
-  const { site, page } = usePage();
+  const ctx = usePage();
+  const { site, page } = ctx;
   const m = site.model.module;
   const description = `There is no such page in ${m.name}.`;
   const links = [{ page: INDEX, label: "Overview" }, ...indexPages(site)];
@@ -46,7 +47,7 @@ export function NotFoundPage() {
         <p>There is no such page in {m.name}. It may have moved, or the link may be wrong. Search above, or start from one of these:</p>
         <ul>
           {links.map(link => <li key={link.page}><a href={relative(page, link.page, ".html")}>{link.label}</a></li>)}
-          <li><a href={`${rootOf(page)}llms.txt`}>llms.txt</a>, every page as Markdown</li>
+          {outputsOf(ctx).llms && <li><a href={`${rootOf(page)}llms.txt`}>llms.txt</a>, every page as Markdown</li>}
         </ul>
       </div>
     </Shell>

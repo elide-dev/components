@@ -430,9 +430,15 @@ html[data-js] .sidebar:not([data-scrolling]) { scrollbar-color: transparent tran
 }
 @media (hover: hover) and (pointer: fine) { button.nav-twisty:hover { color: var(--apidocs-fg); background: var(--apidocs-subtle); } }
 button.nav-twisty:active { color: var(--apidocs-fg); background: var(--apidocs-subtle); }
-.nav-twisty svg { transform: rotate(90deg); }
-html[data-js] .nav-branch[data-folded]:not([data-filter-open]) > .nav-branch-row > .nav-twisty svg { transform: none; }
-html[data-js] .nav-branch[data-folded]:not([data-filter-open]) > .nav-branch-row > .nav-twisty svg:dir(rtl) { transform: scaleX(-1); }
+/* The chevrons of the navigator's twisties and the member rows are drawn here, not repeated as SVG in every row: a
+   mask over the text color, so they take the row's color and the forced colors. */
+button.nav-twisty::before, summary.member-row > .member-chevron {
+  content: ""; display: block; flex: none; width: 12px; height: 12px; background: currentColor; forced-color-adjust: none;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M6 3.75 10.25 8 6 12.25' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 12px 12px no-repeat;
+}
+.nav-twisty::before { transform: rotate(90deg); }
+html[data-js] .nav-branch[data-folded]:not([data-filter-open]) > .nav-branch-row > .nav-twisty::before { transform: none; }
+html[data-js] .nav-branch[data-folded]:not([data-filter-open]) > .nav-branch-row > .nav-twisty:dir(rtl)::before { transform: scaleX(-1); }
 html[data-js] .nav-branch[data-folded]:not([data-filter-open]) > .nav-children { display: none; }
 /* A leaf has no twisty. Among branches that have glyphs (types with nested types), and under one, it keeps the twisty's room, so the
    glyphs line up in one column. Elsewhere (guides, a group, packages) it takes none: its glyph sits in the twisties'

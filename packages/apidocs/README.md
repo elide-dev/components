@@ -10,7 +10,7 @@ plugin write. Pages are prerendered with Preact. They work from `file://`, from 
 
 | File | What it is |
 | --- | --- |
-| `render.js` | One classic script (IIFE) that defines the global `ApiDocs = { schema, render }`. Preact and the highlighter are inlined. `render(model, theme)` is a pure function: no file, network, Node, Bun or DOM API. |
+| `render.js` | One classic script (IIFE) that defines the global `ApiDocs = { schema, render }`. Preact and the highlighter are inlined. `render(model, theme, options?)` is a pure function: no file, network, Node, Bun or DOM API. |
 | `runner.mjs` | Runs `render.js` in Bun or Node and writes the site. The JVM tools ship it with `render.js` and `assets/`. |
 | `assets/` | `apidocs.css`, `apidocs.js` (the client islands, Preact inlined, loaded with `defer`) and the fonts the Elide preset uses. |
 | `apidocs-1.schema.json` | The model's JSON Schema. `src/model.ts` is generated from it. |
@@ -20,7 +20,10 @@ node dist/runner.mjs --bundle dist/render.js --assets dist/assets --model api.js
 ```
 
 The runner prints `{"files":N,"bytes":N,"renderMs":N}` and exits 0, or prints the error and exits 1. It never reaches
-the network.
+the network. `--no-markdown`, `--no-llms` and `--no-model` leave out the Markdown twins, `llms.txt` and
+`llms-full.txt`, and `api.json` (render's `options`: `{ markdown: false, llms: false, model: false }`); pages then
+link only to the files the site has. Without the twins, `llms.txt` lists the HTML pages and `llms-full.txt` still
+holds every page as Markdown.
 
 ## Output
 
@@ -47,8 +50,14 @@ types as `Outer.Inner`. The root also holds `llms.txt`, `llms-full.txt`, `api.js
 - **JSON-LD**: every page's item has a `url` (absolute with a `baseUrl`, else relative); the overview's lists the
   guides and packages as `hasPart`. Every link is relative and names
 its file. Scripts are classic. Search reads `assets/search-index.js`, which assigns a global, so nothing uses `fetch`.
-With JavaScript off, pages keep all their content and the navigator shows every branch open; only search, the theme
-switch, copy buttons, folding and "Show more" go away.
+
+The navigator's whole tree is in one file, `assets/nav.js`, which every page loads at the end of its navigator: a
+script that assigns the tree's markup to a global (so it works from `file://`) and puts it in place of the page's own
+copy before the navigator is painted, with the page's row current and its path open. The page's own copy holds the
+module's heading and indexes, a row for every package and guide group, and the branches on the page's path: the
+current package's types and the current type's nested types. A page's size so depends on its own content, not on the
+size of the module. With JavaScript off, pages keep all their content and the navigator is that copy, with every
+branch in it open; only search, the theme switch, copy buttons, folding, the rest of the tree and "Show more" go away.
 
 ## Guides
 
@@ -223,7 +232,7 @@ version menu), a switcher between sibling documentation sites, search and the th
 theme's `homeUrl`, or to the site's overview. The switcher returns to the page last read in each site during the
 session.
 
-The navigator is one tree, under a filter and a button that folds or opens every branch: guides by group, then the
+The navigator is one tree (from `assets/nav.js` on a static site; see Output), under a filter and a button that folds or opens every branch: guides by group, then the
 module, whose heading leads to its overview (which lists every package with its types) and has the A to Z index and the
 deprecated list beside it; then each package, with its types, and each type with its nested types as `.Name`. The
 current page's path is open and the rest is folded; a reader's own folding is kept across an Astro app's pages. The
