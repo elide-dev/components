@@ -54,10 +54,11 @@ its file. Scripts are classic. Search reads `assets/search-index.js`, which assi
 The navigator's whole tree is in one file, `assets/nav.js`, which every page loads at the end of its navigator: a
 script that assigns the tree's markup to a global (so it works from `file://`) and puts it in place of the page's own
 copy before the navigator is painted, with the page's row current and its path open. The page's own copy holds the
-module's heading and indexes, a row for every package and guide group, and the branches on the page's path: the
-current package's types and the current type's nested types. A page's size so depends on its own content, not on the
-size of the module. With JavaScript off, pages keep all their content and the navigator is that copy, with every
-branch in it open; only search, the theme switch, copy buttons, folding, the rest of the tree and "Show more" go away.
+module's heading (which leads to the overview, where every package is listed) and indexes, the guides with a row per
+group, and the page's path: its package with its types, and the current type's nested types. A page's size so depends
+on its own content, not on the size of the module. With JavaScript off, pages keep all their content and the
+navigator is that copy, with every branch in it open; only search, the theme switch, copy buttons, folding, the rest
+of the tree and "Show more" go away.
 
 ## Guides
 

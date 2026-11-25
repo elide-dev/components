@@ -830,12 +830,8 @@ export function Navigation() {
         <div class="nav-filter" data-nav-filter data-js-only>
           <label class="visually-hidden" for="apidocs-nav-filter">{site.packages.length ? "Filter packages, types and guides" : "Filter guides"}</label>
           <input id="apidocs-nav-filter" type="search" placeholder="Filter" autocomplete="off" spellcheck={false} />
-          <button type="button" class="nav-fold-all" data-nav-fold-all aria-label="Expand all" title="Expand all" data-action="expand">
-            {/* Chevrons apart: open everything; chevrons together: fold everything. */}
-            <svg class="icon fold-all-expand" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M4.5 6 8 2.5 11.5 6M4.5 10 8 13.5 11.5 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
-            <svg class="icon fold-all-restore" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M2.5 3v4h4M3 7a5 5 0 1 1 1 5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
-            <svg class="icon fold-all-collapse" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M4.5 2.5 8 6l3.5-3.5M4.5 13.5 8 10l3.5 3.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
-          </button>
+          {/* Its icon follows data-action, drawn by the stylesheet. */}
+          <button type="button" class="nav-fold-all" data-nav-fold-all aria-label="Expand all" title="Expand all" data-action="expand" />
         </div>
       )}
       <NavTree prune={split} />
@@ -878,10 +874,10 @@ const NAV_HYDRATE =
 
 /**
  * The navigator's tree: guides by group, then the module with its packages and types. `shared` renders it for
- * assets/nav.js: links from the site's root, as from the overview, and no row current or open. `prune` leaves out
- * the children of folded branches: the page's own copy, which keeps its path (the current package's types, the
- * current type's nested types) and a link to every package and guide group, for readers and crawlers without the
- * script.
+ * assets/nav.js: links from the site's root, as from the overview, and no row current or open. `prune` renders the
+ * page's own copy, for readers and crawlers without the script: the module's heading (the overview, which lists every
+ * package) and indexes, the guides with a row per group, and the page's path (its package with its types, and the
+ * current type's nested types); the other packages and the children of folded branches are left out.
  */
 export function NavTree({ shared = false, prune = false }: { shared?: boolean; prune?: boolean }) {
   const { site, theme, page: at } = usePage();
@@ -951,6 +947,8 @@ export function NavTree({ shared = false, prune = false }: { shared?: boolean; p
               const tops = sortedTypes((pkg.types ?? []).filter(t => !t.enclosing));
               const types = <NavTypes types={tops} pkg={pkg} chain={chain} page={page} here={here} prune={prune} />;
               if (single) return <li key={pkg.id} class="nav-item nav-children-wrap">{types}</li>;
+              // The page's own copy keeps only the page's package: the overview, which the heading links, lists the rest.
+              if (prune && pkg !== currentPkg) return null;
               const label = pkg.name ? (prefix ? pkg.name.slice(prefix.length + 1) : pkg.name) : "(default package)";
               return (
                 <NavBranch key={pkg.id} id={`p:${pkg.id}`} open={pkg === currentPkg} prune={prune} label={pkg.name || label} empty={tops.length === 0}

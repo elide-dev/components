@@ -317,10 +317,10 @@ describe("layout", () => {
   });
   test("the navigator is one tree: packages fold, their types under them, nested types as .Name under theirs", () => {
     const nav = between(java["com/example/geo/Shapes.Builder.Option.html"] as string, '<nav class="sidebar"', "</nav>");
-    // The current package and the chain of enclosing types are open; the other packages are folded.
+    // The current package and the chain of enclosing types are open; in the whole tree, the other packages are folded.
     expect(nav).toContain('<li class="nav-item nav-branch" data-nav-key="p:com.example.geo" data-path>');
     expect(nav).toContain('data-nav-key="t:com.example.geo.Shapes" data-path>');
-    expect(nav).toMatch(/data-nav-key="p:com\.example\.geo\.[a-z]+" data-folded>/);
+    expect(java["assets/nav.js"] as string).toMatch(/data-nav-key=\\"p:com\.example\.geo\.[a-z]+\\" data-folded>/);
     expect(nav).toContain('<span class="nav-label"><span class="nav-dot" aria-hidden="true">.</span>Builder</span>');
     expect(nav).toContain('aria-current="page"');
     // The twisty controls its branch's list; the fold-all button sits beside the filter.
@@ -332,9 +332,12 @@ describe("layout", () => {
   test("a page carries only its path through the navigator; assets/nav.js, which every page shares, has the whole tree", () => {
     const html = java["com/example/geo/Shapes.Builder.Option.html"] as string;
     const nav = between(html, '<nav class="sidebar"', "</nav>");
-    // The other packages are rows that lead to their pages, with no children and no twisty to open them yet.
-    expect(nav).toMatch(/data-nav-key="p:com\.example\.geo\.[a-z]+" data-folded><div class="nav-branch-row"><span class="nav-twisty" aria-hidden="true" data-js-only="true"><\/span><a class="nav-row nav-package"/);
+    // The page's package is open; the other packages are left out (the module's heading leads to the overview, which
+    // lists them), and so are the children of folded branches, whose twisty holds its place for the script.
+    expect(nav).toContain('data-nav-key="p:com.example.geo" data-path>');
+    expect(nav).not.toMatch(/data-nav-key="p:com\.example\.geo\.[a-z]+"/);
     expect(nav).not.toMatch(/data-folded><div class="nav-branch-row">(?:(?!<\/li>).)*class="nav-list nav-children"/);
+    expect(nav).toMatch(/data-folded><div class="nav-branch-row"><span class="nav-twisty" aria-hidden="true" data-js-only="true"><\/span>/);
     expect(nav).toContain('<script src="../../../assets/nav.js"></script>');
     const script = java["assets/nav.js"] as string;
     const tree = JSON.parse(/^window\.apidocsNav=("(?:[^"\\]|\\.)*");/.exec(script)![1]!) as string;
