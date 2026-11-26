@@ -7,7 +7,8 @@
  */
 import { renderToString } from "preact-render-to-string";
 import { DeprecatedPage, IndexAllPage, PackagesIndexPage, TypesIndexPage } from "./indexes";
-import { Ctx, type PageContext } from "./context";
+import { Ctx, type Outputs, outputsOf, type PageContext } from "./context";
+import { NAV_SCRIPT, NavTree, navScript } from "./components/chrome";
 import { deprecatedIndexMarkdown, frontmatter, guideMarkdown, guideTwin, indexAllMarkdown, indexMarkdown, indexTwin, moduleTwin, NOT_FOUND, notFoundMarkdown, packageMarkdown, packagesIndexMarkdown, packageTwin, stripFrontmatter, typeMarkdown, typesIndexMarkdown, typeTwin } from "./markdown";
 import type { Model } from "./model";
 import { GuidePage } from "./narrative";
@@ -27,10 +28,17 @@ export interface AssetRef {
 
 export type Output = Record<string, string | AssetRef>;
 
+/**
+ * What render writes besides the HTML pages and their assets. Every file is written unless its option is false:
+ * `markdown` (the Markdown twins), `llms` (llms.txt and llms-full.txt), `model` (api.json). Pages link only to
+ * the files the site has. Without Markdown twins, llms.txt lists the HTML pages and llms-full.txt is still whole.
+ */
+export type RenderOptions = Outputs;
+
 /** The renderer's own assets, copied into every site. */
 const STATIC_ASSETS = ["apidocs.css", "apidocs.js"];
 
-export function render(modelInput: Model | string, themeInput?: Theme | string): Output {
+export function render(modelInput: Model | string, themeInput?: Theme | string, options: RenderOptions = {}): Output {
   const model: Model = typeof modelInput === "string" ? JSON.parse(modelInput) : modelInput;
   if (model.schema !== SCHEMA) throw new Error(`Expected an ${SCHEMA} model, got ${JSON.stringify(model.schema)}`);
   const theme = safeTheme(resolveTheme(typeof themeInput === "string" ? JSON.parse(themeInput) : themeInput));
@@ -40,14 +48,18 @@ export function render(modelInput: Model | string, themeInput?: Theme | string):
   const symbols = theme.symbols ?? "utf";
   // A Markdown twin's canonical URL is its HTML page's, when the site's address is known.
   const canonical = (page: string) => (theme.baseUrl ? `${theme.baseUrl}${page}.html` : undefined);
+  const outputs = outputsOf({ outputs: options });
+  // Markdown is always made, for llms-full.txt; the twins are written only when the site has them.
+  const md: Record<string, string> = {};
 
   const html = (page: string, language: string, node: preact.VNode) => {
-    const ctx: PageContext = { site, theme, page, language };
+    // Every page carries only its own path through the navigator; assets/nav.js has the whole tree.
+    const ctx: PageContext = { site, theme, page, language, nav: "split", outputs };
     out[`${page}.html`] = "<!doctype html>\n" + renderToString(<Ctx.Provider value={ctx}>{node}</Ctx.Provider>) + "\n";
   };
 
   html(INDEX, site.language, <IndexPage />);
-  out[`${INDEX}.md`] = frontmatter(site, moduleTwin(site), canonical(INDEX)) + indexMarkdown(site, symbols);
+  md[INDEX] = frontmatter(site, moduleTwin(site), canonical(INDEX)) + indexMarkdown(site, symbols);
   pages.push({ page: INDEX, title: `${model.module.name} overview`, summary: overviewSummary(site), symbol: "module" });
   // Guides come right after the overview in llms-full.txt: agents should read them before the reference. The
   // overview guide is the index page, already written.
@@ -55,18 +67,18 @@ export function render(modelInput: Model | string, themeInput?: Theme | string):
   for (const entry of site.guides) {
     if (entry.page === INDEX) continue;
     html(entry.page, site.language, <GuidePage entry={entry} />);
-    out[`${entry.page}.md`] = frontmatter(site, guideTwin(entry), canonical(entry.page)) + guideMarkdown(site, entry, symbols);
+    md[entry.page] = frontmatter(site, guideTwin(entry), canonical(entry.page)) + guideMarkdown(site, entry, symbols);
     guides.push({ page: entry.page, title: entry.guide.title, summary: oneLine(inlineText(entry.guide.summary)), symbol: "guide" });
   }
   for (const pkg of site.packages) {
     const page = packagePage(pkg);
     html(page, site.language, <PackagePage pkg={pkg} />);
-    out[`${page}.md`] = frontmatter(site, packageTwin(pkg), canonical(page)) + packageMarkdown(site, pkg, symbols);
+    md[page] = frontmatter(site, packageTwin(pkg), canonical(page)) + packageMarkdown(site, pkg, symbols);
     pages.push({ page, title: `Package ${pkg.name}`, summary: summaryText(pkg.doc), symbol: "package" });
     for (const type of pkg.types ?? []) {
       const tpage = typePage(pkg, type);
       html(tpage, type.language, <TypePage type={type} />);
-      out[`${tpage}.md`] = frontmatter(site, typeTwin(type), canonical(tpage)) + typeMarkdown(site, type, symbols);
+      md[tpage] = frontmatter(site, typeTwin(type), canonical(tpage)) + typeMarkdown(site, type, symbols);
       pages.push({ page: tpage, title: `${type.name} (${typeKindWord(type)} in ${pkg.name})`, summary: summaryText(type.doc), symbol: typeSymbolKey(type.kind, isThrowable(type)) });
     }
   }
@@ -75,7 +87,7 @@ export function render(modelInput: Model | string, themeInput?: Theme | string):
   const indexes: ListedPage[] = [];
   const indexPage = (page: string, title: string, summary: string, node: preact.VNode, markdown: string) => {
     html(page, site.language, node);
-    out[`${page}.md`] = frontmatter(site, indexTwin(title, `${title}: ${summary}.`), canonical(page)) + markdown;
+    md[page] = frontmatter(site, indexTwin(title, `${title}: ${summary}.`), canonical(page)) + markdown;
     indexes.push({ page, title, summary, symbol: "module" });
   };
   for (const { page } of indexPages(site)) {
@@ -87,17 +99,24 @@ export function render(modelInput: Model | string, themeInput?: Theme | string):
 
   // What a host serves for a missing URL: the page shell with the way back, and its Markdown form.
   html(NOT_FOUND, site.language, <NotFoundPage />);
-  out[`${NOT_FOUND}.md`] = frontmatter(site, { title: "Not found", kind: "notfound" }) + notFoundMarkdown(site, theme.baseUrl ?? "", indexPages(site));
+  md[NOT_FOUND] = frontmatter(site, { title: "Not found", kind: "notfound" }) + notFoundMarkdown(site, theme.baseUrl ?? "", indexPages(site));
 
-  out["llms.txt"] = llms(site, pages, guides, symbols, indexes, theme.whenToUse);
-  // The twins without their frontmatter: in one file, each starts at the comment that names it.
-  out["llms-full.txt"] = [pages[0]!, ...guides, ...pages.slice(1)].map(p => `<!-- ${p.page}.md -->\n${stripFrontmatter(out[`${p.page}.md`] as string)}`).join("\n");
-  out["api.json"] = JSON.stringify(model);
+  if (outputs.markdown) for (const [page, text] of Object.entries(md)) out[`${page}.md`] = text;
+  if (outputs.llms) {
+    out["llms.txt"] = llms(site, pages, guides, symbols, indexes, theme.whenToUse, outputs);
+    // The twins without their frontmatter: in one file, each starts at the comment that names it.
+    out["llms-full.txt"] = [pages[0]!, ...guides, ...pages.slice(1)].map(p => `<!-- ${p.page}.md -->\n${stripFrontmatter(md[p.page]!)}`).join("\n");
+  }
+  if (outputs.model) out["api.json"] = JSON.stringify(model);
   // Javadoc's element-list: a module line first when the packages belong to a named JPMS module, as -link expects.
   // A guides-only site has no packages for -link to find, so it has no element-list.
   const modulePrefix = model.module.javaModule ? [`module:${model.module.javaModule}`] : [];
   if (site.packages.length > 0 || !site.guides.length) out["element-list"] = [...modulePrefix, ...site.packages.map(p => p.name).filter(Boolean)].join("\n") + "\n";
   out["assets/search-index.js"] = searchIndex(site);
+  if (site.packages.length > 0 || site.guides.length > 0) {
+    const ctx: PageContext = { site, theme, page: INDEX, language: site.language, nav: "split", outputs };
+    out[`assets/${NAV_SCRIPT}`] = navScript(renderToString(<Ctx.Provider value={ctx}><NavTree shared /></Ctx.Provider>));
+  }
   out["assets/theme.css"] = themeCss({ ...theme, fonts: (theme.fonts ?? []).map(f => ({ ...f, asset: f.asset })) });
   for (const name of STATIC_ASSETS) out[`assets/${name}`] = { asset: name };
   for (const font of theme.fonts ?? []) out[`assets/${font.asset}`] = { asset: font.asset };
@@ -144,16 +163,20 @@ function safeSocialImage(image: Theme["socialImage"]): Theme["socialImage"] | un
 }
 
 /** llms.txt (llmstxt.org): what the module is, the guides, then every reference page, each with its summary. */
-function llms(site: Site, pages: ListedPage[], guides: ListedPage[], symbols: SymbolMode, indexes: ListedPage[] = [], whenToUse?: string): string {
+function llms(site: Site, pages: ListedPage[], guides: ListedPage[], symbols: SymbolMode, indexes: ListedPage[] = [], whenToUse?: string,
+  outputs: Required<Outputs> = { markdown: true, llms: true, model: true }): string {
+  // Without Markdown twins, the entries are the HTML pages.
+  const ext = outputs.markdown ? ".md" : ".html";
   const m = site.model.module;
   const guidesOnly = site.packages.length === 0 && site.guides.length > 0;
   // Names and summaries are untrusted text: Markdown escapes keep their angle brackets and brackets literal.
   const md = (text: string) => text.replace(/([\\[\]<>])/g, "\\$1");
-  const entry = (p: ListedPage) => `- [${withSym(symbols, p.symbol, md(p.title))}](${p.page}.md)${p.summary ? `: ${md(p.summary)}` : ""}`;
+  const entry = (p: ListedPage) => `- [${withSym(symbols, p.symbol, md(p.title))}](${p.page}${ext})${p.summary ? `: ${md(p.summary)}` : ""}`;
   const lines = [`# ${md(m.name)}${m.version ? ` ${md(m.version)}` : ""}`, ""];
   lines.push(`> ${md(overviewSummary(site)) || `${guidesOnly ? "Documentation" : "API reference"} for ${md(m.name)}.`}`, "");
   lines.push(
-    "Each page below is Markdown; the HTML page of the same name has the same content. llms-full.txt has every page in one file, and api.json is the apidocs/1 model.",
+    (outputs.markdown ? "Each page below is Markdown; the HTML page of the same name has the same content. " : "Each page below is HTML. ") +
+      `llms-full.txt has every page in one file${outputs.markdown ? "" : ", as Markdown"}${outputs.model ? ", and api.json is the apidocs/1 model" : ""}.`,
     "",
   );
   // For an agent deciding whether this is the reference it needs: the theme's words, or one sentence from the module's.
@@ -162,9 +185,9 @@ function llms(site: Site, pages: ListedPage[], guides: ListedPage[], symbols: Sy
   lines.push("## When to use this", "", whenToUse?.trim() || `Use this ${what} when you write, read or review code that uses ${md(m.name)}${m.version ? ` ${md(m.version)}` : ""}.${summary ? ` ${md(summary)}` : ""}`, "");
   lines.push(
     "## Overview", "",
-    `- [${withSym(symbols, "module", md(m.name))}](index.md): ${guidesOnly ? "the overview" : "packages and types"}`,
+    `- [${withSym(symbols, "module", md(m.name))}](index${ext}): ${guidesOnly ? "the overview" : "packages and types"}`,
     "- [llms-full.txt](llms-full.txt): every page in one file",
-    "- [api.json](api.json): the apidocs/1 model",
+    ...(outputs.model ? ["- [api.json](api.json): the apidocs/1 model"] : []),
     "",
   );
   if (guides.length) {
@@ -178,7 +201,7 @@ function llms(site: Site, pages: ListedPage[], guides: ListedPage[], symbols: Sy
   }
   if (indexes.length) {
     lines.push("", "## Indexes", "");
-    for (const p of indexes) lines.push(`- [${p.title}](${p.page}.md): ${p.summary}`);
+    for (const p of indexes) lines.push(`- [${p.title}](${p.page}${ext}): ${p.summary}`);
   }
   return lines.join("\n").trimEnd() + "\n";
 }

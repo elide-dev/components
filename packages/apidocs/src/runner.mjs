@@ -6,8 +6,10 @@
  * (Bun or Node); it needs nothing else and never touches the network.
  *
  *   runner.mjs --bundle render.js --assets assets/ --model api.json [--theme theme.json] [--source-ref ref]
- *              [--last-modified 2026-11-21] --out site/
+ *              [--last-modified 2026-11-21] [--no-markdown] [--no-llms] [--no-model] --out site/
  *
+ * --no-markdown leaves out the pages' Markdown twins, --no-llms llms.txt and llms-full.txt, --no-model api.json;
+ * pages then link only to what the site has.
  * --source-ref sets the theme's sourceRef: the {ref} in its source-link template. --last-modified sets the
  * theme's lastModified, sitemap.xml's lastmod: the build's date, which the renderer never reads from a clock.
  *
@@ -18,10 +20,18 @@
 import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, isAbsolute, join, normalize, resolve, sep } from "node:path";
 
+/** The optional outputs each --no-<name> flag leaves out, as render()'s options name them. */
+const FLAGS = { "no-markdown": "markdown", "no-llms": "llms", "no-model": "model" };
+
 function args(argv) {
-  const out = {};
+  const out = { outputs: {} };
   for (let i = 0; i < argv.length; i += 2) {
     const key = argv[i];
+    if (key.startsWith("--") && key.slice(2) in FLAGS) {
+      out.outputs[FLAGS[key.slice(2)]] = false;
+      i--;
+      continue;
+    }
     if (!key.startsWith("--") || i + 1 >= argv.length) throw new Error(`Expected --key value pairs, got ${key}`);
     out[key.slice(2)] = argv[i + 1];
   }
@@ -52,7 +62,7 @@ try {
   if (options["source-ref"]) theme.sourceRef = options["source-ref"];
   if (options["last-modified"]) theme.lastModified = options["last-modified"];
   const started = performance.now();
-  const files = api.render(model, theme);
+  const files = api.render(model, theme, options.outputs);
   const renderMs = Math.round(performance.now() - started);
   let count = 0;
   let bytes = 0;

@@ -7,9 +7,9 @@
  * client bundle, speculation rules), plus the attributes the client router persists elements by and named holes
  * where Astro puts its own content (a slot in the top bar, the search island, a notice above the page).
  */
-import { createContext, type ComponentChildren } from "preact";
+import { createContext, Fragment, type ComponentChildren } from "preact";
 import { useContext } from "preact/hooks";
-import { type PageContext, usePage } from "../context";
+import { outputsOf, type PageContext, usePage } from "../context";
 import type { Package, Type } from "../model";
 import { INDEX, PACKAGES_PAGE, TYPES_PAGE, guideNav, indexPages, isAbsolute, isThrowable, packagePage, relative, rootOf, type Site, typePage } from "../site";
 import { guideIcon, type Theme } from "../theme";
@@ -87,13 +87,18 @@ function logoWidth(svg: string, height: number): number | undefined {
  * nothing is under the field. Defined once, as a global the page's scripts call (apidocsNavTop), and used at once to
  * restore the navigator's position before it is painted.
  */
-const NAV_BOOT =
+const NAV_TOP =
   'window.apidocsNavTop=function(n,c){var m=n.scrollHeight-n.clientHeight,w=Math.max(0,Math.min(c.offsetTop-n.clientHeight/3,m)),i=n.querySelector(".nav-filter input"),' +
   'a=i?i.offsetTop:0,z=i?a+i.offsetHeight:0,best=0,end=0;' +
   'Array.prototype.forEach.call(n.querySelectorAll(".nav-row"),function(r){if(!r.offsetHeight)return;var t=r.offsetTop,s=t-z;' +
   'if(t-end>=z-a&&s>=0&&s<=m&&end<=s+a&&c.offsetTop>=s+z&&c.offsetTop+c.offsetHeight<=s+n.clientHeight&&Math.abs(s-w)<Math.abs(best-w))best=s;end=Math.max(end,t+r.offsetHeight)});' +
-  'return best};' +
-  '(function(){var n=document.getElementById("apidocs-nav");if(!n)return;try{var k="apidocs-nav:"+new URL(document.documentElement.getAttribute("data-root")||"./",location.href).pathname;var s=sessionStorage.getItem(k);if(s)n.scrollTop=+s}catch(e){}var c=n.querySelector(\'[aria-current="page"]\');if(c&&(c.offsetTop<n.scrollTop||c.offsetTop>n.scrollTop+n.clientHeight-40))n.scrollTop=apidocsNavTop(n,c)})()';
+  'return best};';
+
+/** Restores the navigator's scroll position. With a split navigator, apidocsNavTop comes from assets/nav.js. */
+const NAV_RESTORE =
+  '(function(){var n=document.getElementById("apidocs-nav");if(!n)return;try{var k="apidocs-nav:"+new URL(document.documentElement.getAttribute("data-root")||"./",location.href).pathname;var s=sessionStorage.getItem(k);if(s)n.scrollTop=+s}catch(e){}var c=n.querySelector(\'[aria-current="page"]\');if(c&&window.apidocsNavTop&&(c.offsetTop<n.scrollTop||c.offsetTop>n.scrollTop+n.clientHeight-40))n.scrollTop=apidocsNavTop(n,c)})()';
+
+const NAV_BOOT = NAV_TOP + NAV_RESTORE;
 
 /**
  * Preloads the upright font files, so they are ready at first paint. Done from the head script, not with link
@@ -157,12 +162,15 @@ export interface PageMeta {
   keywords?: string[];
 }
 
-/** Where a page's machine-readable versions are: absolute when the site's address is known, else relative to the page. */
+/**
+ * Where a page's machine-readable versions are: absolute when the site's address is known, else relative to the
+ * page. A form the site does not have (see Outputs) is left out.
+ */
 export interface Formats {
-  markdown: string;
-  llms: string;
-  full: string;
-  model: string;
+  markdown?: string;
+  llms?: string;
+  full?: string;
+  model?: string;
 }
 
 /**
@@ -197,11 +205,11 @@ export function headData(ctx: PageContext, props: Pick<ShellProps, "title" | "de
   const canonical = theme.baseUrl && meta?.kind !== "notfound" ? `${theme.baseUrl}${page}.html` : undefined;
   const m = site.model.module;
   const at = (path: string, fromRoot: boolean) => (theme.baseUrl ? `${theme.baseUrl}${fromRoot ? path : `${page.slice(0, page.lastIndexOf("/") + 1)}${path}`}` : `${fromRoot ? root : ""}${path}`);
+  const has = outputsOf(ctx);
   const formats: Formats = {
-    markdown: at(`${name}.md`, false),
-    llms: at("llms.txt", true),
-    full: at("llms-full.txt", true),
-    model: at("api.json", true),
+    ...(has.markdown ? { markdown: at(`${name}.md`, false) } : {}),
+    ...(has.llms ? { llms: at("llms.txt", true), full: at("llms-full.txt", true) } : {}),
+    ...(has.model ? { model: at("api.json", true) } : {}),
   };
   const keywords = [...new Set([...(meta?.keywords ?? []), m.name, ...(m.languages ?? []).map(languageName), ...(site.packages.length ? ["API reference"] : [])])].filter(Boolean);
   // Another page's URL in the graph: absolute under the base URL, else relative to this page, as the breadcrumbs are.
@@ -217,7 +225,7 @@ export function headData(ctx: PageContext, props: Pick<ShellProps, "title" | "de
         headline: title,
         inLanguage: "en",
         keywords: keywords.join(", "),
-        encoding: [{ "@type": "MediaObject", encodingFormat: "text/markdown", contentUrl: formats.markdown, name: "This page as Markdown" }],
+        ...(formats.markdown ? { encoding: [{ "@type": "MediaObject", encodingFormat: "text/markdown", contentUrl: formats.markdown, name: "This page as Markdown" }] } : {}),
         ...(m.version ? { version: m.version } : {}),
         ...(image ? { image: { "@type": "ImageObject", url: image, width: theme.socialImage!.width, height: theme.socialImage!.height, caption: theme.socialImage!.alt } } : {}),
         // The overview lists what the site holds: the guides, then the packages.
@@ -241,16 +249,22 @@ export function headData(ctx: PageContext, props: Pick<ShellProps, "title" | "de
             })),
           }]
         : []),
-      {
-        "@type": "DataCatalog",
-        name: `${product} machine-readable reference`,
-        description: "The same reference as Markdown and JSON, for programs and AI agents.",
-        dataset: [
-          { "@type": "Dataset", name: "llms.txt", description: "Index of every page as Markdown links.", encodingFormat: "text/markdown", url: formats.llms },
-          { "@type": "Dataset", name: "llms-full.txt", description: "The whole reference in one Markdown file.", encodingFormat: "text/markdown", url: formats.full },
-          { "@type": "Dataset", name: "api.json", description: "The apidocs/1 model of the module.", encodingFormat: "application/json", url: formats.model },
-        ],
-      },
+      ...(formats.llms || formats.model
+        ? [{
+            "@type": "DataCatalog",
+            name: `${product} machine-readable reference`,
+            description: "The same reference as Markdown and JSON, for programs and AI agents.",
+            dataset: [
+              ...(formats.llms
+                ? [
+                    { "@type": "Dataset", name: "llms.txt", description: "Index of every page as Markdown links.", encodingFormat: "text/markdown", url: formats.llms },
+                    { "@type": "Dataset", name: "llms-full.txt", description: "The whole reference in one Markdown file.", encodingFormat: "text/markdown", url: formats.full },
+                  ]
+                : []),
+              ...(formats.model ? [{ "@type": "Dataset", name: "api.json", description: "The apidocs/1 model of the module.", encodingFormat: "application/json", url: formats.model }] : []),
+            ],
+          }]
+        : []),
     ],
   };
   const tags: HeadData["meta"] = [
@@ -283,10 +297,14 @@ export function headData(ctx: PageContext, props: Pick<ShellProps, "title" | "de
   ];
   // The same content for programs and AI agents: this page as Markdown, the index, the whole reference, the model.
   const links: HeadData["links"] = [
-    { rel: "alternate", type: "text/markdown", href: `${name}.md`, title: "This page as Markdown" },
-    { rel: "alternate", type: "text/markdown", href: `${root}llms.txt`, title: "llms.txt: index of every page, as Markdown links" },
-    { rel: "alternate", type: "text/markdown", href: `${root}llms-full.txt`, title: "llms-full.txt: the whole reference in one Markdown file" },
-    { rel: "alternate", type: "application/json", href: `${root}api.json`, title: "api.json: the apidocs/1 model of this module" },
+    ...(has.markdown ? [{ rel: "alternate", type: "text/markdown", href: `${name}.md`, title: "This page as Markdown" }] : []),
+    ...(has.llms
+      ? [
+          { rel: "alternate", type: "text/markdown", href: `${root}llms.txt`, title: "llms.txt: index of every page, as Markdown links" },
+          { rel: "alternate", type: "text/markdown", href: `${root}llms-full.txt`, title: "llms-full.txt: the whole reference in one Markdown file" },
+        ]
+      : []),
+    ...(has.model ? [{ rel: "alternate", type: "application/json", href: `${root}api.json`, title: "api.json: the apidocs/1 model of this module" }] : []),
     { rel: "index", href: `${root}index.html`, title: `${product} API reference` },
   ];
   return { title, description, keywords, product, canonical, meta: tags, links, formats, jsonLd: graph };
@@ -360,7 +378,7 @@ export function Shell({ title, description, crumbs, heading, toc, jsonLd, meta, 
         <TopBar />
         <div class="layout">
           <Navigation />
-          <script dangerouslySetInnerHTML={{ __html: NAV_BOOT }} />
+          <script dangerouslySetInnerHTML={{ __html: ctx.nav === "split" ? NAV_RESTORE : NAV_BOOT }} />
           <main id="content" class="content">
             <AgentNote formats={head.formats} />
             <PageTools crumbs={crumbs} heading={heading} canonical={head.canonical} title={title} />
@@ -377,9 +395,16 @@ export function Shell({ title, description, crumbs, heading, toc, jsonLd, meta, 
 
 /** For programs that read the page as text: where the other forms are. Not shown, not read aloud. */
 export function AgentNote({ formats }: { formats: Formats }) {
+  const parts = [
+    formats.markdown && `Markdown: ${formats.markdown} .`,
+    formats.llms && `Index of every page (llms.txt): ${formats.llms} .`,
+    formats.full && `The whole reference in one Markdown file: ${formats.full} .`,
+    formats.model && `The API model as JSON (apidocs/1): ${formats.model} .`,
+  ].filter(Boolean);
+  if (!parts.length) return null;
   return (
     <p class="visually-hidden" aria-hidden="true" data-agent-note>
-      {`Machine-readable versions of this page. Markdown: ${formats.markdown} . Index of every page (llms.txt): ${formats.llms} . The whole reference in one Markdown file: ${formats.full} . The API model as JSON (apidocs/1): ${formats.model} .`}
+      {`Machine-readable versions of this page. ${parts.join(" ")}`}
     </p>
   );
 }
@@ -577,19 +602,22 @@ export function PageTools({ crumbs, heading, canonical, title }: { crumbs: Crumb
 
 /** The foot of every page: the theme's footer text, the machine-readable forms, the theme's footer links. */
 export function Footer() {
-  const { theme, page } = usePage();
+  const ctx = usePage();
+  const { theme, page } = ctx;
   const root = rootOf(page);
   const name = page.split("/").pop()!;
+  const has = outputsOf(ctx);
+  const forms = [
+    has.markdown && <a href={`${name}.md`}>This page as Markdown</a>,
+    has.llms && <a href={`${root}llms.txt`}>llms.txt</a>,
+    has.model && <a href={`${root}api.json`}>api.json</a>,
+  ].filter(Boolean);
   return (
     <footer class="footer">
       <p>
         {theme.footer && <span>{theme.footer} </span>}
-        <a href={`${name}.md`}>This page as Markdown</a>
-        {", "}
-        <a href={`${root}llms.txt`}>llms.txt</a>
-        {", "}
-        <a href={`${root}api.json`}>api.json</a>
-        <span data-js-only>{", "}<button type="button" class="footer-keys" data-keys-open aria-keyshortcuts="?">Keyboard shortcuts</button></span>
+        {forms.map((link, i) => <Fragment key={i}>{i > 0 && ", "}{link}</Fragment>)}
+        <span data-js-only>{forms.length > 0 && ", "}<button type="button" class="footer-keys" data-keys-open aria-keyshortcuts="?">Keyboard shortcuts</button></span>
       </p>
       {(theme.links?.footer ?? []).length > 0 && (
         <p class="footer-links">{theme.links!.footer!.map(link => <a key={link.url} href={hrefFor(page, link.url)}>{link.label}</a>)}</p>
@@ -653,7 +681,11 @@ export function packageLanguages(pkg: Package, fallback: string[] | undefined): 
  * a plain link to the Markdown file and looks the same.
  */
 export function PageActions({ name, root, canonical, title }: { name: string; root: string; canonical: string | undefined; title: string }) {
-  const { theme } = usePage();
+  const ctx = usePage();
+  const { theme } = ctx;
+  const has = outputsOf(ctx);
+  // Without the Markdown twins there is nothing to copy or open beside the page, and the menu holds only the rest.
+  if (!has.markdown) return <OtherFormats name={name} root={root} has={has} />;
   const menuLabel = theme.footer === false ? "Page options" : "Other formats";
   const markdown = canonical ? canonical.replace(/\.html$/, ".md") : undefined;
   const ask = markdown ? encodeURIComponent(`Read ${markdown} so that I can ask questions about ${title}.`) : undefined;
@@ -674,12 +706,43 @@ export function PageActions({ name, root, canonical, title }: { name: string; ro
         </summary>
         <ul class="formats-list">
           <li><a href={`${name}.md`}><code>{name.split("/").pop()}.md</code><small>this page as Markdown</small></a></li>
-          <li><a href={`${root}llms.txt`}><code>llms.txt</code><small>index of every page</small></a></li>
-          <li><a href={`${root}llms-full.txt`}><code>llms-full.txt</code><small>the whole reference</small></a></li>
-          <li><a href={`${root}api.json`}><code>api.json</code><small>the model</small></a></li>
+          <FormatItems root={root} has={has} />
           {theme.footer === false && <li class="formats-sep" data-js-only><button type="button" data-keys-open aria-keyshortcuts="?">Keyboard shortcuts</button></li>}
           {ask && <li class="formats-sep"><a href={`https://claude.ai/new?q=${ask}`} rel="noopener"><span>Open in Claude</span><small>{out}</small></a></li>}
           {ask && <li><a href={`https://chatgpt.com/?q=${ask}`} rel="noopener"><span>Open in ChatGPT</span><small>{out}</small></a></li>}
+        </ul>
+      </details>
+    </div>
+  );
+}
+
+/** The site-wide forms in the formats menu: the llms files and the model, those the site has. */
+function FormatItems({ root, has }: { root: string; has: { llms: boolean; model: boolean } }) {
+  return (
+    <>
+      {has.llms && <li><a href={`${root}llms.txt`}><code>llms.txt</code><small>index of every page</small></a></li>}
+      {has.llms && <li><a href={`${root}llms-full.txt`}><code>llms-full.txt</code><small>the whole reference</small></a></li>}
+      {has.model && <li><a href={`${root}api.json`}><code>api.json</code><small>the model</small></a></li>}
+    </>
+  );
+}
+
+/**
+ * The formats menu of a site without Markdown twins: the site-wide forms, and the keyboard shortcuts when the page
+ * has no footer to hold them. Nothing when there is nothing to list.
+ */
+function OtherFormats({ root, has }: { name: string; root: string; has: { llms: boolean; model: boolean } }) {
+  const { theme } = usePage();
+  const keys = theme.footer === false;
+  if (!has.llms && !has.model && !keys) return null;
+  const menuLabel = keys ? "Page options" : "Other formats";
+  return (
+    <div class="formats">
+      <details class="formats-menu">
+        <summary aria-label={keys ? menuLabel : "Other formats of this page"} title={menuLabel}>{CHEVRON}</summary>
+        <ul class="formats-list">
+          <FormatItems root={root} has={has} />
+          {keys && <li class={has.llms || has.model ? "formats-sep" : undefined} data-js-only><button type="button" data-keys-open aria-keyshortcuts="?">Keyboard shortcuts</button></li>}
         </ul>
       </details>
     </div>
@@ -747,18 +810,9 @@ export function kindGlyph(type: Type): { letter: string; tone: string } {
  * and truncates; its title carries the full name.
  */
 export function Navigation() {
-  const { site, theme, page } = usePage();
-  const current = currentType(site.types, page);
-  const currentPkg = current ? site.types.get(current.id)!.pkg : site.packages.find(pkg => packagePage(pkg) === page);
-  const prefix = sharedPrefix(site.packages.map(pkg => pkg.name));
-  const chain = new Set<string>();
-  for (let t: Type | undefined = current; t; t = t.enclosing ? site.types.get(t.enclosing)?.type : undefined) chain.add(t.id);
-  const guides = guideNav(site, page);
+  const { site, theme, page, nav } = usePage();
   const sites = suites(theme, page);
-  const indexes = navIndexes(site, page);
-  const overview = relative(page, INDEX, ".html");
-  // One package needs no fold of its own: its types are the tree.
-  const single = site.packages.length === 1;
+  const split = nav === "split" && (site.packages.length > 0 || site.guides.length > 0);
   return (
     <nav class="sidebar" id="apidocs-nav" aria-label={site.packages.length ? "Packages and types" : "Guides"} {...persistAttr(useVariant(), "apidocs-nav")}>
       {/* Shown only where the navigator is a drawer: there the top bar may have no room for the switcher. */}
@@ -776,17 +830,76 @@ export function Navigation() {
         <div class="nav-filter" data-nav-filter data-js-only>
           <label class="visually-hidden" for="apidocs-nav-filter">{site.packages.length ? "Filter packages, types and guides" : "Filter guides"}</label>
           <input id="apidocs-nav-filter" type="search" placeholder="Filter" autocomplete="off" spellcheck={false} />
-          <button type="button" class="nav-fold-all" data-nav-fold-all aria-label="Expand all" title="Expand all" data-action="expand">
-            {/* Chevrons apart: open everything; chevrons together: fold everything. */}
-            <svg class="icon fold-all-expand" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M4.5 6 8 2.5 11.5 6M4.5 10 8 13.5 11.5 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
-            <svg class="icon fold-all-restore" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M2.5 3v4h4M3 7a5 5 0 1 1 1 5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
-            <svg class="icon fold-all-collapse" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M4.5 2.5 8 6l3.5-3.5M4.5 13.5 8 10l3.5 3.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
-          </button>
+          {/* Its icon follows data-action, drawn by the stylesheet. */}
+          <button type="button" class="nav-fold-all" data-nav-fold-all aria-label="Expand all" title="Expand all" data-action="expand" />
         </div>
       )}
+      <NavTree prune={split} />
+      {/* The whole tree, shared by every page: it replaces the branches above, keeping which are open and current. */}
+      {split && <script src={`${rootOf(page)}assets/${NAV_SCRIPT}`} />}
+    </nav>
+  );
+}
+
+/** The shared navigator's file under assets/: the whole tree, and the script that puts it in the page. */
+export const NAV_SCRIPT = "nav.js";
+
+/**
+ * assets/nav.js: the whole tree as markup (links from the site's root), and the script that puts it in place of the
+ * page's pruned copy. It runs where the page loads it, at the navigator's end, before the navigator is painted. The
+ * rows the page marks as current or on its path (aria-current, data-open), and the branches it opens, are marked
+ * the same in the whole tree. A classic script that assigns a global, as the search index is: a page opened from
+ * file:// cannot fetch its neighbors.
+ */
+export function navScript(tree: string): string {
+  return `window.apidocsNav=${JSON.stringify(tree).replace(/</g, "\\u003c")};\n${NAV_TOP}\n${NAV_HYDRATE}\n`;
+}
+
+const NAV_HYDRATE =
+  '(function(){var n=document.getElementById("apidocs-nav"),h=window.apidocsNav;if(!n||!h)return;' +
+  'var old=n.querySelectorAll("section[data-nav-filterable]");if(!old.length)return;' +
+  'var r=document.documentElement.getAttribute("data-root")||"";if(r==="./")r="";' +
+  'var d=document.createElement("div");d.innerHTML=h.replace(/ href="(?![a-z][a-z0-9+.-]*:|[/#])/gi,function(m){return m+r});' +
+  // A row is known by its classes and where it leads: a group's row and its first guide's row share a link.
+  'var k=function(a){return a.className+" "+a.href},marks={},open={},t;' +
+  'Array.prototype.forEach.call(old,function(s){' +
+  'Array.prototype.forEach.call(s.querySelectorAll("a[aria-current],a[data-open]"),function(a){marks[k(a)]=a});' +
+  'Array.prototype.forEach.call(s.querySelectorAll(".nav-branch[data-path]"),function(b){open[b.getAttribute("data-nav-key")]=1})});' +
+  'Array.prototype.forEach.call(d.querySelectorAll("a"),function(a){var m=marks[k(a)];if(!m)return;' +
+  'if(m.hasAttribute("aria-current"))a.setAttribute("aria-current",m.getAttribute("aria-current"));if(m.hasAttribute("data-open"))a.setAttribute("data-open","")});' +
+  'Array.prototype.forEach.call(d.querySelectorAll(".nav-branch"),function(b){if(!open[b.getAttribute("data-nav-key")])return;' +
+  'b.removeAttribute("data-folded");b.setAttribute("data-path","");t=b.querySelector(".nav-branch-row>button.nav-twisty");' +
+  'if(t){t.setAttribute("aria-expanded","true");t.setAttribute("aria-label",t.getAttribute("aria-label").replace(/: unfold$/,": fold"))}});' +
+  'while(d.firstChild)old[0].parentNode.insertBefore(d.firstChild,old[0]);Array.prototype.forEach.call(old,function(s){s.remove()})})();';
+
+/**
+ * The navigator's tree: guides by group, then the module with its packages and types. `shared` renders it for
+ * assets/nav.js: links from the site's root, as from the overview, and no row current or open. `prune` renders the
+ * page's own copy, for readers and crawlers without the script: the module's heading (the overview, which lists every
+ * package) and indexes, the guides with a row per group, and the page's path (its package with its types, and the
+ * current type's nested types); the other packages and the children of folded branches are left out.
+ */
+export function NavTree({ shared = false, prune = false }: { shared?: boolean; prune?: boolean }) {
+  const { site, theme, page: at } = usePage();
+  // The shared tree links from the root, as the overview does, and marks nothing as current.
+  const page = shared ? INDEX : at;
+  const here = shared ? undefined : at;
+  const current = here === undefined ? undefined : currentType(site.types, here);
+  const currentPkg = current ? site.types.get(current.id)!.pkg : site.packages.find(pkg => packagePage(pkg) === here);
+  const prefix = sharedPrefix(site.packages.map(pkg => pkg.name));
+  const chain = new Set<string>();
+  for (let t: Type | undefined = current; t; t = t.enclosing ? site.types.get(t.enclosing)?.type : undefined) chain.add(t.id);
+  const guides = guideNav(site, page);
+  if (shared) for (const group of guides.groups) for (const guide of group.guides) guide.current = false;
+  const indexes = navIndexes(site, page).map(entry => (shared ? { ...entry, current: false } : entry));
+  const overview = relative(page, INDEX, ".html");
+  // One package needs no fold of its own: its types are the tree.
+  const single = site.packages.length === 1;
+  return (
+    <>
       {guides.groups.length > 0 && (
         <section class="nav-section nav-guides" data-nav-filterable>
-          <h2 class="nav-heading">{site.packages.length > 0 ? <span>Guides</span> : <a href={overview} aria-current={page === INDEX ? "page" : undefined}>Guides</a>}</h2>
+          <h2 class="nav-heading">{site.packages.length > 0 ? <span>Guides</span> : <a href={overview} aria-current={here === INDEX ? "page" : undefined}>Guides</a>}</h2>
           <ul class="nav-list nav-tree">
             {guides.groups.map((group, i) => {
               // A section's row leads to its first guide. When that guide is the section's own page (its index), it is
@@ -805,7 +918,7 @@ export function Navigation() {
               if (!group.title) return rows;
               const open = group.guides.some(guide => guide.current);
               return (
-                <NavBranch key={i} id={`g:${group.title}`} open={open} label={group.title} empty={rest.length === 0}
+                <NavBranch key={i} id={`g:${group.title}`} open={open} prune={prune} label={group.title} empty={rest.length === 0}
                   row={<a class="nav-row nav-group-row" href={first!.href} title={first!.summary || group.title}
                     aria-current={overview && first!.current ? "page" : undefined}>
                     {theme.guideIcons && <span class="glyph" data-tone="guide" aria-hidden="true">{guideIcon(theme, first!.slug, SYMBOLS.guide.utf)}</span>}
@@ -822,7 +935,7 @@ export function Navigation() {
           <h2 class="nav-heading nav-module">
             {/* The packages below show only what follows their shared prefix (".api"), so the heading shows that prefix,
                 which they continue; without one, the module's name. Either way it leads to the module's overview. */}
-            <a href={overview} aria-current={page === INDEX ? "page" : undefined} title={`${site.model.module.name}: overview`}>{prefix || site.model.module.name}</a>
+            <a href={overview} aria-current={here === INDEX ? "page" : undefined} title={`${site.model.module.name}: overview`}>{prefix || site.model.module.name}</a>
             {indexes.length > 0 && (
               <span class="nav-index">
                 {indexes.map(entry => <a key={entry.page} href={entry.href} aria-current={entry.current ? "page" : undefined}>{entry.label}</a>)}
@@ -832,15 +945,16 @@ export function Navigation() {
           <ul class="nav-list nav-tree">
             {site.packages.map(pkg => {
               const tops = sortedTypes((pkg.types ?? []).filter(t => !t.enclosing));
-              const types = <NavTypes types={tops} pkg={pkg} chain={chain} />;
+              const types = <NavTypes types={tops} pkg={pkg} chain={chain} page={page} here={here} prune={prune} />;
               if (single) return <li key={pkg.id} class="nav-item nav-children-wrap">{types}</li>;
-              const here = packagePage(pkg) === page;
+              // The page's own copy keeps only the page's package: the overview, which the heading links, lists the rest.
+              if (prune && pkg !== currentPkg) return null;
               const label = pkg.name ? (prefix ? pkg.name.slice(prefix.length + 1) : pkg.name) : "(default package)";
               return (
-                <NavBranch key={pkg.id} id={`p:${pkg.id}`} open={pkg === currentPkg} label={pkg.name || label} empty={tops.length === 0}
+                <NavBranch key={pkg.id} id={`p:${pkg.id}`} open={pkg === currentPkg} prune={prune} label={pkg.name || label} empty={tops.length === 0}
                   row={
                     <a class="nav-row nav-package" href={relative(page, packagePage(pkg), ".html")} title={pkg.name}
-                      aria-current={here ? "page" : undefined} data-open={pkg === currentPkg ? "" : undefined}>
+                      aria-current={packagePage(pkg) === here ? "page" : undefined} data-open={pkg === currentPkg ? "" : undefined}>
                       <span class="nav-label">{prefix && <span class="nav-dot" aria-hidden="true">.</span>}{label}</span>
                       {tops.length > 0 && <span class="nav-count">{tops.length}</span>}
                     </a>
@@ -852,7 +966,7 @@ export function Navigation() {
           </ul>
         </section>
       )}
-    </nav>
+    </>
   );
 }
 
@@ -861,16 +975,19 @@ export function Navigation() {
  * server's choice: open along the current page's path. `id` names the branch across pages, so the script can keep a
  * reader's folding. The children's list is the twisty's controlled region.
  */
-function NavBranch({ id, open, label, row, empty, children }: { id: string; open: boolean; label: string; row: ComponentChildren; empty?: boolean; children: ComponentChildren }) {
+function NavBranch({ id, open, prune, label, row, empty: none, children }: { id: string; open: boolean; prune?: boolean; label: string; row: ComponentChildren; empty?: boolean; children: ComponentChildren }) {
   const region = `nav-${id.replace(/[^A-Za-z0-9_-]+/g, "-")}`;
+  // A pruned branch that is folded has no children in the page: assets/nav.js brings them, with its twisty.
+  const empty = none || (prune && !open);
   return (
     <li class="nav-item nav-branch" data-nav-key={id} data-folded={open ? undefined : ""} data-path={open ? "" : undefined}>
       <div class="nav-branch-row">
         {empty
-          ? <span class="nav-twisty" aria-hidden="true" />
+          // A pruned branch's twisty holds its place for the script, which brings the real one; without the script,
+          // it goes like every other twisty.
+          ? <span class="nav-twisty" aria-hidden="true" data-js-only={none ? undefined : true} />
           : (
             <button type="button" class="nav-twisty" data-js-only aria-expanded={open ? "true" : "false"} aria-controls={region} aria-label={`${label}: ${open ? "fold" : "unfold"}`}>
-              <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M6 3.75 10.25 8 6 12.25" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" /></svg>
             </button>
           )}
         {row}
@@ -903,8 +1020,8 @@ export function navIndexes(site: Site, page: string): NavIndex[] {
   return entries.map(entry => ({ ...entry, href: relative(page, entry.page, ".html"), current: entry.page === page }));
 }
 
-function NavTypes({ types, pkg, chain, depth = 0 }: { types: Type[]; pkg: Package; chain: Set<string>; depth?: number }) {
-  const { site, page } = usePage();
+function NavTypes({ types, pkg, chain, page, here, prune, depth = 0 }: { types: Type[]; pkg: Package; chain: Set<string>; page: string; here?: string; prune: boolean; depth?: number }) {
+  const { site } = usePage();
   const mixed = (site.model.module.languages ?? []).length > 1;
   return (
     <ul class="nav-list" data-depth={depth || undefined}>
@@ -915,7 +1032,7 @@ function NavTypes({ types, pkg, chain, depth = 0 }: { types: Type[]; pkg: Packag
         const simple = type.name.split(".").pop()!;
         const row = (
           <a class="nav-row nav-type" href={relative(page, target, ".html")} title={`${type.name} (${type.kind})`}
-            aria-current={target === page ? "page" : undefined} data-open={chain.has(type.id) ? "" : undefined}>
+            aria-current={target === here ? "page" : undefined} data-open={chain.has(type.id) ? "" : undefined}>
             <span class="glyph" data-tone={glyph.tone} aria-hidden="true">{glyph.letter}</span>
             {/* A nested type reads as a member of its enclosing type's name: ".Inner" under "Outer". */}
             <span class="nav-label">{depth > 0 && <span class="nav-dot" aria-hidden="true">.</span>}{simple}</span>
@@ -924,8 +1041,8 @@ function NavTypes({ types, pkg, chain, depth = 0 }: { types: Type[]; pkg: Packag
         );
         if (nested.length === 0) return <li key={type.id} class="nav-item">{row}</li>;
         return (
-          <NavBranch key={type.id} id={`t:${type.id}`} open={chain.has(type.id)} label={type.name} row={row}>
-            <li class="nav-item nav-children-wrap"><NavTypes types={nested} pkg={pkg} chain={chain} depth={depth + 1} /></li>
+          <NavBranch key={type.id} id={`t:${type.id}`} open={chain.has(type.id)} prune={prune} label={type.name} row={row}>
+            <li class="nav-item nav-children-wrap"><NavTypes types={nested} pkg={pkg} chain={chain} page={page} here={here} prune={prune} depth={depth + 1} /></li>
           </NavBranch>
         );
       })}
