@@ -190,9 +190,10 @@
   --primary-emphasis: var(--eld-purple-800);
   --primary-soft: color-mix(in oklab, var(--eld-purple-700) 7%, transparent);
 
-  /* External depth only; the border defines the edge without a white seam. */
-  --button-shadow: 0 1px 2px #2e10651a, 0 3px 8px -3px #6d28d933;
-  --button-shadow-hover: 0 2px 4px #2e10651a, 0 6px 14px -5px #6d28d94d;
+  /* One unblurred pixel of shade under the button, no glow: the rim is the
+   * button's edge, and any blur around it made that edge read as soft. */
+  --button-shadow: 0 1px 0 #2e10651f;
+  --button-shadow-hover: 0 1px 0 #2e106533;
 
   /* Status text/icons (--*-emphasis) and tinted surfaces (--*-soft) */
   --info-emphasis: var(--eld-info-deep);
@@ -299,8 +300,8 @@
   --primary-emphasis: var(--eld-purple-300);
   --primary-soft: color-mix(in oklab, var(--eld-purple-400) 12%, transparent);
 
-  --button-shadow: 0 1px 3px #00000040, 0 3px 10px -4px #7c3aed40;
-  --button-shadow-hover: 0 2px 5px #00000040, 0 7px 18px -6px #7c3aed66;
+  --button-shadow: 0 1px 0 #00000066;
+  --button-shadow-hover: 0 1px 0 #0000008c;
 
   --info-emphasis: var(--eld-info-strong);
   --info-soft: color-mix(in oklab, var(--eld-info-strong) 14%, transparent);
@@ -427,13 +428,22 @@
 :root,
 .dark,
 [data-theme="dark"] {
-  /* Match all three fill stops and deepen them evenly for a crisp 1px edge.
+  /* The rim follows all three fill stops, moved away from the face and from
+   * the page at once, so it reads as one hard line: deeper than the face on a
+   * light page, lighter than it on a dark one (below). A rim between the face
+   * and the page in tone looks like the face's edge blurring into the page.
    * Layered backgrounds clip the face to padding-box and this rim to border-box. */
-  --button-border-background: linear-gradient(115deg, color-mix(in oklab, var(--eld-gradient-start) 82%, black), color-mix(in oklab, var(--eld-gradient-middle) 82%, black) 65%, color-mix(in oklab, var(--eld-gradient-end) 82%, black));
-  --button-border-hover-background: linear-gradient(115deg, color-mix(in oklab, var(--eld-gradient-start) 76%, black), color-mix(in oklab, var(--eld-gradient-middle) 76%, black) 65%, color-mix(in oklab, var(--eld-gradient-end) 76%, black));
+  --button-border-background: linear-gradient(115deg, color-mix(in oklab, var(--eld-gradient-start) 68%, black), color-mix(in oklab, var(--eld-gradient-middle) 68%, black) 65%, color-mix(in oklab, var(--eld-gradient-end) 68%, black));
+  --button-border-hover-background: linear-gradient(115deg, color-mix(in oklab, var(--eld-gradient-start) 60%, black), color-mix(in oklab, var(--eld-gradient-middle) 60%, black) 65%, color-mix(in oklab, var(--eld-gradient-end) 60%, black));
   --button-primary-background: var(--eld-gradient-brand);
   --button-primary-hover-background: var(--eld-gradient-hover);
   --button-accent-background: linear-gradient(115deg, var(--primary-soft), color-mix(in oklab, var(--eld-gradient-end) 10%, transparent));
+}
+
+.dark,
+[data-theme="dark"] {
+  --button-border-background: linear-gradient(115deg, color-mix(in oklab, var(--eld-gradient-start) 72%, white), color-mix(in oklab, var(--eld-gradient-middle) 72%, white) 65%, color-mix(in oklab, var(--eld-gradient-end) 72%, white));
+  --button-border-hover-background: linear-gradient(115deg, color-mix(in oklab, var(--eld-gradient-start) 64%, white), color-mix(in oklab, var(--eld-gradient-middle) 64%, white) 65%, color-mix(in oklab, var(--eld-gradient-end) 64%, white));
 }
 
 /* The selected theme also controls browser UI. light-dark() keeps paired
